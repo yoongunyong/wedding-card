@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import RsvpModal from '@/components/RsvpModal';
+import KakaoMap from '@/components/KakaoMap';
 
 export default function ModernTemplate({ invitation }) {
   const extra = invitation.extra_data || {};
@@ -244,8 +245,11 @@ export default function ModernTemplate({ invitation }) {
           </div>
 
           {/* 지도 뷰 영역 */}
-          <div className="w-full h-60 bg-stone-200 rounded-xl overflow-hidden mb-5 border border-stone-200 shadow-sm relative">
-            <img src="/temp/map_mock.png" alt="지도" className="w-full h-full object-cover" />
+          <div className="mb-5">
+            <KakaoMap
+              address={invitation.venue_address}
+              venueName={invitation.venue_name}
+            />
           </div>
 
           {/* 지도 내비게이션 2버튼 */}
@@ -272,7 +276,7 @@ export default function ModernTemplate({ invitation }) {
               </svg>
             </button>
 
-            {/* 카카오네비 */}
+            {/* 카카오내비 */}
             <button
               onClick={() =>
                 window.open(
@@ -283,7 +287,7 @@ export default function ModernTemplate({ invitation }) {
               }
               className="py-3 px-4 rounded-xl bg-[#F4F1EA] hover:bg-[#EAE5DA] text-xs text-[#333] font-sans flex items-center justify-center gap-2 transition-colors font-medium shadow-sm"
             >
-              <span>카카오 네비</span>
+              <span>카카오 내비</span>
               {/* 카카오내비 노란색 뱃지 아이콘 */}
               <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                 <rect width="24" height="24" rx="5" fill="#FEE500" />

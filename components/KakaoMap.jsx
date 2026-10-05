@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import Script from 'next/script';
 
 export default function KakaoMap({ address, venueName }) {
@@ -13,38 +13,44 @@ export default function KakaoMap({ address, venueName }) {
       const container = mapContainer.current;
       if (!container) return;
 
-      const targetAddress = address || '경북 구미시 금오산로 400';
+      const targetAddress = address || '서울 마포구 마포대로 92';
       const geocoder = new window.kakao.maps.services.Geocoder();
 
       geocoder.addressSearch(targetAddress, (result, status) => {
         if (status === window.kakao.maps.services.Status.OK) {
           const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
 
-          // 지도 초기화 (줌 레벨 4: 모바일 보기 최적화)
           const map = new window.kakao.maps.Map(container, {
             center: coords,
-            level: 4,
+            level: 3,
           });
 
-          // 핀(마커) 추가
           const marker = new window.kakao.maps.Marker({
             map: map,
             position: coords,
           });
 
-          // 장소 이름 말풍선
           const infowindow = new window.kakao.maps.InfoWindow({
             content: `
-              <div style="padding:6px 12px;font-size:12px;font-weight:600;color:#222;font-family:sans-serif;white-space:nowrap;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.1);">
+              <div style="padding:5px 10px;font-size:12px;font-weight:600;color:#222;font-family:sans-serif;white-space:nowrap;border-radius:4px;text-align:center;">
                 ${venueName || '예식장'}
               </div>
             `,
           });
           infowindow.open(map, marker);
+        } else {
+          console.warn('카카오맵 주소 검색 실패:', status);
         }
       });
     });
   };
+
+  // 이미 카카오맵 SDK가 로드되어 있는 경우를 위한 useEffect
+  useEffect(() => {
+    if (window.kakao && window.kakao.maps) {
+      initMap();
+    }
+  }, [address, venueName]);
 
   return (
     <>

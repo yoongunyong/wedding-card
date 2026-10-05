@@ -2,15 +2,10 @@ import { supabase } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import BgmPlayer from '@/components/BgmPlayer';
 import ModernTemplate from '@/components/templates/modern/ModernTemplate';
-// 나중에 새 템플릿 추가 시 여기 import:
-// import ClassicTemplate from '@/components/templates/ClassicTemplate';
-// import FlowerTemplate from '@/components/templates/FlowerTemplate';
 
 // 템플릿 라우팅 매핑 테이블
 const TEMPLATE_MAP = {
   modern: ModernTemplate,
-  // classic: ClassicTemplate,
-  // flower: FlowerTemplate,
 };
 
 // SNS/카카오톡 공유 메타데이터 (OG 태그)
@@ -75,12 +70,18 @@ export default async function WeddingCardPage({ params }) {
     return notFound();
   }
 
-  // DB의 template_type 값에 맞는 컴포넌트 자동 선택 (기본값: ModernTemplate)
+  // DB의 template_type 값에 맞는 컴포넌트 자동 선택
   const CurrentTemplate = TEMPLATE_MAP[invitation.template_type] || ModernTemplate;
+
+  // 오프닝 커버 이미지: extra_data.intro_cover_image(cover.png) 우선 사용
+  const introCoverImg = invitation.extra_data?.intro_cover_image || invitation.cover_image;
 
   return (
     <main className="min-h-screen bg-stone-100 flex justify-center py-0 sm:py-8">
-      <BgmPlayer bgmUrl={invitation.bgm_url} />
+      <BgmPlayer 
+        bgmUrl={invitation.bgm_url} 
+        coverImage={introCoverImg} 
+      />
       <CurrentTemplate invitation={invitation} />
     </main>
   );

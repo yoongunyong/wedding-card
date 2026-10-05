@@ -7,6 +7,9 @@ import KakaoMap from '@/components/KakaoMap';
 export default function ModernTemplate({ invitation }) {
   const extra = invitation?.extra_data || {};
 
+  // 본문 메인 풀스크린 사진 (extra_data.main_image 우선 사용)
+  const mainImage = extra.main_image || invitation?.cover_image || '/temp/cover.jpg';
+
   // 고객 커스텀 타이틀 색상 (DB extra_data.title_color 우선, 기본값은 골드톤)
   const titleColor = extra.title_color || '#E5A866';
 
@@ -44,12 +47,10 @@ export default function ModernTemplate({ invitation }) {
   const calendarData = useMemo(() => {
     const targetDate = new Date(invitation?.wedding_date_iso || '2027-03-27T11:00:00');
     const year = targetDate.getFullYear();
-    const month = targetDate.getMonth(); // 0 ~ 11
+    const month = targetDate.getMonth();
     const weddingDay = targetDate.getDate();
 
-    // 해당 월의 1일의 요일 (0: 일, 1: 월, ... 6: 토)
     const firstDayIndex = new Date(year, month, 1).getDay();
-    // 해당 월의 총 일수
     const totalDays = new Date(year, month + 1, 0).getDate();
 
     return {
@@ -94,17 +95,17 @@ export default function ModernTemplate({ invitation }) {
         }
       `}</style>
 
-      {/* 1. 메인 커버 (모바일 전체 화면 꽉 채움: 100dvh) */}
+      {/* 1. 메인 커버 (본문 최상단 전체화면 100dvh - main.png) */}
       <section className="relative w-full h-[100dvh] min-h-[100vh] overflow-hidden flex flex-col justify-between">
         <img
-          src={invitation?.cover_image || '/temp/cover.jpg'}
-          alt="Wedding Cover"
+          src={mainImage}
+          alt="Wedding Main Cover"
           className="absolute inset-0 w-full h-full object-cover"
         />
 
         <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/40" />
 
-        {/* 상단 캘리그라피 문구 (we are getting married!) & 예식 일자 */}
+        {/* 상단 캘리그라피 문구 (we are getting married!) & 날짜 */}
         <div className="relative z-10 pt-24 px-6 text-center select-none">
           <p
             className="calligraphy-title text-5xl sm:text-6xl tracking-normal leading-[1.15] drop-shadow-md"
@@ -179,7 +180,7 @@ export default function ModernTemplate({ invitation }) {
             <div className="text-center">
               <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full overflow-hidden mx-auto mb-3.5 border-2 border-[#E8E2D8] shadow-md bg-stone-100">
                 <img
-                  src={extra.groom_profile_image || invitation?.cover_image}
+                  src={extra.groom_profile_image || mainImage}
                   alt="신랑"
                   className="w-full h-full object-cover"
                 />
@@ -190,7 +191,7 @@ export default function ModernTemplate({ invitation }) {
             <div className="text-center">
               <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full overflow-hidden mx-auto mb-3.5 border-2 border-[#E8E2D8] shadow-md bg-stone-100">
                 <img
-                  src={extra.bride_profile_image || invitation?.cover_image}
+                  src={extra.bride_profile_image || mainImage}
                   alt="신부"
                   className="w-full h-full object-cover"
                 />
@@ -225,16 +226,13 @@ export default function ModernTemplate({ invitation }) {
           </div>
 
           <div className="grid grid-cols-7 text-center text-xs gap-y-4 text-[#333] font-sans">
-            {/* 시작 요일 이전의 빈칸 채우기 */}
             {Array.from({ length: calendarData.firstDayIndex }).map((_, idx) => (
               <span key={`empty-${idx}`} />
             ))}
 
-            {/* 해당 월의 1일부터 말일까지 출력 */}
             {Array.from({ length: calendarData.totalDays }).map((_, idx) => {
               const day = idx + 1;
               const isWeddingDay = day === calendarData.weddingDay;
-              // 요일 계산 (0: 일요일)
               const dayOfWeek = (calendarData.firstDayIndex + idx) % 7;
               const isSunday = dayOfWeek === 0;
 
@@ -444,7 +442,7 @@ export default function ModernTemplate({ invitation }) {
         <div className="bg-[#F8F7F4] py-10 px-6 space-y-4 text-left font-sans">
           <div className="bg-white p-5 rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.03)] border border-stone-100">
             <p className="font-semibold text-[13px] text-[#222] mb-3 pb-2 border-b border-stone-100 flex items-center gap-1.5">
-              주차안내 <span className="text-xs text-stone-400">🅿️️</span>
+              주차안내 <span className="text-xs text-stone-400">🅿</span>
             </p>
             <p className="text-xs text-[#555] leading-relaxed break-keep">
               {extra.parking_info || '주차공간이 협소하오니, 되도록 대중교통을 이용해 주시기 바랍니다.\n특히, 주말은 오전 시간대에 만차가 되니 부득이하게 주차가 필요하신 분들은 예식장에 전화 부탁드립니다.'}
@@ -485,7 +483,6 @@ export default function ModernTemplate({ invitation }) {
         <img src="/templates/modern/미니멀 웨딩 아이콘 6종 세트 3.svg" alt="" className="w-8 h-8 mx-auto mb-2 opacity-80" />
         <h2 className="text-lg text-[#222] tracking-wider mb-8">마음 전하실 곳</h2>
 
-        {/* 신랑측 계좌 */}
         <div className="bg-white rounded-xl overflow-hidden shadow-sm text-left mb-4 border border-[#E6E1D6]">
           <button
             onClick={() => setOpenGroom(!openGroom)}
@@ -524,7 +521,6 @@ export default function ModernTemplate({ invitation }) {
           )}
         </div>
 
-        {/* 신부측 계좌 */}
         <div className="bg-white rounded-xl overflow-hidden shadow-sm text-left border border-[#E6E1D6]">
           <button
             onClick={() => setOpenBride(!openBride)}
@@ -655,7 +651,7 @@ export default function ModernTemplate({ invitation }) {
       {/* 10. 엔딩 커버 사진 */}
       <section className="relative w-full h-[460px] overflow-hidden">
         <img
-          src={extra.ending_image || invitation?.cover_image || '/temp/ending.jpg'}
+          src={extra.ending_image || mainImage}
           alt="Ending Cover"
           className="w-full h-full object-cover"
         />

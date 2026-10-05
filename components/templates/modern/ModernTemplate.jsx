@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import Script from 'next/script';
 import RsvpModal from '@/components/RsvpModal';
 import KakaoMap from '@/components/KakaoMap';
 
@@ -72,6 +73,55 @@ export default function ModernTemplate({ invitation }) {
     }
   };
 
+  // 카카오톡 공식 메시지 카드 공유 핸들러
+  const handleKakaoShare = () => {
+    const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+    const shareTitle = `${invitation?.groom_name || '윤건용'} ♥ ${invitation?.bride_name || '장성경'} 결혼식에 초대합니다`;
+    const shareDesc = `${invitation?.wedding_date || '2027년 3월 27일 토요일'} | ${invitation?.venue_name || '호텔금오산'}`;
+    const shareImg = extra.share_image || mainImage;
+
+    // 1. Kakao SDK 초기화 상태 확인 및 메시지 카드 발송
+    if (typeof window !== 'undefined' && window.Kakao && window.Kakao.isInitialized()) {
+      window.Kakao.Share.sendDefault({
+        objectType: 'feed',
+        content: {
+          title: shareTitle,
+          description: shareDesc,
+          imageUrl: shareImg,
+          link: {
+            mobileWebUrl: currentUrl,
+            webUrl: currentUrl,
+          },
+        },
+        buttons: [
+          {
+            title: '청첩장 보기',
+            link: {
+              mobileWebUrl: currentUrl,
+              webUrl: currentUrl,
+            },
+          },
+        ],
+      });
+      return;
+    }
+
+    // 2. 모바일 브라우저 네이티브 공유 API 지원 시
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      navigator.share({
+        title: shareTitle,
+        text: shareDesc,
+        url: currentUrl,
+      }).catch((err) => {
+        if (err.name !== 'AbortError') handleCopy(currentUrl, '청첩장 주소가');
+      });
+      return;
+    }
+
+    // 3. Fallback: 주소 복사
+    handleCopy(currentUrl, '청첩장 주소가');
+  };
+
   // 계좌 데이터
   const groomAccounts = (invitation?.accounts || []).filter((a) => a.group === '신랑측' || a.side === 'groom');
   const brideAccounts = (invitation?.accounts || []).filter((a) => a.group === '신부측' || a.side === 'bride');
@@ -87,6 +137,20 @@ export default function ModernTemplate({ invitation }) {
   return (
     <div className="w-full max-w-[430px] bg-[#FCFBF7] text-[#333333] min-h-screen flex flex-col font-serif shadow-2xl antialiased selection:bg-stone-200">
       
+      {/* 카카오 SDK 로드 및 초기화 */}
+      <Script
+        src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"
+        strategy="afterInteractive"
+        onLoad={() => {
+          if (window.Kakao && !window.Kakao.isInitialized()) {
+            const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;
+            if (kakaoKey) {
+              window.Kakao.init(kakaoKey);
+            }
+          }
+        }}
+      />
+
       {/* 캘리그라피 웹폰트 직접 로드 */}
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Pinyon+Script&display=swap');
@@ -100,13 +164,13 @@ export default function ModernTemplate({ invitation }) {
         <img
           src={mainImage}
           alt="Wedding Main Cover"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover object-center"
         />
 
         <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/40" />
 
-        {/* 상단 캘리그라피 문구 (we are getting married!) & 날짜 */}
-        <div className="relative z-10 pt-24 px-6 text-center select-none">
+        {/* 상단 캘리그라피 문구 (we are getting married!) & 날짜 - Safe Area 대응 패딩 */}
+        <div className="relative z-10 pt-[calc(env(safe-area-inset-top,0px)+3rem)] px-6 text-center select-none">
           <p
             className="calligraphy-title text-5xl sm:text-6xl tracking-normal leading-[1.15] drop-shadow-md"
             style={{ color: titleColor }}
@@ -121,11 +185,11 @@ export default function ModernTemplate({ invitation }) {
           </p>
         </div>
 
-        {/* 하단 좌우 신부/신랑 이름 & 스크롤 유도 화살표 */}
-        <div className="relative z-10 pb-8 px-8 space-y-4">
+        {/* 하단 좌우 신부/신랑 이름 & 스크롤 유도 화살표 - Safe Area 대응 패딩 */}
+        <div className="relative z-10 pb-[calc(env(safe-area-inset-bottom,0px)+2rem)] px-8 space-y-4">
           <div className="flex justify-between text-white/95 text-base tracking-wider font-light drop-shadow">
-            <span>{invitation?.bride_name || '장민기'}</span>
-            <span>{invitation?.groom_name || '권기득'}</span>
+            <span>{invitation?.bride_name || '장성경'}</span>
+            <span>{invitation?.groom_name || '윤건용'}</span>
           </div>
           <div className="flex justify-center text-white/70 text-xs animate-bounce">
             <span>▼</span>
@@ -156,11 +220,11 @@ export default function ModernTemplate({ invitation }) {
         <div className="text-[14px] text-[#555555] space-y-2.5 mb-10 font-light tracking-wide">
           <p>
             {invitation?.groom_father || '신랑아버지'} · {invitation?.groom_mother || '신랑 어머니'}의 아들{' '}
-            <span className="font-medium text-[#222]">{invitation?.groom_name || '권기득'}</span>
+            <span className="font-medium text-[#222]">{invitation?.groom_name || '윤건용'}</span>
           </p>
           <p>
             {invitation?.bride_father || '장철규'} · {invitation?.bride_mother || '이정자'}의 딸{' '}
-            <span className="font-medium text-[#222]">{invitation?.bride_name || '장민기'}</span>
+            <span className="font-medium text-[#222]">{invitation?.bride_name || '장성경'}</span>
           </p>
         </div>
 
@@ -186,7 +250,7 @@ export default function ModernTemplate({ invitation }) {
                 />
               </div>
               <p className="text-xs text-[#888]">신랑</p>
-              <p className="text-base font-medium text-[#222] mt-0.5">{invitation?.groom_name || '권기득'}</p>
+              <p className="text-base font-medium text-[#222] mt-0.5">{invitation?.groom_name || '윤건용'}</p>
             </div>
             <div className="text-center">
               <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full overflow-hidden mx-auto mb-3.5 border-2 border-[#E8E2D8] shadow-md bg-stone-100">
@@ -197,7 +261,7 @@ export default function ModernTemplate({ invitation }) {
                 />
               </div>
               <p className="text-xs text-[#888]">신부</p>
-              <p className="text-base font-medium text-[#222] mt-0.5">{invitation?.bride_name || '장민기'}</p>
+              <p className="text-base font-medium text-[#222] mt-0.5">{invitation?.bride_name || '장성경'}</p>
             </div>
           </div>
         </div>
@@ -267,7 +331,7 @@ export default function ModernTemplate({ invitation }) {
         </div>
 
         <p className="text-sm text-[#444] tracking-wide">
-          {invitation?.groom_name || '기득'} ♥ {invitation?.bride_name || '민기'}님의 결혼식이{' '}
+          {invitation?.groom_name || '윤건용'} ♥ {invitation?.bride_name || '장성경'}님의 결혼식이{' '}
           <span className="text-[#E76C53] font-semibold">{timeLeft.totalDays}일</span> 남았습니다.
         </p>
       </section>
@@ -278,7 +342,6 @@ export default function ModernTemplate({ invitation }) {
         <h2 className="text-lg text-[#222] tracking-wider mb-8">웨딩 갤러리</h2>
 
         <div className="grid grid-cols-2 gap-2 max-w-[380px] mx-auto items-start">
-          {/* [왼쪽 열: 1, 3, 5, 7번째 사진] */}
           <div className="flex flex-col gap-2">
             {galleryImages[0] && (
               <div className="w-full h-[320px] overflow-hidden bg-[#EFECE6]">
@@ -322,7 +385,6 @@ export default function ModernTemplate({ invitation }) {
             )}
           </div>
 
-          {/* [오른쪽 열: 2, 4, 6, 8번째 사진] */}
           <div className="flex flex-col gap-2">
             {galleryImages[1] && (
               <div className="w-full h-[160px] overflow-hidden bg-[#EFECE6]">
@@ -501,8 +563,8 @@ export default function ModernTemplate({ invitation }) {
           {openGroom && (
             <div className="px-5 pb-5 pt-1 divide-y divide-stone-100">
               {(groomAccounts.length > 0 ? groomAccounts : [
-                { name: '신랑 권기득', bank: '하나은행', number: '504-910579-89707' },
-                { name: '신랑 권기득', bank: '신한은행', number: '504-910579-89707' },
+                { name: '신랑 윤건용', bank: '하나은행', number: '504-910579-89707' },
+                { name: '신랑 윤건용', bank: '신한은행', number: '504-910579-89707' },
               ]).map((acc, idx) => (
                 <div key={idx} className="py-3 flex items-center justify-between text-xs font-sans">
                   <div>
@@ -539,8 +601,8 @@ export default function ModernTemplate({ invitation }) {
           {openBride && (
             <div className="px-5 pb-5 pt-1 divide-y divide-stone-100">
               {(brideAccounts.length > 0 ? brideAccounts : [
-                { name: '신부 장민기', bank: '하나은행', number: '504-910579-89707' },
-                { name: '신부 장민기', bank: '신한은행', number: '504-910579-89707' },
+                { name: '신부 장성경', bank: '하나은행', number: '504-910579-89707' },
+                { name: '신부 장성경', bank: '신한은행', number: '504-910579-89707' },
               ]).map((acc, idx) => (
                 <div key={idx} className="py-3 flex items-center justify-between text-xs font-sans">
                   <div>
@@ -589,7 +651,7 @@ export default function ModernTemplate({ invitation }) {
 
         <div className="bg-white rounded-2xl p-7 max-w-[320px] mx-auto shadow-sm border border-[#EAE5DA] mb-6">
           <p className="text-base font-medium text-[#222] mb-4">
-            신랑 {invitation?.groom_name || '권기득'} ♥ 신부 {invitation?.bride_name || '장민기'}
+            신랑 {invitation?.groom_name || '윤건용'} ♥ 신부 {invitation?.bride_name || '장성경'}
           </p>
           <div className="w-full h-[1px] bg-stone-100 mb-4" />
           <p className="text-xs text-[#555] mb-1">{invitation?.wedding_date || '2027년 3월 27일 토요일 오전 11시'}</p>
@@ -665,11 +727,11 @@ export default function ModernTemplate({ invitation }) {
       {/* 11. 하단 공유 바 */}
       <footer className="py-8 px-6 bg-white space-y-2.5">
         <button
-          onClick={() => handleCopy(window.location.href, '청첩장 주소가')}
-          className="w-full py-3.5 px-4 bg-[#F5F5F5] hover:bg-[#EBEBEB] text-[#333] text-xs rounded-xl flex items-center justify-between font-sans transition-colors"
+          onClick={handleKakaoShare}
+          className="w-full py-3.5 px-4 bg-[#FEE500] hover:bg-[#FADA0A] text-[#191919] font-medium text-xs rounded-xl flex items-center justify-between font-sans transition-colors shadow-sm"
         >
           <span>카카오톡으로 공유하기</span>
-          <img src="/templates/modern/카카오톡 공유하기 아이콘.svg" alt="" className="w-4 h-4 opacity-70" />
+          <img src="/templates/modern/카카오톡 공유하기 아이콘.svg" alt="" className="w-4 h-4" />
         </button>
         <button
           onClick={() => handleCopy(window.location.href, '청첩장 주소가')}

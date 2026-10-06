@@ -72,8 +72,7 @@ export default async function WeddingCardPage({ params }) {
   const CurrentTemplate = TEMPLATE_MAP[invitation.template_type] || ModernTemplate;
 
   return (
-    <main className="min-h-screen bg-stone-100 flex justify-center py-0 sm:py-8">
-      {/* 오프닝 커버 화면에 cover_image (cover.png) 전달 */}
+    <main className="min-h-screen bg-stone-100 flex justify-center p-0 m-0">
       <BgmPlayer 
         bgmUrl={invitation.bgm_url} 
         coverImage={invitation.cover_image} 

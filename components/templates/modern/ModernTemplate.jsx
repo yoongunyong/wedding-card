@@ -73,12 +73,15 @@ export default function ModernTemplate({ invitation }) {
     }
   };
 
-  // 카카오톡 공식 메시지 카드 공유 핸들러
+  // 카카오톡 공식 메시지 카드 공유 핸들러 (버튼 2개: 청첩장 보기 + 위치 보기)
   const handleKakaoShare = () => {
     const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
     const shareTitle = `${invitation?.groom_name || '윤건용'} ♥ ${invitation?.bride_name || '장성경'} 결혼식에 초대합니다`;
-    const shareDesc = `${invitation?.wedding_date || '2027년 3월 27일 토요일'} | ${invitation?.venue_name || '호텔금오산'}`;
+    const shareDesc = `${invitation?.wedding_date || '2026년 11월 14일 토요일 오후 2시'} | ${invitation?.venue_name || ' '}`;
     const shareImg = extra.share_image || mainImage;
+    
+    // 카카오맵 검색/길찾기 링크 (식장 위치보기용)
+    const mapUrl = `https://map.kakao.com/link/search/${encodeURIComponent(invitation?.venue_name || ' ')}`;
 
     // 1. Kakao SDK 초기화 상태 확인 및 메시지 카드 발송
     if (typeof window !== 'undefined' && window.Kakao && window.Kakao.isInitialized()) {
@@ -90,7 +93,7 @@ export default function ModernTemplate({ invitation }) {
           imageUrl: shareImg,
           link: {
             mobileWebUrl: currentUrl,
-            webUrl: currentUrl,
+            webUrl: currentUrl, // PC 카톡에서 '모바일에서 확인하세요'가 뜨지 않게 필수 지정
           },
         },
         buttons: [
@@ -99,6 +102,13 @@ export default function ModernTemplate({ invitation }) {
             link: {
               mobileWebUrl: currentUrl,
               webUrl: currentUrl,
+            },
+          },
+          {
+            title: '위치 보기',
+            link: {
+              mobileWebUrl: mapUrl,
+              webUrl: mapUrl,
             },
           },
         ],

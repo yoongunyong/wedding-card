@@ -82,17 +82,16 @@ export default function ModernTemplate({ invitation }) {
     }
   };
 
-  // 카카오톡 공식 메시지 카드 공유 핸들러 (버튼 2개: 청첩장 보기 + 위치 보기)
+  // 카카오톡 공식 메시지 카드 공유 핸들러
   const handleKakaoShare = () => {
     const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
     const shareTitle = `${invitation?.groom_name || '윤건용'} ♥ ${invitation?.bride_name || '장성경'} 결혼식에 초대합니다`;
-    const shareDesc = `${invitation?.wedding_date || '2026년 11월 14일 토요일 오후 2시'} | ${invitation?.venue_name || ' '}`;
+    const shareDesc = `${invitation?.wedding_date || '2026년 11월 14일 토요일 오후 2시'} | ${invitation?.venue_name || '아펠가모 공덕'}`;
     const shareImg = extra.share_image || mainImage;
     
-    // 카카오맵 검색/길찾기 링크 (식장 위치보기용)
-    const mapUrl = `https://map.kakao.com/link/search/${encodeURIComponent(invitation?.venue_name || ' ')}`;
+    // 위치 보기는 내 청첩장의 지도 앵커(#location) 링크로 연결
+    const mapUrl = `https://map.kakao.com/link/search/${encodeURIComponent(invitation?.venue_name || '호텔금오산')}`;
 
-    // 1. Kakao SDK 초기화 상태 확인 및 메시지 카드 발송
     if (typeof window !== 'undefined' && window.Kakao && window.Kakao.isInitialized()) {
       window.Kakao.Share.sendDefault({
         objectType: 'feed',
@@ -102,7 +101,7 @@ export default function ModernTemplate({ invitation }) {
           imageUrl: shareImg,
           link: {
             mobileWebUrl: currentUrl,
-            webUrl: currentUrl, // PC 카톡에서 '모바일에서 확인하세요'가 뜨지 않게 필수 지정
+            webUrl: currentUrl,
           },
         },
         buttons: [
@@ -125,7 +124,6 @@ export default function ModernTemplate({ invitation }) {
       return;
     }
 
-    // 2. 모바일 브라우저 네이티브 공유 API 지원 시
     if (typeof navigator !== 'undefined' && navigator.share) {
       navigator.share({
         title: shareTitle,
@@ -137,7 +135,6 @@ export default function ModernTemplate({ invitation }) {
       return;
     }
 
-    // 3. Fallback: 주소 복사
     handleCopy(currentUrl, '청첩장 주소가');
   };
 
@@ -455,15 +452,15 @@ export default function ModernTemplate({ invitation }) {
       </section>
 
       {/* 5. 식장 위치 & 지도 & 교통 안내 */}
-      <section className="py-20 bg-[#FCFBF7] text-center border-t border-[#F2ECE1]">
+      <section id="location" className="py-20 bg-[#FCFBF7] text-center border-t border-[#F2ECE1]">
         <div className="px-6">
           <img src="/templates/modern/미니멀 웨딩 아이콘 6종 세트 2.svg" alt="" className="w-8 h-8 mx-auto mb-2 opacity-80" />
           <h2 className="text-lg text-[#222] tracking-wider mb-4">식장 위치</h2>
-          <p className="text-base font-medium text-[#222] mb-1">{invitation?.venue_name || '호텔금오산 컨벤션센터'}</p>
+          <p className="text-base font-medium text-[#222] mb-1">{invitation?.venue_name || ''}</p>
           <div className="inline-flex items-center gap-1.5 text-[13px] text-[#666] mb-8">
-            <span>{invitation?.venue_address || '경북 구미시 금오산로 400'}</span>
+            <span>{invitation?.venue_address || ''}</span>
             <button
-              onClick={() => handleCopy(invitation?.venue_address || '경북 구미시 금오산로 400', '주소가')}
+              onClick={() => handleCopy(invitation?.venue_address || '', '주소가')}
               className="text-[#999] hover:text-[#333] text-sm"
             >
               📋

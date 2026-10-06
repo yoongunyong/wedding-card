@@ -18,9 +18,47 @@ export default function ModernTemplate({ invitation }) {
   const [openGroom, setOpenGroom] = useState(true);
   const [openBride, setOpenBride] = useState(true);
 
-  // 실시간 카운트다운 타이머
+  // 실시간 카운트다운 타이머 상태
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, totalDays: 0 });
 
+  // 1. DB 날짜 가져오기 (wedding_date 또는 wedding_date_iso 우선 파싱)
+  const rawDate = invitation?.wedding_date || invitation?.wedding_date_iso || '2026-11-14T14:00';
+
+  // 2. targetDate 파싱 (실패 시 2026-11-14T14:00 기본값)
+  const targetDate = useMemo(() => {
+    const d = new Date(rawDate);
+    return isNaN(d.getTime()) ? new Date('2026-11-14T14:00:00') : d;
+  }, [rawDate]);
+
+  // 3. 한글 날짜 자동 포맷 (예: 2026년 11월 14일 토요일 오후 2시)
+  const formattedKoreanDate = useMemo(() => {
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    const y = targetDate.getFullYear();
+    const m = targetDate.getMonth() + 1;
+    const d = targetDate.getDate();
+    const dayName = days[targetDate.getDay()];
+    const hours = targetDate.getHours();
+    const period = hours < 12 ? '오전' : '오후';
+    const displayHour = hours % 12 === 0 ? 12 : hours % 12;
+    const minutes = targetDate.getMinutes();
+    const minStr = minutes > 0 ? ` ${minutes}분` : '';
+
+    return `${y}년 ${m}월 ${d}일 ${dayName}요일 ${period} ${displayHour}시${minStr}`;
+  }, [targetDate]);
+
+  // 4. 영문 날짜 자동 포맷 (예: Saturday, November 14, 2026 | PM 02:00)
+  const formattedEnglishDate = useMemo(() => {
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const dateStr = targetDate.toLocaleDateString('en-US', options);
+    const hours = targetDate.getHours();
+    const period = hours < 12 ? 'AM' : 'PM';
+    const displayHour = String(hours % 12 === 0 ? 12 : hours % 12).padStart(2, '0');
+    const minutes = String(targetDate.getMinutes()).padStart(2, '0');
+
+    return `${dateStr} | ${period} ${displayHour}:${minutes}`;
+  }, [targetDate]);
+
+  // 브라우저 캐시 스크롤 복원 끄기 & 새로고침 시 최상단 강제 리셋
   useEffect(() => {
     if (typeof window !== 'undefined') {
       if ('scrollRestoration' in window.history) {
@@ -30,9 +68,8 @@ export default function ModernTemplate({ invitation }) {
     }
   }, []);
 
+  // 5. 실시간 카운트다운 타이머
   useEffect(() => {
-    const targetDate = new Date(invitation?.wedding_date_iso || '2027-03-27T11:00:00');
-
     const updateTimer = () => {
       const now = new Date();
       const diff = targetDate.getTime() - now.getTime();
@@ -51,17 +88,16 @@ export default function ModernTemplate({ invitation }) {
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
-  }, [invitation?.wedding_date_iso]);
+  }, [targetDate]);
 
-  // 동적 달력 생성 로직
+  // 6. 동적 달력 생성 로직 (targetDate 기준)
   const calendarData = useMemo(() => {
-    const targetDate = new Date(invitation?.wedding_date_iso || '2027-03-27T11:00:00');
     const year = targetDate.getFullYear();
-    const month = targetDate.getMonth();
+    const month = targetDate.getMonth(); // 0-based
     const weddingDay = targetDate.getDate();
 
-    const firstDayIndex = new Date(year, month, 1).getDay();
-    const totalDays = new Date(year, month + 1, 0).getDate();
+    const firstDayIndex = new Date(year, month, 1).getDay(); // 해당 월 1일의 요일 (0: 일요일)
+    const totalDays = new Date(year, month + 1, 0).getDate(); // 해당 월의 총 일수
 
     return {
       year,
@@ -70,7 +106,7 @@ export default function ModernTemplate({ invitation }) {
       firstDayIndex,
       totalDays,
     };
-  }, [invitation?.wedding_date_iso]);
+  }, [targetDate]);
 
   // 클립보드 복사 함수
   const handleCopy = async (text, label) => {
@@ -86,10 +122,10 @@ export default function ModernTemplate({ invitation }) {
   const handleKakaoShare = () => {
     const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
     const shareTitle = `${invitation?.groom_name || '윤건용'} ♥ ${invitation?.bride_name || '장성경'} 결혼식에 초대합니다`;
-    const shareDesc = `${invitation?.wedding_date || '2026년 11월 14일 토요일 오후 2시'} | ${invitation?.venue_name || '아펠가모 공덕'}`;
+    const shareDesc = `${formattedKoreanDate} | ${invitation?.venue_name || '호텔금오산'}`;
     const shareImg = extra.share_image || mainImage;
     
-    // 위치 보기는 내 청첩장의 지도 앵커(#location) 링크로 연결
+    // 카카오 개발자 콘솔에 등록된 카카오맵 링크
     const mapUrl = `https://map.kakao.com/link/search/${encodeURIComponent(invitation?.venue_name || '호텔금오산')}`;
 
     if (typeof window !== 'undefined' && window.Kakao && window.Kakao.isInitialized()) {
@@ -177,10 +213,10 @@ export default function ModernTemplate({ invitation }) {
 
       {/* 1. 메인 커버 (사파리 상단 상태바까지 배경 일체화) */}
       <section 
-        className="relative w-full h-screen min-h-[100dvh] overflow-hidden flex flex-col justify-between bg-cover bg-center bg-no-repeat"
+        className="relative w-full h-[100lvh] min-h-[100vh] min-h-[100lvh] overflow-hidden flex flex-col justify-between bg-cover bg-center bg-no-repeat"
         style={{ 
           backgroundImage: `url(${mainImage})`,
-          backgroundColor: '#9ca3af' // 사진 상단 톤과 유사한 회색 (사파리 상태바 색상 매칭용)
+          backgroundColor: '#9ca3af'
         }}
       >
         {/* 상단 텍스트 및 하단 이름 가독성을 위한 그라데이션 */}
@@ -198,7 +234,7 @@ export default function ModernTemplate({ invitation }) {
             className="mt-3 text-sm sm:text-base tracking-[0.25em] uppercase font-serif font-light drop-shadow-sm"
             style={{ color: titleColor }}
           >
-            {extra.main_date_en || '2027.03.27 SAT'}
+            {extra.main_date_en || `${calendarData.year}.${String(calendarData.month).padStart(2, '0')}.${String(calendarData.weddingDay).padStart(2, '0')} SAT`}
           </p>
         </div>
 
@@ -287,11 +323,15 @@ export default function ModernTemplate({ invitation }) {
       {/* 3. Wedding Day (동적 캘린더 생성) */}
       <section className="py-20 px-6 bg-[#FAF8F2] text-center border-t border-[#F0EAE0]">
         <h2 className="text-3xl font-serif text-[#2C2928] tracking-wider mb-4">Wedding Day</h2>
+        
+        {/* 한글 날짜 자동 포맷 */}
         <p className="text-sm text-[#333] font-medium tracking-wide">
-          {invitation?.wedding_date || '2027년 3월 27일 토요일 | 오후 11시'}
+          {formattedKoreanDate}
         </p>
+
+        {/* 영문 날짜 자동 포맷 */}
         <p className="text-xs text-[#8C857B] mt-1 mb-8">
-          {extra.main_date_en || 'Saturday, March 27, 2027 | AM 11:00'}
+          {formattedEnglishDate}
         </p>
 
         {/* 동적 캘린더 */}
@@ -307,10 +347,12 @@ export default function ModernTemplate({ invitation }) {
           </div>
 
           <div className="grid grid-cols-7 text-center text-xs gap-y-4 text-[#333] font-sans">
+            {/* 1일 시작 전 빈 칸 */}
             {Array.from({ length: calendarData.firstDayIndex }).map((_, idx) => (
               <span key={`empty-${idx}`} />
             ))}
 
+            {/* 실제 날짜 렌더링 */}
             {Array.from({ length: calendarData.totalDays }).map((_, idx) => {
               const day = idx + 1;
               const isWeddingDay = day === calendarData.weddingDay;
@@ -332,7 +374,7 @@ export default function ModernTemplate({ invitation }) {
           </div>
         </div>
 
-        {/* 카운트다운 */}
+        {/* 실시간 카운트다운 */}
         <div className="grid grid-cols-4 gap-2.5 max-w-[320px] mx-auto mt-12 mb-8">
           {[
             { label: 'DAYS', val: timeLeft.days },
@@ -456,7 +498,7 @@ export default function ModernTemplate({ invitation }) {
         <div className="px-6">
           <img src="/templates/modern/미니멀 웨딩 아이콘 6종 세트 2.svg" alt="" className="w-8 h-8 mx-auto mb-2 opacity-80" />
           <h2 className="text-lg text-[#222] tracking-wider mb-4">식장 위치</h2>
-          <p className="text-base font-medium text-[#222] mb-1">{invitation?.venue_name || ''}</p>
+          <p className="text-base font-medium text-[#222] mb-1">{invitation?.venue_name || '호텔금오산 컨벤션센터'}</p>
           <div className="inline-flex items-center gap-1.5 text-[13px] text-[#666] mb-8">
             <span>{invitation?.venue_address || ''}</span>
             <button
@@ -671,7 +713,7 @@ export default function ModernTemplate({ invitation }) {
             신랑 {invitation?.groom_name || '윤건용'} ♥ 신부 {invitation?.bride_name || '장성경'}
           </p>
           <div className="w-full h-[1px] bg-stone-100 mb-4" />
-          <p className="text-xs text-[#555] mb-1">{invitation?.wedding_date || '2027년 3월 27일 토요일 오전 11시'}</p>
+          <p className="text-xs text-[#555] mb-1">{formattedKoreanDate}</p>
           <p className="text-xs text-[#777]">{invitation?.venue_name || '호텔금오산 컨벤션센터'}</p>
         </div>
 

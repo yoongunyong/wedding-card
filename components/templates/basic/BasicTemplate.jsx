@@ -5,7 +5,7 @@ import Script from 'next/script';
 import RsvpModal from '@/components/RsvpModal';
 import KakaoMap from '@/components/KakaoMap';
 
-export default function ModernTemplate({ invitation }) {
+export default function BasicTemplate({ invitation }) {
   const extra = invitation?.extra_data || {};
 
   // 본문 메인 풀스크린 사진 (extra_data.main_image 우선 사용)
@@ -397,7 +397,7 @@ export default function ModernTemplate({ invitation }) {
 
       {/* 4. 웨딩 갤러리 (2열 비대칭 매거진 앨범 레이아웃) */}
       <section className="py-20 px-4 bg-[#FCFBF7] text-center border-t border-[#F2ECE1]">
-        <img src="/templates/modern/미니멀 웨딩 아이콘 6종 세트 1.svg" alt="" className="w-16 h-16 sm:w-14 sm:h-14 mx-auto mb-3.5 object-contain opacity-90" />
+        <img src="/templates/basic/미니멀 웨딩 아이콘 6종 세트 1.svg" alt="" className="w-16 h-16 sm:w-14 sm:h-14 mx-auto mb-3.5 object-contain opacity-90" />
         <h2 className="text-lg text-[#222] tracking-wider mb-8">웨딩 갤러리</h2>
 
         <div className="grid grid-cols-2 gap-2 max-w-[380px] mx-auto items-start">
@@ -496,7 +496,7 @@ export default function ModernTemplate({ invitation }) {
       {/* 5. 식장 위치 & 지도 & 교통 안내 */}
       <section id="location" className="py-20 bg-[#FCFBF7] text-center border-t border-[#F2ECE1]">
         <div className="px-6">
-          <img src="/templates/modern/미니멀 웨딩 아이콘 6종 세트 2.svg" alt="" className="w-16 h-16 sm:w-14 sm:h-14 mx-auto mb-3.5 object-contain opacity-90" />
+          <img src="/templates/basic/미니멀 웨딩 아이콘 6종 세트 2.svg" alt="" className="w-16 h-16 sm:w-14 sm:h-14 mx-auto mb-3.5 object-contain opacity-90" />
           <h2 className="text-lg text-[#222] tracking-wider mb-4">식장 위치</h2>
           <p className="text-base font-medium text-[#222] mb-1">{invitation?.venue_name || '호텔금오산 컨벤션센터'}</p>
           <div className="inline-flex items-center gap-1.5 text-[13px] text-[#666] mb-8">
@@ -566,7 +566,7 @@ export default function ModernTemplate({ invitation }) {
             <div className="flex items-center gap-2 mb-3.5">
               <span className="font-medium text-[15px] text-[#222]">주차안내</span>
               <img 
-                src="/templates/modern/transportation-parking.svg" 
+                src="/templates/basic/transportation-parking.svg" 
                 alt="주차안내" 
                 className="w-4 h-4 object-contain opacity-70" 
               />
@@ -582,7 +582,7 @@ export default function ModernTemplate({ invitation }) {
             <div className="flex items-center gap-2 mb-3.5">
               <span className="font-medium text-[15px] text-[#222]">자차</span>
               <img 
-                src="/templates/modern/transportation-of-car.svg" 
+                src="/templates/basic/transportation-of-car.svg" 
                 alt="자차" 
                 className="w-4 h-4 object-contain opacity-70" 
               />
@@ -598,7 +598,7 @@ export default function ModernTemplate({ invitation }) {
             <div className="flex items-center gap-2 mb-3.5">
               <span className="font-medium text-[15px] text-[#222]">버스</span>
               <img 
-                src="/templates/modern/transportation-of-bus.svg" 
+                src="/templates/basic/transportation-of-bus.svg" 
                 alt="버스" 
                 className="w-4 h-4 object-contain opacity-70" 
               />
@@ -614,7 +614,7 @@ export default function ModernTemplate({ invitation }) {
             <div className="flex items-center gap-2 mb-3.5">
               <span className="font-medium text-[15px] text-[#222]">지하철</span>
               <img 
-                src="/templates/modern/transportation-of-subway.svg" 
+                src="/templates/basic/transportation-of-subway.svg" 
                 alt="지하철" 
                 className="w-4 h-4 object-contain opacity-70" 
               />
@@ -629,7 +629,7 @@ export default function ModernTemplate({ invitation }) {
 
       {/* 6. 마음 전하실 곳 */}
       <section className="py-20 px-6 bg-[#EFECE4] text-center">
-        <img src="/templates/modern/미니멀 웨딩 아이콘 6종 세트 3.svg" alt="" className="w-16 h-16 sm:w-14 sm:h-14 mx-auto mb-3.5 object-contain opacity-90" />
+        <img src="/templates/basic/미니멀 웨딩 아이콘 6종 세트 3.svg" alt="" className="w-16 h-16 sm:w-14 sm:h-14 mx-auto mb-3.5 object-contain opacity-90" />
         <h2 className="text-lg text-[#222] tracking-wider mb-8">마음 전하실 곳</h2>
 
         <div className="bg-white rounded-xl overflow-hidden shadow-sm text-left mb-4 border border-[#E6E1D6]">
@@ -711,7 +711,7 @@ export default function ModernTemplate({ invitation }) {
 
       {/* 7. 정보 (식사안내) */}
       <section className="py-20 px-6 bg-white text-center border-t border-[#F2ECE1]">
-        <img src="/templates/modern/미니멀 웨딩 아이콘 6종 세트 4.svg" alt="" className="w-16 h-16 sm:w-14 sm:h-14 mx-auto mb-3.5 object-contain opacity-90" />
+        <img src="/templates/basic/미니멀 웨딩 아이콘 6종 세트 4.svg" alt="" className="w-16 h-16 sm:w-14 sm:h-14 mx-auto mb-3.5 object-contain opacity-90" />
         <h2 className="text-lg text-[#222] tracking-wider mb-6">정보</h2>
 
         <div className="relative max-w-[320px] mx-auto">
@@ -732,7 +732,7 @@ export default function ModernTemplate({ invitation }) {
 
       {/* 8. 참석 의사 (RSVP) */}
       <section className="py-24 px-6 bg-[#FCFBF7] text-center border-t border-[#F2ECE1]">
-        <img src="/templates/modern/미니멀 웨딩 아이콘 6종 세트 5.svg" alt="" className="w-16 h-16 sm:w-14 sm:h-14 mx-auto mb-3.5 object-contain opacity-90" />
+        <img src="/templates/basic/미니멀 웨딩 아이콘 6종 세트 5.svg" alt="" className="w-16 h-16 sm:w-14 sm:h-14 mx-auto mb-3.5 object-contain opacity-90" />
         <h2 className="text-lg text-[#222] tracking-wider mb-1">참석 의사</h2>
         <p className="text-xs text-[#777] font-light mb-8">모든 분들을 소중하게 모실 수 있도록 전해주세요</p>
 
@@ -764,7 +764,7 @@ export default function ModernTemplate({ invitation }) {
 
       {/* 9. 방명록 */}
       <section className="py-20 px-6 bg-[#EFECE4] text-center">
-        <img src="/templates/modern/미니멀 웨딩 아이콘 6종 세트 6.svg" alt="" className="w-16 h-16 sm:w-14 sm:h-14 mx-auto mb-3.5 object-contain opacity-90" />
+        <img src="/templates/basic/미니멀 웨딩 아이콘 6종 세트 6.svg" alt="" className="w-16 h-16 sm:w-14 sm:h-14 mx-auto mb-3.5 object-contain opacity-90" />
         <h2 className="text-lg text-[#222] tracking-wider mb-1">방명록</h2>
         <p className="text-xs text-[#777] font-light mb-8">저희 둘에게 따뜻한 메시지를 남겨주세요.</p>
 
@@ -818,7 +818,7 @@ export default function ModernTemplate({ invitation }) {
           className="w-full py-3.5 px-4 bg-[#FEE500] hover:bg-[#FADA0A] text-[#191919] font-medium text-xs rounded-xl flex items-center justify-between font-sans transition-colors shadow-sm"
         >
           <span>카카오톡으로 공유하기</span>
-          <img src="/templates/modern/카카오톡 공유하기 아이콘.svg" alt="" className="w-4 h-4" />
+          <img src="/templates/basic/카카오톡 공유하기 아이콘.svg" alt="" className="w-4 h-4" />
         </button>
         <button
           onClick={() => handleCopy(window.location.href, '청첩장 주소가')}

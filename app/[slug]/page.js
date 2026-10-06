@@ -1,10 +1,11 @@
 import { supabase } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import BgmPlayer from '@/components/BgmPlayer';
-import ModernTemplate from '@/components/templates/modern/ModernTemplate';
+import BasicTemplate from '@/components/templates/basic/BasicTemplate';
 
 const TEMPLATE_MAP = {
-  modern: ModernTemplate,
+  basic: BasicTemplate,
+  modern: BasicTemplate, // 기존 DB 데이터 하위 호환
 };
 
 // SNS/카카오톡 공유 메타데이터 (OG 태그)
@@ -69,7 +70,7 @@ export default async function WeddingCardPage({ params }) {
     return notFound();
   }
 
-  const CurrentTemplate = TEMPLATE_MAP[invitation.template_type] || ModernTemplate;
+  const CurrentTemplate = TEMPLATE_MAP[invitation.template_type] || BasicTemplate;
 
   return (
     <main className="min-h-screen bg-stone-100 sm:py-8 flex justify-center p-0 m-0">

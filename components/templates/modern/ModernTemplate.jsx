@@ -22,6 +22,15 @@ export default function ModernTemplate({ invitation }) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, totalDays: 0 });
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'manual';
+      }
+      window.scrollTo(0, 0);
+    }
+  }, []);
+
+  useEffect(() => {
     const targetDate = new Date(invitation?.wedding_date_iso || '2027-03-27T11:00:00');
 
     const updateTimer = () => {
@@ -169,17 +178,18 @@ export default function ModernTemplate({ invitation }) {
         }
       `}</style>
 
-      {/* 1. 메인 커버 (본문 최상단 전체화면 100dvh - main.png) */}
-      <section className="relative w-full h-[100dvh] min-h-[100vh] overflow-hidden flex flex-col justify-between">
-        <img
-          src={mainImage}
-          alt="Wedding Main Cover"
-          className="absolute inset-0 w-full h-full object-cover object-center"
-        />
+      {/* 1. 메인 커버 (사파리 상단 상태바까지 배경 일체화) */}
+      <section 
+        className="relative w-full h-screen min-h-[100dvh] overflow-hidden flex flex-col justify-between bg-cover bg-center bg-no-repeat"
+        style={{ 
+          backgroundImage: `url(${mainImage})`,
+          backgroundColor: '#9ca3af' // 사진 상단 톤과 유사한 회색 (사파리 상태바 색상 매칭용)
+        }}
+      >
+        {/* 상단 텍스트 및 하단 이름 가독성을 위한 그라데이션 */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/40 pointer-events-none" />
 
-        <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/40" />
-
-        {/* 상단 캘리그라피 문구 (we are getting married!) & 날짜 - Safe Area 대응 패딩 */}
+        {/* 상단 캘리그라피 문구 (아이폰 노치 아래로 여유 있게 배치) */}
         <div className="relative z-10 pt-[calc(env(safe-area-inset-top,0px)+3rem)] px-6 text-center select-none">
           <p
             className="calligraphy-title text-5xl sm:text-6xl tracking-normal leading-[1.15] drop-shadow-md"
@@ -195,7 +205,7 @@ export default function ModernTemplate({ invitation }) {
           </p>
         </div>
 
-        {/* 하단 좌우 신부/신랑 이름 & 스크롤 유도 화살표 - Safe Area 대응 패딩 */}
+        {/* 하단 좌우 이름 & 화살표 */}
         <div className="relative z-10 pb-[calc(env(safe-area-inset-bottom,0px)+2rem)] px-8 space-y-4">
           <div className="flex justify-between text-white/95 text-base tracking-wider font-light drop-shadow">
             <span>{invitation?.bride_name || '장성경'}</span>

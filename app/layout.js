@@ -22,7 +22,7 @@ export const metadata = {
   description: '소중한 분들을 초대합니다.',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'black-translucent', // 사파리 상태바를 반투명 오버레이로 전환
+    statusBarStyle: 'black-translucent', 
   },
 };
 

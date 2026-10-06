@@ -8,6 +8,11 @@ export default function BgmPlayer({ bgmUrl, coverImage }) {
   const audioRef = useRef(null);
 
   const handleStart = () => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo(0, 0);
+    }
+
+    // 2. 오디오 재생 처리
     if (audioRef.current) {
       audioRef.current
         .play()
@@ -80,7 +85,6 @@ export default function BgmPlayer({ bgmUrl, coverImage }) {
       )}
 
       {/* 2. 우측 상단 오디오 이퀄라이저 파동 버튼 */}
-      {/* 2. 우측 상단 오디오 이퀄라이저 파동 버튼 */}
       {hasInteracted && bgmUrl && (
         <>
           <style jsx>{`
@@ -109,10 +113,9 @@ export default function BgmPlayer({ bgmUrl, coverImage }) {
           <button
             onClick={togglePlay}
             aria-label={isPlaying ? '음악 정지' : '음악 재생'}
-            /* w-10 h-10 (40px) -> w-8 h-8 (32px)로 축소 */
-            className="fixed top-5 right-5 z-40 flex items-center justify-center w-8 h-8 rounded-full bg-black/75 hover:bg-black text-white shadow-md active:scale-95 transition-all"
+            style={{ top: 'calc(env(safe-area-inset-top, 0px) + 1.25rem)' }}
+            className="fixed right-5 z-40 flex items-center justify-center w-8 h-8 rounded-full bg-black/75 hover:bg-black text-white shadow-md active:scale-95 transition-all"
           >
-            {/* 내부 막대 바 크기 축소 (너비 2px, 간격 2.5px) */}
             <div className="flex items-center justify-center gap-[2.5px] h-4 w-4">
               <span
                 className={`w-[2px] bg-white rounded-full transition-all duration-300 ${

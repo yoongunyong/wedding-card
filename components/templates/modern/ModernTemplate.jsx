@@ -560,40 +560,68 @@ export default function ModernTemplate({ invitation }) {
         </div>
 
         {/* 교통편 상세 카드 목록 */}
-        <div className="bg-[#F8F7F4] py-10 px-6 space-y-4 text-left font-sans">
-          <div className="bg-white p-5 rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.03)] border border-stone-100">
-            <p className="font-semibold text-[13px] text-[#222] mb-3 pb-2 border-b border-stone-100 flex items-center gap-1.5">
-              주차안내 <span className="text-xs text-stone-400">🅿</span>
-            </p>
-            <p className="text-xs text-[#555] leading-relaxed break-keep">
+        <div className="bg-[#F8F7F4] py-8 px-5 space-y-3.5 text-left font-sans">
+          {/* 1. 주차안내 */}
+          <div className="bg-white p-5 rounded-[4px] border border-[#EAE6DE]">
+            <div className="flex items-center gap-2 mb-3.5">
+              <span className="font-medium text-[15px] text-[#222]">주차안내</span>
+              <img 
+                src="/templates/modern/transportation-parking.svg" 
+                alt="주차안내" 
+                className="w-4 h-4 object-contain opacity-70" 
+              />
+            </div>
+            <div className="w-full h-[1px] bg-[#EAE6DE] mb-3.5" />
+            <p className="text-[12px] text-[#555] leading-[1.8] break-keep font-light">
               {extra.parking_info || '주차공간이 협소하오니, 되도록 대중교통을 이용해 주시기 바랍니다.\n특히, 주말은 오전 시간대에 만차가 되니 부득이하게 주차가 필요하신 분들은 예식장에 전화 부탁드립니다.'}
             </p>
           </div>
 
-          <div className="bg-white p-5 rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.03)] border border-stone-100">
-            <p className="font-semibold text-[13px] text-[#222] mb-3 pb-2 border-b border-stone-100 flex items-center gap-1.5">
-              자차 <span className="text-xs text-stone-400">🚗</span>
-            </p>
-            <p className="text-xs text-[#555] leading-relaxed break-keep">
+          {/* 2. 자차 */}
+          <div className="bg-white p-5 rounded-[4px] border border-[#EAE6DE]">
+            <div className="flex items-center gap-2 mb-3.5">
+              <span className="font-medium text-[15px] text-[#222]">자차</span>
+              <img 
+                src="/templates/modern/transportation-of-car.svg" 
+                alt="자차" 
+                className="w-4 h-4 object-contain opacity-70" 
+              />
+            </div>
+            <div className="w-full h-[1px] bg-[#EAE6DE] mb-3.5" />
+            <p className="text-[12px] text-[#555] leading-[1.8] break-keep font-light">
               {extra.car_info || `네비게이션 : '${invitation?.venue_name || '금오산 호텔'}' 검색\n${invitation?.venue_address || '경북 구미시 금오산로 400 호텔금오산 컨벤션센터'}`}
             </p>
           </div>
 
-          <div className="bg-white p-5 rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.03)] border border-stone-100">
-            <p className="font-semibold text-[13px] text-[#222] mb-3 pb-2 border-b border-stone-100 flex items-center gap-1.5">
-              버스 <span className="text-xs text-stone-400">🚌</span>
-            </p>
-            <p className="text-xs text-[#555] leading-relaxed whitespace-pre-line break-keep">
-              {extra.bus_info || '172 (우리은행종로지점 방면)\n서울광장역 하차 → 도보 5분\n\n405 (롯데백화점 방면)\n서울광장역 하차 → 도보 5분'}
+          {/* 3. 버스 */}
+          <div className="bg-white p-5 rounded-[4px] border border-[#EAE6DE]">
+            <div className="flex items-center gap-2 mb-3.5">
+              <span className="font-medium text-[15px] text-[#222]">버스</span>
+              <img 
+                src="/templates/modern/transportation-of-bus.svg" 
+                alt="버스" 
+                className="w-4 h-4 object-contain opacity-70" 
+              />
+            </div>
+            <div className="w-full h-[1px] bg-[#EAE6DE] mb-3.5" />
+            <p className="text-[12px] text-[#555] leading-[1.8] whitespace-pre-line break-keep font-light">
+              {extra.bus_info || '172(우리은행종로지점 방면)\n서울광장역 하차 → 데미타스커피 왼쪽 방면 → 도보 5분\n\n405(롯데백화점 방면)\n서울광장역 하차 → 데미타스커피 왼쪽 방면 → 도보 5분\n\n472(을지로입구 방면)\n시청역 하차 → 도보 5분'}
             </p>
           </div>
 
-          <div className="bg-white p-5 rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.03)] border border-stone-100">
-            <p className="font-semibold text-[13px] text-[#222] mb-3 pb-2 border-b border-stone-100 flex items-center gap-1.5">
-              지하철 <span className="text-xs text-stone-400">🚇</span>
-            </p>
-            <p className="text-xs text-[#555] leading-relaxed whitespace-pre-line break-keep">
-              {extra.subway_info || '[1호선] 시청역 4번 출구\n[2호선] 을지로입구역 하차 후 시청 방면'}
+          {/* 4. 지하철 */}
+          <div className="bg-white p-5 rounded-[4px] border border-[#EAE6DE]">
+            <div className="flex items-center gap-2 mb-3.5">
+              <span className="font-medium text-[15px] text-[#222]">지하철</span>
+              <img 
+                src="/templates/modern/transportation-of-subway.svg" 
+                alt="지하철" 
+                className="w-4 h-4 object-contain opacity-70" 
+              />
+            </div>
+            <div className="w-full h-[1px] bg-[#EAE6DE] mb-3.5" />
+            <p className="text-[12px] text-[#555] leading-[1.8] whitespace-pre-line break-keep font-light">
+              {extra.subway_info || '[1호선] 시청역 4번 출구\n[2호선] 시청역 4번 출구\n[2호선] 을지로입구역 하차 후 서울시청 방면 지하 연결출구'}
             </p>
           </div>
         </div>

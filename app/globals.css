@@ -3,13 +3,12 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --font-pretendard: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@theme {
+  --font-sans: var(--font-pretendard);
+  --font-serif: var(--font-serif-kr), "Noto Serif KR", serif;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,10 +21,16 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-pretendard);
 }
 
-/* 세리프(명조) 폰트 클래스 매핑 */
+/* 세리프(명조) 폰트 클래스 매핑 - 주요 섹션 제목 유지용 (초대합니다, 식장 위치 등) */
 .font-serif {
-  font-family: var(--font-serif-kr), serif, -apple-system, BlinkMacSystemFont;
+  font-family: var(--font-serif-kr), "Noto Serif KR", serif, -apple-system, BlinkMacSystemFont !important;
+}
+
+/* 프리텐다드(고딕) 폰트 클래스 매핑 - 본문 및 세부 내용용 */
+.font-sans,
+.font-pretendard {
+  font-family: var(--font-pretendard) !important;
 }

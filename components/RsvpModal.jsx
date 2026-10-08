@@ -25,6 +25,7 @@ export default function RsvpModal({ invitationId, onClose }) {
         name: name.trim(),
         companion_count: attend ? (parseInt(companionCount, 10) || 0) : 0,
         phone: phone.trim(),
+        meal: null,
       },
     ]);
 

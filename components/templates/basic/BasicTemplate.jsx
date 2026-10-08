@@ -72,20 +72,7 @@ export default function BasicTemplate({ invitation }) {
     return null;
   };
 
-  // 갤러리 기본 이미지 목록 (사용자 Supabase Storage 등록 경로)
-  const defaultGalleryImages = [
-    'https://sfnsxkkxvplrlxbvenme.supabase.co/storage/v1/object/public/wedding-images/kkeomuk/photo_01.png',
-    'https://sfnsxkkxvplrlxbvenme.supabase.co/storage/v1/object/public/wedding-images/kkeomuk/photo_02.png',
-    'https://sfnsxkkxvplrlxbvenme.supabase.co/storage/v1/object/public/wedding-images/kkeomuk/photo_03.png',
-    'https://sfnsxkkxvplrlxbvenme.supabase.co/storage/v1/object/public/wedding-images/kkeomuk/photo_04.png',
-    'https://sfnsxkkxvplrlxbvenme.supabase.co/storage/v1/object/public/wedding-images/kkeomuk/photo_05.png',
-    'https://sfnsxkkxvplrlxbvenme.supabase.co/storage/v1/object/public/wedding-images/kkeomuk/photo_06.png',
-    'https://sfnsxkkxvplrlxbvenme.supabase.co/storage/v1/object/public/wedding-images/kkeomuk/photo_07.png',
-    'https://sfnsxkkxvplrlxbvenme.supabase.co/storage/v1/object/public/wedding-images/kkeomuk/photo_08.png',
-  ];
-
-  const parsedGallery = parseGalleryImages(invitation?.gallery_images);
-  const initialGalleryImages = parsedGallery || defaultGalleryImages;
+  const initialGalleryImages = parseGalleryImages(invitation?.gallery_images) || [];
 
   // 최소 8장 기본 노출, 더보기 클릭 시 전체 노출
   const displayedGalleryImages = showMorePhotos ? initialGalleryImages : initialGalleryImages.slice(0, 8);
@@ -205,25 +192,20 @@ export default function BasicTemplate({ invitation }) {
   }, [targetDate]);
 
   // 2. 정보(식사/셔틀/피로연/답례품 등) 동적 안내 카드 리스트
-  const defaultInfoCards = [
-    {
-      title: '식사안내',
-      subtitle: 'PM 14:00~ 16:00 뷔페 이용 가능',
-      content: extra.meal_info || '교환권을 스테이크 코너에 제시해주시면 안심 스테이크가 제공됩니다.',
-    },
-    {
-      title: '셔틀버스 안내',
-      subtitle: '운행 시간 11:00~ 16:00',
-      content: extra.shuttle_info || '셔틀버스 15분-20분 간격으로 운행하오니 이용시 참고해 주시기 바랍니다.',
-    },
-  ];
-
   const infoCards = useMemo(() => {
     if (Array.isArray(invitation?.info_notices) && invitation.info_notices.length > 0) {
       return invitation.info_notices;
     }
-    return defaultInfoCards;
-  }, [invitation?.info_notices]);
+    // 하위 호환: extra_data에 직접 값이 들어있던 경우만 반영
+    const legacy = [];
+    if (extra.meal_info) {
+      legacy.push({ title: '식사안내', subtitle: '', content: extra.meal_info });
+    }
+    if (extra.shuttle_info) {
+      legacy.push({ title: '셔틀버스 안내', subtitle: '', content: extra.shuttle_info });
+    }
+    return legacy;
+  }, [invitation?.info_notices, extra.meal_info, extra.shuttle_info]);
 
   const [infoIndex, setInfoIndex] = useState(0);
 
@@ -236,35 +218,26 @@ export default function BasicTemplate({ invitation }) {
   }, [infoCards.length]);
 
   // 3. 오시는 길 (교통수단) 동적 리스트
-  const defaultTransportation = [
-    {
-      type: 'parking',
-      title: '주차안내',
-      content: extra.transport_parking || '주차공간이 협소하오니, 되도록 대중교통을 이용해 주시기 바랍니다. 특히, 주말은 오전 시간대에 만차가 되니 부득이하게 주차가 필요하신 분들은 예식장에 전화 부탁드립니다.',
-    },
-    {
-      type: 'car',
-      title: '자차',
-      content: extra.transport_car || "네비게이션 : '금오산 호텔' 검색\n경북 구미시 금오산로 400 호텔금오산 컨벤션센터",
-    },
-    {
-      type: 'bus',
-      title: '버스',
-      content: extra.transport_bus || '172(우리은행종로지점 방면)\n서울광장역 하차 → 도보 5분\n\n405(롯데백화점 방면)\n서울광장역 하차 → 도보 5분',
-    },
-    {
-      type: 'subway',
-      title: '지하철',
-      content: extra.transport_subway || '[1호선] 시청역 4번 출구\n[2호선] 시청역 4번 출구\n[2호선] 을지로입구역 하차 후 지하 연결출구',
-    },
-  ];
-
   const transportationList = useMemo(() => {
     if (Array.isArray(invitation?.transportation) && invitation.transportation.length > 0) {
       return invitation.transportation;
     }
-    return defaultTransportation;
-  }, [invitation?.transportation]);
+    // 하위 호환: extra_data에 직접 값이 들어있던 경우만 반영
+    const legacy = [];
+    if (extra.transport_parking) {
+      legacy.push({ type: 'parking', title: '주차안내', content: extra.transport_parking });
+    }
+    if (extra.transport_car) {
+      legacy.push({ type: 'car', title: '자차', content: extra.transport_car });
+    }
+    if (extra.transport_bus) {
+      legacy.push({ type: 'bus', title: '버스', content: extra.transport_bus });
+    }
+    if (extra.transport_subway) {
+      legacy.push({ type: 'subway', title: '지하철', content: extra.transport_subway });
+    }
+    return legacy;
+  }, [invitation?.transportation, extra.transport_parking, extra.transport_car, extra.transport_bus, extra.transport_subway]);
 
   const getTransportIcon = (type) => {
     switch (type) {
@@ -283,9 +256,7 @@ export default function BasicTemplate({ invitation }) {
 
   // 4. 방명록 데이터 & 자동 롤링 슬라이더
   const defaultGuestbook = [
-    { id: '1', author: '장성경', content: '두 사람 꽃길 결혼 생활 예약🌹\n행복과 축복으로 가득하길 바래🤍', created_at: '2027.10.21' },
-    { id: '2', author: '윤건용', content: '두 분의 새로운 시작을\n진심으로 축하드려요.', created_at: '2027.10.21' },
-    { id: '3', author: '떡만이', content: '드디어 결혼이라니 너무 축하해!\n예쁜 추억 많이 만들면서 행복하게 살아~', created_at: '2027.10.21' },
+    { id: '1', author: '축하 메시지', content: '두 분의 새로운 시작을\n진심으로 축하드립니다.🤍', created_at: '' },
   ];
   const [guestbookList, setGuestbookList] = useState(defaultGuestbook);
   const [guestbookIndex, setGuestbookIndex] = useState(0);
@@ -318,14 +289,10 @@ export default function BasicTemplate({ invitation }) {
   // 계좌 데이터
   const groomAccounts = (invitation?.accounts || []).filter((a) => a.group === '신랑측' || a.side === 'groom');
   const brideAccounts = (invitation?.accounts || []).filter((a) => a.group === '신부측' || a.side === 'bride');
-  const defaultAccounts = [
-    { bank: '하나은행', number: '504-910579-89707', name: invitation?.groom_name || '권기득' },
-    { bank: '신한은행', number: '504-910579-89707', name: invitation?.groom_name || '권기득' },
-    { bank: '우리은행', number: '504-910579-89707', name: invitation?.groom_name || '권기득' },
-  ];
 
   // 클립보드 복사 함수
   const handleCopy = async (text, label) => {
+    if (!text) return;
     try {
       await navigator.clipboard.writeText(text);
       alert(`${label} 복사되었습니다.`);
@@ -337,10 +304,10 @@ export default function BasicTemplate({ invitation }) {
   // 카카오톡 공유
   const handleKakaoShare = () => {
     const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
-    const shareTitle = `${invitation?.groom_name || '권기득'} ♥ ${invitation?.bride_name || '장민기'} 결혼식에 초대합니다`;
-    const shareDesc = `${formattedKoreanDate} | ${invitation?.venue_name || '호텔금오산 컨벤션센터'}`;
+    const coupleText = [invitation?.groom_name, invitation?.bride_name].filter(Boolean).join(' ♥ ');
+    const shareTitle = coupleText ? `${coupleText} 결혼식에 초대합니다` : '소중한 결혼식에 초대합니다';
+    const shareDesc = [formattedKoreanDate, invitation?.venue_name].filter(Boolean).join(' | ');
     const shareImg = extra.share_image || mainImage;
-    const mapUrl = `https://map.kakao.com/link/search/${encodeURIComponent(invitation?.venue_name || '호텔금오산')}`;
 
     if (typeof window !== 'undefined' && window.Kakao && window.Kakao.isInitialized()) {
       window.Kakao.Share.sendDefault({
@@ -424,7 +391,7 @@ export default function BasicTemplate({ invitation }) {
                 We are getting married
               </h1>
               <p className="mt-2 text-xs sm:text-sm text-white/90 font-sans tracking-[0.25em] drop-shadow-sm">
-                {extra.main_date_en || `${calendarData.year}.${String(calendarData.month).padStart(2, '0')}.${String(calendarData.weddingDay).padStart(2, '0')} SAT`}
+                {extra.main_date_en || `${calendarData.year}.${String(calendarData.month).padStart(2, '0')}.${String(calendarData.weddingDay).padStart(2, '0')} ${['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][targetDate.getDay()]}`}
               </p>
             </div>
 
@@ -436,9 +403,11 @@ export default function BasicTemplate({ invitation }) {
               >
                 Welcome to
               </p>
-              <p className="font-cormorant italic text-2xl sm:text-3xl text-white font-medium tracking-wide drop-shadow-md mt-1">
-                {invitation?.bride_name_en || ' '} &amp; {invitation?.groom_name_en || ' '}
-              </p>
+              {([invitation?.bride_name_en, invitation?.groom_name_en].some(Boolean)) && (
+                <p className="font-cormorant italic text-2xl sm:text-3xl text-white font-medium tracking-wide drop-shadow-md mt-1">
+                  {[invitation?.bride_name_en, invitation?.groom_name_en].filter(Boolean).join(' & ')}
+                </p>
+              )}
             </div>
           </>
         )}
@@ -464,19 +433,27 @@ export default function BasicTemplate({ invitation }) {
           {/* 부모님 & 신랑신부 성함 */}
           <div className="space-y-2 text-[14px] font-sans text-stone-700 font-normal mb-8 leading-relaxed">
             <p>
-              <span className="text-stone-500">{invitation?.groom_father || '신랑아버지'} · {invitation?.groom_mother || '신랑 어머니'}의 아들</span>{' '}
-              <strong className="font-medium text-stone-900">{invitation?.groom_name || '권기득'}</strong>
+              {(invitation?.groom_father || invitation?.groom_mother) && (
+                <span className="text-stone-500">
+                  {[invitation?.groom_father, invitation?.groom_mother].filter(Boolean).join(' · ')}의 아들{' '}
+                </span>
+              )}
+              <strong className="font-medium text-stone-900">{invitation?.groom_name || ''}</strong>
             </p>
             <p>
-              <span className="text-stone-500">{invitation?.bride_father || '장철규'} · {invitation?.bride_mother || '이정자'}의 딸</span>{' '}
-              <strong className="font-medium text-stone-900">{invitation?.bride_name || '장민기'}</strong>
+              {(invitation?.bride_father || invitation?.bride_mother) && (
+                <span className="text-stone-500">
+                  {[invitation?.bride_father, invitation?.bride_mother].filter(Boolean).join(' · ')}의 딸{' '}
+                </span>
+              )}
+              <strong className="font-medium text-stone-900">{invitation?.bride_name || ''}</strong>
             </p>
           </div>
 
           {/* 축하 연락하기 버튼 */}
           <button
             onClick={() => setShowContactModal(true)}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-700 text-sm font-medium rounded-full font-sans transition-colors mb-16 shadow-2xs"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-700 text-sm font-medium rounded-full font-sans transition-colors mb-16 shadow-2xs cursor-pointer"
           >
             <span>축하 연락하기</span>
             <span>📞</span>
@@ -501,7 +478,7 @@ export default function BasicTemplate({ invitation }) {
                   />
                 </div>
                 <p className="text-xs font-sans text-stone-500">신랑</p>
-                <p className="text-sm font-sans font-medium text-stone-800">{invitation?.groom_name || '권기득'}</p>
+                <p className="text-sm font-sans font-medium text-stone-800">{invitation?.groom_name || ''}</p>
               </div>
 
               {/* 신부 */}
@@ -514,7 +491,7 @@ export default function BasicTemplate({ invitation }) {
                   />
                 </div>
                 <p className="text-xs font-sans text-stone-500">신부</p>
-                <p className="text-sm font-sans font-medium text-stone-800">{invitation?.bride_name || '장민기'}</p>
+                <p className="text-sm font-sans font-medium text-stone-800">{invitation?.bride_name || ''}</p>
               </div>
             </div>
           </div>
@@ -528,7 +505,7 @@ export default function BasicTemplate({ invitation }) {
             Wedding Day
           </h2>
           <p className="text-sm font-sans text-stone-700 font-medium mb-1">
-            {calendarData.year}년 {calendarData.month}월 {calendarData.weddingDay}일 토요일 | 오전 11시
+            {formattedKoreanDate}
           </p>
           <p className="text-xs text-stone-400 font-sans tracking-wide mb-8">
             {formattedEnglishDate}
@@ -601,7 +578,9 @@ export default function BasicTemplate({ invitation }) {
 
             {/* D-Day 남은 일수 강조 문구 */}
             <p className="text-xs text-stone-600 font-sans">
-              {invitation?.groom_name || '기득'} ♥ {invitation?.bride_name || '민기'}님의 결혼식이{' '}
+              {(invitation?.groom_name || invitation?.bride_name) 
+                ? `${[invitation?.groom_name, invitation?.bride_name].filter(Boolean).join(' ♥ ')}님의` 
+                : '두 분의'} 결혼식이{' '}
               <strong className="text-[#E0645A] font-semibold">{timeLeft.totalDays}일</strong> 남았습니다.
             </p>
           </ScrollReveal>
@@ -609,72 +588,74 @@ export default function BasicTemplate({ invitation }) {
       </section>
 
       {/* 4. 웨딩 갤러리 (Image 4) */}
-      <section className="py-20 px-4 bg-white text-center border-t border-[#F2ECE1]">
-        <ScrollReveal>
-          {/* 상단 손그림 드로잉 아이콘 1 */}
-          <img 
-            src="/templates/basic/미니멀 웨딩 아이콘 6종 세트 1.svg" 
-            alt="갤러리" 
-            className="w-16 h-16 mx-auto mb-3.5 object-contain opacity-90" 
-          />
-          <h2 className="text-lg font-serif text-stone-800 tracking-wider mb-8">
-            웨딩 갤러리
-          </h2>
-        </ScrollReveal>
+      {initialGalleryImages.length > 0 && (
+        <section className="py-20 px-4 bg-white text-center border-t border-[#F2ECE1]">
+          <ScrollReveal>
+            {/* 상단 손그림 드로잉 아이콘 1 */}
+            <img 
+              src="/templates/basic/미니멀 웨딩 아이콘 6종 세트 1.svg" 
+              alt="갤러리" 
+              className="w-16 h-16 mx-auto mb-3.5 object-contain opacity-90" 
+            />
+            <h2 className="text-lg font-serif text-stone-800 tracking-wider mb-8">
+              웨딩 갤러리
+            </h2>
+          </ScrollReveal>
 
-        {/* 비대칭 2열 매거진 그리드 레이아웃 (시안과 1:1 고정 비율) */}
-        <ScrollReveal delay={200}>
-          <div className="flex gap-2 max-w-[380px] mx-auto items-start">
-            {/* 왼쪽 열 */}
-            <div className="flex-1 flex flex-col gap-2">
-              {leftColumnItems.map((item, colIdx) => (
-                <div
-                  key={item.originalIndex}
-                  onClick={() => setSelectedGalleryIndex(item.originalIndex)}
-                  style={{ height: `${getLeftHeight(colIdx)}px` }}
-                  className="w-full cursor-pointer overflow-hidden rounded-lg group bg-stone-100 shadow-2xs relative"
+          {/* 비대칭 2열 매거진 그리드 레이아웃 (시안과 1:1 고정 비율) */}
+          <ScrollReveal delay={200}>
+            <div className="flex gap-2 max-w-[380px] mx-auto items-start">
+              {/* 왼쪽 열 */}
+              <div className="flex-1 flex flex-col gap-2">
+                {leftColumnItems.map((item, colIdx) => (
+                  <div
+                    key={item.originalIndex}
+                    onClick={() => setSelectedGalleryIndex(item.originalIndex)}
+                    style={{ height: `${getLeftHeight(colIdx)}px` }}
+                    className="w-full cursor-pointer overflow-hidden rounded-lg group bg-stone-100 shadow-2xs relative"
+                  >
+                    <img
+                      src={item.src}
+                      alt={`웨딩 사진 ${item.originalIndex + 1}`}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* 오른쪽 열 */}
+              <div className="flex-1 flex flex-col gap-2">
+                {rightColumnItems.map((item, colIdx) => (
+                  <div
+                    key={item.originalIndex}
+                    onClick={() => setSelectedGalleryIndex(item.originalIndex)}
+                    style={{ height: `${getRightHeight(colIdx)}px` }}
+                    className="w-full cursor-pointer overflow-hidden rounded-lg group bg-stone-100 shadow-2xs relative"
+                  >
+                    <img
+                      src={item.src}
+                      alt={`웨딩 사진 ${item.originalIndex + 1}`}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 더보기 버튼 (8장 초과 시 노출) */}
+            {initialGalleryImages.length > 8 && (
+              <div className="mt-8 max-w-[380px] mx-auto font-sans">
+                <button
+                  onClick={() => setShowMorePhotos(!showMorePhotos)}
+                  className="w-full py-3.5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-700 text-sm rounded-xl font-medium transition-colors"
                 >
-                  <img
-                    src={item.src}
-                    alt={`웨딩 사진 ${item.originalIndex + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
-              ))}
-            </div>
-
-            {/* 오른쪽 열 */}
-            <div className="flex-1 flex flex-col gap-2">
-              {rightColumnItems.map((item, colIdx) => (
-                <div
-                  key={item.originalIndex}
-                  onClick={() => setSelectedGalleryIndex(item.originalIndex)}
-                  style={{ height: `${getRightHeight(colIdx)}px` }}
-                  className="w-full cursor-pointer overflow-hidden rounded-lg group bg-stone-100 shadow-2xs relative"
-                >
-                  <img
-                    src={item.src}
-                    alt={`웨딩 사진 ${item.originalIndex + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* 더보기 버튼 (8장 초과 시 노출) */}
-          {initialGalleryImages.length > 8 && (
-            <div className="mt-8 max-w-[380px] mx-auto font-sans">
-              <button
-                onClick={() => setShowMorePhotos(!showMorePhotos)}
-                className="w-full py-3.5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-700 text-sm rounded-xl font-medium transition-colors"
-              >
-                {showMorePhotos ? '접기' : '더보기'}
-              </button>
-            </div>
-          )}
-        </ScrollReveal>
-      </section>
+                  {showMorePhotos ? '접기' : '더보기'}
+                </button>
+              </div>
+            )}
+          </ScrollReveal>
+        </section>
+      )}
 
       {/* 5. 식장 위치 & 지도 & 네비게이션 (Image 5) */}
       <section className="py-20 bg-[#FCFBF7] text-center border-t border-[#F2ECE1]">
@@ -689,19 +670,23 @@ export default function BasicTemplate({ invitation }) {
             <h2 className="text-lg font-serif text-stone-800 tracking-wider mb-4">
               식장 위치
             </h2>
-            <p className="text-base font-sans font-medium text-stone-800 mb-1">
-              {invitation?.venue_name || '호텔금오산 컨벤션센터'}
-            </p>
-            <div className="inline-flex items-center gap-1.5 text-xs text-stone-500 mb-8 font-sans">
-              <span>{invitation?.venue_address || '경북 구미시 금오산로 400'}</span>
-              <button 
-                onClick={() => handleCopy(invitation?.venue_address || '경북 구미시 금오산로 400', '식장 주소가')}
-                className="hover:opacity-75 transition-opacity"
-                title="주소 복사"
-              >
-                📋
-              </button>
-            </div>
+            {invitation?.venue_name && (
+              <p className="text-base font-sans font-medium text-stone-800 mb-1">
+                {invitation.venue_name}
+              </p>
+            )}
+            {invitation?.venue_address && (
+              <div className="inline-flex items-center gap-1.5 text-xs text-stone-500 mb-8 font-sans">
+                <span>{invitation.venue_address}</span>
+                <button 
+                  onClick={() => handleCopy(invitation.venue_address, '식장 주소가')}
+                  className="hover:opacity-75 transition-opacity cursor-pointer"
+                  title="주소 복사"
+                >
+                  📋
+                </button>
+              </div>
+            )}
           </div>
         </ScrollReveal>
 
@@ -710,24 +695,30 @@ export default function BasicTemplate({ invitation }) {
           <div className="w-full max-w-[380px] mx-auto px-4 mb-6">
             <div className="rounded-2xl overflow-hidden shadow-sm border border-stone-200">
               <KakaoMap 
-                address={invitation?.venue_address || '경북 구미시 금오산로 400'} 
-                venueName={invitation?.venue_name || '호텔금오산 컨벤션센터'} 
+                address={invitation?.venue_address || ''} 
+                venueName={invitation?.venue_name || ''} 
               />
             </div>
           </div>
 
-          {/* 네이버 지도 / 카카오내비 버튼 2종 (시안 디자인 1:1 반영) */}
+          {/* 네이버 지도 / 카카오내비 버튼 2종 */}
           <div className="grid grid-cols-2 gap-3 max-w-[340px] mx-auto px-4 font-sans">
             <button
-              onClick={() => window.open(`https://map.naver.com/p/search/${encodeURIComponent(invitation?.venue_name || '호텔금오산')}`, '_blank')}
-              className="py-3 px-4 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-700 text-sm rounded-xl shadow-2xs border border-stone-200/60 flex items-center justify-center gap-2 transition-colors font-medium"
+              onClick={() => {
+                const query = invitation?.venue_name || invitation?.venue_address;
+                if (query) window.open(`https://map.naver.com/p/search/${encodeURIComponent(query)}`, '_blank');
+              }}
+              className="py-3 px-4 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-700 text-sm rounded-xl shadow-2xs border border-stone-200/60 flex items-center justify-center gap-2 transition-colors font-medium cursor-pointer"
             >
               <span>네이버 지도</span>
               <img src="/templates/basic/naver-map.svg" alt="네이버 지도" className="w-[18px] h-[18px] object-contain" />
             </button>
             <button
-              onClick={() => window.open(`https://map.kakao.com/link/search/${encodeURIComponent(invitation?.venue_name || '호텔금오산')}`, '_blank')}
-              className="py-3 px-4 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-700 text-sm rounded-xl shadow-2xs border border-stone-200/60 flex items-center justify-center gap-2 transition-colors font-medium"
+              onClick={() => {
+                const query = invitation?.venue_name || invitation?.venue_address;
+                if (query) window.open(`https://map.kakao.com/link/search/${encodeURIComponent(query)}`, '_blank');
+              }}
+              className="py-3 px-4 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-700 text-sm rounded-xl shadow-2xs border border-stone-200/60 flex items-center justify-center gap-2 transition-colors font-medium cursor-pointer"
             >
               <span>카카오네비</span>
               <img src="/templates/basic/kakao-navi.svg" alt="카카오내비" className="w-[18px] h-[18px] object-contain" />
@@ -797,20 +788,26 @@ export default function BasicTemplate({ invitation }) {
 
               {openGroomAccount && (
                 <div className="p-4 space-y-3 bg-white">
-                  {(groomAccounts.length > 0 ? groomAccounts : defaultAccounts).map((acc, idx) => (
-                    <div key={idx} className="flex items-center justify-between py-2 border-b border-stone-100 last:border-0">
-                      <div>
-                        <p className="text-xs text-stone-500">{acc.name || '신랑 예금주'}</p>
-                        <p className="text-xs font-medium text-stone-800 mt-0.5">{acc.bank} {acc.number}</p>
+                  {groomAccounts.length > 0 ? (
+                    groomAccounts.map((acc, idx) => (
+                      <div key={idx} className="flex items-center justify-between py-2 border-b border-stone-100 last:border-0">
+                        <div>
+                          {acc.name && <p className="text-xs text-stone-500">{acc.name}</p>}
+                          <p className="text-xs font-medium text-stone-800 mt-0.5">{acc.bank} {acc.number}</p>
+                        </div>
+                        <button
+                          onClick={() => handleCopy(`${acc.bank} ${acc.number}`, `${acc.name ? acc.name + ' ' : ''}계좌번호가`)}
+                          className="px-3.5 py-1.5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-xs font-medium text-stone-600 rounded-full transition-colors font-sans cursor-pointer"
+                        >
+                          복사하기
+                        </button>
                       </div>
-                      <button
-                        onClick={() => handleCopy(`${acc.bank} ${acc.number}`, `${acc.name} 계좌번호가`)}
-                        className="px-3.5 py-1.5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-xs font-medium text-stone-600 rounded-full transition-colors font-sans cursor-pointer"
-                      >
-                        복사하기
-                      </button>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="text-xs text-stone-400 py-2 text-center font-sans">
+                      등록된 계좌번호가 없습니다.
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -835,20 +832,26 @@ export default function BasicTemplate({ invitation }) {
 
               {openBrideAccount && (
                 <div className="p-4 space-y-3 bg-white">
-                  {(brideAccounts.length > 0 ? brideAccounts : defaultAccounts).map((acc, idx) => (
-                    <div key={idx} className="flex items-center justify-between py-2 border-b border-stone-100 last:border-0">
-                      <div>
-                        <p className="text-xs text-stone-500">{acc.name || '신부 예금주'}</p>
-                        <p className="text-xs font-medium text-stone-800 mt-0.5">{acc.bank} {acc.number}</p>
+                  {brideAccounts.length > 0 ? (
+                    brideAccounts.map((acc, idx) => (
+                      <div key={idx} className="flex items-center justify-between py-2 border-b border-stone-100 last:border-0">
+                        <div>
+                          {acc.name && <p className="text-xs text-stone-500">{acc.name}</p>}
+                          <p className="text-xs font-medium text-stone-800 mt-0.5">{acc.bank} {acc.number}</p>
+                        </div>
+                        <button
+                          onClick={() => handleCopy(`${acc.bank} ${acc.number}`, `${acc.name ? acc.name + ' ' : ''}계좌번호가`)}
+                          className="px-3.5 py-1.5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-xs font-medium text-stone-600 rounded-full transition-colors font-sans cursor-pointer"
+                        >
+                          복사하기
+                        </button>
                       </div>
-                      <button
-                        onClick={() => handleCopy(`${acc.bank} ${acc.number}`, `${acc.name} 계좌번호가`)}
-                        className="px-3.5 py-1.5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-xs font-medium text-stone-600 rounded-full transition-colors font-sans"
-                      >
-                        복사하기
-                      </button>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="text-xs text-stone-400 py-2 text-center font-sans">
+                      등록된 계좌번호가 없습니다.
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -953,15 +956,20 @@ export default function BasicTemplate({ invitation }) {
           <ScrollReveal delay={200}>
             <div className="bg-[#FAF9F6] rounded-2xl p-7 max-w-[320px] mx-auto shadow-2xs border border-stone-200 mb-6 font-sans">
               <p className="text-sm font-semibold text-stone-800 mb-3">
-                신랑 {invitation?.groom_name || '권기득'} ♥ 신부 {invitation?.bride_name || '장민기'}
+                {[
+                  invitation?.groom_name ? `신랑 ${invitation.groom_name}` : '',
+                  invitation?.bride_name ? `신부 ${invitation.bride_name}` : ''
+                ].filter(Boolean).join(' ♥ ')}
               </p>
               <div className="w-full h-px bg-stone-200 mb-3" />
               <p className="text-xs text-stone-600 mb-1">
-                {calendarData.year}년 {calendarData.month}월 {calendarData.weddingDay}일 토요일 오전 11시
+                {formattedKoreanDate}
               </p>
-              <p className="text-xs text-stone-500">
-                {invitation?.venue_name || '호텔금오산 컨벤션센터'}
-              </p>
+              {invitation?.venue_name && (
+                <p className="text-xs text-stone-500">
+                  {invitation.venue_name}
+                </p>
+              )}
             </div>
 
             <button
@@ -1016,7 +1024,7 @@ export default function BasicTemplate({ invitation }) {
                   {guestbookList[guestbookIndex]?.content}
                 </p>
                 <p className="text-[10px] text-stone-400 mt-3 font-sans">
-                  {guestbookList[guestbookIndex]?.created_at?.slice(0, 10).replace(/-/g, '.') || '2027.10.21'}
+                  {guestbookList[guestbookIndex]?.created_at?.slice(0, 10).replace(/-/g, '.') || ''}
                 </p>
               </div>
 
@@ -1111,7 +1119,7 @@ export default function BasicTemplate({ invitation }) {
         />
       )}
 
-      {selectedGalleryIndex !== null && (
+      {selectedGalleryIndex !== null && initialGalleryImages.length > 0 && (
         <GalleryModal
           images={initialGalleryImages}
           initialIndex={selectedGalleryIndex}

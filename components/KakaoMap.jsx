@@ -11,9 +11,9 @@ export default function KakaoMap({ address, venueName }) {
 
     window.kakao.maps.load(() => {
       const container = mapContainer.current;
-      if (!container) return;
+      if (!container || !address) return;
 
-      const targetAddress = address || '서울 마포구 마포대로 92';
+      const targetAddress = address;
       const geocoder = new window.kakao.maps.services.Geocoder();
 
       geocoder.addressSearch(targetAddress, (result, status) => {
@@ -30,14 +30,17 @@ export default function KakaoMap({ address, venueName }) {
             position: coords,
           });
 
-          const infowindow = new window.kakao.maps.InfoWindow({
-            content: `
-              <div style="padding:5px 10px;font-size:12px;font-weight:600;color:#222;font-family:sans-serif;white-space:nowrap;border-radius:4px;text-align:center;">
-                ${venueName || '예식장'}
-              </div>
-            `,
-          });
-          infowindow.open(map, marker);
+          const titleText = venueName || targetAddress || '';
+          if (titleText) {
+            const infowindow = new window.kakao.maps.InfoWindow({
+              content: `
+                <div style="padding:5px 10px;font-size:12px;font-weight:600;color:#222;font-family:sans-serif;white-space:nowrap;border-radius:4px;text-align:center;">
+                  ${titleText}
+                </div>
+              `,
+            });
+            infowindow.open(map, marker);
+          }
         } else {
           console.warn('카카오맵 주소 검색 실패:', status);
         }

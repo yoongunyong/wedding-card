@@ -56,22 +56,33 @@ export default function ManageRsvpPage({ params }) {
   // 통계 계산
   const attendingList = rsvpList.filter((r) => r.attend);
   const totalGuests = attendingList.reduce((acc, cur) => acc + 1 + (cur.companion_count || 0), 0);
-  const mealYesCount = attendingList.filter((r) => r.meal === 'yes').reduce((acc, cur) => acc + 1 + (cur.companion_count || 0), 0);
-  const mealNoCount = attendingList.filter((r) => r.meal === 'no').reduce((acc, cur) => acc + 1 + (cur.companion_count || 0), 0);
+  const groomGuests = attendingList.filter((r) => r.side === 'groom').reduce((acc, cur) => acc + 1 + (cur.companion_count || 0), 0);
+  const brideGuests = attendingList.filter((r) => r.side === 'bride').reduce((acc, cur) => acc + 1 + (cur.companion_count || 0), 0);
+
+  // 한국 시간 포맷팅 헬퍼 (YYYY.MM.DD HH:mm)
+  const formatDate = (isoString) => {
+    if (!isoString) return '-';
+    const d = new Date(isoString);
+    if (isNaN(d.getTime())) return '-';
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${y}.${m}.${day} ${hours}:${minutes}`;
+  };
 
   // CSV 엑셀 다운로드 (UTF-8 BOM 포함)
   const downloadCSV = () => {
     if (rsvpList.length === 0) return alert('다운로드할 참석자 내역이 없습니다.');
 
-    const headers = ['구분', '성함', '연락처', '참석여부', '동행인원', '식사여부', '메모', '등록일시'];
+    const headers = ['구분', '성함', '연락처', '참석여부', '동행인원', '등록일시'];
     const rows = rsvpList.map((r) => [
       r.side === 'groom' ? '신랑측' : '신부측',
       r.name,
       r.phone || '-',
       r.attend ? '참석' : '불참',
-      r.companion_count || 0,
-      r.meal === 'yes' ? '식사함' : r.meal === 'no' ? '식사안함' : '미정',
-      `"${(r.memo || '').replace(/"/g, '""')}"`,
+      r.attend ? (r.companion_count || 0) : '-',
       new Date(r.created_at).toLocaleString('ko-KR'),
     ]);
 
@@ -131,21 +142,21 @@ export default function ManageRsvpPage({ params }) {
 
         {/* 요약 대시보드 카드 */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 my-6">
-          <div className="p-4 bg-stone-50 rounded-xl text-center">
+          <div className="p-4 bg-stone-50 rounded-xl text-center border border-stone-100">
             <span className="text-xs text-stone-500">총 응답 수</span>
             <p className="text-xl font-bold text-stone-900 mt-1">{rsvpList.length}건</p>
           </div>
-          <div className="p-4 bg-stone-50 rounded-xl text-center">
-            <span className="text-xs text-stone-500">예상 참석 인원</span>
-            <p className="text-xl font-bold text-stone-900 mt-1">{totalGuests}명</p>
+          <div className="p-4 bg-stone-50 rounded-xl text-center border border-stone-100">
+            <span className="text-xs text-stone-500">총 참석 인원</span>
+            <p className="text-xl font-bold text-emerald-600 mt-1">{totalGuests}명</p>
           </div>
-          <div className="p-4 bg-stone-50 rounded-xl text-center">
-            <span className="text-xs text-stone-500">식사 희망</span>
-            <p className="text-xl font-bold text-emerald-600 mt-1">{mealYesCount}명</p>
+          <div className="p-4 bg-stone-50 rounded-xl text-center border border-stone-100">
+            <span className="text-xs text-stone-500">신랑측 하객</span>
+            <p className="text-xl font-bold text-blue-600 mt-1">{groomGuests}명</p>
           </div>
-          <div className="p-4 bg-stone-50 rounded-xl text-center">
-            <span className="text-xs text-stone-500">식사 안함</span>
-            <p className="text-xl font-bold text-stone-500 mt-1">{mealNoCount}명</p>
+          <div className="p-4 bg-stone-50 rounded-xl text-center border border-stone-100">
+            <span className="text-xs text-stone-500">신부측 하객</span>
+            <p className="text-xl font-bold text-rose-500 mt-1">{brideGuests}명</p>
           </div>
         </div>
 
@@ -157,16 +168,15 @@ export default function ManageRsvpPage({ params }) {
                 <th className="py-2.5 px-3">구분</th>
                 <th className="py-2.5 px-3">성함</th>
                 <th className="py-2.5 px-3">연락처</th>
-                <th className="py-2.5 px-3 text-center">참석</th>
-                <th className="py-2.5 px-3 text-center">동행</th>
-                <th className="py-2.5 px-3 text-center">식사</th>
-                <th className="py-2.5 px-3">메모</th>
+                <th className="py-2.5 px-3 text-center">참석 여부</th>
+                <th className="py-2.5 px-3 text-center">동행 인원</th>
+                <th className="py-2.5 px-3 whitespace-nowrap">등록일시</th>
               </tr>
             </thead>
             <tbody>
               {rsvpList.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-stone-400">
+                  <td colSpan={6} className="py-8 text-center text-stone-400">
                     아직 등록된 참석 의사가 없습니다.
                   </td>
                 </tr>
@@ -189,12 +199,11 @@ export default function ManageRsvpPage({ params }) {
                         <span className="text-stone-400">불참</span>
                       )}
                     </td>
-                    <td className="py-3 px-3 text-center font-medium">{row.companion_count}명</td>
-                    <td className="py-3 px-3 text-center">
-                      {row.meal === 'yes' ? '식사' : row.meal === 'no' ? '안함' : '미정'}
+                    <td className="py-3 px-3 text-center font-medium">
+                      {row.attend ? (row.companion_count > 0 ? `+${row.companion_count}명` : '0명') : '-'}
                     </td>
-                    <td className="py-3 px-3 max-w-[150px] truncate text-stone-500" title={row.memo}>
-                      {row.memo || '-'}
+                    <td className="py-3 px-3 text-stone-500 whitespace-nowrap">
+                      {formatDate(row.created_at)}
                     </td>
                   </tr>
                 ))

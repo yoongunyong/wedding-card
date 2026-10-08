@@ -471,18 +471,22 @@ export default function BasicTemplate({ invitation }) {
 
           {/* 달력 컨테이너 */}
           <div className="max-w-[320px] mx-auto mb-10 pt-4 border-t border-[#EDE7DD]">
-            <div className="grid grid-cols-7 gap-y-3.5 text-center text-xs text-stone-600 font-sans">
-              <span className="text-[#E0645A] font-medium">일</span>
-              <span className="text-stone-400 font-medium">월</span>
-              <span className="text-stone-400 font-medium">화</span>
-              <span className="text-stone-400 font-medium">수</span>
-              <span className="text-stone-400 font-medium">목</span>
-              <span className="text-stone-400 font-medium">금</span>
-              <span className="text-stone-400 font-medium">토</span>
+            {/* 요일 헤더 */}
+            <div className="grid grid-cols-7 text-center text-xs text-stone-600 font-sans mb-3.5">
+              <span className="text-[#E0645A] font-medium py-1">일</span>
+              <span className="text-stone-400 font-medium py-1">월</span>
+              <span className="text-stone-400 font-medium py-1">화</span>
+              <span className="text-stone-400 font-medium py-1">수</span>
+              <span className="text-stone-400 font-medium py-1">목</span>
+              <span className="text-stone-400 font-medium py-1">금</span>
+              <span className="text-stone-400 font-medium py-1">토</span>
+            </div>
 
+            {/* 일자 그리드 (고정 aspect-square 셀 & 동일 높이 보장) */}
+            <div className="grid grid-cols-7 gap-y-2 text-center text-xs font-sans tabular-nums">
               {/* 시작 요일 빈 칸 */}
               {Array.from({ length: calendarData.firstDayIndex }).map((_, i) => (
-                <span key={`empty-${i}`} />
+                <div key={`empty-${i}`} className="w-full aspect-square" />
               ))}
 
               {/* 일자 */}
@@ -492,16 +496,18 @@ export default function BasicTemplate({ invitation }) {
                 const isWeddingDay = day === calendarData.weddingDay;
 
                 return (
-                  <div key={day} className="flex items-center justify-center">
-                    {isWeddingDay ? (
-                      <span className="w-7 h-7 rounded-full bg-[#FCE8A6] text-stone-800 font-semibold flex items-center justify-center shadow-xs">
-                        {day}
-                      </span>
-                    ) : (
-                      <span className={isSunday ? 'text-[#E0645A]' : 'text-stone-600'}>
-                        {day}
-                      </span>
-                    )}
+                  <div key={day} className="flex items-center justify-center w-full aspect-square">
+                    <span
+                      className={`w-7 h-7 flex items-center justify-center rounded-full text-[13px] leading-none transition-colors ${
+                        isWeddingDay
+                          ? 'bg-[#FCE8A6] text-stone-900 font-bold shadow-xs'
+                          : isSunday
+                          ? 'text-[#E0645A]'
+                          : 'text-stone-700'
+                      }`}
+                    >
+                      {day}
+                    </span>
                   </div>
                 );
               })}
@@ -520,7 +526,9 @@ export default function BasicTemplate({ invitation }) {
             ].map((item, idx) => (
               <div key={idx} className="bg-white rounded-2xl p-3 shadow-xs border border-[#ECE5D8] flex flex-col items-center">
                 <span className="text-[10px] text-stone-400 tracking-wider font-medium">{item.label}</span>
-                <span className="font-cormorant text-2xl font-semibold text-stone-800 mt-1">{item.val}</span>
+                <span className="font-sans text-[21px] font-light text-stone-700 mt-1 tabular-nums leading-tight tracking-normal">
+                  {item.val}
+                </span>
               </div>
             ))}
           </div>
@@ -814,26 +822,25 @@ export default function BasicTemplate({ invitation }) {
 
         {/* 롤링 슬라이더 컨테이너 */}
         <ScrollReveal delay={200}>
-          <div className="relative max-w-[320px] mx-auto flex items-center justify-center font-sans">
-            
+          <div className="flex items-center justify-center gap-2 max-w-[360px] mx-auto font-sans">
             {/* 이전 버튼 */}
             <button
               onClick={() => setInfoIndex((prev) => (prev > 0 ? prev - 1 : infoCards.length - 1))}
-              className="absolute -left-6 z-10 w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-700 text-xl font-light"
+              className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-700 text-2xl font-light cursor-pointer select-none transition-colors"
               aria-label="이전 정보"
             >
               ‹
             </button>
 
-            {/* 정보 카드 */}
-            <div className="w-full bg-white rounded-2xl p-7 text-center border border-stone-200/80 shadow-xs transition-all duration-300 min-h-[170px] flex flex-col justify-center">
+            {/* 정보 카드 (가로폭 축소로 화살표와 여유로운 간격 확보) */}
+            <div className="w-[275px] max-w-full bg-white rounded-2xl p-6 text-center border border-stone-200/80 shadow-xs transition-all duration-300 min-h-[165px] flex flex-col justify-center">
               <h3 className="text-sm font-semibold text-stone-800 mb-1">
                 {infoCards[infoIndex].title}
               </h3>
-              <p className="text-xs text-stone-500 mb-4">
+              <p className="text-xs text-stone-500 mb-3.5">
                 {infoCards[infoIndex].subtitle}
               </p>
-              <div className="w-full h-px bg-stone-100 mb-4" />
+              <div className="w-full h-px bg-stone-100 mb-3.5" />
               <p className="text-xs text-stone-600 leading-relaxed break-keep">
                 {infoCards[infoIndex].content}
               </p>
@@ -842,7 +849,7 @@ export default function BasicTemplate({ invitation }) {
             {/* 다음 버튼 */}
             <button
               onClick={() => setInfoIndex((prev) => (prev < infoCards.length - 1 ? prev + 1 : 0))}
-              className="absolute -right-6 z-10 w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-700 text-xl font-light"
+              className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-700 text-2xl font-light cursor-pointer select-none transition-colors"
               aria-label="다음 정보"
             >
               ›
@@ -924,18 +931,18 @@ export default function BasicTemplate({ invitation }) {
 
         {/* 방명록 슬라이더 & 버튼 */}
         <ScrollReveal delay={200}>
-          <div className="relative max-w-[320px] mx-auto flex items-center justify-center font-sans">
+          <div className="flex items-center justify-center gap-2 max-w-[360px] mx-auto font-sans">
             {/* 이전 화살표 */}
             <button
               onClick={() => setGuestbookIndex((prev) => (prev > 0 ? prev - 1 : guestbookList.length - 1))}
-              className="absolute -left-6 z-10 w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-700 text-xl font-light"
+              className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-700 text-2xl font-light cursor-pointer select-none transition-colors"
               aria-label="이전 방명록"
             >
               ‹
             </button>
 
-            {/* 방명록 카드 */}
-            <div className="w-full bg-white rounded-2xl p-6 text-center border border-stone-200 shadow-xs transition-all duration-300 min-h-[160px] flex flex-col justify-between">
+            {/* 방명록 카드 (가로폭 축소로 사각형이 아담해지고 화살표와 겹치지 않음) */}
+            <div className="w-[275px] max-w-full bg-white rounded-2xl p-6 text-center border border-stone-200 shadow-xs transition-all duration-300 min-h-[160px] flex flex-col justify-between">
               <div className="flex justify-center mb-3">
                 <span className="inline-flex items-center px-3 py-1 border border-stone-200 rounded-full text-xs text-stone-600 font-serif">
                   <em className="text-[10px] text-stone-400 not-italic mr-1.5">From</em>
@@ -953,7 +960,7 @@ export default function BasicTemplate({ invitation }) {
             {/* 다음 화살표 */}
             <button
               onClick={() => setGuestbookIndex((prev) => (prev < guestbookList.length - 1 ? prev + 1 : 0))}
-              className="absolute -right-6 z-10 w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-700 text-xl font-light"
+              className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-700 text-2xl font-light cursor-pointer select-none transition-colors"
               aria-label="다음 방명록"
             >
               ›

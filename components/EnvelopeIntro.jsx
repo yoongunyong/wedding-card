@@ -8,8 +8,9 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
   const [isShaking, setIsShaking] = useState(false);
   const [declineMsg, setDeclineMsg] = useState('');
 
-  // Supabase 컬럼 cover_image 최우선 매핑
+  // Supabase 신규 images.cover 최우선 매핑 (하위 호환 유지)
   const coverImage =
+    invitation?.images?.cover ||
     invitation?.cover_image ||
     invitation?.extra_data?.cover_image ||
     invitation?.extra_data?.main_image ||

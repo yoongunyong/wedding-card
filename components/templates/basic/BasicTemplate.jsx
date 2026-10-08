@@ -30,19 +30,29 @@ export default function BasicTemplate({ invitation }) {
   const [openGroomAccount, setOpenGroomAccount] = useState(true);
   const [openBrideAccount, setOpenBrideAccount] = useState(true);
 
-  // 고객 커스텀 타이틀 색상 (DB extra_data.title_color 우선, 기본값은 #E5A866)
-  const titleColor = extra.title_color || '#E5A866';
+  const images = invitation?.images || {};
+  const config = invitation?.template_config || {};
 
-  // 본문 메인 풀스크린 사진 (extra.main_image 최우선 사용)
-  const mainImage = extra.main_image || invitation?.main_image || invitation?.cover_image || '/cover.jpg';
+  // 고객 커스텀 타이틀 색상 (template_config.title_color 우선, 하위호환 extra.title_color)
+  const titleColor = config.title_color || extra.title_color || '#E5A866';
+
+  // 섹션별 ON/OFF 제어 (기본값 true, config에서 false 지정 시 해당 섹션 숨김)
+  const showIntroSection = config.show_intro !== false;
+  const showCountdownSection = config.show_countdown !== false;
+  const showAccountsSection = config.show_accounts !== false;
+  const showRsvpSection = config.show_rsvp !== false;
+  const showGuestbookSection = config.show_guestbook !== false;
+
+  // 본문 메인 풀스크린 사진 (images.main 최우선)
+  const mainImage = images.main || extra.main_image || invitation?.main_image || invitation?.cover_image || '/cover.jpg';
   const hasBakedInText = typeof mainImage === 'string' && mainImage.includes('cover.jpg');
 
-  // 신랑/신부 프로필 사진 (extra_data.groom_profile_image / bride_profile_image 최우선 매핑)
-  const groomPhoto = extra.groom_profile_image || invitation?.groom_photo || extra.groom_photo || '/groom.jpg';
-  const bridePhoto = extra.bride_profile_image || invitation?.bride_photo || extra.bride_photo || '/bride.jpg';
+  // 신랑/신부 프로필 사진 (images.groom_profile / bride_profile 최우선)
+  const groomPhoto = images.groom_profile || extra.groom_profile_image || invitation?.groom_photo || extra.groom_photo || '/groom.jpg';
+  const bridePhoto = images.bride_profile || extra.bride_profile_image || invitation?.bride_photo || extra.bride_photo || '/bride.jpg';
 
-  // 엔딩 사진 (extra_data.ending_image 최우선 매핑)
-  const endingImage = extra.ending_image || invitation?.ending_image || '/ending.jpg';
+  // 엔딩 사진 (images.ending 최우선)
+  const endingImage = images.ending || extra.ending_image || invitation?.ending_image || '/ending.jpg';
 
   // 갤러리 이미지 안전 파싱 (배열 및 문자열 대응)
   const parseGalleryImages = (raw) => {
@@ -194,8 +204,8 @@ export default function BasicTemplate({ invitation }) {
     return `${dateStr} | ${period} ${displayHour}:${minutes}`;
   }, [targetDate]);
 
-  // 2. 정보(식사/셔틀) 자동 롤링 슬라이더
-  const infoCards = [
+  // 2. 정보(식사/셔틀/피로연/답례품 등) 동적 안내 카드 리스트
+  const defaultInfoCards = [
     {
       title: '식사안내',
       subtitle: 'PM 14:00~ 16:00 뷔페 이용 가능',
@@ -207,16 +217,71 @@ export default function BasicTemplate({ invitation }) {
       content: extra.shuttle_info || '셔틀버스 15분-20분 간격으로 운행하오니 이용시 참고해 주시기 바랍니다.',
     },
   ];
+
+  const infoCards = useMemo(() => {
+    if (Array.isArray(invitation?.info_notices) && invitation.info_notices.length > 0) {
+      return invitation.info_notices;
+    }
+    return defaultInfoCards;
+  }, [invitation?.info_notices]);
+
   const [infoIndex, setInfoIndex] = useState(0);
 
   useEffect(() => {
+    if (infoCards.length <= 1) return;
     const timer = setInterval(() => {
       setInfoIndex((prev) => (prev + 1) % infoCards.length);
     }, 4500); // 4.5초마다 자동 롤링
     return () => clearInterval(timer);
   }, [infoCards.length]);
 
-  // 3. 방명록 데이터 & 자동 롤링 슬라이더
+  // 3. 오시는 길 (교통수단) 동적 리스트
+  const defaultTransportation = [
+    {
+      type: 'parking',
+      title: '주차안내',
+      content: extra.transport_parking || '주차공간이 협소하오니, 되도록 대중교통을 이용해 주시기 바랍니다. 특히, 주말은 오전 시간대에 만차가 되니 부득이하게 주차가 필요하신 분들은 예식장에 전화 부탁드립니다.',
+    },
+    {
+      type: 'car',
+      title: '자차',
+      content: extra.transport_car || "네비게이션 : '금오산 호텔' 검색\n경북 구미시 금오산로 400 호텔금오산 컨벤션센터",
+    },
+    {
+      type: 'bus',
+      title: '버스',
+      content: extra.transport_bus || '172(우리은행종로지점 방면)\n서울광장역 하차 → 도보 5분\n\n405(롯데백화점 방면)\n서울광장역 하차 → 도보 5분',
+    },
+    {
+      type: 'subway',
+      title: '지하철',
+      content: extra.transport_subway || '[1호선] 시청역 4번 출구\n[2호선] 시청역 4번 출구\n[2호선] 을지로입구역 하차 후 지하 연결출구',
+    },
+  ];
+
+  const transportationList = useMemo(() => {
+    if (Array.isArray(invitation?.transportation) && invitation.transportation.length > 0) {
+      return invitation.transportation;
+    }
+    return defaultTransportation;
+  }, [invitation?.transportation]);
+
+  const getTransportIcon = (type) => {
+    switch (type) {
+      case 'car':
+        return '/templates/basic/transportation-of-car.svg';
+      case 'bus':
+        return '/templates/basic/transportation-of-bus.svg';
+      case 'subway':
+      case 'metro':
+        return '/templates/basic/transportation-of-subway.svg';
+      case 'parking':
+      default:
+        return '/templates/basic/transportation-parking.svg';
+    }
+  };
+
+  // 4. 방명록 데이터 & 자동 롤링 슬라이더
   const defaultGuestbook = [
     { id: '1', author: '장성경', content: '두 사람 꽃길 결혼 생활 예약🌹\n행복과 축복으로 가득하길 바래🤍', created_at: '2027.10.21' },
     { id: '2', author: '윤건용', content: '두 분의 새로운 시작을\n진심으로 축하드려요.', created_at: '2027.10.21' },
@@ -328,7 +393,7 @@ export default function BasicTemplate({ invitation }) {
       `}</style>
 
       {/* 0. 인트로 편지 봉투 커버 화면 */}
-      {showIntro && (
+      {showIntro && showIntroSection && (
         <EnvelopeIntro 
           invitation={invitation} 
           onOpen={() => {
@@ -515,30 +580,32 @@ export default function BasicTemplate({ invitation }) {
           </div>
         </ScrollReveal>
 
-        <ScrollReveal delay={200}>
-          {/* 카운트다운 4분할 카드 */}
-          <div className="grid grid-cols-4 gap-2.5 max-w-[320px] mx-auto mb-8 font-sans">
-            {[
-              { label: 'DAYS', val: timeLeft.days },
-              { label: 'HOURS', val: timeLeft.hours },
-              { label: 'MINUTES', val: timeLeft.minutes },
-              { label: 'SECONDS', val: timeLeft.seconds },
-            ].map((item, idx) => (
-              <div key={idx} className="bg-white rounded-2xl p-3 shadow-xs border border-[#ECE5D8] flex flex-col items-center">
-                <span className="text-[10px] text-stone-400 tracking-wider font-medium">{item.label}</span>
-                <span className="font-sans text-[21px] font-light text-stone-700 mt-1 tabular-nums leading-tight tracking-normal">
-                  {item.val}
-                </span>
-              </div>
-            ))}
-          </div>
+        {showCountdownSection && (
+          <ScrollReveal delay={200}>
+            {/* 카운트다운 4분할 카드 */}
+            <div className="grid grid-cols-4 gap-2.5 max-w-[320px] mx-auto mb-8 font-sans">
+              {[
+                { label: 'DAYS', val: timeLeft.days },
+                { label: 'HOURS', val: timeLeft.hours },
+                { label: 'MINUTES', val: timeLeft.minutes },
+                { label: 'SECONDS', val: timeLeft.seconds },
+              ].map((item, idx) => (
+                <div key={idx} className="bg-white rounded-2xl p-3 shadow-xs border border-[#ECE5D8] flex flex-col items-center">
+                  <span className="text-[10px] text-stone-400 tracking-wider font-medium">{item.label}</span>
+                  <span className="font-sans text-[21px] font-light text-stone-700 mt-1 tabular-nums leading-tight tracking-normal">
+                    {item.val}
+                  </span>
+                </div>
+              ))}
+            </div>
 
-          {/* D-Day 남은 일수 강조 문구 */}
-          <p className="text-xs text-stone-600 font-sans">
-            {invitation?.groom_name || '기득'} ♥ {invitation?.bride_name || '민기'}님의 결혼식이{' '}
-            <strong className="text-[#E0645A] font-semibold">{timeLeft.totalDays}일</strong> 남았습니다.
-          </p>
-        </ScrollReveal>
+            {/* D-Day 남은 일수 강조 문구 */}
+            <p className="text-xs text-stone-600 font-sans">
+              {invitation?.groom_name || '기득'} ♥ {invitation?.bride_name || '민기'}님의 결혼식이{' '}
+              <strong className="text-[#E0645A] font-semibold">{timeLeft.totalDays}일</strong> 남았습니다.
+            </p>
+          </ScrollReveal>
+        )}
       </section>
 
       {/* 4. 웨딩 갤러리 (Image 4) */}
@@ -669,329 +736,326 @@ export default function BasicTemplate({ invitation }) {
         </ScrollReveal>
       </section>
 
-      {/* 6. 교통편 상세 안내 (Image 6) */}
-      <section className="py-16 px-6 bg-[#F7F7F7] space-y-4 font-sans">
-        {/* 1. 주차안내 */}
-        <ScrollReveal delay={0}>
-          <div className="bg-white rounded-2xl p-6 shadow-xs border border-stone-100">
-            <div className="flex items-center gap-2 mb-3.5">
-              <span className="font-semibold text-sm text-stone-800">주차안내</span>
-              <img src="/templates/basic/transportation-parking.svg" alt="주차" className="w-4 h-4 object-contain opacity-75" />
-            </div>
-            <div className="w-full h-px bg-stone-100 mb-3.5" />
-            <p className="text-xs text-stone-500 leading-relaxed break-keep">
-              {extra.transport_parking || '주차공간이 협소하오니, 되도록 대중교통을 이용해 주시기 바랍니다. 특히, 주말은 오전 시간대에 만차가 되니 부득이하게 주차가 필요하신 분들은 예식장에 전화 부탁드립니다.'}
-            </p>
-          </div>
-        </ScrollReveal>
-
-        {/* 2. 자차 */}
-        <ScrollReveal delay={100}>
-          <div className="bg-white rounded-2xl p-6 shadow-xs border border-stone-100">
-            <div className="flex items-center gap-2 mb-3.5">
-              <span className="font-semibold text-sm text-stone-800">자차</span>
-              <img src="/templates/basic/transportation-of-car.svg" alt="자차" className="w-4 h-4 object-contain opacity-75" />
-            </div>
-            <div className="w-full h-px bg-stone-100 mb-3.5" />
-            <p className="text-xs text-stone-500 leading-relaxed break-keep">
-              {extra.transport_car || '네비게이션 : \'금오산 호텔\' 검색\n경북 구미시 금오산로 400 호텔금오산 컨벤션센터'}
-            </p>
-          </div>
-        </ScrollReveal>
-
-        {/* 3. 버스 */}
-        <ScrollReveal delay={200}>
-          <div className="bg-white rounded-2xl p-6 shadow-xs border border-stone-100">
-            <div className="flex items-center gap-2 mb-3.5">
-              <span className="font-semibold text-sm text-stone-800">버스</span>
-              <img src="/templates/basic/transportation-of-bus.svg" alt="버스" className="w-4 h-4 object-contain opacity-75" />
-            </div>
-            <div className="w-full h-px bg-stone-100 mb-3.5" />
-            <p className="text-xs text-stone-500 leading-relaxed break-keep whitespace-pre-line">
-              {extra.transport_bus || '172(우리은행종로지점 방면)\n서울광장역 하차 → 데미타스커피 왼쪽 방면 → 도보 5분\n\n405(롯데백화점 방면)\n서울광장역 하차 → 데미타스커피 왼쪽 방면 → 도보 5분'}
-            </p>
-          </div>
-        </ScrollReveal>
-
-        {/* 4. 지하철 */}
-        <ScrollReveal delay={300}>
-          <div className="bg-white rounded-2xl p-6 shadow-xs border border-stone-100">
-            <div className="flex items-center gap-2 mb-3.5">
-              <span className="font-semibold text-sm text-stone-800">지하철</span>
-              <img src="/templates/basic/transportation-of-subway.svg" alt="지하철" className="w-4 h-4 object-contain opacity-75" />
-            </div>
-            <div className="w-full h-px bg-stone-100 mb-3.5" />
-            <p className="text-xs text-stone-500 leading-relaxed break-keep whitespace-pre-line">
-              {extra.transport_subway || '[1호선] 시청역 4번 출구\n[2호선] 시청역 4번 출구\n[2호선] 을지로입구역 하차 후 서울시청 방면 지하 연결출구'}
-            </p>
-          </div>
-        </ScrollReveal>
-      </section>
+      {/* 6. 교통편 상세 안내 (Image 6 - 동적 리스트 렌더링) */}
+      {transportationList.length > 0 && (
+        <section className="py-16 px-6 bg-[#F7F7F7] space-y-4 font-sans">
+          {transportationList.map((item, idx) => (
+            <ScrollReveal key={idx} delay={idx * 80}>
+              <div className="bg-white rounded-2xl p-6 shadow-xs border border-stone-100">
+                <div className="flex items-center gap-2 mb-3.5">
+                  <span className="font-semibold text-sm text-stone-800">{item.title}</span>
+                  <img
+                    src={getTransportIcon(item.type)}
+                    alt={item.title}
+                    className="w-4 h-4 object-contain opacity-75"
+                  />
+                </div>
+                <div className="w-full h-px bg-stone-100 mb-3.5" />
+                <p className="text-xs text-stone-500 leading-relaxed break-keep whitespace-pre-line">
+                  {item.content}
+                </p>
+              </div>
+            </ScrollReveal>
+          ))}
+        </section>
+      )}
 
       {/* 7. 마음 전하실 곳 (Image 7) */}
-      <section className="py-20 px-6 bg-white text-center border-t border-[#F2ECE1]">
-        <ScrollReveal>
-          {/* 상단 손그림 드로잉 아이콘 3 */}
-          <img 
-            src="/templates/basic/미니멀 웨딩 아이콘 6종 세트 3.svg" 
-            alt="마음 전하실 곳" 
-            className="w-16 h-16 mx-auto mb-3.5 object-contain opacity-90" 
-          />
-          <h2 className="text-lg font-serif text-stone-800 tracking-wider mb-8">
-            마음 전하실 곳
-          </h2>
-        </ScrollReveal>
+      {showAccountsSection && (
+        <section className="py-20 px-6 bg-white text-center border-t border-[#F2ECE1]">
+          <ScrollReveal>
+            {/* 상단 손그림 드로잉 아이콘 3 */}
+            <img 
+              src="/templates/basic/미니멀 웨딩 아이콘 6종 세트 3.svg" 
+              alt="마음 전하실 곳" 
+              className="w-16 h-16 mx-auto mb-3.5 object-contain opacity-90" 
+            />
+            <h2 className="text-lg font-serif text-stone-800 tracking-wider mb-8">
+              마음 전하실 곳
+            </h2>
+          </ScrollReveal>
 
-        {/* 신랑측 & 신부측 아코디언 */}
-        <ScrollReveal delay={200}>
-          {/* 신랑측 아코디언 */}
-          <div className="bg-[#FAF9F6] rounded-2xl overflow-hidden shadow-2xs border border-stone-200 text-left mb-4 max-w-[340px] mx-auto font-sans">
-            <button
-              onClick={() => setOpenGroomAccount(!openGroomAccount)}
-              className="w-full py-4 px-5 flex items-center justify-between text-sm font-medium text-stone-700 bg-stone-100/70 hover:bg-stone-100 transition-colors"
-            >
-              <span>신랑측 계좌번호</span>
-              <span className="text-stone-400 text-xs">{openGroomAccount ? '∧' : '∨'}</span>
-            </button>
+          {/* 신랑측 & 신부측 아코디언 */}
+          <ScrollReveal delay={200}>
+            {/* 신랑측 아코디언 */}
+            <div className="bg-[#FAF9F6] rounded-2xl overflow-hidden shadow-2xs border border-stone-200 text-left mb-4 max-w-[340px] mx-auto font-sans">
+              <button
+                onClick={() => setOpenGroomAccount(!openGroomAccount)}
+                className="w-full py-4 px-5 flex items-center justify-between text-sm font-medium text-stone-700 bg-stone-100/70 hover:bg-stone-100 transition-colors cursor-pointer"
+              >
+                <span>신랑측 계좌번호</span>
+                <svg
+                  className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${openGroomAccount ? 'rotate-180' : ''}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
 
-            {openGroomAccount && (
-              <div className="p-4 space-y-3 bg-white">
-                {(groomAccounts.length > 0 ? groomAccounts : defaultAccounts).map((acc, idx) => (
-                  <div key={idx} className="flex items-center justify-between py-2 border-b border-stone-100 last:border-0">
-                    <div>
-                      <p className="text-xs text-stone-500">{acc.name || '신랑 예금주'}</p>
-                      <p className="text-xs font-medium text-stone-800 mt-0.5">{acc.bank} {acc.number}</p>
+              {openGroomAccount && (
+                <div className="p-4 space-y-3 bg-white">
+                  {(groomAccounts.length > 0 ? groomAccounts : defaultAccounts).map((acc, idx) => (
+                    <div key={idx} className="flex items-center justify-between py-2 border-b border-stone-100 last:border-0">
+                      <div>
+                        <p className="text-xs text-stone-500">{acc.name || '신랑 예금주'}</p>
+                        <p className="text-xs font-medium text-stone-800 mt-0.5">{acc.bank} {acc.number}</p>
+                      </div>
+                      <button
+                        onClick={() => handleCopy(`${acc.bank} ${acc.number}`, `${acc.name} 계좌번호가`)}
+                        className="px-3.5 py-1.5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-xs font-medium text-stone-600 rounded-full transition-colors font-sans cursor-pointer"
+                      >
+                        복사하기
+                      </button>
                     </div>
-                    <button
-                      onClick={() => handleCopy(`${acc.bank} ${acc.number}`, `${acc.name} 계좌번호가`)}
-                      className="px-3.5 py-1.5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-xs font-medium text-stone-600 rounded-full transition-colors font-sans"
-                    >
-                      복사하기
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* 신부측 아코디언 */}
-          <div className="bg-[#FAF9F6] rounded-2xl overflow-hidden shadow-2xs border border-stone-200 text-left max-w-[340px] mx-auto font-sans">
-            <button
-              onClick={() => setOpenBrideAccount(!openBrideAccount)}
-              className="w-full py-4 px-5 flex items-center justify-between text-sm font-medium text-stone-700 bg-stone-100/70 hover:bg-stone-100 transition-colors"
-            >
-              <span>신부측 계좌번호</span>
-              <span className="text-stone-400 text-xs">{openBrideAccount ? '∧' : '∨'}</span>
-            </button>
-
-            {openBrideAccount && (
-              <div className="p-4 space-y-3 bg-white">
-                {(brideAccounts.length > 0 ? brideAccounts : defaultAccounts).map((acc, idx) => (
-                  <div key={idx} className="flex items-center justify-between py-2 border-b border-stone-100 last:border-0">
-                    <div>
-                      <p className="text-xs text-stone-500">{acc.name || '신부 예금주'}</p>
-                      <p className="text-xs font-medium text-stone-800 mt-0.5">{acc.bank} {acc.number}</p>
-                    </div>
-                    <button
-                      onClick={() => handleCopy(`${acc.bank} ${acc.number}`, `${acc.name} 계좌번호가`)}
-                      className="px-3.5 py-1.5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-xs font-medium text-stone-600 rounded-full transition-colors font-sans"
-                    >
-                      복사하기
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </ScrollReveal>
-      </section>
-
-      {/* 8. 정보 (식사/셔틀 롤링 슬라이더) (Image 8) */}
-      <section className="py-20 px-6 bg-[#FCFBF7] text-center border-t border-[#F2ECE1]">
-        <ScrollReveal>
-          {/* 상단 손그림 드로잉 아이콘 4 */}
-          <img 
-            src="/templates/basic/미니멀 웨딩 아이콘 6종 세트 4.svg" 
-            alt="정보" 
-            className="w-16 h-16 mx-auto mb-3.5 object-contain opacity-90" 
-          />
-          <h2 className="text-lg font-serif text-stone-800 tracking-wider mb-6">
-            정보
-          </h2>
-        </ScrollReveal>
-
-        {/* 롤링 슬라이더 컨테이너 */}
-        <ScrollReveal delay={200}>
-          <div className="flex items-center justify-center gap-2 max-w-[360px] mx-auto font-sans">
-            {/* 이전 버튼 */}
-            <button
-              onClick={() => setInfoIndex((prev) => (prev > 0 ? prev - 1 : infoCards.length - 1))}
-              className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-700 text-2xl font-light cursor-pointer select-none transition-colors"
-              aria-label="이전 정보"
-            >
-              ‹
-            </button>
-
-            {/* 정보 카드 (가로폭 축소로 화살표와 여유로운 간격 확보) */}
-            <div className="w-[275px] max-w-full bg-white rounded-2xl p-6 text-center border border-stone-200/80 shadow-xs transition-all duration-300 min-h-[165px] flex flex-col justify-center">
-              <h3 className="text-sm font-semibold text-stone-800 mb-1">
-                {infoCards[infoIndex].title}
-              </h3>
-              <p className="text-xs text-stone-500 mb-3.5">
-                {infoCards[infoIndex].subtitle}
-              </p>
-              <div className="w-full h-px bg-stone-100 mb-3.5" />
-              <p className="text-xs text-stone-600 leading-relaxed break-keep">
-                {infoCards[infoIndex].content}
-              </p>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* 다음 버튼 */}
-            <button
-              onClick={() => setInfoIndex((prev) => (prev < infoCards.length - 1 ? prev + 1 : 0))}
-              className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-700 text-2xl font-light cursor-pointer select-none transition-colors"
-              aria-label="다음 정보"
-            >
-              ›
-            </button>
-          </div>
-
-          {/* 하단 인디케이터 도트 */}
-          <div className="flex justify-center gap-1.5 mt-4">
-            {infoCards.map((_, idx) => (
+            {/* 신부측 아코디언 */}
+            <div className="bg-[#FAF9F6] rounded-2xl overflow-hidden shadow-2xs border border-stone-200 text-left max-w-[340px] mx-auto font-sans">
               <button
-                key={idx}
-                onClick={() => setInfoIndex(idx)}
-                className={`rounded-full transition-all duration-300 ${
-                  idx === infoIndex ? 'w-2 h-2 bg-stone-700' : 'w-1.5 h-1.5 bg-stone-300'
-                }`}
-              />
-            ))}
-          </div>
-        </ScrollReveal>
-      </section>
+                onClick={() => setOpenBrideAccount(!openBrideAccount)}
+                className="w-full py-4 px-5 flex items-center justify-between text-sm font-medium text-stone-700 bg-stone-100/70 hover:bg-stone-100 transition-colors cursor-pointer"
+              >
+                <span>신부측 계좌번호</span>
+                <svg
+                  className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${openBrideAccount ? 'rotate-180' : ''}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {openBrideAccount && (
+                <div className="p-4 space-y-3 bg-white">
+                  {(brideAccounts.length > 0 ? brideAccounts : defaultAccounts).map((acc, idx) => (
+                    <div key={idx} className="flex items-center justify-between py-2 border-b border-stone-100 last:border-0">
+                      <div>
+                        <p className="text-xs text-stone-500">{acc.name || '신부 예금주'}</p>
+                        <p className="text-xs font-medium text-stone-800 mt-0.5">{acc.bank} {acc.number}</p>
+                      </div>
+                      <button
+                        onClick={() => handleCopy(`${acc.bank} ${acc.number}`, `${acc.name} 계좌번호가`)}
+                        className="px-3.5 py-1.5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-xs font-medium text-stone-600 rounded-full transition-colors font-sans"
+                      >
+                        복사하기
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </ScrollReveal>
+        </section>
+      )}
+
+      {/* 8. 정보 (식사/셔틀/피로연 등 동적 안내 카드) (Image 8) */}
+      {infoCards.length > 0 && (
+        <section className="py-20 px-6 bg-[#FCFBF7] text-center border-t border-[#F2ECE1]">
+          <ScrollReveal>
+            {/* 상단 손그림 드로잉 아이콘 4 */}
+            <img 
+              src="/templates/basic/미니멀 웨딩 아이콘 6종 세트 4.svg" 
+              alt="정보" 
+              className="w-16 h-16 mx-auto mb-3.5 object-contain opacity-90" 
+            />
+            <h2 className="text-lg font-serif text-stone-800 tracking-wider mb-6">
+              정보
+            </h2>
+          </ScrollReveal>
+
+          {/* 롤링 슬라이더 컨테이너 */}
+          <ScrollReveal delay={200}>
+            <div className="flex items-center justify-center gap-2 max-w-[360px] mx-auto font-sans">
+              {/* 이전 버튼 (2개 이상일 때만 노출) */}
+              {infoCards.length > 1 && (
+                <button
+                  onClick={() => setInfoIndex((prev) => (prev > 0 ? prev - 1 : infoCards.length - 1))}
+                  className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-700 text-2xl font-light cursor-pointer select-none transition-colors"
+                  aria-label="이전 정보"
+                >
+                  ‹
+                </button>
+              )}
+
+              {/* 정보 카드 */}
+              <div className="w-[275px] max-w-full bg-white rounded-2xl p-6 text-center border border-stone-200/80 shadow-xs transition-all duration-300 min-h-[165px] flex flex-col justify-center">
+                <h3 className="text-sm font-semibold text-stone-800 mb-1">
+                  {infoCards[infoIndex]?.title}
+                </h3>
+                {infoCards[infoIndex]?.subtitle && (
+                  <p className="text-xs text-stone-500 mb-3.5">
+                    {infoCards[infoIndex]?.subtitle}
+                  </p>
+                )}
+                <div className="w-full h-px bg-stone-100 mb-3.5" />
+                <p className="text-xs text-stone-600 leading-relaxed break-keep whitespace-pre-line">
+                  {infoCards[infoIndex]?.content}
+                </p>
+              </div>
+
+              {/* 다음 버튼 (2개 이상일 때만 노출) */}
+              {infoCards.length > 1 && (
+                <button
+                  onClick={() => setInfoIndex((prev) => (prev < infoCards.length - 1 ? prev + 1 : 0))}
+                  className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-700 text-2xl font-light cursor-pointer select-none transition-colors"
+                  aria-label="다음 정보"
+                >
+                  ›
+                </button>
+              )}
+            </div>
+
+            {/* 하단 인디케이터 도트 (2개 이상일 때만 노출) */}
+            {infoCards.length > 1 && (
+              <div className="flex justify-center gap-1.5 mt-4">
+                {infoCards.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setInfoIndex(idx)}
+                    className={`rounded-full transition-all duration-300 cursor-pointer ${
+                      idx === infoIndex ? 'w-2 h-2 bg-stone-700' : 'w-1.5 h-1.5 bg-stone-300'
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+          </ScrollReveal>
+        </section>
+      )}
 
       {/* 9. 참석 의사 (RSVP) (Image 9) */}
-      <section className="py-20 px-6 bg-white text-center border-t border-[#F2ECE1]">
-        <ScrollReveal>
-          {/* 상단 손그림 드로잉 아이콘 5 */}
-          <img 
-            src="/templates/basic/미니멀 웨딩 아이콘 6종 세트 5.svg" 
-            alt="참석 의사" 
-            className="w-16 h-16 mx-auto mb-3.5 object-contain opacity-90" 
-          />
-          <h2 className="text-lg font-serif text-stone-800 tracking-wider mb-1">
-            참석 의사
-          </h2>
-          <p className="text-xs text-stone-400 font-light mb-8 font-sans">
-            모든 분들을 소중하게 모실 수 있도록 전해주세요
-          </p>
-        </ScrollReveal>
-
-        {/* 안내 카드 & 참석 정보 전달하기 버튼 */}
-        <ScrollReveal delay={200}>
-          <div className="bg-[#FAF9F6] rounded-2xl p-7 max-w-[320px] mx-auto shadow-2xs border border-stone-200 mb-6 font-sans">
-            <p className="text-sm font-semibold text-stone-800 mb-3">
-              신랑 {invitation?.groom_name || '권기득'} ♥ 신부 {invitation?.bride_name || '장민기'}
+      {showRsvpSection && (
+        <section className="py-20 px-6 bg-white text-center border-t border-[#F2ECE1]">
+          <ScrollReveal>
+            {/* 상단 손그림 드로잉 아이콘 5 */}
+            <img 
+              src="/templates/basic/미니멀 웨딩 아이콘 6종 세트 5.svg" 
+              alt="참석 의사" 
+              className="w-16 h-16 mx-auto mb-3.5 object-contain opacity-90" 
+            />
+            <h2 className="text-lg font-serif text-stone-800 tracking-wider mb-1">
+              참석 의사
+            </h2>
+            <p className="text-xs text-stone-400 font-light mb-8 font-sans">
+              모든 분들을 소중하게 모실 수 있도록 전해주세요
             </p>
-            <div className="w-full h-px bg-stone-200 mb-3" />
-            <p className="text-xs text-stone-600 mb-1">
-              {calendarData.year}년 {calendarData.month}월 {calendarData.weddingDay}일 토요일 오전 11시
-            </p>
-            <p className="text-xs text-stone-500">
-              {invitation?.venue_name || '호텔금오산 컨벤션센터'}
-            </p>
-          </div>
+          </ScrollReveal>
 
-          <button
-            onClick={() => setShowRsvpModal(true)}
-            className="w-full max-w-[320px] py-4 bg-[#333333] hover:bg-[#1a1a1a] text-white rounded-xl text-sm font-medium tracking-wide transition-colors shadow-sm font-sans"
-          >
-            참석 정보 전달하기
-          </button>
-        </ScrollReveal>
-      </section>
-
-      {/* 10. 방명록 (Image 10) */}
-      <section className="py-20 px-6 bg-[#FCFBF7] text-center border-t border-[#F2ECE1]">
-        <ScrollReveal>
-          {/* 상단 손그림 드로잉 아이콘 6 */}
-          <img 
-            src="/templates/basic/미니멀 웨딩 아이콘 6종 세트 6.svg" 
-            alt="방명록" 
-            className="w-16 h-16 mx-auto mb-3.5 object-contain opacity-90" 
-          />
-          <h2 className="text-lg font-serif text-stone-800 tracking-wider mb-1">
-            방명록
-          </h2>
-          <p className="text-xs text-stone-400 font-light mb-8 font-sans">
-            저희 둘에게 따뜻한 메시지를 남겨주세요.
-          </p>
-        </ScrollReveal>
-
-        {/* 방명록 슬라이더 & 버튼 */}
-        <ScrollReveal delay={200}>
-          <div className="flex items-center justify-center gap-2 max-w-[360px] mx-auto font-sans">
-            {/* 이전 화살표 */}
-            <button
-              onClick={() => setGuestbookIndex((prev) => (prev > 0 ? prev - 1 : guestbookList.length - 1))}
-              className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-700 text-2xl font-light cursor-pointer select-none transition-colors"
-              aria-label="이전 방명록"
-            >
-              ‹
-            </button>
-
-            {/* 방명록 카드 (가로폭 축소로 사각형이 아담해지고 화살표와 겹치지 않음) */}
-            <div className="w-[275px] max-w-full bg-white rounded-2xl p-6 text-center border border-stone-200 shadow-xs transition-all duration-300 min-h-[160px] flex flex-col justify-between">
-              <div className="flex justify-center mb-3">
-                <span className="inline-flex items-center px-3 py-1 border border-stone-200 rounded-full text-xs text-stone-600 font-serif">
-                  <em className="text-[10px] text-stone-400 not-italic mr-1.5">From</em>
-                  <strong className="font-medium">{guestbookList[guestbookIndex]?.author}</strong>
-                </span>
-              </div>
-              <p className="text-xs text-stone-600 leading-relaxed whitespace-pre-line my-auto break-keep">
-                {guestbookList[guestbookIndex]?.content}
+          {/* 안내 카드 & 참석 정보 전달하기 버튼 */}
+          <ScrollReveal delay={200}>
+            <div className="bg-[#FAF9F6] rounded-2xl p-7 max-w-[320px] mx-auto shadow-2xs border border-stone-200 mb-6 font-sans">
+              <p className="text-sm font-semibold text-stone-800 mb-3">
+                신랑 {invitation?.groom_name || '권기득'} ♥ 신부 {invitation?.bride_name || '장민기'}
               </p>
-              <p className="text-[10px] text-stone-400 mt-3 font-sans">
-                {guestbookList[guestbookIndex]?.created_at?.slice(0, 10).replace(/-/g, '.') || '2027.10.21'}
+              <div className="w-full h-px bg-stone-200 mb-3" />
+              <p className="text-xs text-stone-600 mb-1">
+                {calendarData.year}년 {calendarData.month}월 {calendarData.weddingDay}일 토요일 오전 11시
+              </p>
+              <p className="text-xs text-stone-500">
+                {invitation?.venue_name || '호텔금오산 컨벤션센터'}
               </p>
             </div>
 
-            {/* 다음 화살표 */}
             <button
-              onClick={() => setGuestbookIndex((prev) => (prev < guestbookList.length - 1 ? prev + 1 : 0))}
-              className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-700 text-2xl font-light cursor-pointer select-none transition-colors"
-              aria-label="다음 방명록"
+              onClick={() => setShowRsvpModal(true)}
+              className="w-full max-w-[320px] py-4 bg-[#333333] hover:bg-[#1a1a1a] text-white rounded-xl text-sm font-medium tracking-wide transition-colors shadow-sm font-sans cursor-pointer"
             >
-              ›
+              참석 정보 전달하기
             </button>
-          </div>
+          </ScrollReveal>
+        </section>
+      )}
 
-          {/* 인디케이터 도트 */}
-          <div className="flex justify-center gap-1.5 mt-4 mb-8">
-            {guestbookList.map((_, idx) => (
+      {/* 10. 방명록 (Image 10) */}
+      {showGuestbookSection && (
+        <section className="py-20 px-6 bg-[#FCFBF7] text-center border-t border-[#F2ECE1]">
+          <ScrollReveal>
+            {/* 상단 손그림 드로잉 아이콘 6 */}
+            <img 
+              src="/templates/basic/미니멀 웨딩 아이콘 6종 세트 6.svg" 
+              alt="방명록" 
+              className="w-16 h-16 mx-auto mb-3.5 object-contain opacity-90" 
+            />
+            <h2 className="text-lg font-serif text-stone-800 tracking-wider mb-1">
+              방명록
+            </h2>
+            <p className="text-xs text-stone-400 font-light mb-8 font-sans">
+              저희 둘에게 따뜻한 메시지를 남겨주세요.
+            </p>
+          </ScrollReveal>
+
+          {/* 방명록 슬라이더 & 버튼 */}
+          <ScrollReveal delay={200}>
+            <div className="flex items-center justify-center gap-2 max-w-[360px] mx-auto font-sans">
+              {/* 이전 화살표 */}
               <button
-                key={idx}
-                onClick={() => setGuestbookIndex(idx)}
-                className={`rounded-full transition-all duration-300 ${
-                  idx === guestbookIndex ? 'w-2 h-2 bg-stone-700' : 'w-1.5 h-1.5 bg-stone-300'
-                }`}
-              />
-            ))}
-          </div>
+                onClick={() => setGuestbookIndex((prev) => (prev > 0 ? prev - 1 : guestbookList.length - 1))}
+                className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-700 text-2xl font-light cursor-pointer select-none transition-colors"
+                aria-label="이전 방명록"
+              >
+                ‹
+              </button>
 
-          {/* 작성하기 버튼 */}
-          <div className="max-w-[320px] mx-auto font-sans">
-            <button
-              onClick={() => setShowGuestbookModal(true)}
-              className="inline-flex items-center justify-center gap-1.5 px-6 py-3.5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-700 text-sm rounded-xl transition-colors shadow-2xs font-medium"
-            >
-              <span>작성하기</span>
-              <span>✏️</span>
-            </button>
-          </div>
-        </ScrollReveal>
-      </section>
+              {/* 방명록 카드 (가로폭 축소로 사각형이 아담해지고 화살표와 겹치지 않음) */}
+              <div className="w-[275px] max-w-full bg-white rounded-2xl p-6 text-center border border-stone-200 shadow-xs transition-all duration-300 min-h-[160px] flex flex-col justify-between">
+                <div className="flex justify-center mb-3">
+                  <span className="inline-flex items-center px-3 py-1 border border-stone-200 rounded-full text-xs text-stone-600 font-serif">
+                    <em className="text-[10px] text-stone-400 not-italic mr-1.5">From</em>
+                    <strong className="font-medium">{guestbookList[guestbookIndex]?.author}</strong>
+                  </span>
+                </div>
+                <p className="text-xs text-stone-600 leading-relaxed whitespace-pre-line my-auto break-keep">
+                  {guestbookList[guestbookIndex]?.content}
+                </p>
+                <p className="text-[10px] text-stone-400 mt-3 font-sans">
+                  {guestbookList[guestbookIndex]?.created_at?.slice(0, 10).replace(/-/g, '.') || '2027.10.21'}
+                </p>
+              </div>
+
+              {/* 다음 화살표 */}
+              <button
+                onClick={() => setGuestbookIndex((prev) => (prev < guestbookList.length - 1 ? prev + 1 : 0))}
+                className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-700 text-2xl font-light cursor-pointer select-none transition-colors"
+                aria-label="다음 방명록"
+              >
+                ›
+              </button>
+            </div>
+
+            {/* 인디케이터 도트 */}
+            <div className="flex justify-center gap-1.5 mt-4 mb-8">
+              {guestbookList.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setGuestbookIndex(idx)}
+                  className={`rounded-full transition-all duration-300 ${
+                    idx === guestbookIndex ? 'w-2 h-2 bg-stone-700' : 'w-1.5 h-1.5 bg-stone-300'
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* 작성하기 버튼 */}
+            <div className="max-w-[320px] mx-auto font-sans">
+              <button
+                onClick={() => setShowGuestbookModal(true)}
+                className="inline-flex items-center justify-center gap-1.5 px-6 py-3.5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-700 text-sm rounded-xl transition-colors shadow-2xs font-medium cursor-pointer"
+              >
+                <span>작성하기</span>
+                <span>✏️</span>
+              </button>
+            </div>
+          </ScrollReveal>
+        </section>
+      )}
 
       {/* 11. 엔딩 사진 (Image 11 Top) */}
       <ScrollReveal duration={1000}>

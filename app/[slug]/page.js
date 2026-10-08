@@ -14,7 +14,7 @@ export async function generateMetadata({ params }) {
 
   const { data: invitation } = await supabase
     .from('invitations')
-    .select('groom_name, bride_name, wedding_date, venue_name, cover_image, extra_data')
+    .select('groom_name, bride_name, wedding_date, venue_name, images')
     .eq('slug', slug)
     .single();
 
@@ -24,8 +24,8 @@ export async function generateMetadata({ params }) {
     };
   }
 
-  // 공유 썸네일: share_image 우선, 없으면 기본 cover_image 사용
-  const ogImage = invitation.extra_data?.share_image || invitation.cover_image;
+  // 공유 썸네일: images.cover 최우선
+  const ogImage = invitation.images?.cover || invitation.images?.main || '/cover.jpg';
   const title = `${invitation.groom_name} ♥ ${invitation.bride_name} 결혼합니다`;
   const description = `${invitation.wedding_date} | ${invitation.venue_name}`;
 

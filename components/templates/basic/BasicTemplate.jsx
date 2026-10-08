@@ -9,6 +9,7 @@ import ContactModal from '@/components/ContactModal';
 import GalleryModal from '@/components/GalleryModal';
 import RsvpModal from '@/components/RsvpModal';
 import GuestbookModal from '@/components/GuestbookModal';
+import GuestbookDeleteModal from '@/components/GuestbookDeleteModal';
 import ScrollReveal from '@/components/ScrollReveal';
 
 export default function BasicTemplate({ invitation }) {
@@ -21,6 +22,7 @@ export default function BasicTemplate({ invitation }) {
   const [showContactModal, setShowContactModal] = useState(false);
   const [showRsvpModal, setShowRsvpModal] = useState(false);
   const [showGuestbookModal, setShowGuestbookModal] = useState(false);
+  const [deleteTargetMsg, setDeleteTargetMsg] = useState(null);
   const [selectedGalleryIndex, setSelectedGalleryIndex] = useState(null);
 
   // 갤러리 더보기 상태
@@ -129,6 +131,7 @@ export default function BasicTemplate({ invitation }) {
   }, []);
 
   // 1. 날짜 및 시간 계산
+  const hasWeddingDate = Boolean(invitation?.wedding_date);
   const rawDate = invitation?.wedding_date || '2027-03-27T11:00:00';
   const targetDate = useMemo(() => {
     const d = new Date(rawDate);
@@ -168,6 +171,7 @@ export default function BasicTemplate({ invitation }) {
 
   // 포맷된 날짜 텍스트
   const formattedKoreanDate = useMemo(() => {
+    if (!hasWeddingDate) return '';
     const days = ['일', '월', '화', '수', '목', '금', '토'];
     const y = targetDate.getFullYear();
     const m = targetDate.getMonth() + 1;
@@ -179,9 +183,10 @@ export default function BasicTemplate({ invitation }) {
     const minutes = targetDate.getMinutes();
     const minStr = minutes > 0 ? ` ${minutes}분` : '';
     return `${y}년 ${m}월 ${d}일 ${dayName}요일 | ${period} ${displayHour}시${minStr}`;
-  }, [targetDate]);
+  }, [targetDate, hasWeddingDate]);
 
   const formattedEnglishDate = useMemo(() => {
+    if (!hasWeddingDate) return '';
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     const dateStr = targetDate.toLocaleDateString('en-US', options);
     const hours = targetDate.getHours();
@@ -189,7 +194,7 @@ export default function BasicTemplate({ invitation }) {
     const displayHour = String(hours % 12 === 0 ? 12 : hours % 12).padStart(2, '0');
     const minutes = String(targetDate.getMinutes()).padStart(2, '0');
     return `${dateStr} | ${period} ${displayHour}:${minutes}`;
-  }, [targetDate]);
+  }, [targetDate, hasWeddingDate]);
 
   // 2. 정보(식사/셔틀/피로연/답례품 등) 동적 안내 카드 리스트
   const infoCards = useMemo(() => {
@@ -390,9 +395,11 @@ export default function BasicTemplate({ invitation }) {
               >
                 We are getting married
               </h1>
-              <p className="mt-2 text-xs sm:text-sm text-white/90 font-sans tracking-[0.25em] drop-shadow-sm">
-                {extra.main_date_en || `${calendarData.year}.${String(calendarData.month).padStart(2, '0')}.${String(calendarData.weddingDay).padStart(2, '0')} ${['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][targetDate.getDay()]}`}
-              </p>
+              {Boolean(extra.main_date_en || hasWeddingDate) && (
+                <p className="mt-2 text-xs sm:text-sm text-white/90 font-sans tracking-[0.25em] drop-shadow-sm">
+                  {extra.main_date_en || `${calendarData.year}.${String(calendarData.month).padStart(2, '0')}.${String(calendarData.weddingDay).padStart(2, '0')} ${['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][targetDate.getDay()]}`}
+                </p>
+              )}
             </div>
 
             {/* 하단: Welcome to & 신랑 신부 영문 이름 */}
@@ -557,7 +564,7 @@ export default function BasicTemplate({ invitation }) {
           </div>
         </ScrollReveal>
 
-        {showCountdownSection && (
+        {hasWeddingDate && showCountdownSection && (
           <ScrollReveal delay={200}>
             {/* 카운트다운 4분할 카드 */}
             <div className="grid grid-cols-4 gap-2.5 max-w-[320px] mx-auto mb-8 font-sans">
@@ -1023,9 +1030,23 @@ export default function BasicTemplate({ invitation }) {
                 <p className="text-xs text-stone-600 leading-relaxed whitespace-pre-line my-auto break-keep">
                   {guestbookList[guestbookIndex]?.content}
                 </p>
-                <p className="text-[10px] text-stone-400 mt-3 font-sans">
-                  {guestbookList[guestbookIndex]?.created_at?.slice(0, 10).replace(/-/g, '.') || ''}
-                </p>
+                <div className="flex items-center justify-center gap-1.5 mt-3 text-[10px] text-stone-400 font-sans">
+                  <span>
+                    {guestbookList[guestbookIndex]?.created_at?.slice(0, 10).replace(/-/g, '.') || ''}
+                  </span>
+                  {guestbookList[guestbookIndex]?.id && guestbookList[guestbookIndex]?.id !== '1' && (
+                    <>
+                      <span className="text-stone-300">&middot;</span>
+                      <button
+                        type="button"
+                        onClick={() => setDeleteTargetMsg(guestbookList[guestbookIndex])}
+                        className="text-stone-400 hover:text-rose-500 underline underline-offset-2 cursor-pointer transition-colors"
+                      >
+                        삭제
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
 
               {/* 다음 화살표 */}
@@ -1139,7 +1160,21 @@ export default function BasicTemplate({ invitation }) {
           invitationId={invitation?.id}
           onClose={() => setShowGuestbookModal(false)}
           onSuccess={(newMsg) => {
-            setGuestbookList((prev) => [newMsg, ...prev]);
+            setGuestbookList((prev) => [newMsg, ...prev.filter((item) => item.id !== '1')]);
+            setGuestbookIndex(0);
+          }}
+        />
+      )}
+
+      {deleteTargetMsg && (
+        <GuestbookDeleteModal
+          targetMsg={deleteTargetMsg}
+          onClose={() => setDeleteTargetMsg(null)}
+          onDeleteSuccess={(deletedId) => {
+            setGuestbookList((prev) => {
+              const updated = prev.filter((item) => item.id !== deletedId);
+              return updated.length > 0 ? updated : defaultGuestbook;
+            });
             setGuestbookIndex(0);
           }}
         />

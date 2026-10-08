@@ -14,6 +14,7 @@ export default function ManageRsvpPage({ params }) {
   const [authorized, setAuthorized] = useState(false);
   const [invitation, setInvitation] = useState(null);
   const [rsvpList, setRsvpList] = useState([]);
+  const [guestbookList, setGuestbookList] = useState([]);
 
   useEffect(() => {
     async function loadData() {
@@ -47,6 +48,15 @@ export default function ManageRsvpPage({ params }) {
         .order('created_at', { ascending: false });
 
       setRsvpList(rsvps || []);
+
+      // 3. 방명록 목록 조회
+      const { data: guestbooks } = await supabase
+        .from('guestbook')
+        .select('*')
+        .eq('invitation_id', inv.id)
+        .order('created_at', { ascending: false });
+
+      setGuestbookList(guestbooks || []);
       setLoading(false);
     }
 
@@ -95,6 +105,26 @@ export default function ManageRsvpPage({ params }) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  // 관리자 방명록 삭제 (비밀번호 불필요)
+  const handleDeleteGuestbook = async (id, author) => {
+    if (!confirm(`'${author}' 님의 방명록을 정말 삭제하시겠습니까?`)) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from('guestbook')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('방명록 삭제 오류:', error);
+      alert('삭제 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+    } else {
+      setGuestbookList((prev) => prev.filter((item) => item.id !== id));
+      alert('방명록이 삭제되었습니다.');
+    }
   };
 
   if (loading) {
@@ -210,6 +240,68 @@ export default function ManageRsvpPage({ params }) {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* 방명록 관리 섹션 */}
+        <div className="pt-8 mt-8 border-t border-stone-200">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-base font-bold text-stone-900">
+                방명록 축하 메시지 관리
+              </h2>
+              <p className="text-xs text-stone-500 mt-0.5">
+                하객분들이 남겨주신 메시지입니다. 불필요하거나 부적절한 글은 바로 삭제할 수 있습니다.
+              </p>
+            </div>
+            <span className="text-xs font-semibold px-2.5 py-1 bg-stone-100 text-stone-700 rounded-full shrink-0">
+              총 {guestbookList.length}건
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-stone-600 border-collapse">
+              <thead>
+                <tr className="border-b border-stone-200 bg-stone-50 font-semibold text-stone-700">
+                  <th className="py-2.5 px-3 w-24 whitespace-nowrap">작성자</th>
+                  <th className="py-2.5 px-3">메시지 내용</th>
+                  <th className="py-2.5 px-3 whitespace-nowrap w-32">작성일시</th>
+                  <th className="py-2.5 px-3 text-center w-20 whitespace-nowrap">관리</th>
+                </tr>
+              </thead>
+              <tbody>
+                {guestbookList.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="py-8 text-center text-stone-400">
+                      등록된 방명록 메시지가 없습니다.
+                    </td>
+                  </tr>
+                ) : (
+                  guestbookList.map((row) => (
+                    <tr key={row.id} className="border-b border-stone-100 hover:bg-stone-50/50">
+                      <td className="py-3 px-3 font-semibold text-stone-900 align-top whitespace-nowrap">
+                        {row.author}
+                      </td>
+                      <td className="py-3 px-3 text-stone-700 whitespace-pre-line leading-relaxed align-top break-keep">
+                        {row.content}
+                      </td>
+                      <td className="py-3 px-3 text-stone-500 whitespace-nowrap align-top">
+                        {formatDate(row.created_at)}
+                      </td>
+                      <td className="py-3 px-3 text-center align-top whitespace-nowrap">
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteGuestbook(row.id, row.author)}
+                          className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 font-medium rounded text-[11px] transition-colors cursor-pointer"
+                        >
+                          삭제
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
 
       </div>

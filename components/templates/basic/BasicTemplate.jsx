@@ -307,34 +307,77 @@ export default function BasicTemplate({ invitation }) {
   };
 
   // 카카오톡 공유
-  const handleKakaoShare = () => {
+  const handleKakaoShare = async () => {
     const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
     const coupleText = [invitation?.groom_name, invitation?.bride_name].filter(Boolean).join(' ♥ ');
     const shareTitle = coupleText ? `${coupleText} 결혼식에 초대합니다` : '소중한 결혼식에 초대합니다';
     const shareDesc = [formattedKoreanDate, invitation?.venue_name].filter(Boolean).join(' | ');
-    const shareImg = extra.share_image || mainImage;
 
-    if (typeof window !== 'undefined' && window.Kakao && window.Kakao.isInitialized()) {
-      window.Kakao.Share.sendDefault({
-        objectType: 'feed',
-        content: {
-          title: shareTitle,
-          description: shareDesc,
-          imageUrl: shareImg,
-          link: { mobileWebUrl: currentUrl, webUrl: currentUrl },
-        },
-        buttons: [
-          { title: '청첩장 보기', link: { mobileWebUrl: currentUrl, webUrl: currentUrl } },
-          { title: '위치 보기', link: { mobileWebUrl: mapUrl, webUrl: mapUrl } },
-        ],
-      });
-      return;
+    // 1. 카카오 SDK 로드 및 초기화 시도
+    if (typeof window !== 'undefined' && window.Kakao) {
+      if (!window.Kakao.isInitialized()) {
+        const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;
+        if (kakaoKey) {
+          try {
+            window.Kakao.init(kakaoKey);
+          } catch (e) {
+            console.warn('Kakao init warning:', e);
+          }
+        }
+      }
+
+      if (window.Kakao.isInitialized()) {
+        try {
+          // 오시는 길 검색 링크 (기존의 정의되지 않았던 mapUrl 에러 완벽 해결)
+          const venueQuery = encodeURIComponent(invitation?.venue_name || invitation?.venue_address || '결혼식장');
+          const mapLink = `https://map.kakao.com/link/search/${venueQuery}`;
+
+          // 절대 URL 이미지 경로 처리
+          let shareImg = extra.share_image || images.cover || images.main || mainImage;
+          if (shareImg && typeof shareImg === 'string' && !shareImg.startsWith('http')) {
+            shareImg = `${window.location.origin}${shareImg.startsWith('/') ? '' : '/'}${shareImg}`;
+          }
+          // localhost 환경이거나 이미지가 없을 경우 카카오 스크랩 검증용 고화질 웨딩 이미지 대체
+          if (!shareImg || (typeof window !== 'undefined' && window.location.hostname === 'localhost')) {
+            shareImg = 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80';
+          }
+
+          window.Kakao.Share.sendDefault({
+            objectType: 'feed',
+            content: {
+              title: shareTitle,
+              description: shareDesc,
+              imageUrl: shareImg,
+              link: { mobileWebUrl: currentUrl, webUrl: currentUrl },
+            },
+            buttons: [
+              { title: '청첩장 보기', link: { mobileWebUrl: currentUrl, webUrl: currentUrl } },
+              { title: '오시는 길', link: { mobileWebUrl: mapLink, webUrl: mapLink } },
+            ],
+          });
+          return;
+        } catch (kakaoErr) {
+          console.error('카카오 공유 호출 오류:', kakaoErr);
+          // 실패 시 하단 fallback으로 자동 전환
+        }
+      }
     }
 
+    // 2. 모바일 브라우저 네이티브 공유 API (Safari, Chrome 등)
     if (typeof navigator !== 'undefined' && navigator.share) {
-      navigator.share({ title: shareTitle, text: shareDesc, url: currentUrl }).catch(() => {});
-      return;
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: `${shareTitle}\n${shareDesc}`,
+          url: currentUrl,
+        });
+        return;
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+      }
     }
+
+    // 3. 최후의 Fallback: 링크 복사
     handleCopy(currentUrl, '청첩장 주소가');
   };
 

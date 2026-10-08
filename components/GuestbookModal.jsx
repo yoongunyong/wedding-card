@@ -116,7 +116,7 @@ export default function GuestbookModal({ invitationId, onClose, onSuccess }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-[#333333] hover:bg-[#1a1a1a] text-white rounded-xl text-xs font-medium tracking-wide transition-colors shadow-sm disabled:opacity-50"
+              className="w-full py-3.5 bg-[#333333] hover:bg-[#1a1a1a] text-white rounded-xl text-sm font-medium tracking-wide transition-colors shadow-sm disabled:opacity-50"
             >
               {loading ? '등록 중...' : '작성 완료'}
             </button>

@@ -411,7 +411,7 @@ export default function BasicTemplate({ invitation }) {
           {/* 축하 연락하기 버튼 */}
           <button
             onClick={() => setShowContactModal(true)}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-700 text-xs rounded-full font-sans transition-colors mb-16 shadow-2xs"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-700 text-sm font-medium rounded-full font-sans transition-colors mb-16 shadow-2xs"
           >
             <span>축하 연락하기</span>
             <span>📞</span>
@@ -592,7 +592,7 @@ export default function BasicTemplate({ invitation }) {
             <div className="mt-8 max-w-[380px] mx-auto font-sans">
               <button
                 onClick={() => setShowMorePhotos(!showMorePhotos)}
-                className="w-full py-3.5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-700 text-xs rounded-xl font-medium transition-colors"
+                className="w-full py-3.5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-700 text-sm rounded-xl font-medium transition-colors"
               >
                 {showMorePhotos ? '접기' : '더보기'}
               </button>
@@ -645,14 +645,14 @@ export default function BasicTemplate({ invitation }) {
           <div className="grid grid-cols-2 gap-3 max-w-[340px] mx-auto px-4 font-sans">
             <button
               onClick={() => window.open(`https://map.naver.com/p/search/${encodeURIComponent(invitation?.venue_name || '호텔금오산')}`, '_blank')}
-              className="py-3 px-4 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-700 text-xs rounded-xl shadow-2xs border border-stone-200/60 flex items-center justify-center gap-2 transition-colors font-medium"
+              className="py-3 px-4 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-700 text-sm rounded-xl shadow-2xs border border-stone-200/60 flex items-center justify-center gap-2 transition-colors font-medium"
             >
               <span>네이버 지도</span>
               <img src="/templates/basic/naver-map.svg" alt="네이버 지도" className="w-[18px] h-[18px] object-contain" />
             </button>
             <button
               onClick={() => window.open(`https://map.kakao.com/link/search/${encodeURIComponent(invitation?.venue_name || '호텔금오산')}`, '_blank')}
-              className="py-3 px-4 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-700 text-xs rounded-xl shadow-2xs border border-stone-200/60 flex items-center justify-center gap-2 transition-colors font-medium"
+              className="py-3 px-4 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-700 text-sm rounded-xl shadow-2xs border border-stone-200/60 flex items-center justify-center gap-2 transition-colors font-medium"
             >
               <span>카카오네비</span>
               <img src="/templates/basic/kakao-navi.svg" alt="카카오내비" className="w-[18px] h-[18px] object-contain" />
@@ -740,7 +740,7 @@ export default function BasicTemplate({ invitation }) {
           <div className="bg-[#FAF9F6] rounded-2xl overflow-hidden shadow-2xs border border-stone-200 text-left mb-4 max-w-[340px] mx-auto font-sans">
             <button
               onClick={() => setOpenGroomAccount(!openGroomAccount)}
-              className="w-full py-4 px-5 flex items-center justify-between text-xs font-medium text-stone-700 bg-stone-100/70 hover:bg-stone-100 transition-colors"
+              className="w-full py-4 px-5 flex items-center justify-between text-sm font-medium text-stone-700 bg-stone-100/70 hover:bg-stone-100 transition-colors"
             >
               <span>신랑측 계좌번호</span>
               <span className="text-stone-400 text-xs">{openGroomAccount ? '∧' : '∨'}</span>
@@ -756,7 +756,7 @@ export default function BasicTemplate({ invitation }) {
                     </div>
                     <button
                       onClick={() => handleCopy(`${acc.bank} ${acc.number}`, `${acc.name} 계좌번호가`)}
-                      className="px-3.5 py-1.5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-[11px] text-stone-600 rounded-full transition-colors font-sans"
+                      className="px-3.5 py-1.5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-xs font-medium text-stone-600 rounded-full transition-colors font-sans"
                     >
                       복사하기
                     </button>
@@ -770,7 +770,7 @@ export default function BasicTemplate({ invitation }) {
           <div className="bg-[#FAF9F6] rounded-2xl overflow-hidden shadow-2xs border border-stone-200 text-left max-w-[340px] mx-auto font-sans">
             <button
               onClick={() => setOpenBrideAccount(!openBrideAccount)}
-              className="w-full py-4 px-5 flex items-center justify-between text-xs font-medium text-stone-700 bg-stone-100/70 hover:bg-stone-100 transition-colors"
+              className="w-full py-4 px-5 flex items-center justify-between text-sm font-medium text-stone-700 bg-stone-100/70 hover:bg-stone-100 transition-colors"
             >
               <span>신부측 계좌번호</span>
               <span className="text-stone-400 text-xs">{openBrideAccount ? '∧' : '∨'}</span>
@@ -786,7 +786,7 @@ export default function BasicTemplate({ invitation }) {
                     </div>
                     <button
                       onClick={() => handleCopy(`${acc.bank} ${acc.number}`, `${acc.name} 계좌번호가`)}
-                      className="px-3.5 py-1.5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-[11px] text-stone-600 rounded-full transition-colors font-sans"
+                      className="px-3.5 py-1.5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-xs font-medium text-stone-600 rounded-full transition-colors font-sans"
                     >
                       복사하기
                     </button>
@@ -898,7 +898,7 @@ export default function BasicTemplate({ invitation }) {
 
           <button
             onClick={() => setShowRsvpModal(true)}
-            className="w-full max-w-[320px] py-4 bg-[#333333] hover:bg-[#1a1a1a] text-white rounded-xl text-xs tracking-wider transition-colors shadow-sm font-sans font-medium"
+            className="w-full max-w-[320px] py-4 bg-[#333333] hover:bg-[#1a1a1a] text-white rounded-xl text-sm font-medium tracking-wide transition-colors shadow-sm font-sans"
           >
             참석 정보 전달하기
           </button>
@@ -977,7 +977,7 @@ export default function BasicTemplate({ invitation }) {
           <div className="max-w-[320px] mx-auto font-sans">
             <button
               onClick={() => setShowGuestbookModal(true)}
-              className="inline-flex items-center justify-center gap-1.5 px-6 py-3 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-700 text-xs rounded-xl transition-colors shadow-2xs font-medium"
+              className="inline-flex items-center justify-center gap-1.5 px-6 py-3.5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-700 text-sm rounded-xl transition-colors shadow-2xs font-medium"
             >
               <span>작성하기</span>
               <span>✏️</span>
@@ -1009,7 +1009,7 @@ export default function BasicTemplate({ invitation }) {
         <ScrollReveal delay={100}>
           <button
             onClick={handleKakaoShare}
-            className="w-full py-4 px-5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-800 text-xs font-medium rounded-2xl flex items-center justify-between transition-colors shadow-2xs mb-3"
+            className="w-full py-4 px-5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-800 text-sm font-medium rounded-2xl flex items-center justify-between transition-colors shadow-2xs mb-3"
           >
             <span>카카오톡으로 공유하기</span>
             <img 
@@ -1020,7 +1020,7 @@ export default function BasicTemplate({ invitation }) {
           </button>
           <button
             onClick={() => handleCopy(window.location.href, '청첩장 주소가')}
-            className="w-full py-4 px-5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-800 text-xs font-medium rounded-2xl flex items-center justify-between transition-colors shadow-2xs"
+            className="w-full py-4 px-5 bg-[#F4F4F4] hover:bg-[#EAEAEA] text-stone-800 text-sm font-medium rounded-2xl flex items-center justify-between transition-colors shadow-2xs"
           >
             <span>청첩장 주소 복사하기</span>
             <img 

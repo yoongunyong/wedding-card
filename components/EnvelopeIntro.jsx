@@ -3,19 +3,21 @@
 import { useState, useEffect } from 'react';
 
 export default function EnvelopeIntro({ invitation, onOpen }) {
-  const [opened, setOpened] = useState(false);
-  const [showHint, setShowHint] = useState(false);
+  // 'idle' | 'darkening' | 'revealing'
+  const [transitionStep, setTransitionStep] = useState('idle');
+  const [isShaking, setIsShaking] = useState(false);
+  const [declineMsg, setDeclineMsg] = useState('');
 
-  // 날짜 포맷 (예: 2027.03.27 SAT)
-  const dateStr = invitation?.wedding_date 
-    ? invitation.wedding_date.slice(0, 10).replace(/-/g, '.')
-    : '2027.03.27';
-
-  const groomNameEn = invitation?.groom_name_en || 'Ki-deuk';
-  const brideNameEn = invitation?.bride_name_en || 'Min-ki';
+  // Supabase 컬럼 cover_image 최우선 매핑
+  const coverImage =
+    invitation?.cover_image ||
+    invitation?.extra_data?.cover_image ||
+    invitation?.extra_data?.main_image ||
+    invitation?.main_image ||
+    '/cover.jpg';
 
   useEffect(() => {
-    // 인트로 표시 중 배경 스크롤 방지 & 최상단 고정
+    // 인트로 표시 중 스크롤 방지 & 최상단 고정
     if (typeof window !== 'undefined') {
       if ('scrollRestoration' in window.history) {
         window.history.scrollRestoration = 'manual';
@@ -24,149 +26,147 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
       document.body.style.overflow = 'hidden';
     }
 
-    // 1.5초 후 클릭 힌트 표시
-    const timer = setTimeout(() => setShowHint(true), 1500);
     return () => {
-      clearTimeout(timer);
       if (typeof window !== 'undefined') {
         document.body.style.overflow = '';
       }
     };
   }, []);
 
-  const handleClick = () => {
-    if (opened) return;
-    setOpened(true);
-    if (typeof window !== 'undefined') {
-      window.scrollTo(0, 0);
-    }
+  // Decline 클릭 시 위트 있는 셰이크 & 안내
+  const handleDecline = (e) => {
+    e.stopPropagation();
+    setIsShaking(true);
+    setDeclineMsg('거절하실 수 없습니다. 꼭 축하해주세요 🤍');
+    setTimeout(() => setIsShaking(false), 500);
+    setTimeout(() => setDeclineMsg(''), 2200);
+  };
+
+  // Accept 클릭 시 깊고 서정적인 시네마틱 전환 효과
+  const handleAccept = (e) => {
+    e.stopPropagation();
+    if (transitionStep !== 'idle') return;
+
+    // 1단계: 화면이 매우 천천히, 서서히 어두워짐 (850ms)
+    setTransitionStep('darkening');
+
+    // 2단계: 화면이 완전히 어두워진 시점(850ms) + 150ms 정적 후 본문 드러내기 시작
     setTimeout(() => {
       if (typeof window !== 'undefined') {
         window.scrollTo(0, 0);
-        document.body.style.overflow = '';
       }
-      if (onOpen) onOpen();
-    }, 800); // 800ms 페이드아웃 애니메이션 후 전환
+      setTransitionStep('revealing');
+
+      // 3단계: 1800ms(약 1.8초) 동안 어둠이 안개처럼 아주 천천히 걷히며 본문이 감성적으로 피어남
+      setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          window.scrollTo(0, 0);
+          document.body.style.overflow = '';
+        }
+        if (onOpen) onOpen();
+      }, 1850);
+    }, 1000);
   };
 
   return (
-    <div
-      onClick={handleClick}
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0B0908] cursor-pointer select-none transition-all duration-700 ${
-        opened ? 'opacity-0 scale-105 pointer-events-none' : 'opacity-100 scale-100'
-      }`}
-    >
-      <style jsx>{`
-        @keyframes letterSlideUp {
-          0% {
-            transform: translateY(40px);
-            opacity: 0;
-          }
-          100% {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-        @keyframes textFadeIn {
-          0% {
-            opacity: 0;
-            transform: translateY(12px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .anim-slide-up {
-          animation: letterSlideUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        .anim-text-1 {
-          animation: textFadeIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
-        }
-        .anim-text-2 {
-          animation: textFadeIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.7s both;
-        }
-        .anim-text-3 {
-          animation: textFadeIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.0s both;
-        }
-        .anim-seal {
-          animation: textFadeIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
-        }
-      `}</style>
-
-      {/* 봉투 컨테이너 */}
-      <div className="relative w-[320px] sm:w-[350px] flex flex-col items-center">
-        
-        {/* 상단 열린 플랩 배경 */}
-        <div 
-          className="w-[280px] h-[70px] bg-[#EBE4D8] rounded-t-lg shadow-inner"
-          style={{
-            clipPath: 'polygon(0% 100%, 50% 0%, 100% 100%)',
-            filter: 'drop-shadow(0 -4px 6px rgba(0,0,0,0.15))'
-          }}
-        />
-
-        {/* 편지지 카드 (봉투 안에서 위로 올라온 형태) */}
-        <div className="anim-slide-up relative -mt-12 z-10 w-[240px] bg-[#FCFBF7] rounded-t-sm shadow-xl px-5 py-7 text-center border border-[#ECE5D8]">
-          <p className="anim-text-1 font-serif italic text-2xl text-[#2C2725] tracking-wide leading-tight">
-            Welcome to
-          </p>
-          <p className="anim-text-2 font-serif italic text-2xl text-[#2C2725] tracking-wide leading-tight mb-3">
-            our wedding
-          </p>
-          <div className="anim-text-3 inline-block border-t border-[#D9D0C3] pt-2 px-3">
-            <p className="font-serif text-[11px] text-[#7A736E] tracking-[0.2em] uppercase">
-              {dateStr} SAT
-            </p>
-          </div>
-        </div>
-
-        {/* 봉투 본체 (하단 포켓) */}
-        <div className="relative -mt-6 z-20 w-[290px] h-[190px] bg-[#EFE9DE] rounded-b-lg shadow-2xl flex flex-col items-center justify-between p-4 border-t border-[#E3DC CE]">
-          
-          {/* 봉투 전면 삼각 라인 음영 효과 */}
-          <div 
-            className="absolute inset-0 bg-[#E8E1D3]/50 pointer-events-none rounded-b-lg"
-            style={{
-              clipPath: 'polygon(0% 0%, 50% 45%, 100% 0%, 100% 100%, 0% 100%)'
-            }}
-          />
-
-          {/* 중앙 실링 왁스 스탬프 */}
-          <div className="anim-seal relative z-30 -mt-7 flex items-center justify-center">
-            <div className="w-13 h-13 rounded-full bg-[#821D24] shadow-lg flex items-center justify-center border-2 border-[#6D141A] transform active:scale-95 transition-transform">
-              {/* 장미 엠보싱 인장 */}
-              <svg 
-                className="w-7 h-7 text-[#E5A8A8] opacity-90 drop-shadow" 
-                viewBox="0 0 24 24" 
-                fill="currentColor"
-              >
-                <path d="M12 2C9.5 2 7.5 3.5 7.5 5.5C7.5 6.3 7.8 7 8.4 7.6C7.3 8.3 6.5 9.5 6.5 11C6.5 12.3 7.1 13.5 8 14.2C7.4 15 7 16 7 17C7 19.8 9.2 22 12 22C14.8 22 17 19.8 17 17C17 16 16.6 15 16 14.2C16.9 13.5 17.5 12.3 17.5 11C17.5 9.5 16.7 8.3 15.6 7.6C16.2 7 16.5 6.3 16.5 5.5C16.5 3.5 14.5 2 12 2ZM12 4C13.4 4 14.5 4.9 14.5 5.5C14.5 6.1 13.4 7 12 7C10.6 7 9.5 6.1 9.5 5.5C9.5 4.9 10.6 4 12 4Z" />
-              </svg>
-            </div>
-          </div>
-
-          {/* 하단 영문 필기체 이름 표기 */}
-          <div className="relative z-30 text-center w-full mt-auto mb-2">
-            <p className="font-serif italic text-[15px] text-[#4A433E] tracking-wider font-light">
-              From {brideNameEn} &amp; {groomNameEn}
-            </p>
-          </div>
-        </div>
-
-      </div>
-
-      {/* 화면 클릭 힌트 */}
-      <div 
-        className={`mt-10 text-center transition-opacity duration-700 ${
-          showHint ? 'opacity-70' : 'opacity-0'
+    <>
+      {/* 1. 인트로 카드 팝업 레이어 (암전이 완료될 때까지 불투명 유지 -> 본문 비침 원천 차단) */}
+      <div
+        className={`fixed inset-0 z-50 flex items-center justify-center p-4 select-none ${
+          transitionStep === 'revealing' ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
+        style={{
+          backgroundColor: '#FFFFFF',
+        }}
       >
-        <p className="text-stone-400 text-xs tracking-widest animate-pulse font-light">
-          화면을 터치해주세요
-        </p>
+        <style jsx>{`
+          @keyframes shakeAnim {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-6px) rotate(-1deg); }
+            40% { transform: translateX(6px) rotate(1deg); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+          }
+          .modal-shake {
+            animation: shakeAnim 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+          }
+        `}</style>
+
+        {/* 시안 1:1 맞춤 모달 카드 (상하단 연회색빛, 중앙 풀위드 사진) */}
+        <div
+          className={`relative w-[84%] max-w-[285px] bg-[#ECEEF0] rounded-[26px] overflow-hidden flex flex-col transition-all duration-300 ${
+            isShaking ? 'modal-shake' : ''
+          }`}
+          style={{
+            boxShadow: '0 12px 35px -8px rgba(0, 0, 0, 0.12), 0 0 1px 1px rgba(0, 0, 0, 0.04)',
+          }}
+        >
+          {/* 상단 텍스트 영역 (약간의 회색빛 배경) */}
+          <div className="pt-6 pb-4 px-4 text-center bg-[#ECEEF0]">
+            <h2 className="text-[18.5px] font-bold text-[#1A1A1A] tracking-tight flex items-center justify-center gap-1.5 font-sans">
+              Wedding Day <span className="text-[17px] leading-none inline-block">💌</span>
+            </h2>
+            <p className="text-[12.5px] text-[#555555] mt-1 font-normal tracking-tight font-sans">
+              Invitation
+            </p>
+          </div>
+
+          {/* 중앙 커버 사진 영역: 상하단 회색 영역 사이에 좌우 꽉 차게 배치 */}
+          <div className="relative w-full aspect-[4/4.2] overflow-hidden bg-stone-200 select-none">
+            <img
+              src={coverImage}
+              alt="Wedding Day Invitation"
+              className="w-full h-full object-cover object-center pointer-events-none"
+              onError={(e) => {
+                if (e.currentTarget.src !== '/cover.jpg') {
+                  e.currentTarget.src = '/cover.jpg';
+                }
+              }}
+            />
+
+            {/* 거절 시 나타나는 위트있는 토스트 알림 */}
+            {declineMsg && (
+              <div className="absolute inset-x-2 bottom-3 z-20 flex justify-center animate-bounce">
+                <div className="bg-black/85 backdrop-blur-md text-white text-[11.5px] font-medium py-1.5 px-3 rounded-full shadow-lg text-center leading-snug">
+                  {declineMsg}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 하단 2분할 버튼 영역 (상단과 동일한 연회색빛 배경 & 흰색 구분선) */}
+          <div className="grid grid-cols-2 divide-x divide-white/80 border-t border-white/60 bg-[#ECEEF0]">
+            {/* Decline 버튼 */}
+            <button
+              type="button"
+              onClick={handleDecline}
+              className="py-3.5 text-[15.5px] font-medium text-[#F472B6] hover:bg-black/5 active:bg-black/10 transition-colors cursor-pointer select-none font-sans text-center"
+            >
+              Decline
+            </button>
+
+            {/* Accept 버튼 */}
+            <button
+              type="button"
+              onClick={handleAccept}
+              className="py-3.5 text-[15.5px] font-bold text-[#E83E6E] hover:bg-black/5 active:bg-black/10 transition-colors cursor-pointer select-none font-sans text-center"
+            >
+              Accept
+            </button>
+          </div>
+        </div>
       </div>
 
-    </div>
+      {/* 2. 시네마틱 껌뻑(Blink / Fade to black) 암전 오버레이 */}
+      <div
+        className={`fixed inset-0 z-[60] bg-black pointer-events-none transition-opacity ${
+          transitionStep === 'darkening'
+            ? 'opacity-100 duration-[850ms] ease-in-out'
+            : transitionStep === 'revealing'
+            ? 'opacity-0 duration-[1800ms] ease-[cubic-bezier(0.22,1,0.36,1)]'
+            : 'opacity-0 duration-0'
+        }`}
+      />
+    </>
   );
 }

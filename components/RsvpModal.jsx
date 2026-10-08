@@ -78,10 +78,10 @@ export default function RsvpModal({ invitationId, onClose }) {
               <button
                 type="button"
                 onClick={() => setSide('groom')}
-                className={`py-2.5 rounded-xl text-xs font-medium transition-all ${
+                className={`py-3 rounded-xl text-sm font-medium transition-all ${
                   side === 'groom'
                     ? 'bg-[#333333] text-white shadow-xs'
-                    : 'bg-white border border-stone-200 text-stone-400 hover:border-stone-300'
+                    : 'bg-white border border-stone-200 text-stone-500 hover:border-stone-300'
                 }`}
               >
                 신랑
@@ -89,10 +89,10 @@ export default function RsvpModal({ invitationId, onClose }) {
               <button
                 type="button"
                 onClick={() => setSide('bride')}
-                className={`py-2.5 rounded-xl text-xs font-medium transition-all ${
+                className={`py-3 rounded-xl text-sm font-medium transition-all ${
                   side === 'bride'
                     ? 'bg-[#333333] text-white shadow-xs'
-                    : 'bg-white border border-stone-200 text-stone-400 hover:border-stone-300'
+                    : 'bg-white border border-stone-200 text-stone-500 hover:border-stone-300'
                 }`}
               >
                 신부
@@ -109,10 +109,10 @@ export default function RsvpModal({ invitationId, onClose }) {
               <button
                 type="button"
                 onClick={() => setAttend(true)}
-                className={`py-2.5 rounded-xl text-xs font-medium transition-all ${
+                className={`py-3 rounded-xl text-sm font-medium transition-all ${
                   attend === true
                     ? 'bg-[#333333] text-white shadow-xs'
-                    : 'bg-white border border-stone-200 text-stone-400 hover:border-stone-300'
+                    : 'bg-white border border-stone-200 text-stone-500 hover:border-stone-300'
                 }`}
               >
                 참석할게요
@@ -120,10 +120,10 @@ export default function RsvpModal({ invitationId, onClose }) {
               <button
                 type="button"
                 onClick={() => setAttend(false)}
-                className={`py-2.5 rounded-xl text-xs font-medium transition-all ${
+                className={`py-3 rounded-xl text-sm font-medium transition-all ${
                   attend === false
                     ? 'bg-[#333333] text-white shadow-xs'
-                    : 'bg-white border border-stone-200 text-stone-400 hover:border-stone-300'
+                    : 'bg-white border border-stone-200 text-stone-500 hover:border-stone-300'
                 }`}
               >
                 참석이 어려워요
@@ -184,7 +184,7 @@ export default function RsvpModal({ invitationId, onClose }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-[#333333] hover:bg-[#1a1a1a] text-white rounded-xl text-xs font-medium tracking-wide transition-colors shadow-sm disabled:opacity-50"
+              className="w-full py-3.5 bg-[#333333] hover:bg-[#1a1a1a] text-white rounded-xl text-sm font-medium tracking-wide transition-colors shadow-sm disabled:opacity-50"
             >
               {loading ? '전달 중...' : '작성 완료'}
             </button>

@@ -7,7 +7,7 @@ export default function ScrollReveal({
   className = '',
   delay = 0,
   direction = 'up', // 'up' | 'none'
-  duration = 1100, // 더 여유 있고 감성적인 1.1초
+  duration = 1000, // 감성적이고 정갈한 1.0초
 }) {
   const [isVisible, setIsVisible] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -31,8 +31,8 @@ export default function ScrollReveal({
         });
       },
       {
-        threshold: 0.1,
-        rootMargin: '0px 0px -45px 0px', // 화면 하단에서 45px 진입했을 때 부드럽게 시작
+        threshold: 0.12,
+        rootMargin: '0px 0px -75px 0px', // 스크롤 시 화면에 확실히 들어왔을 때 우아하게 시작
       }
     );
 
@@ -46,7 +46,7 @@ export default function ScrollReveal({
 
   const getTransform = () => {
     if (isVisible) return 'translate3d(0, 0, 0)';
-    if (direction === 'up') return 'translate3d(0, 30px, 0)';
+    if (direction === 'up') return 'translate3d(0, 32px, 0)';
     return 'none';
   };
 
@@ -58,7 +58,7 @@ export default function ScrollReveal({
         transform: getTransform(),
         transitionProperty: 'opacity, transform',
         transitionDuration: `${duration}ms`,
-        transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
+        transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
         transitionDelay: `${delay}ms`,
         willChange: 'opacity, transform',
       }}

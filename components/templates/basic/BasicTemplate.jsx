@@ -12,7 +12,7 @@ import GuestbookDeleteModal from '@/components/GuestbookDeleteModal';
 import ScrollReveal from '@/components/ScrollReveal';
 
 export default function BasicTemplate({ invitation }) {
-  const extra = invitation?.extra_data || {};
+  const extra = { ...(invitation?.template_config || {}), ...(invitation?.extra_data || {}) };
 
   // 0. 인트로 편지 봉투 커버 상태
   const [showIntro, setShowIntro] = useState(true);
@@ -517,25 +517,27 @@ export default function BasicTemplate({ invitation }) {
       </section>
 
       {/* 2. 초대합니다 & 혼주 & 연락처 모달 버튼 (Image 2) */}
-      <section className="pt-24 sm:pt-28 pb-20 sm:pb-24 px-6 bg-[#FCFBF7] text-center">
+      <section className="pt-28 sm:pt-36 pb-28 sm:pb-36 px-6 bg-[#FCFBF7] text-center">
         <ScrollReveal>
-          <h2 className="text-[21px] sm:text-[23px] font-sans font-normal text-stone-800 tracking-[0.04em] mb-9 sm:mb-10">
+          <h2 className="text-[21px] sm:text-[23px] font-sans font-normal text-stone-800 tracking-[0.04em] mb-10 sm:mb-12">
             초대합니다
           </h2>
 
           {/* 초대 문구 */}
-          <div className="text-[14px] sm:text-[14.5px] font-sans text-stone-600 leading-[2.2] font-normal max-w-[320px] mx-auto mb-10 whitespace-pre-line">
+          <div className="text-[14px] sm:text-[14.5px] font-sans text-stone-600 leading-[2.3] font-normal max-w-[320px] mx-auto mb-12 sm:mb-14 whitespace-pre-line">
             {invitation?.message || (
               `서로를 만나 평범했던 하루가\n조금 더 따뜻하고 특별해졌습니다.\n이제 두 사람이 한마음으로\n새로운 계절을 시작하려 합니다.\n\n소중한 분들과 함께\n그 순간을 나누고 싶습니다.\n저희의 첫걸음에 따뜻한 축복을 보내주세요.`
             )}
           </div>
+        </ScrollReveal>
 
+        <ScrollReveal delay={120}>
           {/* 세로 구분선 */}
-          <div className="w-px h-12 bg-stone-300 mx-auto mb-10" />
+          <div className="w-px h-12 bg-stone-300 mx-auto mb-12 sm:mb-14" />
 
           {/* 부모님 & 신랑신부 성함 (3열 정렬 레이아웃) */}
           {(groomName || brideName || groomParents || brideParents) && (
-            <div className="inline-grid grid-cols-[auto_auto_auto] items-center gap-x-5 gap-y-3 text-[14.5px] sm:text-[15px] font-sans mx-auto mb-10">
+            <div className="inline-grid grid-cols-[auto_auto_auto] items-center gap-x-5 gap-y-3.5 text-[14.5px] sm:text-[15px] font-sans mx-auto mb-12 sm:mb-14">
               <div className="text-right text-stone-700 font-normal">
                 {groomParents}
               </div>
@@ -576,8 +578,8 @@ export default function BasicTemplate({ invitation }) {
         {/* 선택적 원형 프로필 사진 (설정 시 활성화) */}
         {config.show_profile_photos && (
           <ScrollReveal delay={200}>
-            <div className="mt-16">
-              <p className="font-cormorant italic text-2xl text-stone-800 mb-6">
+            <div className="mt-20">
+              <p className="font-cormorant italic text-2xl text-stone-800 mb-8">
                 We are getting married
               </p>
 
@@ -635,7 +637,7 @@ export default function BasicTemplate({ invitation }) {
 
             {/* 신부 / 신랑 이름: 좌/우 50% 영역의 정중앙에 각각 정렬 */}
             {(brideName || groomName) && (
-              <div className="pt-12 sm:pt-14 pb-2 grid grid-cols-2 text-[15px] font-sans">
+              <div className="pt-14 sm:pt-16 pb-3 grid grid-cols-2 text-[15px] font-sans">
                 <div className="flex items-center justify-center gap-4 sm:gap-5">
                   <span className="text-stone-500 font-normal">신부</span>
                   <span className="text-stone-800 font-medium tracking-tight">{brideName}</span>
@@ -649,12 +651,12 @@ export default function BasicTemplate({ invitation }) {
 
             {/* 영화 대사 본문 & 출처 */}
             {quoteContent && (
-              <div className="pt-16 sm:pt-20 pb-20 sm:pb-24 px-6 max-w-[340px] mx-auto">
-                <p className="text-[14px] sm:text-[14.5px] font-sans text-stone-600 leading-[2.2] font-normal whitespace-pre-line">
+              <div className="pt-20 sm:pt-24 pb-28 sm:pb-36 px-6 max-w-[340px] mx-auto">
+                <p className="text-[14px] sm:text-[14.5px] font-sans text-stone-600 leading-[2.3] font-normal whitespace-pre-line">
                   {quoteContent}
                 </p>
                 {quoteSource && (
-                  <p className="mt-10 sm:mt-12 text-[13.5px] font-sans text-stone-500 font-normal">
+                  <p className="mt-12 sm:mt-14 text-[13.5px] font-sans text-stone-500 font-normal">
                     {quoteSource.startsWith('-') ? quoteSource : `- ${quoteSource} -`}
                   </p>
                 )}
@@ -665,24 +667,24 @@ export default function BasicTemplate({ invitation }) {
       )}
       {/* 3. 웨딩 캘린더 & 카운트다운 타이머 (Image 3 - 다크 테마) */}
       {hasWeddingDate && calendarData && (
-        <section className="py-20 sm:py-24 px-6 bg-gradient-to-b from-[#151515] to-[#1E1E1E] text-center border-t border-stone-800">
+        <section className="py-28 sm:py-36 px-6 bg-gradient-to-b from-[#151515] to-[#1E1E1E] text-center border-t border-stone-800">
           <ScrollReveal>
             <h2 className="font-cormorant text-3xl sm:text-4xl text-white tracking-wide mb-5">
               Wedding Day
             </h2>
             {formattedKoreanDate && (
-              <p className="text-[14.5px] sm:text-[15px] font-sans text-white/90 font-normal mb-1.5">
+              <p className="text-[14.5px] sm:text-[15px] font-sans text-white/90 font-normal mb-2">
                 {formattedKoreanDate}
               </p>
             )}
             {formattedEnglishDate && (
-              <p className="text-[13px] sm:text-[13.5px] text-white/70 font-sans tracking-wide mb-8">
+              <p className="text-[13px] sm:text-[13.5px] text-white/70 font-sans tracking-wide mb-10">
                 {formattedEnglishDate}
               </p>
             )}
 
             {/* 달력 컨테이너 */}
-            <div className="max-w-[340px] mx-auto mb-10 pt-6 border-t border-white/20">
+            <div className="max-w-[340px] mx-auto mb-14 pt-8 border-t border-white/20">
               {/* 요일 헤더 */}
               <div className="grid grid-cols-7 text-center text-[13px] sm:text-[13.5px] font-sans mb-4">
                 <span className="text-[#E84C4B] font-normal py-1">일</span>
@@ -730,7 +732,7 @@ export default function BasicTemplate({ invitation }) {
           {showCountdownSection && (
             <ScrollReveal delay={200}>
               {/* 카운트다운 4분할 카드 */}
-              <div className="grid grid-cols-4 gap-2.5 max-w-[340px] mx-auto mb-10 font-sans">
+              <div className="grid grid-cols-4 gap-2.5 max-w-[340px] mx-auto mb-12 font-sans">
                 {[
                   { label: 'DAYS', val: timeLeft.days },
                   { label: 'HOURS', val: timeLeft.hours },
@@ -772,12 +774,12 @@ export default function BasicTemplate({ invitation }) {
 
       {/* 4. 웨딩 갤러리 (Image 4) */}
       {showGallerySection && galleryImages.length > 0 && (
-        <section className="pt-20 sm:pt-24 pb-0 px-4 bg-[#FCFBF7] text-center">
+        <section className="pt-28 sm:pt-36 pb-28 sm:pb-36 px-4 bg-[#FCFBF7] text-center">
           <ScrollReveal>
             <h2 className="font-cormorant font-normal text-[30px] sm:text-[34px] tracking-normal text-stone-900 leading-none">
               GALLERY
             </h2>
-            <p className="font-serif text-[18px] sm:text-[19px] text-stone-800 font-normal tracking-normal mt-3.5 sm:mt-4 mb-9 sm:mb-11">
+            <p className="font-serif text-[18px] sm:text-[19px] text-stone-800 font-normal tracking-normal mt-3.5 sm:mt-4 mb-10 sm:mb-12">
               갤러리
             </p>
           </ScrollReveal>
@@ -816,7 +818,7 @@ export default function BasicTemplate({ invitation }) {
             {/* 하단 가로 스크롤 썸네일 스트립 */}
             <div
               ref={thumbnailContainerRef}
-              className="w-full max-w-[390px] mx-auto flex items-center gap-2.5 overflow-x-auto no-scrollbar scroll-smooth mt-4 sm:mt-5 pb-1"
+              className="w-full max-w-[390px] mx-auto flex items-center gap-2.5 overflow-x-auto no-scrollbar scroll-smooth mt-5 sm:mt-6 pb-1"
             >
               {galleryImages.map((src, idx) => (
                 <button
@@ -838,34 +840,31 @@ export default function BasicTemplate({ invitation }) {
                 </button>
               ))}
             </div>
-
-            {/* 섹션 하단 구분선 */}
-            <div className="w-full max-w-[390px] mx-auto h-px bg-stone-200 mt-16 sm:mt-20" />
           </ScrollReveal>
         </section>
       )}
 
       {/* 5. 식장 위치 & 지도 & 네비게이션 (Image 5) */}
       {(invitation?.venue_name || invitation?.venue_address) && (
-        <section className="py-20 sm:py-24 bg-[#FCFBF7] text-center">
+        <section className="pt-28 sm:pt-36 pb-28 sm:pb-36 bg-[#FCFBF7] text-center">
           <ScrollReveal>
             <h2 className="font-cormorant font-normal text-[30px] sm:text-[34px] tracking-normal text-stone-900 leading-none">
               LOCATION
             </h2>
-            <p className="font-serif text-[18px] sm:text-[19px] text-stone-800 font-normal tracking-normal mt-3.5 sm:mt-4 mb-8 sm:mb-9">
+            <p className="font-serif text-[18px] sm:text-[19px] text-stone-800 font-normal tracking-normal mt-3.5 sm:mt-4 mb-10 sm:mb-12">
               식장 위치
             </p>
 
             {/* 예식장 명 */}
             {invitation?.venue_name && (
-              <p className="text-[16px] sm:text-[17px] font-sans font-medium text-stone-800 mb-1.5">
+              <p className="text-[16px] sm:text-[17px] font-sans font-medium text-stone-800 mb-2">
                 {invitation.venue_name}
               </p>
             )}
 
             {/* 식장 주소 & 깔끔한 복사 버튼 */}
             {invitation?.venue_address && (
-              <div className="flex items-center justify-center mb-7 sm:mb-8 font-sans">
+              <div className="flex items-center justify-center mb-9 sm:mb-10 font-sans">
                 <button 
                   onClick={() => handleCopy(invitation.venue_address, '식장 주소가')}
                   className="inline-flex items-center gap-1.5 text-[14px] text-stone-500 hover:text-stone-800 transition-colors cursor-pointer group"
@@ -889,7 +888,7 @@ export default function BasicTemplate({ invitation }) {
           {/* 카카오 지도 & 네비게이션 버튼 (주소 존재 시 렌더링) */}
           {invitation?.venue_address && (
             <ScrollReveal delay={200}>
-              <div className="w-full max-w-[390px] mx-auto px-4 mb-4 sm:mb-5">
+              <div className="w-full max-w-[390px] mx-auto px-4 mb-5 sm:mb-6">
                 <div className="overflow-hidden border border-stone-200/60 shadow-2xs">
                   <KakaoMap 
                     address={invitation.venue_address} 
@@ -929,10 +928,10 @@ export default function BasicTemplate({ invitation }) {
 
       {/* 6. 교통편 상세 안내 (Image 6 - 동적 리스트 렌더링) */}
       {transportationList.length > 0 && (
-        <section className="py-14 sm:py-16 px-4 bg-[#F5F5F3] font-sans">
-          <div className="max-w-[390px] mx-auto space-y-4">
+        <section className="py-24 sm:py-32 px-4 bg-[#F5F5F3] font-sans">
+          <div className="max-w-[390px] mx-auto space-y-5 sm:space-y-6">
             {transportationList.map((item, idx) => (
-              <ScrollReveal key={idx} delay={idx * 60}>
+              <ScrollReveal key={idx} delay={idx * 80}>
                 <div className="bg-white p-6 sm:p-7 shadow-2xs border border-stone-200/40 text-left">
                   {/* 상단: 타이틀 + 아이콘 */}
                   <div className="flex items-center gap-2">
@@ -962,12 +961,12 @@ export default function BasicTemplate({ invitation }) {
 
       {/* 7. 마음 전하실 곳 (Image 7) */}
       {showAccountsSection && (groomAccounts.length > 0 || brideAccounts.length > 0) && (
-        <section className="py-20 sm:py-24 px-4 sm:px-6 bg-[#FCFBF7] text-center">
+        <section className="pt-28 sm:pt-36 pb-28 sm:pb-36 px-4 sm:px-6 bg-[#FCFBF7] text-center">
           <ScrollReveal>
             <h2 className="font-cormorant font-normal text-[30px] sm:text-[34px] tracking-normal text-stone-900 leading-none">
               ACCOUNT
             </h2>
-            <p className="font-serif text-[18px] sm:text-[19px] text-stone-800 font-normal tracking-normal mt-3.5 sm:mt-4 mb-8 sm:mb-10">
+            <p className="font-serif text-[18px] sm:text-[19px] text-stone-800 font-normal tracking-normal mt-3.5 sm:mt-4 mb-10 sm:mb-12">
               마음 전하실 곳
             </p>
           </ScrollReveal>
@@ -976,7 +975,7 @@ export default function BasicTemplate({ invitation }) {
           <ScrollReveal delay={150}>
             {/* 신랑측 아코디언 */}
             {groomAccounts.length > 0 && (
-              <div className="bg-white rounded-xl overflow-hidden shadow-xs border border-stone-200/60 max-w-[390px] mx-auto mb-5 sm:mb-6">
+              <div className="bg-white rounded-xl overflow-hidden shadow-xs border border-stone-200/60 max-w-[390px] mx-auto mb-6 sm:mb-7">
                 <button
                   type="button"
                   onClick={() => setOpenGroomAccount(!openGroomAccount)}
@@ -1099,15 +1098,15 @@ export default function BasicTemplate({ invitation }) {
 
       {/* 8. 정보 (식사/화환/셔틀 등 동적 안내 카드) (Image 8) */}
       {infoCards.length > 0 && (
-        <section className="pt-4 pb-0 bg-[#FCFBF7] text-center">
+        <section className="pt-24 sm:pt-32 pb-24 sm:pb-32 bg-[#FCFBF7] text-center">
           {/* 섹션 상단 구분선 */}
-          <div className="w-full max-w-[390px] mx-auto h-px bg-stone-200 mb-16 sm:mb-20" />
+          <div className="w-full max-w-[390px] mx-auto h-px bg-stone-200 mb-20 sm:mb-24" />
 
           <ScrollReveal>
             <h2 className="font-cormorant font-normal text-[30px] sm:text-[34px] tracking-normal text-stone-900 leading-none">
               INFORMATION
             </h2>
-            <p className="font-serif text-[18px] sm:text-[19px] text-stone-800 font-normal tracking-normal mt-3.5 sm:mt-4 mb-8 sm:mb-10">
+            <p className="font-serif text-[18px] sm:text-[19px] text-stone-800 font-normal tracking-normal mt-3.5 sm:mt-4 mb-10 sm:mb-12">
               정보
             </p>
           </ScrollReveal>
@@ -1154,7 +1153,7 @@ export default function BasicTemplate({ invitation }) {
 
             {/* 하단 인디케이터 도트 (2개 이상일 때만 노출) */}
             {infoCards.length > 1 && (
-              <div className="flex items-center justify-center gap-1.5 mt-6">
+              <div className="flex items-center justify-center gap-1.5 mt-8">
                 {infoCards.map((_, idx) => (
                   <button
                     key={idx}
@@ -1170,31 +1169,31 @@ export default function BasicTemplate({ invitation }) {
                 ))}
               </div>
             )}
-
-            {/* 섹션 하단 구분선 */}
-            <div className="w-full max-w-[390px] mx-auto h-px bg-stone-200 mt-16 sm:mt-20" />
           </ScrollReveal>
         </section>
       )}
 
       {/* 9. 참석 의사 (RSVP) (Image 9) */}
       {showRsvpSection && (
-        <section className="pt-16 sm:pt-20 pb-0 px-6 bg-[#FCFBF7] text-center">
+        <section className="pt-24 sm:pt-32 pb-24 sm:pb-32 px-6 bg-[#FCFBF7] text-center">
+          {/* 섹션 상단 구분선 */}
+          <div className="w-full max-w-[390px] mx-auto h-px bg-stone-200 mb-20 sm:mb-24" />
+
           <ScrollReveal>
             <h2 className="font-cormorant font-normal text-[30px] sm:text-[34px] tracking-normal text-stone-900 leading-none">
               RSVP
             </h2>
-            <p className="font-serif text-[18px] sm:text-[19px] text-stone-800 font-normal tracking-normal mt-3.5 sm:mt-4 mb-3">
+            <p className="font-serif text-[18px] sm:text-[19px] text-stone-800 font-normal tracking-normal mt-3.5 sm:mt-4 mb-3.5">
               참석 의사
             </p>
-            <p className="text-[13px] sm:text-[14px] text-stone-500 font-sans mb-10 sm:mb-12">
+            <p className="text-[13px] sm:text-[14px] text-stone-500 font-sans mb-12 sm:mb-14">
               모든 분들을 소중하게 모실 수 있도록 전해주세요
             </p>
           </ScrollReveal>
 
           {/* 안내 정보 & 참석 정보 전달하기 버튼 */}
-          <ScrollReveal delay={200}>
-            <div className="font-sans mb-9 sm:mb-10 space-y-1.5">
+          <ScrollReveal delay={150}>
+            <div className="font-sans mb-12 sm:mb-14 space-y-2">
               {(invitation?.groom_name || invitation?.bride_name) && (
                 <p className="text-[15px] sm:text-[16px] font-medium text-stone-800 mb-6">
                   {[
@@ -1218,34 +1217,34 @@ export default function BasicTemplate({ invitation }) {
             <button
               type="button"
               onClick={() => setShowRsvpModal(true)}
-              className="py-3.5 px-8 bg-[#333333] hover:bg-[#222222] text-white rounded-xl text-sm font-medium tracking-wide transition-colors shadow-xs inline-block cursor-pointer font-sans"
+              className="py-4 px-10 bg-[#333333] hover:bg-[#222222] text-white rounded-xl text-sm font-medium tracking-wide transition-colors shadow-xs inline-block cursor-pointer font-sans"
             >
               참석 정보 전달하기
             </button>
-
-            {/* 섹션 하단 구분선 */}
-            <div className="w-full max-w-[390px] mx-auto h-px bg-stone-200 mt-16 sm:mt-20" />
           </ScrollReveal>
         </section>
       )}
 
       {/* 10. 축하 메시지 (Image 10) */}
       {showGuestbookSection && (
-        <section className="pt-16 sm:pt-20 pb-0 px-6 bg-[#FCFBF7] text-center">
+        <section className="pt-24 sm:pt-32 pb-24 sm:pb-32 px-6 bg-[#FCFBF7] text-center">
+          {/* 섹션 상단 구분선 */}
+          <div className="w-full max-w-[390px] mx-auto h-px bg-stone-200 mb-20 sm:mb-24" />
+
           <ScrollReveal>
             <h2 className="font-cormorant font-normal text-[30px] sm:text-[34px] tracking-normal text-stone-900 leading-none">
               MESSAGE
             </h2>
-            <p className="font-serif text-[18px] sm:text-[19px] text-stone-800 font-normal tracking-normal mt-3.5 sm:mt-4 mb-3">
+            <p className="font-serif text-[18px] sm:text-[19px] text-stone-800 font-normal tracking-normal mt-3.5 sm:mt-4 mb-3.5">
               축하 메시지
             </p>
-            <p className="text-[13px] sm:text-[14px] text-stone-500 font-sans mb-10 sm:mb-12">
+            <p className="text-[13px] sm:text-[14px] text-stone-500 font-sans mb-12 sm:mb-14">
               저희 둘에게 따뜻한 메시지를 남겨주세요.
             </p>
           </ScrollReveal>
 
           {/* 축하 메시지 슬라이더 & 작성하기 버튼 */}
-          <ScrollReveal delay={200}>
+          <ScrollReveal delay={150}>
             <div className="flex items-center justify-center gap-2 sm:gap-3 max-w-[390px] mx-auto font-sans">
               {/* 이전 화살표 */}
               <button
@@ -1298,7 +1297,7 @@ export default function BasicTemplate({ invitation }) {
             </div>
 
             {/* 인디케이터 도트 */}
-            <div className="flex justify-center gap-1.5 mt-5 mb-8">
+            <div className="flex justify-center gap-1.5 mt-6 mb-10">
               {guestbookList.map((_, idx) => (
                 <button
                   key={idx}
@@ -1317,7 +1316,7 @@ export default function BasicTemplate({ invitation }) {
               <button
                 type="button"
                 onClick={() => setShowGuestbookModal(true)}
-                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-[#333333] hover:bg-[#222222] text-white text-sm rounded-xl transition-colors shadow-xs font-medium cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 px-9 py-4 bg-[#333333] hover:bg-[#222222] text-white text-sm rounded-xl transition-colors shadow-xs font-medium cursor-pointer"
               >
                 <span>작성하기</span>
                 <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
@@ -1325,18 +1324,15 @@ export default function BasicTemplate({ invitation }) {
                 </svg>
               </button>
             </div>
-
-            {/* 섹션 하단 구분선 */}
-            <div className="w-full max-w-[390px] mx-auto h-px bg-stone-200 mt-16 sm:mt-20" />
           </ScrollReveal>
         </section>
       )}
 
       {/* 11. 엔딩 사진 & 감사 인사 (Image 11) */}
-      <section className="pt-16 sm:pt-20 pb-16 sm:pb-20 bg-[#FCFBF7] text-center">
+      <section className="pt-24 sm:pt-32 pb-24 sm:pb-32 bg-[#FCFBF7] text-center">
         <ScrollReveal duration={1000}>
           {/* 엔딩 사진 프레임 */}
-          <div className="w-full max-w-[390px] mx-auto px-6 mb-8 sm:mb-10">
+          <div className="w-full max-w-[390px] mx-auto px-6 mb-12 sm:mb-14">
             <div className="w-full aspect-[4/3] overflow-hidden shadow-2xs">
               <img
                 src={endingImage}
@@ -1347,11 +1343,11 @@ export default function BasicTemplate({ invitation }) {
           </div>
 
           {/* Thank you & 감사 문구 */}
-          <div className="px-6 mb-10 sm:mb-12">
+          <div className="px-6 mb-12 sm:mb-14">
             <h2 className="font-cormorant italic text-[38px] sm:text-[44px] text-stone-800 font-normal tracking-wide leading-tight mb-4">
               Thank you
             </h2>
-            <p className="text-[14px] sm:text-[15px] text-stone-600 font-sans mb-2">
+            <p className="text-[14px] sm:text-[15px] text-stone-600 font-sans mb-2.5">
               함께해 주셔서 감사합니다.
             </p>
             {(() => {

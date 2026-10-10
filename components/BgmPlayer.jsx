@@ -2,21 +2,20 @@
 
 import { useState, useRef, useEffect } from 'react';
 
-export default function BgmPlayer({ bgmUrl }) {
+export default function BgmPlayer({ bgmUrl, hasIntro = true }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef(null);
 
-  // 첫 사용자 인터랙션(화면 클릭 또는 터치) 시 음악 자동 재생 시작
+  // '수락(Accept)' 버튼 클릭 시 또는 인트로 미사용 시 첫 인터랙션에만 음악 재생
   useEffect(() => {
     if (!bgmUrl) return;
 
-    const startAudio = () => {
+    const playAudio = () => {
       if (audioRef.current && audioRef.current.paused) {
         audioRef.current
           .play()
           .then(() => {
             setIsPlaying(true);
-            cleanup();
           })
           .catch((err) => {
             console.log('Audio autoplay prevented:', err);
@@ -24,16 +23,34 @@ export default function BgmPlayer({ bgmUrl }) {
       }
     };
 
-    const cleanup = () => {
-      window.removeEventListener('click', startAudio);
-      window.removeEventListener('touchstart', startAudio);
+    // 1. 인트로 '수락(Accept)' 클릭 이벤트 수신
+    const handleCustomPlay = () => {
+      playAudio();
     };
 
-    window.addEventListener('click', startAudio, { once: true });
-    window.addEventListener('touchstart', startAudio, { once: true });
+    window.addEventListener('play-wedding-bgm', handleCustomPlay);
 
-    return cleanup;
-  }, [bgmUrl]);
+    // 2. 인트로가 꺼져있는(hasIntro === false) 경우에만 첫 사용자 클릭/터치 시 재생
+    let cleanupFirstInteraction = () => {};
+    if (!hasIntro) {
+      const handleFirstInteraction = () => {
+        playAudio();
+        window.removeEventListener('click', handleFirstInteraction);
+        window.removeEventListener('touchstart', handleFirstInteraction);
+      };
+      window.addEventListener('click', handleFirstInteraction, { once: true });
+      window.addEventListener('touchstart', handleFirstInteraction, { once: true });
+      cleanupFirstInteraction = () => {
+        window.removeEventListener('click', handleFirstInteraction);
+        window.removeEventListener('touchstart', handleFirstInteraction);
+      };
+    }
+
+    return () => {
+      window.removeEventListener('play-wedding-bgm', handleCustomPlay);
+      cleanupFirstInteraction();
+    };
+  }, [bgmUrl, hasIntro]);
 
   const togglePlay = () => {
     if (!audioRef.current) return;

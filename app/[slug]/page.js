@@ -26,8 +26,9 @@ export async function generateMetadata({ params }) {
 
   // 공유 썸네일: images.cover 최우선
   const ogImage = invitation.images?.cover || invitation.images?.main || '/cover.jpg';
-  const title = `${invitation.groom_name} ♥ ${invitation.bride_name} 결혼합니다`;
-  const description = `${invitation.wedding_date} | ${invitation.venue_name}`;
+  const coupleText = [invitation.groom_name, invitation.bride_name].filter(Boolean).join(' ♥ ');
+  const title = coupleText ? `${coupleText} 결혼합니다` : '모바일 청첩장';
+  const description = [invitation.wedding_date, invitation.venue_name].filter(Boolean).join(' | ') || '소중한 분들을 초대합니다';
 
   return {
     title,
@@ -41,7 +42,7 @@ export async function generateMetadata({ params }) {
               url: ogImage,
               width: 800,
               height: 1000,
-              alt: `${invitation.groom_name} & ${invitation.bride_name} 청첩장`,
+              alt: coupleText ? `${coupleText} 청첩장` : '모바일 청첩장',
             },
           ]
         : [],
@@ -74,7 +75,10 @@ export default async function WeddingCardPage({ params }) {
 
   return (
     <main className="min-h-screen bg-stone-100 sm:py-8 flex justify-center p-0 m-0">
-      <BgmPlayer bgmUrl={invitation.bgm_url} />
+      <BgmPlayer 
+        bgmUrl={invitation.bgm_url} 
+        hasIntro={invitation?.template_config?.show_intro !== false} 
+      />
       <CurrentTemplate invitation={invitation} />
     </main>
   );

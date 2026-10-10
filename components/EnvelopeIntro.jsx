@@ -43,10 +43,15 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
     setTimeout(() => setDeclineMsg(''), 2200);
   };
 
-  // Accept 클릭 시 깊고 서정적인 시네마틱 전환 효과
+  // Accept 클릭 시 깊고 서정적인 시네마틱 전환 효과 & BGM 재생
   const handleAccept = (e) => {
     e.stopPropagation();
     if (transitionStep !== 'idle') return;
+
+    // 수락(Accept)을 클릭했을 때만 BGM 재생 이벤트 발생
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('play-wedding-bgm'));
+    }
 
     // 1단계: 화면이 매우 천천히, 서서히 어두워짐 (850ms)
     setTransitionStep('darkening');

@@ -9,18 +9,17 @@ export default function ScrollReveal({
   direction = 'up', // 'up' | 'none'
   duration = 1100, // 더 여유 있고 감성적인 1.1초
 }) {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+    return false;
+  });
   const domRef = useRef(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
-    // 움직임 감소 모드(prefers-reduced-motion) 접근성 대응
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) {
-      setIsVisible(true);
-      return;
-    }
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const observer = new IntersectionObserver(
       (entries) => {

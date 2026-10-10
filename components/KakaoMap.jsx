@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import Script from 'next/script';
 
-export default function KakaoMap({ address, venueName }) {
+export default function KakaoMap({ address, venueName, className }) {
   const mapContainer = useRef(null);
 
-  const initMap = () => {
+  const initMap = useCallback(() => {
     if (!window.kakao || !window.kakao.maps) return;
 
     window.kakao.maps.load(() => {
@@ -46,14 +46,14 @@ export default function KakaoMap({ address, venueName }) {
         }
       });
     });
-  };
+  }, [address, venueName]);
 
   // 이미 카카오맵 SDK가 로드되어 있는 경우를 위한 useEffect
   useEffect(() => {
     if (window.kakao && window.kakao.maps) {
       initMap();
     }
-  }, [address, venueName]);
+  }, [initMap]);
 
   return (
     <>
@@ -64,7 +64,7 @@ export default function KakaoMap({ address, venueName }) {
       />
       <div
         ref={mapContainer}
-        className="w-full h-60 rounded-xl overflow-hidden shadow-sm border border-stone-200 bg-[#FAF8F5]"
+        className={className || "w-full h-72 sm:h-80 overflow-hidden bg-[#FAF8F5]"}
       />
     </>
   );

@@ -73,7 +73,7 @@ export default function GalleryModal({ images = [], initialIndex = 0, onClose })
           </span>
           <button
             onClick={onClose}
-            className="text-white/80 hover:text-white text-xl p-1 transition-colors cursor-pointer leading-none"
+            className="text-white/80 hover:text-white text-[23px] p-1 transition-colors cursor-pointer leading-none"
             aria-label="닫기"
           >
             ✕

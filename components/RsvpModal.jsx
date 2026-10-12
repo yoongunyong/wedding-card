@@ -51,7 +51,7 @@ export default function RsvpModal({ invitationId, onClose }) {
         {/* 닫기 버튼 */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 text-stone-400 hover:text-stone-700 text-lg transition-colors"
+          className="absolute top-4.5 right-4.5 text-stone-400 hover:text-stone-700 text-[21px] p-1 leading-none transition-colors cursor-pointer"
           aria-label="닫기"
         >
           ✕

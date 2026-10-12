@@ -637,7 +637,7 @@ export default function BasicTemplate({ invitation }) {
 
             {/* 신부 / 신랑 이름: 좌/우 50% 영역의 정중앙에 각각 정렬 */}
             {(brideName || groomName) && (
-              <div className="pt-14 sm:pt-16 pb-3 grid grid-cols-2 text-[15px] font-sans">
+              <div className="pt-14 sm:pt-16 pb-2 grid grid-cols-2 text-[15px] font-sans">
                 <div className="flex items-center justify-center gap-4 sm:gap-5">
                   <span className="text-stone-500 font-normal">신부</span>
                   <span className="text-stone-800 font-medium tracking-tight">{brideName}</span>
@@ -651,7 +651,7 @@ export default function BasicTemplate({ invitation }) {
 
             {/* 영화 대사 본문 & 출처 */}
             {quoteContent && (
-              <div className="pt-20 sm:pt-24 pb-28 sm:pb-36 px-6 max-w-[340px] mx-auto">
+              <div className={`${(brideName || groomName) ? 'pt-10 sm:pt-12' : 'pt-16 sm:pt-20'} pb-28 sm:pb-36 px-6 max-w-[340px] mx-auto`}>
                 <p className="text-[14px] sm:text-[14.5px] font-sans text-stone-600 leading-[2.3] font-normal whitespace-pre-line">
                   {quoteContent}
                 </p>
@@ -667,40 +667,40 @@ export default function BasicTemplate({ invitation }) {
       )}
       {/* 3. 웨딩 캘린더 & 카운트다운 타이머 (Image 3 - 다크 테마) */}
       {hasWeddingDate && calendarData && (
-        <section className="py-28 sm:py-36 px-6 bg-gradient-to-b from-[#151515] to-[#1E1E1E] text-center border-t border-stone-800">
+        <section className="py-16 sm:py-20 px-6 bg-gradient-to-b from-[#151515] to-[#1E1E1E] text-center border-t border-stone-800">
           <ScrollReveal>
-            <h2 className="font-cormorant text-3xl sm:text-4xl text-white tracking-wide mb-5">
+            <h2 className="font-cormorant text-2xl sm:text-3xl text-white tracking-wide mb-3">
               Wedding Day
             </h2>
             {formattedKoreanDate && (
-              <p className="text-[14.5px] sm:text-[15px] font-sans text-white/90 font-normal mb-2">
+              <p className="text-[13.5px] sm:text-[14px] font-sans text-white/90 font-normal mb-1.5">
                 {formattedKoreanDate}
               </p>
             )}
             {formattedEnglishDate && (
-              <p className="text-[13px] sm:text-[13.5px] text-white/70 font-sans tracking-wide mb-10">
+              <p className="text-[12px] sm:text-[12.5px] text-white/70 font-sans tracking-wide mb-6">
                 {formattedEnglishDate}
               </p>
             )}
 
             {/* 달력 컨테이너 */}
-            <div className="max-w-[340px] mx-auto mb-14 pt-8 border-t border-white/20">
+            <div className="max-w-[290px] sm:max-w-[310px] mx-auto mb-8 sm:mb-9 pt-5 border-t border-white/15">
               {/* 요일 헤더 */}
-              <div className="grid grid-cols-7 text-center text-[13px] sm:text-[13.5px] font-sans mb-4">
-                <span className="text-[#E84C4B] font-normal py-1">일</span>
-                <span className="text-white/80 font-normal py-1">월</span>
-                <span className="text-white/80 font-normal py-1">화</span>
-                <span className="text-white/80 font-normal py-1">수</span>
-                <span className="text-white/80 font-normal py-1">목</span>
-                <span className="text-white/80 font-normal py-1">금</span>
-                <span className="text-white/80 font-normal py-1">토</span>
+              <div className="grid grid-cols-7 text-center text-[12px] sm:text-[12.5px] font-sans mb-2">
+                <span className="text-[#E84C4B] font-normal py-0.5">일</span>
+                <span className="text-white/80 font-normal py-0.5">월</span>
+                <span className="text-white/80 font-normal py-0.5">화</span>
+                <span className="text-white/80 font-normal py-0.5">수</span>
+                <span className="text-white/80 font-normal py-0.5">목</span>
+                <span className="text-white/80 font-normal py-0.5">금</span>
+                <span className="text-white/80 font-normal py-0.5">토</span>
               </div>
 
               {/* 일자 그리드 */}
-              <div className="grid grid-cols-7 gap-y-3.5 text-center text-[14px] sm:text-[14.5px] font-sans tabular-nums">
+              <div className="grid grid-cols-7 gap-y-1 sm:gap-y-1.5 text-center text-[13px] sm:text-[13.5px] font-sans tabular-nums">
                 {/* 시작 요일 빈 칸 */}
                 {Array.from({ length: calendarData.firstDayIndex }).map((_, i) => (
-                  <div key={`empty-${i}`} className="w-full aspect-square" />
+                  <div key={`empty-${i}`} className="w-full h-7 sm:h-8" />
                 ))}
 
                 {/* 일자 */}
@@ -710,9 +710,9 @@ export default function BasicTemplate({ invitation }) {
                   const isWeddingDay = day === calendarData.weddingDay;
 
                   return (
-                    <div key={day} className="flex items-center justify-center w-full aspect-square">
+                    <div key={day} className="flex items-center justify-center w-full h-7 sm:h-8">
                       <span
-                        className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-full text-[14px] leading-none transition-colors ${
+                        className={`w-7 h-7 sm:w-7.5 sm:h-7.5 flex items-center justify-center rounded-full text-[12.5px] sm:text-[13px] leading-none transition-colors ${
                           isWeddingDay
                             ? 'bg-[#913B3B] text-white font-medium shadow-sm'
                             : isSunday
@@ -730,9 +730,9 @@ export default function BasicTemplate({ invitation }) {
           </ScrollReveal>
 
           {showCountdownSection && (
-            <ScrollReveal delay={200}>
+            <ScrollReveal delay={150}>
               {/* 카운트다운 4분할 카드 */}
-              <div className="grid grid-cols-4 gap-2.5 max-w-[340px] mx-auto mb-12 font-sans">
+              <div className="grid grid-cols-4 gap-2 max-w-[290px] sm:max-w-[310px] mx-auto mb-6 sm:mb-7 font-sans">
                 {[
                   { label: 'DAYS', val: timeLeft.days },
                   { label: 'HOURS', val: timeLeft.hours },
@@ -741,12 +741,12 @@ export default function BasicTemplate({ invitation }) {
                 ].map((item, idx) => (
                   <div 
                     key={idx} 
-                    className="bg-[#F8F8F6] rounded-2xl py-3.5 px-2 shadow-lg border border-white/5 flex flex-col items-center justify-center"
+                    className="bg-[#F8F8F6] rounded-xl py-2.5 px-1 shadow-md border border-white/5 flex flex-col items-center justify-center"
                   >
-                    <span className="text-[10px] sm:text-[11px] text-[#999999] tracking-wider font-medium">
+                    <span className="text-[9.5px] sm:text-[10px] text-[#999999] tracking-wider font-medium">
                       {item.label}
                     </span>
-                    <span className="font-serif text-[23px] sm:text-[25px] font-normal text-stone-800 mt-1 tabular-nums leading-tight">
+                    <span className="font-serif text-[19px] sm:text-[21px] font-normal text-stone-800 mt-0.5 tabular-nums leading-tight">
                       {item.val}
                     </span>
                   </div>
@@ -754,7 +754,7 @@ export default function BasicTemplate({ invitation }) {
               </div>
 
               {/* D-Day 남은 일수 강조 문구 */}
-              <p className="text-[14px] sm:text-[14.5px] text-white/90 font-sans flex items-center justify-center">
+              <p className="text-[13px] sm:text-[13.5px] text-white/90 font-sans flex items-center justify-center">
                 {groomShort && brideShort ? (
                   <>
                     <span>{groomShort}</span>
@@ -785,9 +785,9 @@ export default function BasicTemplate({ invitation }) {
           </ScrollReveal>
 
           <ScrollReveal delay={150}>
-            {/* 대표 메인 큰 사진 (고정 프레임 안에서 잘림 없이 원본 비율 온전히 유지) */}
+            {/* 대표 메인 큰 사진 (감성 블러 화보 카드 + 고정 프레임) */}
             <div 
-              className="w-full max-w-[390px] mx-auto aspect-[390/530] flex items-center justify-center overflow-hidden bg-black/5 shadow-2xs relative select-none"
+              className="w-full max-w-[390px] mx-auto aspect-[4/5] flex items-center justify-center overflow-hidden rounded-2xl shadow-md relative select-none bg-stone-900"
               onTouchStart={(e) => {
                 galleryTouchStartX.current = e.touches[0].clientX;
               }}
@@ -807,12 +807,27 @@ export default function BasicTemplate({ invitation }) {
                 galleryTouchStartX.current = null;
               }}
             >
-              <img
-                key={activeGalleryIndex}
-                src={galleryImages[activeGalleryIndex] || galleryImages[0]}
-                alt={`웨딩 갤러리 사진 ${activeGalleryIndex + 1}`}
-                className="w-full h-full object-contain select-none transition-opacity duration-300"
-              />
+              {/* 풍부한 블러 배경 레이어 (사진의 색감과 빛을 선명하게 아웃포커싱) */}
+              <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
+                <img
+                  key={`blur-${activeGalleryIndex}`}
+                  src={galleryImages[activeGalleryIndex] || galleryImages[0]}
+                  alt=""
+                  aria-hidden="true"
+                  className="w-full h-full object-cover blur-xl scale-125 opacity-80 brightness-90 transition-opacity duration-300"
+                />
+                <div className="absolute inset-0 bg-black/15" />
+              </div>
+
+              {/* 전경 메인 원본 사진 (감성 액자 카드 스타일) */}
+              <div className="relative z-10 w-full h-full flex items-center justify-center p-3 sm:p-4">
+                <img
+                  key={activeGalleryIndex}
+                  src={galleryImages[activeGalleryIndex] || galleryImages[0]}
+                  alt={`웨딩 갤러리 사진 ${activeGalleryIndex + 1}`}
+                  className="max-w-full max-h-full object-contain rounded-xl shadow-2xl select-none transition-opacity duration-300"
+                />
+              </div>
             </div>
 
             {/* 하단 가로 스크롤 썸네일 스트립 */}
@@ -935,13 +950,13 @@ export default function BasicTemplate({ invitation }) {
                 <div className="bg-white p-6 sm:p-7 shadow-2xs border border-stone-200/40 text-left">
                   {/* 상단: 타이틀 + 아이콘 */}
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-[17px] sm:text-[18px] text-stone-900 tracking-tight">
+                    <span className="font-medium text-[15px] sm:text-[16px] text-stone-900 tracking-tight">
                       {item.title}
                     </span>
                     <img
                       src={getTransportIcon(item.type, item.title)}
                       alt={item.title}
-                      className="w-5 h-5 object-contain opacity-75"
+                      className="w-4.5 h-4.5 object-contain opacity-75"
                     />
                   </div>
                   
@@ -1129,7 +1144,7 @@ export default function BasicTemplate({ invitation }) {
                   </span>
 
                   {/* 카드 제목 */}
-                  <h3 className="text-[17px] sm:text-[18px] font-bold text-stone-900 tracking-tight font-sans mb-3.5">
+                  <h3 className="text-[15px] sm:text-[16px] font-medium text-stone-900 tracking-tight font-sans mb-3">
                     {card.title}
                   </h3>
 

@@ -65,7 +65,7 @@ export default function GuestbookDeleteModal({ targetMsg, onClose, onDeleteSucce
         {/* 닫기 버튼 */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-stone-400 hover:text-stone-700 text-base transition-colors"
+          className="absolute top-3.5 right-3.5 text-stone-400 hover:text-stone-700 text-[20px] p-1 leading-none transition-colors cursor-pointer"
           aria-label="닫기"
         >
           ✕

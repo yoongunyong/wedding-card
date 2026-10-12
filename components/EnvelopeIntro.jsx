@@ -48,6 +48,14 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
     e.stopPropagation();
     if (transitionStep !== 'idle') return;
 
+    // 모달 버튼에 갇힌 포커스 즉시 해제 (모바일 터치 스크롤 먹통 방지)
+    if (e.currentTarget instanceof HTMLElement) {
+      e.currentTarget.blur();
+    }
+    if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
     // 수락(Accept)을 클릭했을 때만 BGM 재생 이벤트 발생
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('play-wedding-bgm'));
@@ -56,18 +64,22 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
     // 1단계: 화면이 매우 천천히, 서서히 어두워짐 (850ms)
     setTransitionStep('darkening');
 
-    // 2단계: 화면이 완전히 어두워진 시점(850ms) + 150ms 정적 후 본문 드러내기 시작
+    // 2단계: 화면이 완전히 어두워진 시점(1000ms) 후 본문 드러내기 시작
     setTimeout(() => {
+      // 본문이 보이기 시작하는 순간 즉시 스크롤 잠금 해제 및 윈도우 포커스
       if (typeof window !== 'undefined') {
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
         window.scrollTo(0, 0);
+        window.focus();
       }
       setTransitionStep('revealing');
 
-      // 3단계: 1800ms(약 1.8초) 동안 어둠이 안개처럼 아주 천천히 걷히며 본문이 감성적으로 피어남
+      // 3단계: 어둠이 안개처럼 걷힌 후 인트로 컴포넌트 언마운트
       setTimeout(() => {
         if (typeof window !== 'undefined') {
-          window.scrollTo(0, 0);
           document.body.style.overflow = '';
+          document.documentElement.style.overflow = '';
         }
         if (onOpen) onOpen();
       }, 1850);
@@ -76,10 +88,14 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
 
   return (
     <>
-      {/* 1. 인트로 카드 팝업 레이어 (암전이 완료될 때까지 불투명 유지 -> 본문 비침 원천 차단) */}
+      {/* 1. 인트로 카드 팝업 레이어 (revealing 시 즉시 hidden 처리하여 브라우저 터치 스크롤 간섭 원천 차단) */}
       <div
         className={`fixed inset-0 z-50 flex items-center justify-center p-4 select-none ${
-          transitionStep === 'revealing' ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          transitionStep === 'revealing' 
+            ? 'hidden pointer-events-none' 
+            : transitionStep === 'darkening'
+            ? 'opacity-100 pointer-events-none'
+            : 'opacity-100'
         }`}
         style={{
           backgroundColor: '#FFFFFF',

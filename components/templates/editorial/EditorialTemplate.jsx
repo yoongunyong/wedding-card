@@ -183,13 +183,16 @@ export default function EditorialTemplate({ invitation }) {
     if (groomFirst && brideFirst) {
       return `${groomFirst} & ${brideFirst}`;
     }
+    if (groomFirst || brideFirst) {
+      return groomFirst || brideFirst;
+    }
     if (invitation?.groom_name_en && invitation?.bride_name_en) {
       return `${invitation.groom_name_en} & ${invitation.bride_name_en}`;
     }
     if (invitation?.groom_name && invitation?.bride_name) {
       return `${invitation.groom_name} & ${invitation.bride_name}`;
     }
-    return 'Wedding Day';
+    return invitation?.groom_name || invitation?.bride_name || '';
   })();
 
   // 부모님 성함 & 故 표기 포맷팅
@@ -202,14 +205,14 @@ export default function EditorialTemplate({ invitation }) {
   const groomFatherText = formatParentName(invitation?.groom_father, isGroomFatherDeceased);
   const groomMotherText = formatParentName(invitation?.groom_mother, isGroomMotherDeceased);
   const groomParents = [groomFatherText, groomMotherText].filter(Boolean).join(' · ');
-  const groomRelation = invitation?.groom_relation || config.groom_relation || (groomParents ? '장남' : '');
+  const groomRelation = invitation?.groom_relation || config.groom_relation || '';
 
   const isBrideFatherDeceased = invitation?.bride_father_deceased ?? config.bride_father_deceased ?? false;
   const isBrideMotherDeceased = invitation?.bride_mother_deceased ?? config.bride_mother_deceased ?? false;
   const brideFatherText = formatParentName(invitation?.bride_father, isBrideFatherDeceased);
   const brideMotherText = formatParentName(invitation?.bride_mother, isBrideMotherDeceased);
   const brideParents = [brideFatherText, brideMotherText].filter(Boolean).join(' · ');
-  const brideRelation = invitation?.bride_relation || config.bride_relation || (brideParents ? '차녀' : '');
+  const brideRelation = invitation?.bride_relation || config.bride_relation || '';
 
   const venueFullName = [invitation?.venue_name, invitation?.venue_hall || config?.venue_hall].filter(Boolean).join(' ');
 
@@ -327,10 +330,6 @@ export default function EditorialTemplate({ invitation }) {
         .font-korean-serif {
           font-family: 'Noto Serif KR', serif !important;
         }
-        .vertical-rl {
-          writing-mode: vertical-rl;
-          text-orientation: upright;
-        }
       `}</style>
 
       {/* 0. 에디토리얼 매거진 룩북 인트로 커버 */}
@@ -404,42 +403,48 @@ export default function EditorialTemplate({ invitation }) {
           {/* 상단 라벨 (Save the date & 날짜) */}
           <div className="flex items-center justify-between pb-5 border-b border-stone-200 text-stone-400 font-editorial-serif text-[12.5px] tracking-[0.18em]">
             <span className="italic font-light">Save the date</span>
-            <span className="font-light">{formattedDates.headerDate || '2026 · 05 · 14'}</span>
+            <span className="font-light">{formattedDates.headerDate || ''}</span>
           </div>
 
           {/* 비대칭 2단 분할 레이아웃: 좌측 세로 한글 이름 vs 우측 감성 액자 화보 */}
           <div className="grid grid-cols-[auto_1fr] gap-6 sm:gap-8 items-center pt-10 sm:pt-12 pb-8">
-            {/* 좌측: 세로형 한글 성함 타이포그래피 (태 / 오 / 그리고 / 이 / 서) */}
-            <div className="flex flex-col items-center justify-center pl-2 sm:pl-3 pr-1 select-none">
-              {/* 신랑 이름 */}
-              <div className="flex flex-col items-center space-y-2">
-                {((invitation?.groom_name?.length === 3 ? invitation?.groom_name.slice(1) : invitation?.groom_name) || '태오')
-                  .split('')
-                  .map((char, i) => (
-                    <span key={i} className="font-korean-serif text-[26px] sm:text-[28px] font-normal text-stone-900 leading-none">
-                      {char}
-                    </span>
-                  ))}
-              </div>
+            {/* 좌측: 세로형 한글 성함 타이포그래피 (신랑 / 그리고 / 신부) */}
+            {(groomShort || brideShort) ? (
+              <div className="flex flex-col items-center justify-center pl-2 sm:pl-3 pr-1 select-none">
+                {/* 신랑 이름 */}
+                {groomShort && (
+                  <div className="flex flex-col items-center space-y-2">
+                    {groomShort.split('').map((char, i) => (
+                      <span key={i} className="font-korean-serif text-[26px] sm:text-[28px] font-normal text-stone-900 leading-none">
+                        {char}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
-              {/* 중앙 연결 문구: 그리고 (작고 여리여리한 세리프) */}
-              <div className="my-4 sm:my-5 flex flex-col items-center">
-                <span className="font-korean-serif text-[11px] text-stone-400 font-light tracking-[0.25em] [writing-mode:vertical-rl]">
-                  그리고
-                </span>
-              </div>
+                {/* 중앙 연결 문구: 그리고 (둘 다 있을 때만 노출) */}
+                {groomShort && brideShort && (
+                  <div className="my-3.5 sm:my-4.5 flex flex-col items-center space-y-1 select-none">
+                    {'그리고'.split('').map((char, i) => (
+                      <span key={i} className="font-korean-serif text-[10px] sm:text-[10.5px] text-stone-400 font-light leading-none">
+                        {char}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
-              {/* 신부 이름 */}
-              <div className="flex flex-col items-center space-y-2">
-                {((invitation?.bride_name?.length === 3 ? invitation?.bride_name.slice(1) : invitation?.bride_name) || '이서')
-                  .split('')
-                  .map((char, i) => (
-                    <span key={i} className="font-korean-serif text-[26px] sm:text-[28px] font-normal text-stone-900 leading-none">
-                      {char}
-                    </span>
-                  ))}
+                {/* 신부 이름 */}
+                {brideShort && (
+                  <div className="flex flex-col items-center space-y-2">
+                    {brideShort.split('').map((char, i) => (
+                      <span key={i} className="font-korean-serif text-[26px] sm:text-[28px] font-normal text-stone-900 leading-none">
+                        {char}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
+            ) : <div />}
 
             {/* 우측: 정갈한 잡지 화보 액자 사진 프레임 */}
             <div className="w-full">
@@ -464,21 +469,23 @@ export default function EditorialTemplate({ invitation }) {
           {/* 하단: 대형 날짜 타이포그래피 & 시적인 초대글 */}
           <div className="text-left space-y-7">
             {/* 대형 날짜 (05.14) & 요일 시간 */}
-            <div>
-              <p className="font-editorial-serif text-[56px] sm:text-[62px] font-normal tracking-tight text-stone-900 leading-none">
-                {formattedDates.dateDot || '05.14'}
-              </p>
-              <p className="font-editorial-serif text-[12.5px] sm:text-[13px] tracking-[0.22em] text-stone-500 mt-2.5 uppercase font-medium">
-                {formattedDates.dowEn} · {formattedDates.timeStrEn}
-              </p>
-            </div>
+            {formattedDates.dateDot && (
+              <div>
+                <p className="font-editorial-serif text-[56px] sm:text-[62px] font-normal tracking-tight text-stone-900 leading-none">
+                  {formattedDates.dateDot}
+                </p>
+                <p className="font-editorial-serif text-[12.5px] sm:text-[13px] tracking-[0.22em] text-stone-500 mt-2.5 uppercase font-medium">
+                  {formattedDates.dowEn} · {formattedDates.timeStrEn}
+                </p>
+              </div>
+            )}
 
-            {/* 시적 초대 문구 (자간/행간이 넉넉한 세리프) */}
-            <div className="font-korean-serif text-[14.5px] sm:text-[15px] text-stone-700 leading-[2.4] font-normal whitespace-pre-line break-keep pt-1">
-              {invitation?.message || (
-                `서로의 계절을 오래 지켜본 두 사람이\n이제 같은 여백 위에 이름을 적습니다.\n\n그 첫 걸음 함께 있어 주세요.`
-              )}
-            </div>
+            {/* 초대 문구 (동적 데이터만 노출) */}
+            {invitation?.message && (
+              <div className="font-korean-serif text-[14.5px] sm:text-[15px] text-stone-700 leading-[2.4] font-normal whitespace-pre-line break-keep pt-1">
+                {invitation.message}
+              </div>
+            )}
 
             {/* 장소 요약 */}
             {venueFullName && (
@@ -542,17 +549,17 @@ export default function EditorialTemplate({ invitation }) {
               {/* 신랑측 */}
               <div className="grid grid-cols-[54px_1fr_36px_auto] items-center gap-x-2 pb-3.5 border-b border-stone-200/50">
                 <span className="text-stone-400 text-xs font-editorial-serif tracking-wider uppercase">GROOM</span>
-                <span className="text-stone-800 font-light truncate">{groomParents || '신랑측 혼주'}</span>
-                <span className="text-stone-400 text-xs font-sans font-light text-right">{groomRelation}</span>
-                <span className="text-stone-900 font-medium tracking-wide text-right pl-1 min-w-[52px]">{invitation?.groom_name}</span>
+                <span className="text-stone-800 font-light truncate">{groomParents || ''}</span>
+                <span className="text-stone-400 text-xs font-sans font-light text-right">{groomRelation || ''}</span>
+                <span className="text-stone-900 font-medium tracking-wide text-right pl-1 min-w-[52px]">{invitation?.groom_name || ''}</span>
               </div>
 
               {/* 신부측 */}
               <div className="grid grid-cols-[54px_1fr_36px_auto] items-center gap-x-2">
                 <span className="text-stone-400 text-xs font-editorial-serif tracking-wider uppercase">BRIDE</span>
-                <span className="text-stone-800 font-light truncate">{brideParents || '신부측 혼주'}</span>
-                <span className="text-stone-400 text-xs font-sans font-light text-right">{brideRelation}</span>
-                <span className="text-stone-900 font-medium tracking-wide text-right pl-1 min-w-[52px]">{invitation?.bride_name}</span>
+                <span className="text-stone-800 font-light truncate">{brideParents || ''}</span>
+                <span className="text-stone-400 text-xs font-sans font-light text-right">{brideRelation || ''}</span>
+                <span className="text-stone-900 font-medium tracking-wide text-right pl-1 min-w-[52px]">{invitation?.bride_name || ''}</span>
               </div>
             </div>
           </div>
@@ -742,7 +749,7 @@ export default function EditorialTemplate({ invitation }) {
 
               {/* 매거진 룩북 하단 캡션 */}
               <div className="pt-3 px-1 flex items-center justify-between text-stone-400 font-editorial-serif text-[11.5px] tracking-wider">
-                <span className="italic font-light">Fig. {String(activeGalleryIndex + 1).padStart(2, '0')} / Taeoh & Iseo</span>
+                <span className="italic font-light">Fig. {String(activeGalleryIndex + 1).padStart(2, '0')}{displayNamesEn ? ` / ${displayNamesEn}` : ''}</span>
                 <span>{activeGalleryIndex + 1} OF {galleryImages.length}</span>
               </div>
             </div>
@@ -924,7 +931,7 @@ export default function EditorialTemplate({ invitation }) {
                                 {acc.bank}
                               </span>
                               <span className="text-[13.5px] text-stone-900 font-medium font-korean-serif">
-                                {acc.name || `${acc.title || '신랑'} ${acc.holder || ''}`}
+                                {acc.name || `${acc.title || ''} ${acc.holder || ''}`.trim() || ''}
                               </span>
                             </div>
                             <p className="text-[12.5px] font-mono text-stone-600 tracking-tight">
@@ -933,7 +940,7 @@ export default function EditorialTemplate({ invitation }) {
                           </div>
                           <button
                             type="button"
-                            onClick={() => handleCopyAccount(acc.number || acc.account_number, acc.name || '신랑측')}
+                            onClick={() => handleCopyAccount(acc.number || acc.account_number, acc.name || acc.holder || '계좌번호가')}
                             className="px-3 py-1.5 bg-stone-900 hover:bg-stone-800 text-white text-[11px] font-editorial-serif tracking-wider uppercase transition-colors cursor-pointer"
                           >
                             Copy
@@ -974,7 +981,7 @@ export default function EditorialTemplate({ invitation }) {
                                 {acc.bank}
                               </span>
                               <span className="text-[13.5px] text-stone-900 font-medium font-korean-serif">
-                                {acc.name || `${acc.title || '신부'} ${acc.holder || ''}`}
+                                {acc.name || `${acc.title || ''} ${acc.holder || ''}`.trim() || ''}
                               </span>
                             </div>
                             <p className="text-[12.5px] font-mono text-stone-600 tracking-tight">
@@ -983,7 +990,7 @@ export default function EditorialTemplate({ invitation }) {
                           </div>
                           <button
                             type="button"
-                            onClick={() => handleCopyAccount(acc.number || acc.account_number, acc.name || '신부측')}
+                            onClick={() => handleCopyAccount(acc.number || acc.account_number, acc.name || acc.holder || '계좌번호가')}
                             className="px-3 py-1.5 bg-stone-900 hover:bg-stone-800 text-white text-[11px] font-editorial-serif tracking-wider uppercase transition-colors cursor-pointer"
                           >
                             Copy
@@ -1194,7 +1201,7 @@ export default function EditorialTemplate({ invitation }) {
                 ))}
               </div>
               <span className="font-mono text-[9px] tracking-[0.3em] text-stone-400">
-                ISSUE · 20260514 · FOREVER
+                {calendarData ? `ISSUE · ${calendarData.year}${String(calendarData.month).padStart(2, '0')}${String(calendarData.weddingDay).padStart(2, '0')} · FOREVER` : 'WEDDING LOOKBOOK · FOREVER'}
               </span>
             </div>
           </div>

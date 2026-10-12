@@ -17,23 +17,23 @@ export default function EditorialIntro({ invitation, onOpen }) {
     invitation?.extra_data?.main_image ||
     '/cover.jpg';
 
-  // 영문/한글 이름 및 정보
-  const groomName = invitation?.groom_name || '신랑';
-  const brideName = invitation?.bride_name || '신부';
-  const groomEn = invitation?.groom_first_name_en || invitation?.groom_name_en?.split(' ')[0] || 'Groom';
-  const brideEn = invitation?.bride_first_name_en || invitation?.bride_name_en?.split(' ')[0] || 'Bride';
-  const coupleEn = invitation?.main_names_en || `${groomEn} & ${brideEn}`;
+  // 영문/한글 이름 및 정보 (하드코딩 완전 배제)
+  const groomName = invitation?.groom_name || '';
+  const brideName = invitation?.bride_name || '';
+  const groomEn = invitation?.groom_first_name_en || invitation?.groom_name_en?.split(' ')[0] || '';
+  const brideEn = invitation?.bride_first_name_en || invitation?.bride_name_en?.split(' ')[0] || '';
+  const coupleEn = invitation?.main_names_en || (groomEn && brideEn ? `${groomEn} & ${brideEn}` : (groomEn || brideEn || ''));
   
-  const venueName = invitation?.venue_name || '웨딩홀';
+  const venueName = invitation?.venue_name || '';
 
   // 날짜 포맷 (예: MAY 14, 2026)
   const dateFormatted = useMemo(() => {
-    if (!invitation?.wedding_date) return 'SPRING 2026';
+    if (!invitation?.wedding_date) return '';
     const normalized = typeof invitation.wedding_date === 'string' 
       ? invitation.wedding_date.replace(' ', 'T') 
       : invitation.wedding_date;
     const d = new Date(normalized);
-    if (isNaN(d.getTime())) return 'SPRING 2026';
+    if (isNaN(d.getTime())) return '';
     
     const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
     return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
@@ -155,14 +155,20 @@ export default function EditorialIntro({ invitation, onOpen }) {
           </div>
 
           {/* 메인 타이틀 (클래식 세리프) */}
-          <div className="text-center pt-3 pb-3">
-            <h1 className="font-editorial-title text-[26px] sm:text-[28px] text-stone-900 tracking-normal leading-tight">
-              {coupleEn}
-            </h1>
-            <p className="font-editorial-serif text-[10.5px] tracking-[0.22em] text-stone-500 uppercase mt-1">
-              {dateFormatted}
-            </p>
-          </div>
+          {(coupleEn || dateFormatted) && (
+            <div className="text-center pt-3 pb-3">
+              {coupleEn && (
+                <h1 className="font-editorial-title text-[26px] sm:text-[28px] text-stone-900 tracking-normal leading-tight">
+                  {coupleEn}
+                </h1>
+              )}
+              {dateFormatted && (
+                <p className="font-editorial-serif text-[10.5px] tracking-[0.22em] text-stone-500 uppercase mt-1">
+                  {dateFormatted}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* 중앙 화보 사진 프레임 (매거진 룩북 Spread) */}
           <div className="relative w-full aspect-[4/5] bg-stone-100 overflow-hidden border border-stone-200/80 mb-3.5 group">
@@ -192,15 +198,21 @@ export default function EditorialIntro({ invitation, onOpen }) {
             )}
           </div>
 
-          {/* 신랑 신부 안내 텍스트 */}
-          <div className="text-center mb-4">
-            <p className="font-editorial-serif text-[12.5px] text-stone-700 tracking-wider">
-              {groomName} · {brideName}
-            </p>
-            <p className="font-editorial-serif text-[11px] text-stone-400 tracking-wide mt-0.5">
-              {venueName}
-            </p>
-          </div>
+          {/* 신랑 신부 안내 텍스트 (입력된 정보만 노출) */}
+          {(groomName || brideName || venueName) && (
+            <div className="text-center mb-4">
+              {(groomName || brideName) && (
+                <p className="font-editorial-serif text-[12.5px] text-stone-700 tracking-wider">
+                  {[groomName, brideName].filter(Boolean).join(' · ')}
+                </p>
+              )}
+              {venueName && (
+                <p className="font-editorial-serif text-[11px] text-stone-400 tracking-wide mt-0.5">
+                  {venueName}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* 하단 메인 액션 버튼: OPEN THE LOOKBOOK */}
           <button
@@ -225,7 +237,7 @@ export default function EditorialIntro({ invitation, onOpen }) {
 
           {/* 최하단 바코드 & 에디토리얼 아카이브 메타 */}
           <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-[8.5px] font-mono text-stone-400 tracking-wider">
-            <span>EDITION NO. 2026-0514</span>
+            <span>EDITION NO. WEDDING ISSUE</span>
             <span>ALL RIGHTS RESERVED ©</span>
           </div>
         </div>

@@ -309,10 +309,7 @@ export default function BasicTemplate({ invitation }) {
   };
 
   // 4. 방명록 데이터 & 자동 롤링 슬라이더
-  const defaultGuestbook = [
-    { id: '1', author: '축하 메시지', content: '두 분의 새로운 시작을\n진심으로 축하드립니다.🤍', created_at: '' },
-  ];
-  const [guestbookList, setGuestbookList] = useState(defaultGuestbook);
+  const [guestbookList, setGuestbookList] = useState([]);
   const [guestbookIndex, setGuestbookIndex] = useState(0);
 
   // 방명록 목록 DB 로드
@@ -362,8 +359,7 @@ export default function BasicTemplate({ invitation }) {
   const isGroomMotherDeceased = invitation?.groom_mother_deceased ?? config.groom_mother_deceased ?? false;
   const groomFatherText = formatParentName(invitation?.groom_father, isGroomFatherDeceased);
   const groomMotherText = formatParentName(invitation?.groom_mother, isGroomMotherDeceased);
-  const groomParents = [groomFatherText, groomMotherText].filter(Boolean).join(' · ');
-  const groomRelation = invitation?.groom_relation || config.groom_relation || extra.groom_relation || (groomParents ? '아들' : '');
+  const groomRelation = invitation?.groom_relation || config.groom_relation || extra.groom_relation || '';
   const groomName = invitation?.groom_name || '';
 
   const isBrideFatherDeceased = invitation?.bride_father_deceased ?? config.bride_father_deceased ?? false;
@@ -371,7 +367,7 @@ export default function BasicTemplate({ invitation }) {
   const brideFatherText = formatParentName(invitation?.bride_father, isBrideFatherDeceased);
   const brideMotherText = formatParentName(invitation?.bride_mother, isBrideMotherDeceased);
   const brideParents = [brideFatherText, brideMotherText].filter(Boolean).join(' · ');
-  const brideRelation = invitation?.bride_relation || config.bride_relation || extra.bride_relation || (brideParents ? '딸' : '');
+  const brideRelation = invitation?.bride_relation || config.bride_relation || extra.bride_relation || '';
   const brideName = invitation?.bride_name || '';
 
   // D-Day 이름
@@ -411,8 +407,8 @@ export default function BasicTemplate({ invitation }) {
 
       if (window.Kakao.isInitialized()) {
         try {
-          // 오시는 길 검색 링크 (기존의 정의되지 않았던 mapUrl 에러 완벽 해결)
-          const venueQuery = encodeURIComponent(invitation?.venue_name || invitation?.venue_address || '결혼식장');
+          // 오시는 길 검색 링크
+          const venueQuery = encodeURIComponent(invitation?.venue_name || invitation?.venue_address || '');
           const mapLink = `https://map.kakao.com/link/search/${venueQuery}`;
 
           // 절대 URL 이미지 경로 처리
@@ -557,11 +553,11 @@ export default function BasicTemplate({ invitation }) {
           </h2>
 
           {/* 초대 문구 */}
-          <div className="text-[14px] sm:text-[14.5px] font-sans text-stone-600 leading-[2.3] font-normal max-w-[320px] mx-auto mb-12 sm:mb-14 whitespace-pre-line">
-            {invitation?.message || (
-              `서로를 만나 평범했던 하루가\n조금 더 따뜻하고 특별해졌습니다.\n이제 두 사람이 한마음으로\n새로운 계절을 시작하려 합니다.\n\n소중한 분들과 함께\n그 순간을 나누고 싶습니다.\n저희의 첫걸음에 따뜻한 축복을 보내주세요.`
-            )}
-          </div>
+          {invitation?.message && (
+            <div className="text-[14px] sm:text-[14.5px] font-sans text-stone-600 leading-[2.3] font-normal max-w-[320px] mx-auto mb-12 sm:mb-14 whitespace-pre-line">
+              {invitation.message}
+            </div>
+          )}
         </ScrollReveal>
 
         <ScrollReveal delay={120}>
@@ -1326,71 +1322,82 @@ export default function BasicTemplate({ invitation }) {
 
           {/* 축하 메시지 슬라이더 & 작성하기 버튼 */}
           <ScrollReveal delay={150}>
-            <div className="flex items-center justify-center gap-2 sm:gap-3 max-w-[390px] mx-auto font-sans">
-              {/* 이전 화살표 */}
-              <button
-                type="button"
-                onClick={() => setGuestbookIndex((prev) => (prev > 0 ? prev - 1 : guestbookList.length - 1))}
-                className="w-8 h-8 flex items-center justify-center text-stone-300 hover:text-stone-600 text-3xl font-light cursor-pointer select-none transition-colors shrink-0"
-                aria-label="이전 메시지"
-              >
-                ‹
-              </button>
+            {guestbookList.length > 0 ? (
+              <>
+                <div className="flex items-center justify-center gap-2 sm:gap-3 max-w-[390px] mx-auto font-sans">
+                  {/* 이전 화살표 */}
+                  <button
+                    type="button"
+                    onClick={() => setGuestbookIndex((prev) => (prev > 0 ? prev - 1 : guestbookList.length - 1))}
+                    className="w-8 h-8 flex items-center justify-center text-stone-300 hover:text-stone-600 text-3xl font-light cursor-pointer select-none transition-colors shrink-0"
+                    aria-label="이전 메시지"
+                  >
+                    ‹
+                  </button>
 
-              {/* 메시지 카드 */}
-              <div className="w-[275px] sm:w-[290px] max-w-full bg-white rounded-3xl p-6 sm:p-7 text-center border border-stone-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 min-h-[175px] flex flex-col justify-between">
-                <div className="flex justify-center mb-3.5">
-                  <span className="inline-flex items-center px-4 py-1 border border-stone-200 rounded-full text-xs text-stone-700">
-                    <span className="font-script text-[15px] text-stone-400 not-italic mr-1.5 leading-none">From</span>
-                    <span className="font-medium text-stone-800">{guestbookList[guestbookIndex]?.author}</span>
-                  </span>
+                  {/* 메시지 카드 */}
+                  <div className="w-[275px] sm:w-[290px] max-w-full bg-white rounded-3xl p-6 sm:p-7 text-center border border-stone-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 min-h-[175px] flex flex-col justify-between">
+                    <div className="flex justify-center mb-3.5">
+                      <span className="inline-flex items-center px-4 py-1 border border-stone-200 rounded-full text-xs text-stone-700">
+                        <span className="font-script text-[15px] text-stone-400 not-italic mr-1.5 leading-none">From</span>
+                        <span className="font-medium text-stone-800">{guestbookList[guestbookIndex]?.author}</span>
+                      </span>
+                    </div>
+
+                    <p className="text-xs sm:text-[13px] text-stone-600 leading-relaxed whitespace-pre-line my-auto break-keep">
+                      {guestbookList[guestbookIndex]?.content}
+                    </p>
+
+                    <div className="flex items-center justify-center gap-3 mt-3.5 text-[11px] sm:text-xs text-stone-400 font-sans">
+                      <span>
+                        {guestbookList[guestbookIndex]?.created_at?.slice(0, 10).replace(/-/g, '.') || ''}
+                      </span>
+                      {guestbookList[guestbookIndex]?.id && (
+                        <button
+                          type="button"
+                          onClick={() => setDeleteTargetMsg(guestbookList[guestbookIndex])}
+                          className="text-stone-400 hover:text-rose-500 underline underline-offset-2 cursor-pointer transition-colors"
+                        >
+                          삭제
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 다음 화살표 */}
+                  <button
+                    type="button"
+                    onClick={() => setGuestbookIndex((prev) => (prev < guestbookList.length - 1 ? prev + 1 : 0))}
+                    className="w-8 h-8 flex items-center justify-center text-stone-300 hover:text-stone-600 text-3xl font-light cursor-pointer select-none transition-colors shrink-0"
+                    aria-label="다음 메시지"
+                  >
+                    ›
+                  </button>
                 </div>
 
-                <p className="text-xs sm:text-[13px] text-stone-600 leading-relaxed whitespace-pre-line my-auto break-keep">
-                  {guestbookList[guestbookIndex]?.content}
-                </p>
-
-                <div className="flex items-center justify-center gap-3 mt-3.5 text-[11px] sm:text-xs text-stone-400 font-sans">
-                  <span>
-                    {guestbookList[guestbookIndex]?.created_at?.slice(0, 10).replace(/-/g, '.') || ''}
-                  </span>
-                  {guestbookList[guestbookIndex]?.id && guestbookList[guestbookIndex]?.id !== '1' && (
-                    <button
-                      type="button"
-                      onClick={() => setDeleteTargetMsg(guestbookList[guestbookIndex])}
-                      className="text-stone-400 hover:text-rose-500 underline underline-offset-2 cursor-pointer transition-colors"
-                    >
-                      삭제
-                    </button>
-                  )}
-                </div>
+                {/* 인디케이터 도트 */}
+                {guestbookList.length > 1 && (
+                  <div className="flex justify-center gap-1.5 mt-6 mb-10">
+                    {guestbookList.map((_, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setGuestbookIndex(idx)}
+                        className={`rounded-full transition-all duration-300 ${
+                          idx === guestbookIndex ? 'w-1.5 h-1.5 bg-stone-700' : 'w-1.5 h-1.5 bg-stone-300'
+                        }`}
+                        aria-label={`축하 메시지 ${idx + 1}번으로 이동`}
+                      />
+                    ))}
+                  </div>
+                )}
+                {guestbookList.length <= 1 && <div className="mb-10" />}
+              </>
+            ) : (
+              <div className="max-w-[320px] mx-auto bg-white rounded-3xl p-8 text-center border border-stone-100 shadow-sm min-h-[130px] flex items-center justify-center text-stone-400 text-xs sm:text-[13px] font-sans mb-10">
+                첫 번째 축하 메시지의 주인공이 되어주세요 🤍
               </div>
-
-              {/* 다음 화살표 */}
-              <button
-                type="button"
-                onClick={() => setGuestbookIndex((prev) => (prev < guestbookList.length - 1 ? prev + 1 : 0))}
-                className="w-8 h-8 flex items-center justify-center text-stone-300 hover:text-stone-600 text-3xl font-light cursor-pointer select-none transition-colors shrink-0"
-                aria-label="다음 메시지"
-              >
-                ›
-              </button>
-            </div>
-
-            {/* 인디케이터 도트 */}
-            <div className="flex justify-center gap-1.5 mt-6 mb-10">
-              {guestbookList.map((_, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => setGuestbookIndex(idx)}
-                  className={`rounded-full transition-all duration-300 ${
-                    idx === guestbookIndex ? 'w-1.5 h-1.5 bg-stone-700' : 'w-1.5 h-1.5 bg-stone-300'
-                  }`}
-                  aria-label={`축하 메시지 ${idx + 1}번으로 이동`}
-                />
-              ))}
-            </div>
+            )}
 
             {/* 작성하기 버튼 */}
             <div className="text-center font-sans">
@@ -1483,7 +1490,7 @@ export default function BasicTemplate({ invitation }) {
           invitationId={invitation?.id}
           onClose={() => setShowGuestbookModal(false)}
           onSuccess={(newMsg) => {
-            setGuestbookList((prev) => [newMsg, ...prev.filter((item) => item.id !== '1')]);
+            setGuestbookList((prev) => [newMsg, ...prev]);
             setGuestbookIndex(0);
           }}
         />
@@ -1494,10 +1501,7 @@ export default function BasicTemplate({ invitation }) {
           targetMsg={deleteTargetMsg}
           onClose={() => setDeleteTargetMsg(null)}
           onDeleteSuccess={(deletedId) => {
-            setGuestbookList((prev) => {
-              const updated = prev.filter((item) => item.id !== deletedId);
-              return updated.length > 0 ? updated : defaultGuestbook;
-            });
+            setGuestbookList((prev) => prev.filter((item) => item.id !== deletedId));
             setGuestbookIndex(0);
           }}
         />

@@ -5,10 +5,10 @@ import Script from 'next/script';
 import { supabase } from '@/lib/supabase';
 import KakaoMap from '@/components/KakaoMap';
 import EnvelopeIntro from '@/components/EnvelopeIntro';
-import ContactModal from '@/components/ContactModal';
-import RsvpModal from '@/components/RsvpModal';
-import GuestbookModal from '@/components/GuestbookModal';
-import GuestbookDeleteModal from '@/components/GuestbookDeleteModal';
+import BasicContactModal from './BasicContactModal';
+import BasicRsvpModal from './BasicRsvpModal';
+import BasicGuestbookModal from './BasicGuestbookModal';
+import BasicGuestbookDeleteModal from './BasicGuestbookDeleteModal';
 import ScrollReveal from '@/components/ScrollReveal';
 
 export default function BasicTemplate({ invitation }) {
@@ -110,25 +110,48 @@ export default function BasicTemplate({ invitation }) {
   const rawDate = invitation?.wedding_date || null;
   const targetDate = useMemo(() => {
     if (!rawDate) return null;
-    const d = new Date(rawDate);
+    const normalized = typeof rawDate === 'string' ? rawDate.replace(' ', 'T') : rawDate;
+    const d = new Date(normalized);
     return isNaN(d.getTime()) ? null : d;
   }, [rawDate]);
 
   // 실시간 카운트다운 타이머
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, totalDays: 0 });
+  const [timeLeft, setTimeLeft] = useState({ 
+    days: 0, 
+    hours: 0, 
+    minutes: 0, 
+    seconds: 0, 
+    totalDays: 0,
+    isPast: false,
+    isToday: false 
+  });
+
   useEffect(() => {
     if (!targetDate) return;
     const updateTimer = () => {
       const now = new Date();
       const diff = targetDate.getTime() - now.getTime();
+
+      const isSameDay =
+        targetDate.getFullYear() === now.getFullYear() &&
+        targetDate.getMonth() === now.getMonth() &&
+        targetDate.getDate() === now.getDate();
+
       if (diff > 0) {
+        // 예식 전: 실시간 카운트다운
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
         const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
         const minutes = Math.floor((diff / 1000 / 60) % 60);
         const seconds = Math.floor((diff / 1000) % 60);
-        setTimeLeft({ days, hours, minutes, seconds, totalDays: days });
+        setTimeLeft({ days, hours, minutes, seconds, totalDays: days, isPast: false, isToday: isSameDay });
+      } else if (isSameDay) {
+        // 당일 예식 시간 경과
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, totalDays: 0, isPast: false, isToday: true });
       } else {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, totalDays: 0 });
+        // 예식일 경과
+        const pastDiff = Math.abs(diff);
+        const pastDays = Math.floor(pastDiff / (1000 * 60 * 60 * 24));
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, totalDays: pastDays, isPast: true, isToday: false });
       }
     };
     updateTimer();
@@ -190,6 +213,7 @@ export default function BasicTemplate({ invitation }) {
 
   // 메인 커버 하단 영문 이름 (예: Jang Min-ki  &  Kwon Ki-deuk)
   const mainNamesEn = useMemo(() => {
+    if (invitation?.main_names_en) return invitation.main_names_en;
     if (extra.main_names_en) return extra.main_names_en;
     const brideEn = invitation?.bride_name_en || extra.bride_name_en;
     const groomEn = invitation?.groom_name_en || extra.groom_name_en;
@@ -330,12 +354,24 @@ export default function BasicTemplate({ invitation }) {
   };
 
   // 혼주 및 신랑신부 정보 (초대합니다 섹션)
-  const groomParents = [invitation?.groom_father, invitation?.groom_mother].filter(Boolean).join(' · ');
-  const groomRelation = invitation?.groom_relation || extra.groom_relation || (groomParents ? '아들' : '');
+  const formatParentName = (name, isDeceased) => {
+    if (!name) return '';
+    return isDeceased ? `故 ${name}` : name;
+  };
+  const isGroomFatherDeceased = invitation?.groom_father_deceased ?? config.groom_father_deceased ?? false;
+  const isGroomMotherDeceased = invitation?.groom_mother_deceased ?? config.groom_mother_deceased ?? false;
+  const groomFatherText = formatParentName(invitation?.groom_father, isGroomFatherDeceased);
+  const groomMotherText = formatParentName(invitation?.groom_mother, isGroomMotherDeceased);
+  const groomParents = [groomFatherText, groomMotherText].filter(Boolean).join(' · ');
+  const groomRelation = invitation?.groom_relation || config.groom_relation || extra.groom_relation || (groomParents ? '아들' : '');
   const groomName = invitation?.groom_name || '';
 
-  const brideParents = [invitation?.bride_father, invitation?.bride_mother].filter(Boolean).join(' · ');
-  const brideRelation = invitation?.bride_relation || extra.bride_relation || (brideParents ? '딸' : '');
+  const isBrideFatherDeceased = invitation?.bride_father_deceased ?? config.bride_father_deceased ?? false;
+  const isBrideMotherDeceased = invitation?.bride_mother_deceased ?? config.bride_mother_deceased ?? false;
+  const brideFatherText = formatParentName(invitation?.bride_father, isBrideFatherDeceased);
+  const brideMotherText = formatParentName(invitation?.bride_mother, isBrideMotherDeceased);
+  const brideParents = [brideFatherText, brideMotherText].filter(Boolean).join(' · ');
+  const brideRelation = invitation?.bride_relation || config.bride_relation || extra.bride_relation || (brideParents ? '딸' : '');
   const brideName = invitation?.bride_name || '';
 
   // D-Day 이름
@@ -459,9 +495,6 @@ export default function BasicTemplate({ invitation }) {
         <EnvelopeIntro 
           invitation={invitation} 
           onOpen={() => {
-            if (typeof window !== 'undefined') {
-              window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-            }
             setShowIntro(false);
           }} 
         />
@@ -731,42 +764,75 @@ export default function BasicTemplate({ invitation }) {
 
           {showCountdownSection && (
             <ScrollReveal delay={150}>
-              {/* 카운트다운 4분할 카드 */}
-              <div className="grid grid-cols-4 gap-2 max-w-[290px] sm:max-w-[310px] mx-auto mb-6 sm:mb-7 font-sans">
-                {[
-                  { label: 'DAYS', val: timeLeft.days },
-                  { label: 'HOURS', val: timeLeft.hours },
-                  { label: 'MINUTES', val: timeLeft.minutes },
-                  { label: 'SECONDS', val: timeLeft.seconds },
-                ].map((item, idx) => (
-                  <div 
-                    key={idx} 
-                    className="bg-[#F8F8F6] rounded-xl py-2.5 px-1 shadow-md border border-white/5 flex flex-col items-center justify-center"
-                  >
-                    <span className="text-[9.5px] sm:text-[10px] text-[#999999] tracking-wider font-medium">
-                      {item.label}
-                    </span>
-                    <span className="font-serif text-[19px] sm:text-[21px] font-normal text-stone-800 mt-0.5 tabular-nums leading-tight">
-                      {item.val}
-                    </span>
+              {!timeLeft.isPast ? (
+                <>
+                  {/* 카운트다운 4분할 카드 */}
+                  <div className="grid grid-cols-4 gap-2 max-w-[290px] sm:max-w-[310px] mx-auto mb-6 sm:mb-7 font-sans">
+                    {[
+                      { label: 'DAYS', val: timeLeft.days },
+                      { label: 'HOURS', val: timeLeft.hours },
+                      { label: 'MINUTES', val: timeLeft.minutes },
+                      { label: 'SECONDS', val: timeLeft.seconds },
+                    ].map((item, idx) => (
+                      <div 
+                        key={idx} 
+                        className="bg-[#F8F8F6] rounded-xl py-2.5 px-1 shadow-md border border-white/5 flex flex-col items-center justify-center"
+                      >
+                        <span className="text-[9.5px] sm:text-[10px] text-[#999999] tracking-wider font-medium">
+                          {item.label}
+                        </span>
+                        <span className="font-serif text-[19px] sm:text-[21px] font-normal text-stone-800 mt-0.5 tabular-nums leading-tight">
+                          {item.val}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
 
-              {/* D-Day 남은 일수 강조 문구 */}
-              <p className="text-[13px] sm:text-[13.5px] text-white/90 font-sans flex items-center justify-center">
-                {groomShort && brideShort ? (
-                  <>
-                    <span>{groomShort}</span>
-                    <span className="text-[#E84C4B] mx-1">♥</span>
-                    <span>{brideShort}님의 결혼식이</span>
-                  </>
-                ) : (
-                  <span>결혼식이</span>
-                )}
-                <strong className="text-[#E84C4B] font-semibold ml-1.5 mr-0.5">{timeLeft.totalDays}일</strong>
-                <span>남았습니다.</span>
-              </p>
+                  {/* D-Day 남은 일수 강조 문구 */}
+                  <p className="text-[13px] sm:text-[13.5px] text-white/90 font-sans flex items-center justify-center">
+                    {timeLeft.isToday ? (
+                      <>
+                        <span>오늘 </span>
+                        {groomShort && brideShort ? (
+                          <>
+                            <strong className="text-white font-medium mx-1">{groomShort}</strong>
+                            <span className="text-[#E84C4B] mx-0.5">♥</span>
+                            <strong className="text-white font-medium mr-1">{brideShort}</strong>
+                          </>
+                        ) : null}
+                        <span>님의 결혼식이 시작됩니다.</span>
+                      </>
+                    ) : (
+                      <>
+                        {groomShort && brideShort ? (
+                          <>
+                            <span>{groomShort}</span>
+                            <span className="text-[#E84C4B] mx-1">♥</span>
+                            <span>{brideShort}님의 결혼식이</span>
+                          </>
+                        ) : (
+                          <span>결혼식이</span>
+                        )}
+                        <strong className="text-[#E84C4B] font-semibold ml-1.5 mr-0.5">{timeLeft.totalDays}일</strong>
+                        <span>남았습니다.</span>
+                      </>
+                    )}
+                  </p>
+                </>
+              ) : (
+                /* 예식일이 지난 경우 안내 */
+                <div className="max-w-[310px] mx-auto bg-white/10 backdrop-blur-xs rounded-2xl py-4 px-5 border border-white/15 text-center">
+                  <p className="text-[12px] tracking-widest uppercase text-white/60 font-sans mb-1">
+                    OUR SPECIAL DAY
+                  </p>
+                  <p className="font-serif text-[16px] sm:text-[17px] text-white mb-1.5">
+                    결혼한 지 <strong className="text-[#E84C4B] font-semibold">{timeLeft.totalDays}일</strong>째 되는 날입니다
+                  </p>
+                  <p className="text-[12.5px] text-white/80 font-sans">
+                    축복해 주신 모든 분께 진심으로 감사드립니다.
+                  </p>
+                </div>
+              )}
             </ScrollReveal>
           )}
         </section>
@@ -873,7 +939,7 @@ export default function BasicTemplate({ invitation }) {
             {/* 예식장 명 */}
             {invitation?.venue_name && (
               <p className="text-[16px] sm:text-[17px] font-sans font-medium text-stone-800 mb-2">
-                {invitation.venue_name}
+                {[invitation.venue_name, invitation?.venue_hall || config?.venue_hall].filter(Boolean).join(' ')}
               </p>
             )}
 
@@ -1399,21 +1465,21 @@ export default function BasicTemplate({ invitation }) {
 
       {/* 모달 레이어들 */}
       {showContactModal && (
-        <ContactModal 
+        <BasicContactModal 
           invitation={invitation} 
           onClose={() => setShowContactModal(false)} 
         />
       )}
 
       {showRsvpModal && (
-        <RsvpModal
+        <BasicRsvpModal
           invitationId={invitation?.id}
           onClose={() => setShowRsvpModal(false)}
         />
       )}
 
       {showGuestbookModal && (
-        <GuestbookModal
+        <BasicGuestbookModal
           invitationId={invitation?.id}
           onClose={() => setShowGuestbookModal(false)}
           onSuccess={(newMsg) => {
@@ -1424,7 +1490,7 @@ export default function BasicTemplate({ invitation }) {
       )}
 
       {deleteTargetMsg && (
-        <GuestbookDeleteModal
+        <BasicGuestbookDeleteModal
           targetMsg={deleteTargetMsg}
           onClose={() => setDeleteTargetMsg(null)}
           onDeleteSuccess={(deletedId) => {

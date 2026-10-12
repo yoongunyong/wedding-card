@@ -25,11 +25,16 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
       }
       window.scrollTo(0, 0);
       document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
     }
 
     return () => {
       if (typeof window !== 'undefined') {
         document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+        if ('scrollRestoration' in window.history) {
+          window.history.scrollRestoration = 'auto';
+        }
       }
     };
   }, []);
@@ -61,29 +66,35 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
       window.dispatchEvent(new CustomEvent('play-wedding-bgm'));
     }
 
-    // 1단계: 화면이 매우 천천히, 서서히 어두워짐 (850ms)
+    // 1단계: 화면이 서서히 어두워짐 (800ms)
     setTransitionStep('darkening');
 
-    // 2단계: 화면이 완전히 어두워진 시점(1000ms) 후 본문 드러내기 시작
+    // 2단계: 화면이 완전히 어두워진 시점(850ms) 후 본문 드러내기 시작
     setTimeout(() => {
-      // 본문이 보이기 시작하는 순간 즉시 스크롤 잠금 해제 및 윈도우 포커스
+      // 본문이 보이기 시작하기 직전에만 딱 1회 최상단(0, 0) 보정 및 스크롤 잠금 해제
       if (typeof window !== 'undefined') {
+        window.scrollTo(0, 0);
         document.body.style.overflow = '';
         document.documentElement.style.overflow = '';
-        window.scrollTo(0, 0);
         window.focus();
       }
       setTransitionStep('revealing');
 
-      // 3단계: 어둠이 안개처럼 걷힌 후 인트로 컴포넌트 언마운트
+      // 3단계: 어둠이 안개처럼 걷힌 후 인트로 컴포넌트 언마운트 (사용자 스크롤 위치 완벽 보존)
       setTimeout(() => {
         if (typeof window !== 'undefined') {
           document.body.style.overflow = '';
           document.documentElement.style.overflow = '';
         }
+        const currentY = typeof window !== 'undefined' ? window.scrollY : 0;
         if (onOpen) onOpen();
-      }, 1850);
-    }, 1000);
+        if (typeof window !== 'undefined' && currentY > 0) {
+          requestAnimationFrame(() => {
+            window.scrollTo({ top: currentY, behavior: 'instant' });
+          });
+        }
+      }, 1250);
+    }, 850);
   };
 
   return (
@@ -183,9 +194,9 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
       <div
         className={`fixed inset-0 z-[60] bg-black pointer-events-none transition-opacity ${
           transitionStep === 'darkening'
-            ? 'opacity-100 duration-[850ms] ease-in-out'
+            ? 'opacity-100 duration-[800ms] ease-in-out'
             : transitionStep === 'revealing'
-            ? 'opacity-0 duration-[1800ms] ease-[cubic-bezier(0.22,1,0.36,1)]'
+            ? 'opacity-0 duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)]'
             : 'opacity-0 duration-0'
         }`}
       />

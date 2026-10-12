@@ -1,6 +1,6 @@
 'use client';
 
-export default function ContactModal({ invitation, onClose }) {
+export default function BasicContactModal({ invitation, onClose }) {
   const groom = {
     role: '신랑',
     name: invitation?.groom_name || '',
@@ -47,13 +47,13 @@ export default function ContactModal({ invitation, onClose }) {
       >
         {/* 상단 헤더 */}
         <div className="flex items-center justify-between pb-4 border-b border-stone-100 mb-5">
-          <div className="w-8" /> {/* 여백용 */}
+          <div className="w-9" /> {/* 여백용 */}
           <h3 className="text-[17px] font-semibold text-stone-800 tracking-tight text-center">
             연락처
           </h3>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-700 transition-colors cursor-pointer text-[19px] leading-none"
+            className="w-9 h-9 flex items-center justify-center text-stone-400 hover:text-stone-700 transition-colors cursor-pointer text-[24px] leading-none"
             aria-label="닫기"
           >
             ✕

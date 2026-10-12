@@ -3,6 +3,7 @@
 import { useState, useRef, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import BasicTemplate from '@/components/templates/basic/BasicTemplate';
+import EditorialTemplate from '@/components/templates/editorial/EditorialTemplate';
 import BgmPlayer from '@/components/BgmPlayer';
 
 // 추천 감성 초대글 샘플 3종
@@ -58,6 +59,7 @@ const BGM_OPTIONS = [
 export default function CreateInvitationPage() {
   // 1. 기본 폼 상태
   const [formData, setFormData] = useState({
+    template_type: 'editorial', // 'basic' | 'editorial'
     slug: '',
     groom_name: '',
     groom_name_en: '',
@@ -458,6 +460,7 @@ export default function CreateInvitationPage() {
           : bgmMode === 'file' || bgmMode === 'url'
           ? 'custom'
           : 'none',
+      template_type: formData.template_type || 'basic',
     };
   }, [
     formData,
@@ -620,10 +623,26 @@ export default function CreateInvitationPage() {
         bride_father: formData.bride_father.trim(),
         bride_mother: formData.bride_mother.trim(),
 
+        groom_relation: formData.groom_relation || '장남',
+        groom_father_deceased: Boolean(formData.groom_father_deceased),
+        groom_mother_deceased: Boolean(formData.groom_mother_deceased),
+        bride_relation: formData.bride_relation || '장녀',
+        bride_father_deceased: Boolean(formData.bride_father_deceased),
+        bride_mother_deceased: Boolean(formData.bride_mother_deceased),
+
         wedding_date: `${formData.wedding_date}T${formData.wedding_time}:00`,
         venue_name: formData.venue_name.trim(),
+        venue_hall: formData.venue_hall ? formData.venue_hall.trim() : '',
         venue_address: formData.venue_address.trim(),
         venue_detail: formData.venue_detail.trim(),
+
+        main_names_en: (formData.groom_name_en && formData.bride_name_en) 
+          ? `${formData.groom_name_en.trim()} & ${formData.bride_name_en.trim()}` 
+          : '',
+        groom_first_name_en: formData.groom_name_en.trim().split(' ')[0] || formData.groom_name_en.trim(),
+        groom_last_name_en: formData.groom_name_en.trim().split(' ').slice(1).join(' ') || '',
+        bride_first_name_en: formData.bride_name_en.trim().split(' ')[0] || formData.bride_name_en.trim(),
+        bride_last_name_en: formData.bride_name_en.trim().split(' ').slice(1).join(' ') || '',
 
         message: formData.message.trim(),
         quote_content: formData.show_quote_section ? formData.quote_content.trim() : '',
@@ -644,7 +663,7 @@ export default function CreateInvitationPage() {
 
         bgm_url: finalBgmUrl,
         bgm_mode: finalBgmMode,
-        template_type: 'basic',
+        template_type: formData.template_type || 'editorial',
 
         template_config: {
           title_color: formData.title_color,
@@ -812,6 +831,77 @@ export default function CreateInvitationPage() {
 
         {/* 폼 본문 */}
         <form onSubmit={handleSubmit} className="space-y-8">
+
+          {/* 00. 디자인 템플릿 선택 */}
+          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
+              <div className="flex items-baseline gap-2.5">
+                <span className="font-mono text-xs text-stone-400 tracking-wider">00</span>
+                <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
+                  청첩장 디자인 시안 선택
+                </h2>
+                <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase hidden sm:inline">
+                  DESIGN TEMPLATE
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* 시안 1: 모던 클래식 */}
+              <div
+                onClick={() => setFormData((prev) => ({ ...prev, template_type: 'basic' }))}
+                className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative ${
+                  formData.template_type === 'basic'
+                    ? 'border-stone-900 bg-stone-50/50 shadow-sm'
+                    : 'border-stone-200/80 bg-white hover:border-stone-300'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-mono tracking-widest uppercase font-semibold text-stone-600 bg-stone-200/70 px-2 py-0.5 rounded-full">
+                    OPTION 01
+                  </span>
+                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                    formData.template_type === 'basic' ? 'border-stone-900 bg-stone-900' : 'border-stone-300'
+                  }`}>
+                    {formData.template_type === 'basic' && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                  </div>
+                </div>
+                <h3 className="text-sm font-semibold text-stone-900 mb-1">
+                  시안 1 : 모던 클래식 (Modern Classic)
+                </h3>
+                <p className="text-xs text-stone-500 font-light leading-relaxed">
+                  절제된 모던 룩과 블러 화보 갤러리, 다크 캘린더 카운트다운이 돋보이는 정갈한 시안
+                </p>
+              </div>
+
+              {/* 시안 2: 클래식 에디토리얼 */}
+              <div
+                onClick={() => setFormData((prev) => ({ ...prev, template_type: 'editorial' }))}
+                className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative ${
+                  formData.template_type === 'editorial'
+                    ? 'border-stone-900 bg-stone-50/50 shadow-sm'
+                    : 'border-stone-200/80 bg-white hover:border-stone-300'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-mono tracking-widest uppercase font-semibold text-white bg-stone-900 px-2 py-0.5 rounded-full">
+                    OPTION 02 · NEW
+                  </span>
+                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                    formData.template_type === 'editorial' ? 'border-stone-900 bg-stone-900' : 'border-stone-300'
+                  }`}>
+                    {formData.template_type === 'editorial' && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                  </div>
+                </div>
+                <h3 className="text-sm font-semibold text-stone-900 mb-1">
+                  시안 2 : 클래식 에디토리얼 (Editorial Lookbook)
+                </h3>
+                <p className="text-xs text-stone-500 font-light leading-relaxed">
+                  매거진 커버와 비대칭 세로형 성함 타이포그래피, 대형 날짜와 룩북 갤러리의 감성 시안
+                </p>
+              </div>
+            </div>
+          </div>
 
           {/* 01. 신랑 & 신부 정보 */}
           <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
@@ -2167,7 +2257,11 @@ export default function CreateInvitationPage() {
                 bgmUrl={previewInvitation.bgm_url}
                 hasIntro={previewInvitation?.template_config?.show_intro !== false}
               />
-              <BasicTemplate invitation={previewInvitation} />
+              {previewInvitation?.template_type === 'editorial' ? (
+                <EditorialTemplate invitation={previewInvitation} />
+              ) : (
+                <BasicTemplate invitation={previewInvitation} />
+              )}
             </div>
           </div>
         </div>

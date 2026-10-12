@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
-export default function GuestbookDeleteModal({ targetMsg, onClose, onDeleteSuccess }) {
+export default function BasicGuestbookDeleteModal({ targetMsg, onClose, onDeleteSuccess }) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -65,7 +65,7 @@ export default function GuestbookDeleteModal({ targetMsg, onClose, onDeleteSucce
         {/* 닫기 버튼 */}
         <button
           onClick={onClose}
-          className="absolute top-3.5 right-3.5 text-stone-400 hover:text-stone-700 text-[20px] p-1 leading-none transition-colors cursor-pointer"
+          className="absolute top-3 right-3 text-stone-400 hover:text-stone-700 text-[25px] p-1.5 leading-none transition-colors cursor-pointer"
           aria-label="닫기"
         >
           ✕

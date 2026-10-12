@@ -2,10 +2,12 @@ import { supabase } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import BgmPlayer from '@/components/BgmPlayer';
 import BasicTemplate from '@/components/templates/basic/BasicTemplate';
+import EditorialTemplate from '@/components/templates/editorial/EditorialTemplate';
 
 const TEMPLATE_MAP = {
   basic: BasicTemplate,
   modern: BasicTemplate, // 기존 DB 데이터 하위 호환
+  editorial: EditorialTemplate,
 };
 
 // SNS/카카오톡 공유 메타데이터 (OG 태그)
@@ -14,7 +16,7 @@ export async function generateMetadata({ params }) {
 
   const { data: invitation } = await supabase
     .from('invitations')
-    .select('groom_name, bride_name, wedding_date, venue_name, images')
+    .select('groom_name, bride_name, wedding_date, venue_name, venue_hall, images')
     .eq('slug', slug)
     .single();
 
@@ -28,7 +30,8 @@ export async function generateMetadata({ params }) {
   const ogImage = invitation.images?.cover || invitation.images?.main || '/cover.jpg';
   const coupleText = [invitation.groom_name, invitation.bride_name].filter(Boolean).join(' ♥ ');
   const title = coupleText ? `${coupleText} 결혼합니다` : '모바일 청첩장';
-  const description = [invitation.wedding_date, invitation.venue_name].filter(Boolean).join(' | ') || '소중한 분들을 초대합니다';
+  const fullVenue = [invitation.venue_name, invitation.venue_hall].filter(Boolean).join(' ');
+  const description = [invitation.wedding_date, fullVenue].filter(Boolean).join(' | ') || '소중한 분들을 초대합니다';
 
   return {
     title,

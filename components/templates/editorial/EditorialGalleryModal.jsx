@@ -2,11 +2,10 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 
-export default function GalleryModal({ images = [], initialIndex = 0, onClose }) {
+export default function EditorialGalleryModal({ images = [], initialIndex = 0, onClose }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
-
   const isSwiping = useRef(false);
 
   const prevImage = useCallback(() => {
@@ -34,16 +33,15 @@ export default function GalleryModal({ images = [], initialIndex = 0, onClose })
     const diff = touchStartX.current - touchEndX.current;
     if (Math.abs(diff) > 50) {
       if (diff > 0) {
-        nextImage(); // 스와이프 왼쪽 -> 다음 사진
+        nextImage();
       } else {
-        prevImage(); // 스와이프 오른쪽 -> 이전 사진
+        prevImage();
       }
     }
     touchStartX.current = 0;
     touchEndX.current = 0;
   };
 
-  // 키보드 좌우 화살표 & ESC 키 지원
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') onClose();
@@ -55,51 +53,48 @@ export default function GalleryModal({ images = [], initialIndex = 0, onClose })
   }, [onClose, prevImage, nextImage]);
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/85 backdrop-blur-sm select-none p-4"
+    <div
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md select-none p-4"
       onClick={onClose}
     >
-      <div 
+      <div
         className="relative w-full max-w-[420px] flex flex-col items-center"
         onClick={(e) => e.stopPropagation()}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* 상단 헤더: 카운터 & 닫기 버튼 */}
+        {/* 상단 헤더: 에디토리얼 카운터 & 닫기 */}
         <div className="w-full flex items-center justify-between pb-3 px-1 text-white">
-          <span className="text-xs font-sans text-white/70 tracking-wider font-medium">
-            {currentIndex + 1} / {images.length}
+          <span className="font-editorial-serif text-[13px] tracking-[0.25em] text-white/70 font-light">
+            PAGE {String(currentIndex + 1).padStart(2, '0')} / {String(images.length).padStart(2, '0')}
           </span>
           <button
             onClick={onClose}
-            className="text-white/80 hover:text-white text-[23px] p-1 transition-colors cursor-pointer leading-none"
+            className="text-white/70 hover:text-white text-2xl p-1 transition-colors cursor-pointer leading-none font-light"
             aria-label="닫기"
           >
             ✕
           </button>
         </div>
 
-        {/* 메인 이미지 고정 프레임: 사진 비율과 상관없이 박스 크기 완전 고정 */}
-        <div className="relative w-full h-[62vh] max-h-[560px] min-h-[380px] overflow-hidden rounded-2xl shadow-2xl flex items-center justify-center bg-stone-950 border border-white/5">
+        {/* 메인 화보 프레임 */}
+        <div className="relative w-full h-[64vh] max-h-[580px] min-h-[380px] overflow-hidden bg-black/50 border border-white/10 flex items-center justify-center p-2 shadow-2xl">
           <img
             key={currentIndex}
             src={images[currentIndex]}
-            alt={`Wedding photo ${currentIndex + 1}`}
-            className="w-full h-full object-contain animate-in fade-in duration-200 select-none"
+            alt={`Lookbook photo ${currentIndex + 1}`}
+            className="w-full h-full object-contain animate-in fade-in duration-300 select-none"
           />
 
-          {/* 좌우 내비게이션 버튼 (프레임 정중앙에 완전 고정) */}
+          {/* 좌우 내비게이션 화살표 */}
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
               prevImage();
             }}
-            onTouchStart={(e) => e.stopPropagation()}
-            onTouchMove={(e) => e.stopPropagation()}
-            onTouchEnd={(e) => e.stopPropagation()}
-            className="absolute left-2.5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/45 hover:bg-black/70 active:bg-black/90 text-white flex items-center justify-center text-xl transition-all cursor-pointer z-20 backdrop-blur-xs shadow-md"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 border border-white/20 bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-all cursor-pointer"
             aria-label="이전 사진"
           >
             ‹
@@ -110,35 +105,30 @@ export default function GalleryModal({ images = [], initialIndex = 0, onClose })
               e.stopPropagation();
               nextImage();
             }}
-            onTouchStart={(e) => e.stopPropagation()}
-            onTouchMove={(e) => e.stopPropagation()}
-            onTouchEnd={(e) => e.stopPropagation()}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/45 hover:bg-black/70 active:bg-black/90 text-white flex items-center justify-center text-xl transition-all cursor-pointer z-20 backdrop-blur-xs shadow-md"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 border border-white/20 bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-all cursor-pointer"
             aria-label="다음 사진"
           >
             ›
           </button>
         </div>
 
-        {/* 하단 인디케이터 도트 */}
-        <div className="flex items-center justify-center gap-1.5 mt-4 max-w-full overflow-x-auto py-1 px-2">
-          {images.map((_, idx) => (
+        {/* 하단 썸네일 스트립 */}
+        <div className="w-full flex items-center justify-center gap-1.5 pt-3 overflow-x-auto">
+          {images.map((src, idx) => (
             <button
               key={idx}
-              onClick={(e) => {
-                e.stopPropagation();
-                setCurrentIndex(idx);
-              }}
-              className={`rounded-full transition-all duration-300 cursor-pointer shrink-0 ${
+              type="button"
+              onClick={() => setCurrentIndex(idx)}
+              className={`w-8 h-10 overflow-hidden border transition-all cursor-pointer shrink-0 ${
                 idx === currentIndex
-                  ? 'w-2.5 h-2.5 bg-white scale-110 shadow-xs'
-                  : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/60'
+                  ? 'border-white opacity-100 scale-105'
+                  : 'border-white/20 opacity-40 hover:opacity-80'
               }`}
-              aria-label={`${idx + 1}번째 사진 보기`}
-            />
+            >
+              <img src={src} alt={`Thumb ${idx + 1}`} className="w-full h-full object-cover" />
+            </button>
           ))}
         </div>
-
       </div>
     </div>
   );

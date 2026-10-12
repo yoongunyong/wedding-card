@@ -359,6 +359,7 @@ export default function BasicTemplate({ invitation }) {
   const isGroomMotherDeceased = invitation?.groom_mother_deceased ?? config.groom_mother_deceased ?? false;
   const groomFatherText = formatParentName(invitation?.groom_father, isGroomFatherDeceased);
   const groomMotherText = formatParentName(invitation?.groom_mother, isGroomMotherDeceased);
+  const groomParents = [groomFatherText, groomMotherText].filter(Boolean).join(' · ');
   const groomRelation = invitation?.groom_relation || config.groom_relation || extra.groom_relation || '';
   const groomName = invitation?.groom_name || '';
 

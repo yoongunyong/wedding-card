@@ -214,6 +214,10 @@ export default function EditorialTemplate({ invitation }) {
   const brideParents = [brideFatherText, brideMotherText].filter(Boolean).join(' · ');
   const brideRelation = invitation?.bride_relation || config.bride_relation || '';
 
+  // 세로 타이포그래피용 성함 (3글자면 성 제외한 이름, 그 외는 전체)
+  const groomShort = invitation?.groom_name && invitation.groom_name.length === 3 ? invitation.groom_name.slice(1) : (invitation?.groom_name || '');
+  const brideShort = invitation?.bride_name && invitation.bride_name.length === 3 ? invitation.bride_name.slice(1) : (invitation?.bride_name || '');
+
   const venueFullName = [invitation?.venue_name, invitation?.venue_hall || config?.venue_hall].filter(Boolean).join(' ');
 
   // 방명록 로드 & 자동 롤링
@@ -909,7 +913,7 @@ export default function EditorialTemplate({ invitation }) {
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 bg-stone-900" />
                       <span className="font-editorial-serif text-xs tracking-widest uppercase font-semibold text-stone-900">
-                        GROOM'S REGISTRY · 신랑측 계좌
+                        GROOM&apos;S REGISTRY · 신랑측 계좌
                       </span>
                     </div>
                     <button
@@ -959,7 +963,7 @@ export default function EditorialTemplate({ invitation }) {
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 bg-stone-900" />
                       <span className="font-editorial-serif text-xs tracking-widest uppercase font-semibold text-stone-900">
-                        BRIDE'S REGISTRY · 신부측 계좌
+                        BRIDE&apos;S REGISTRY · 신부측 계좌
                       </span>
                     </div>
                     <button

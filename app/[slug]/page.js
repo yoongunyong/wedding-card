@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import BgmPlayer from '@/components/BgmPlayer';
 import SampleWatermark from '@/components/SampleWatermark';
+import ExpiredWeddingCard from '@/components/ExpiredWeddingCard';
 import BasicTemplate from '@/components/templates/basic/BasicTemplate';
 import EditorialTemplate from '@/components/templates/editorial/EditorialTemplate';
 
@@ -73,6 +74,26 @@ export default async function WeddingCardPage({ params }) {
 
   if (error || !invitation) {
     return notFound();
+  }
+
+  // 예식일 기준 1년(365일) 경과 여부 확인
+  let isExpired = false;
+  if (invitation.wedding_date) {
+    try {
+      const weddingDate = new Date(invitation.wedding_date.replace(' ', 'T'));
+      if (!isNaN(weddingDate.getTime())) {
+        const oneYearMs = 365 * 24 * 60 * 60 * 1000;
+        if (Date.now() > weddingDate.getTime() + oneYearMs) {
+          isExpired = true;
+        }
+      }
+    } catch (e) {
+      console.warn('Wedding date parse error:', e);
+    }
+  }
+
+  if (isExpired) {
+    return <ExpiredWeddingCard invitation={invitation} />;
   }
 
   const CurrentTemplate = TEMPLATE_MAP[invitation.template_type] || BasicTemplate;

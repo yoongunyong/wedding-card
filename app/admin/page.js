@@ -22,6 +22,7 @@ export default function AdminDashboardPage() {
   const [invitations, setInvitations] = useState([]);
   const [loadingInvs, setLoadingInvs] = useState(false);
   const [togglingSlug, setTogglingSlug] = useState(null);
+  const [confirmTarget, setConfirmTarget] = useState(null); // { inv, nextActive }
 
   // 세션 복원
   useEffect(() => {
@@ -152,10 +153,18 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // 청첩장 활성화 토글 (지인 무료 활성화 or 비활성화)
-  const handleToggleActive = async (inv) => {
+  // 청첩장 활성화 토글 클릭 시 (컨펌 모달 오픈)
+  const handleToggleActive = (inv) => {
     const currentActive = Boolean(inv.is_active ?? inv.template_config?.is_active ?? false);
     const nextActive = !currentActive;
+    setConfirmTarget({ inv, nextActive });
+  };
+
+  // 컨펌 모달에서 최종 확인 클릭 시 실제 업데이트 실행
+  const handleConfirmToggle = async () => {
+    if (!confirmTarget) return;
+    const { inv, nextActive } = confirmTarget;
+    setConfirmTarget(null);
     setTogglingSlug(inv.slug);
 
     try {
@@ -499,6 +508,16 @@ export default function AdminDashboardPage() {
                   <tbody className="divide-y divide-stone-100 font-sans">
                     {invitations.map((inv) => {
                       const isActive = Boolean(inv.is_active ?? inv.template_config?.is_active ?? false);
+                      const isExpired = (() => {
+                        if (!inv.wedding_date) return false;
+                        try {
+                          const wd = new Date(inv.wedding_date.replace(' ', 'T'));
+                          return !isNaN(wd.getTime()) && Date.now() > wd.getTime() + (365 * 24 * 60 * 60 * 1000);
+                        } catch {
+                          return false;
+                        }
+                      })();
+
                       return (
                         <tr key={inv.id} className="hover:bg-stone-50/50">
                           <td className="py-3.5 px-4 font-semibold text-stone-900">
@@ -510,7 +529,12 @@ export default function AdminDashboardPage() {
                             </span>
                           </td>
                           <td className="py-3.5 px-4 text-stone-500 font-mono text-[11px]">
-                            {inv.wedding_date?.replace('T', ' ') || '-'}
+                            <div>{inv.wedding_date?.replace('T', ' ') || '-'}</div>
+                            {isExpired && (
+                              <span className="inline-block mt-1 text-[9px] font-mono bg-stone-200 text-stone-600 px-1.5 py-0.2 rounded font-medium">
+                                1년 만료됨
+                              </span>
+                            )}
                           </td>
                           <td className="py-3.5 px-4 font-mono font-medium text-stone-800">
                             /{inv.slug}
@@ -558,6 +582,96 @@ export default function AdminDashboardPage() {
         )}
 
       </div>
+
+      {/* ========================================================
+          정식 활성화 / 샘플 전환 확인 컨펌 모달
+         ======================================================== */}
+      {confirmTarget && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4"
+          onClick={() => setConfirmTarget(null)}
+        >
+          <div 
+            className="bg-white w-full max-w-md rounded-3xl p-6 sm:p-7 shadow-2xl border border-stone-200 text-left animate-in fade-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 상태별 상단 배지 */}
+            <div className="flex items-center gap-2 mb-3">
+              <span className={`text-[10px] font-mono tracking-widest uppercase px-2.5 py-0.5 rounded-full font-bold ${
+                confirmTarget.nextActive
+                  ? 'bg-emerald-100 text-emerald-800'
+                  : 'bg-amber-100 text-amber-800'
+              }`}>
+                {confirmTarget.nextActive ? 'ACTIVATION CONFIRM' : 'DEACTIVATION CONFIRM'}
+              </span>
+            </div>
+
+            <h3 className="text-lg font-serif font-bold text-stone-900 mb-2">
+              {confirmTarget.nextActive
+                ? '정식 활성화로 전환하시겠습니까?'
+                : '샘플(미승인) 모드로 전환하시겠습니까?'}
+            </h3>
+
+            {/* 청첩장 정보 요약 박스 */}
+            <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200/80 my-4 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-stone-400">신랑 & 신부</span>
+                <span className="font-semibold text-stone-900">
+                  {confirmTarget.inv.groom_name} & {confirmTarget.inv.bride_name}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-stone-400">청첩장 영문 주소</span>
+                <span className="text-stone-700 font-medium">
+                  /{confirmTarget.inv.slug}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-stone-400">예식 일시</span>
+                <span className="text-stone-700">
+                  {confirmTarget.inv.wedding_date?.replace('T', ' ') || '-'}
+                </span>
+              </div>
+            </div>
+
+            <p className="text-xs text-stone-500 leading-relaxed font-light mb-6">
+              {confirmTarget.nextActive ? (
+                <>
+                  <strong className="text-emerald-700 font-medium">정식 활성화 시</strong> 청첩장 화면의 <strong className="text-stone-800 font-medium">워터마크와 샘플 알림 배너가 즉시 제거</strong>되며, 하객 공유 및 모든 기능이 정식 서비스 상태로 오픈됩니다.
+                </>
+              ) : (
+                <>
+                  <strong className="text-amber-700 font-medium">샘플 모드 전환 시</strong> 청첩장에 <strong className="text-stone-800 font-medium">워터마크와 샘플 배너가 다시 표시</strong>되며, 카카오톡 공유 시 인증 안내 팝업이 나타납니다.
+                </>
+              )}
+            </p>
+
+            {/* 액션 버튼 */}
+            <div className="flex gap-2.5">
+              <button
+                type="button"
+                onClick={() => setConfirmTarget(null)}
+                className="flex-1 py-3 px-4 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium rounded-xl transition-colors cursor-pointer"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmToggle}
+                className={`flex-1 py-3 px-4 text-white text-xs font-semibold rounded-xl transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5 ${
+                  confirmTarget.nextActive
+                    ? 'bg-emerald-600 hover:bg-emerald-700'
+                    : 'bg-amber-600 hover:bg-amber-700'
+                }`}
+              >
+                <span>{confirmTarget.nextActive ? '정식 활성화 실행' : '샘플 모드로 변경'}</span>
+                <span>→</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

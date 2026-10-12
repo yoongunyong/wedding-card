@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 
 // 관리자 로그인용 기본 비밀번호 (환경변수 또는 로컬 설정)
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
+const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'weddingadmin1234!';
 
 export default function AdminDashboardPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -26,36 +26,20 @@ export default function AdminDashboardPage() {
 
   // 세션 복원
   useEffect(() => {
-    const savedAuth = sessionStorage.getItem('atelier_admin_auth');
-    if (savedAuth === 'true') {
-      setIsAuthenticated(true);
+    try {
+      const savedAuth = sessionStorage.getItem('atelier_admin_auth');
+      if (savedAuth === 'true') {
+        const timer = setTimeout(() => {
+          setIsAuthenticated(true);
+        }, 0);
+        return () => clearTimeout(timer);
+      }
+    } catch (e) {
+      console.warn('Session restore error:', e);
     }
   }, []);
 
-  // 로그인 핸들러
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (passwordInput === ADMIN_PASSWORD) {
-      setIsAuthenticated(true);
-      sessionStorage.setItem('atelier_admin_auth', 'true');
-    } else {
-      alert('비밀번호가 일치하지 않습니다.');
-    }
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    sessionStorage.removeItem('atelier_admin_auth');
-  };
-
-  // 데이터 로드
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    loadCodes();
-    loadInvitations();
-  }, [isAuthenticated]);
-
-  // 코드 목록 로드
+  // 코드 목록 수동 새로고침
   const loadCodes = async () => {
     setLoadingCodes(true);
     try {
@@ -74,7 +58,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // 청첩장 목록 로드
+  // 청첩장 목록 수동 새로고침
   const loadInvitations = async () => {
     setLoadingInvs(true);
     try {
@@ -91,6 +75,50 @@ export default function AdminDashboardPage() {
     } finally {
       setLoadingInvs(false);
     }
+  };
+
+  // 초기 데이터 로드 (React 19 / Compiler 호환 비동기 패턴)
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let isMounted = true;
+
+    const fetchInitialData = async () => {
+      try {
+        const [codesRes, invsRes] = await Promise.all([
+          supabase.from('order_codes').select('*').order('created_at', { ascending: false }),
+          supabase.from('invitations').select('id, slug, groom_name, bride_name, wedding_date, template_type, is_active, template_config, order_code, created_at, manage_token').order('created_at', { ascending: false }),
+        ]);
+
+        if (isMounted) {
+          if (codesRes.data) setCodes(codesRes.data);
+          if (invsRes.data) setInvitations(invsRes.data);
+        }
+      } catch (err) {
+        console.warn('Admin load error:', err);
+      }
+    };
+
+    fetchInitialData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isAuthenticated]);
+
+  // 로그인 핸들러
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (passwordInput === ADMIN_PASSWORD) {
+      setIsAuthenticated(true);
+      sessionStorage.setItem('atelier_admin_auth', 'true');
+    } else {
+      alert('비밀번호가 일치하지 않습니다.');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem('atelier_admin_auth');
   };
 
   // 1회용 랜덤 코드 생성 함수 (예: WED-8492-1049, GIFT-3948-2819)

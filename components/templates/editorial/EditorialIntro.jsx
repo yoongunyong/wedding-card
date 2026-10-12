@@ -27,17 +27,18 @@ export default function EditorialIntro({ invitation, onOpen }) {
   const venueName = invitation?.venue_name || '';
 
   // 날짜 포맷 (예: MAY 14, 2026)
-  const dateFormatted = useMemo(() => {
-    if (!invitation?.wedding_date) return '';
-    const normalized = typeof invitation.wedding_date === 'string' 
-      ? invitation.wedding_date.replace(' ', 'T') 
-      : invitation.wedding_date;
+  const weddingDateStr = invitation?.wedding_date;
+  const dateFormatted = (() => {
+    if (!weddingDateStr) return '';
+    const normalized = typeof weddingDateStr === 'string' 
+      ? weddingDateStr.replace(' ', 'T') 
+      : weddingDateStr;
     const d = new Date(normalized);
     if (isNaN(d.getTime())) return '';
     
     const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
     return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
-  }, [invitation?.wedding_date]);
+  })();
 
   useEffect(() => {
     // 인트로 표시 중 스크롤 방지 & 최상단 고정

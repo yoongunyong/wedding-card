@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import BasicTemplate from '@/components/templates/basic/BasicTemplate';
 import EditorialTemplate from '@/components/templates/editorial/EditorialTemplate';
 import BgmPlayer from '@/components/BgmPlayer';
+import QrCodeModal from '@/components/QrCodeModal';
 
 // 추천 감성 초대글 샘플 3종
 const GREETING_PRESETS = [
@@ -239,6 +240,7 @@ export default function CreateInvitationPage() {
   const [uploadStatus, setUploadStatus] = useState('');
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [createdResult, setCreatedResult] = useState(null);
+  const [showQrModal, setShowQrModal] = useState(false);
 
   // 폼 입력값 핸들러
   const handleChange = (e) => {
@@ -963,6 +965,29 @@ export default function CreateInvitationPage() {
             </div>
           </div>
 
+          {/* 종이 청첩장 인쇄용 고해상도 QR코드 다운로드 */}
+          <div className="p-5 bg-white rounded-2xl border border-stone-200/90 text-left mb-4 shadow-2xs">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-mono tracking-widest text-stone-700 bg-stone-100 px-2 py-0.5 rounded-full uppercase font-medium">
+                PAPER CARD PRINT QR
+              </span>
+              <span className="text-[11px] text-emerald-600 font-medium">1024px 초고해상도</span>
+            </div>
+            <p className="text-xs text-stone-600 leading-relaxed font-light mb-3">
+              종이 청첩장을 만드실 때 인쇄소에 전달할 수 있는 깨짐 없는 고해상도 QR코드 이미지 파일(PNG)을 다운로드하실 수 있습니다.
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowQrModal(true)}
+              className="w-full py-2.5 px-4 bg-stone-900 hover:bg-black text-white text-xs font-semibold rounded-xl transition-all shadow-xs cursor-pointer flex items-center justify-center gap-2"
+            >
+              <svg className="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+              </svg>
+              <span>종이 청첩장 인쇄용 QR코드 받기</span>
+            </button>
+          </div>
+
           {/* 신랑신부 전용 관리자 링크 */}
           <div className="p-5 bg-[#FAF8F5] rounded-2xl border border-[#E8E2D8] text-left mb-8">
             <div className="flex items-center justify-between mb-2">
@@ -988,6 +1013,15 @@ export default function CreateInvitationPage() {
               ※ 관리자 링크에는 관리 토큰이 포함되어 있으니 신랑·신부님만 보관해 주세요.
             </p>
           </div>
+
+          {/* 종이 청첩장용 QR코드 모달 */}
+          <QrCodeModal
+            isOpen={showQrModal}
+            onClose={() => setShowQrModal(false)}
+            url={cardUrl}
+            title={`${formData.groom_name}_${formData.bride_name}`}
+            slug={createdResult.slug}
+          />
 
           <button
             type="button"

@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useSearchParams } from 'next/navigation';
+import QrCodeModal from '@/components/QrCodeModal';
 
 export default function ManageRsvpPage({ params }) {
   const resolvedParams = use(params);
@@ -15,6 +16,7 @@ export default function ManageRsvpPage({ params }) {
   const [invitation, setInvitation] = useState(null);
   const [rsvpList, setRsvpList] = useState([]);
   const [guestbookList, setGuestbookList] = useState([]);
+  const [showQrModal, setShowQrModal] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -161,13 +163,24 @@ export default function ManageRsvpPage({ params }) {
               {invitation.groom_name} &middot; {invitation.bride_name} 참석자 현황
             </h1>
           </div>
-          <button
-            onClick={downloadCSV}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors shrink-0"
-          >
-            <span>📊</span>
-            <span>엑셀(CSV) 다운로드</span>
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setShowQrModal(true)}
+              className="px-3.5 py-2 bg-stone-900 hover:bg-black text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+            >
+              <svg className="w-3.5 h-3.5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+              </svg>
+              <span>종이청첩장 QR코드</span>
+            </button>
+            <button
+              onClick={downloadCSV}
+              className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors shrink-0"
+            >
+              <span>📊</span>
+              <span>엑셀(CSV) 다운로드</span>
+            </button>
+          </div>
         </div>
 
         {/* 요약 대시보드 카드 */}
@@ -303,6 +316,17 @@ export default function ManageRsvpPage({ params }) {
             </table>
           </div>
         </div>
+
+        {/* 종이 청첩장용 QR코드 모달 */}
+        {invitation && (
+          <QrCodeModal
+            isOpen={showQrModal}
+            onClose={() => setShowQrModal(false)}
+            url={typeof window !== 'undefined' ? `${window.location.origin}/${slug}` : `/${slug}`}
+            title={`${invitation.groom_name}_${invitation.bride_name}`}
+            slug={slug}
+          />
+        )}
 
       </div>
     </div>

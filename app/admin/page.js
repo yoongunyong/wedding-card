@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
+import QrCodeModal from '@/components/QrCodeModal';
 
 // 관리자 로그인용 기본 비밀번호 (환경변수 또는 로컬 설정)
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'weddingadmin1234!';
@@ -23,6 +24,7 @@ export default function AdminDashboardPage() {
   const [loadingInvs, setLoadingInvs] = useState(false);
   const [togglingSlug, setTogglingSlug] = useState(null);
   const [confirmTarget, setConfirmTarget] = useState(null); // { inv, nextActive }
+  const [selectedQrInv, setSelectedQrInv] = useState(null); // QR코드 모달 대상 청첩장
 
   // 세션 복원
   useEffect(() => {
@@ -581,7 +583,14 @@ export default function AdminDashboardPage() {
                               <span>{isActive ? '정식 활성화 ON' : '샘플 모드 (스위치 클릭 시 ON)'}</span>
                             </button>
                           </td>
-                          <td className="py-3.5 px-4 text-right space-x-2">
+                          <td className="py-3.5 px-4 text-right space-x-1.5 whitespace-nowrap">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedQrInv(inv)}
+                              className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-medium inline-block cursor-pointer transition-colors"
+                            >
+                              QR코드 ⬇
+                            </button>
                             <a
                               href={`/${inv.slug}`}
                               target="_blank"
@@ -698,6 +707,17 @@ export default function AdminDashboardPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* 종이 청첩장 인쇄용 QR코드 모달 */}
+      {selectedQrInv && (
+        <QrCodeModal
+          isOpen={Boolean(selectedQrInv)}
+          onClose={() => setSelectedQrInv(null)}
+          url={typeof window !== 'undefined' ? `${window.location.origin}/${selectedQrInv.slug}` : `/${selectedQrInv.slug}`}
+          title={`${selectedQrInv.groom_name}_${selectedQrInv.bride_name}`}
+          slug={selectedQrInv.slug}
+        />
       )}
 
     </div>

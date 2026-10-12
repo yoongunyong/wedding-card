@@ -63,6 +63,8 @@ export default function CreateInvitationPage() {
     slug: '',
     groom_name: '',
     groom_name_en: '',
+    groom_first_name_en: '',
+    groom_last_name_en: '',
     groom_phone: '',
     groom_relation: '장남',
     groom_father: '',
@@ -74,6 +76,8 @@ export default function CreateInvitationPage() {
 
     bride_name: '',
     bride_name_en: '',
+    bride_first_name_en: '',
+    bride_last_name_en: '',
     bride_phone: '',
     bride_relation: '장녀',
     bride_father: '',
@@ -106,6 +110,8 @@ export default function CreateInvitationPage() {
     show_accounts: true,
     show_rsvp: true,
     show_guestbook: true,
+    show_profile_photos: true,
+    order_code: '',
   });
 
   // 2. 다중 계좌 상태
@@ -119,24 +125,24 @@ export default function CreateInvitationPage() {
   // 3. 교통편 상세 안내 목록 (오시는 길)
   const [transportationList, setTransportationList] = useState([
     {
-      type: 'parking',
-      title: '주차안내',
-      content: '건물 내 지하 2층~지하 5층에 여유로운 주차 공간이 마련되어 있으며, 2시간 무료 주차가 지원됩니다.',
-    },
-    {
       type: 'subway',
       title: '지하철',
-      content: '지하철 5·6호선 공덕역 8번 출구에서 도보 3분 거리입니다.',
+      content: '',
     },
     {
       type: 'bus',
       title: '버스',
-      content: '간선 172, 405번 이용 시 [서울광장/공덕역] 정류장에서 하차하시면 편리합니다.',
+      content: '',
     },
     {
       type: 'car',
       title: '자차 / 내비게이션',
-      content: "내비게이션 검색창에 예식장 이름 또는 주소를 검색하시면 편리하게 오실 수 있습니다.",
+      content: '내비게이션 검색창에 예식장 이름 또는 주소를 검색하시면 편리하게 오실 수 있습니다.',
+    },
+    {
+      type: 'parking',
+      title: '주차안내',
+      content: '건물 내 주차장을 이용하실 수 있습니다.',
     },
   ]);
 
@@ -144,13 +150,13 @@ export default function CreateInvitationPage() {
   const [infoCards, setInfoCards] = useState([
     {
       title: '식사 안내',
-      subtitle: 'PM 14:00~ 16:00 뷔페 이용 가능',
-      content: '정성껏 준비한 피로연 뷔페가 마련되어 있습니다.\n편안하게 오셔서 식사를 즐겨주시기 바랍니다.',
+      subtitle: '',
+      content: '정성껏 준비한 피로연 식사가 마련되어 있습니다.\n편안하게 오셔서 식사를 즐겨주시기 바랍니다.',
     },
     {
       title: '화환 안내',
       subtitle: '',
-      content: '예식장 공간이 협소하여 화환은 정중히 사양하오니 너른 양해 부탁드립니다.',
+      content: '화환은 정중히 사양하오니 너른 양해 부탁드립니다.',
     },
   ]);
 
@@ -249,12 +255,38 @@ export default function CreateInvitationPage() {
     setFormData((prev) => ({ ...prev, slug: `wedding-${randomNum}` }));
   };
 
+  // 이미지 유효성 검증 및 상태 저장 헬퍼
+  const validateAndSetImage = (file, setFile, setPreview, label = '사진') => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      return alert(`${label}은(는) 이미지 파일(JPG, PNG, WEBP 등)만 등록하실 수 있습니다.`);
+    }
+    const sizeMb = file.size / (1024 * 1024);
+    if (sizeMb > 20) {
+      return alert(`${label} 파일 용량이 너무 큽니다 (${sizeMb.toFixed(1)}MB). 20MB 이하의 이미지를 선택해 주세요.`);
+    }
+    setFile(file);
+    setPreview(URL.createObjectURL(file));
+  };
+
   // 갤러리 이미지 추가 / 삭제
   const handleGalleryImagesChange = (e) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length > 0) {
-      setGalleryFiles((prev) => [...prev, ...files].slice(0, 20));
-      const newPreviews = files.map((f) => URL.createObjectURL(f));
+    const rawFiles = Array.from(e.target.files || []);
+    const validFiles = rawFiles.filter((f) => {
+      if (!f.type.startsWith('image/')) {
+        alert(`${f.name} 파일은 이미지가 아니므로 제외되었습니다.`);
+        return false;
+      }
+      if (f.size > 20 * 1024 * 1024) {
+        alert(`${f.name} 파일 용량이 20MB를 초과하여 제외되었습니다.`);
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length > 0) {
+      setGalleryFiles((prev) => [...prev, ...validFiles].slice(0, 20));
+      const newPreviews = validFiles.map((f) => URL.createObjectURL(f));
       setGalleryPreviews((prev) => [...prev, ...newPreviews].slice(0, 20));
     }
   };
@@ -374,6 +406,14 @@ export default function CreateInvitationPage() {
 
   // 실시간 미리보기용 객체 생성
   const previewInvitation = useMemo(() => {
+    const groomFirst = (formData.groom_first_name_en || '').trim() || (formData.groom_name_en || '').trim().split(' ')[0] || (formData.groom_name_en || '').trim();
+    const groomLast = (formData.groom_last_name_en || '').trim() || (formData.groom_name_en || '').trim().split(' ').slice(1).join(' ') || '';
+    const brideFirst = (formData.bride_first_name_en || '').trim() || (formData.bride_name_en || '').trim().split(' ')[0] || (formData.bride_name_en || '').trim();
+    const brideLast = (formData.bride_last_name_en || '').trim() || (formData.bride_name_en || '').trim().split(' ').slice(1).join(' ') || '';
+    const mainNamesEn = (groomFirst && brideFirst)
+      ? `${groomFirst} & ${brideFirst}`
+      : (formData.groom_name_en && formData.bride_name_en ? `${formData.groom_name_en.trim()} & ${formData.bride_name_en.trim()}` : '');
+
     const allAccounts = [
       ...groomAccounts.filter((a) => a.number && a.number.trim()).map((a) => ({
         group: '신랑측',
@@ -400,6 +440,17 @@ export default function CreateInvitationPage() {
       bride_name: formData.bride_name,
       groom_name_en: formData.groom_name_en,
       bride_name_en: formData.bride_name_en,
+      groom_first_name_en: groomFirst,
+      groom_last_name_en: groomLast,
+      bride_first_name_en: brideFirst,
+      bride_last_name_en: brideLast,
+      main_names_en: mainNamesEn,
+      groom_relation: formData.groom_relation,
+      bride_relation: formData.bride_relation,
+      groom_father_deceased: formData.groom_father_deceased,
+      groom_mother_deceased: formData.groom_mother_deceased,
+      bride_father_deceased: formData.bride_father_deceased,
+      bride_mother_deceased: formData.bride_mother_deceased,
       groom_phone: formData.groom_phone,
       groom_father_phone: formData.groom_father_phone,
       groom_mother_phone: formData.groom_mother_phone,
@@ -412,6 +463,7 @@ export default function CreateInvitationPage() {
       bride_mother: formData.bride_mother,
       wedding_date: formData.wedding_date ? `${formData.wedding_date}T${formData.wedding_time || '12:00'}:00` : '',
       venue_name: formData.venue_name,
+      venue_hall: formData.venue_hall,
       venue_address: formData.venue_address,
       venue_detail: formData.venue_detail,
       message: formData.message,
@@ -438,6 +490,7 @@ export default function CreateInvitationPage() {
         show_rsvp: formData.show_rsvp,
         show_guestbook: formData.show_guestbook,
         show_quote_section: formData.show_quote_section,
+        show_profile_photos: formData.show_profile_photos,
         groom_relation: formData.groom_relation,
         bride_relation: formData.bride_relation,
         groom_father_deceased: formData.groom_father_deceased,
@@ -485,9 +538,20 @@ export default function CreateInvitationPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // 1. 필수 인적사항 검증
     if (!formData.groom_name.trim() || !formData.bride_name.trim()) {
-      return alert('신랑과 신부 성함을 입력해 주세요.');
+      return alert('신랑과 신부 성함을 모두 입력해 주세요.');
     }
+
+    // 2. 예식 일시 검증
+    if (!formData.wedding_date) {
+      return alert('예식 날짜를 선택해 주세요.');
+    }
+    if (!formData.wedding_time) {
+      return alert('예식 시간을 선택해 주세요.');
+    }
+
+    // 3. 예식 장소 검증
     if (!formData.venue_name.trim()) {
       return alert('예식장 이름을 입력해 주세요.');
     }
@@ -495,12 +559,81 @@ export default function CreateInvitationPage() {
       return alert('예식장 주소를 입력해 주세요.');
     }
 
-    const cleanSlug = formData.slug.trim() || `wedding-${Math.floor(1000 + Math.random() * 9000)}`;
+    // 4. 대표 메인 사진 검증
+    if (!mainImageFile && !mainImagePreview) {
+      return alert('청첩장 첫 화면에 노출될 메인 대표 사진을 등록해 주세요.');
+    }
+
+    // 5. URL 슬러그 형식 검증
+    const rawSlug = formData.slug.trim() || `wedding-${Math.floor(1000 + Math.random() * 9000)}`;
+    const slugRegex = /^[a-zA-Z0-9_-]+$/;
+    if (!slugRegex.test(rawSlug)) {
+      return alert('청첩장 영문 주소(URL SLUG)는 영문자, 숫자, 하이픈(-), 언더바(_)만 사용 가능합니다.');
+    }
+    const cleanSlug = rawSlug.toLowerCase();
+
+    // 6. 음원 URL 유효성 검증
+    if (bgmMode === 'url' && customBgmUrl.trim()) {
+      if (!/^https?:\/\//i.test(customBgmUrl.trim())) {
+        return alert('음원 링크는 http:// 또는 https:// 로 시작하는 올바른 웹 주소여야 합니다.');
+      }
+    }
 
     setSubmitting(true);
-    setUploadStatus('웨딩 사진 및 이미지를 업로드하고 있습니다...');
+    setUploadStatus('청첩장 영문 주소 중복 여부를 확인하고 있습니다...');
 
     try {
+      // 7. 슬러그 실시간 중복 체크
+      const { data: existingCard } = await supabase
+        .from('invitations')
+        .select('id')
+        .eq('slug', cleanSlug)
+        .maybeSingle();
+
+      if (existingCard) {
+        setSubmitting(false);
+        setUploadStatus('');
+        return alert(`'${cleanSlug}' 주소는 이미 사용 중인 영문 주소입니다. 다른 주소를 입력하시거나 'AUTO GENERATE' 버튼을 눌러주세요.`);
+      }
+
+      // 8. 스마트스토어/선물 인증코드 검증
+      let willBeActive = false;
+      let matchedCodeId = null;
+      const inputCode = (formData.order_code || '').trim().toUpperCase();
+
+      if (inputCode) {
+        setUploadStatus('입력하신 인증코드를 확인하고 있습니다...');
+        try {
+          const { data: codeRow, error: codeErr } = await supabase
+            .from('order_codes')
+            .select('*')
+            .eq('code', inputCode)
+            .maybeSingle();
+
+          if (codeErr) {
+            console.warn('order_codes query warning:', codeErr);
+          }
+
+          if (!codeRow) {
+            setSubmitting(false);
+            setUploadStatus('');
+            return alert('입력하신 인증코드가 올바르지 않습니다. 코드를 다시 확인해 주시거나, 비워두고 샘플 모드로 제작해 주세요.');
+          }
+
+          if (codeRow.is_used) {
+            setSubmitting(false);
+            setUploadStatus('');
+            return alert('해당 인증코드는 이미 사용 완료된 1회용 코드입니다. 새로운 코드를 발급받으시거나 비워두고 제작해 주세요.');
+          }
+
+          willBeActive = true;
+          matchedCodeId = codeRow.id;
+        } catch (err) {
+          console.warn('Code check failed:', err);
+        }
+      }
+
+      setUploadStatus('웨딩 사진 및 이미지를 업로드하고 있습니다...');
       // 1. 단일 이미지들 업로드
       let uploadedMainUrl = mainImagePreview;
       if (mainImageFile) {
@@ -636,13 +769,17 @@ export default function CreateInvitationPage() {
         venue_address: formData.venue_address.trim(),
         venue_detail: formData.venue_detail.trim(),
 
-        main_names_en: (formData.groom_name_en && formData.bride_name_en) 
-          ? `${formData.groom_name_en.trim()} & ${formData.bride_name_en.trim()}` 
-          : '',
-        groom_first_name_en: formData.groom_name_en.trim().split(' ')[0] || formData.groom_name_en.trim(),
-        groom_last_name_en: formData.groom_name_en.trim().split(' ').slice(1).join(' ') || '',
-        bride_first_name_en: formData.bride_name_en.trim().split(' ')[0] || formData.bride_name_en.trim(),
-        bride_last_name_en: formData.bride_name_en.trim().split(' ').slice(1).join(' ') || '',
+        main_names_en: (() => {
+          const gf = formData.groom_first_name_en.trim() || formData.groom_name_en.trim().split(' ')[0] || formData.groom_name_en.trim();
+          const bf = formData.bride_first_name_en.trim() || formData.bride_name_en.trim().split(' ')[0] || formData.bride_name_en.trim();
+          if (gf && bf) return `${gf} & ${bf}`;
+          if (formData.groom_name_en.trim() && formData.bride_name_en.trim()) return `${formData.groom_name_en.trim()} & ${formData.bride_name_en.trim()}`;
+          return '';
+        })(),
+        groom_first_name_en: formData.groom_first_name_en.trim() || formData.groom_name_en.trim().split(' ')[0] || formData.groom_name_en.trim(),
+        groom_last_name_en: formData.groom_last_name_en.trim() || formData.groom_name_en.trim().split(' ').slice(1).join(' ') || '',
+        bride_first_name_en: formData.bride_first_name_en.trim() || formData.bride_name_en.trim().split(' ')[0] || formData.bride_name_en.trim(),
+        bride_last_name_en: formData.bride_last_name_en.trim() || formData.bride_name_en.trim().split(' ').slice(1).join(' ') || '',
 
         message: formData.message.trim(),
         quote_content: formData.show_quote_section ? formData.quote_content.trim() : '',
@@ -664,6 +801,8 @@ export default function CreateInvitationPage() {
         bgm_url: finalBgmUrl,
         bgm_mode: finalBgmMode,
         template_type: formData.template_type || 'editorial',
+        is_active: willBeActive,
+        order_code: inputCode || null,
 
         template_config: {
           title_color: formData.title_color,
@@ -674,6 +813,7 @@ export default function CreateInvitationPage() {
           show_rsvp: formData.show_rsvp,
           show_guestbook: formData.show_guestbook,
           show_quote_section: formData.show_quote_section,
+          show_profile_photos: Boolean(formData.show_profile_photos),
           groom_relation: formData.groom_relation,
           bride_relation: formData.bride_relation,
           groom_father_deceased: formData.groom_father_deceased,
@@ -681,6 +821,8 @@ export default function CreateInvitationPage() {
           bride_father_deceased: formData.bride_father_deceased,
           bride_mother_deceased: formData.bride_mother_deceased,
           venue_hall: formData.venue_hall,
+          is_active: willBeActive,
+          order_code: inputCode || null,
         },
       };
 
@@ -697,9 +839,27 @@ export default function CreateInvitationPage() {
         return;
       }
 
+      // 1회용 인증코드 사용 완료 처리
+      if (matchedCodeId) {
+        try {
+          await supabase
+            .from('order_codes')
+            .update({
+              is_used: true,
+              used_by_slug: cleanSlug,
+              used_at: new Date().toISOString(),
+            })
+            .eq('id', matchedCodeId);
+        } catch (codeUpdateErr) {
+          console.warn('order_codes update error:', codeUpdateErr);
+        }
+      }
+
       setCreatedResult({
         slug: data.slug,
         manage_token: data.manage_token,
+        is_active: willBeActive,
+        order_code: inputCode || null,
       });
       window.scrollTo(0, 0);
     } catch (err) {
@@ -732,6 +892,43 @@ export default function CreateInvitationPage() {
             두 분의 소중한 순간을 담은 청첩장이 생성되었습니다.<br />
             아래 발급된 링크를 통해 청첩장 확인 및 관리가 가능합니다.
           </p>
+
+          {/* 정식 활성화 vs 샘플 모드 상태 안내 카드 */}
+          {createdResult.is_active ? (
+            <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-left flex items-start gap-3">
+              <span className="text-emerald-600 text-lg mt-0.5">✦</span>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-semibold text-emerald-800">정식 청첩장 활성화 완료</span>
+                  {createdResult.order_code && (
+                    <span className="text-[10px] font-mono bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-medium">
+                      {createdResult.order_code}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[12px] text-emerald-700 font-light leading-relaxed">
+                  인증이 정상 완료되어 워터마크 없이 모든 기능이 정식 서비스 상태입니다.<br />
+                  하객분들께 링크를 자유롭게 공유하셔도 좋습니다.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="mb-6 p-4 rounded-2xl bg-amber-50/80 border border-amber-200/80 text-left flex items-start gap-3">
+              <span className="text-amber-600 text-lg mt-0.5">ⓘ</span>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-semibold text-amber-900">샘플 미리보기 모드로 등록됨</span>
+                  <span className="text-[10px] font-mono bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-medium">
+                    SAMPLE MODE
+                  </span>
+                </div>
+                <p className="text-[12px] text-amber-800 font-light leading-relaxed">
+                  스마트스토어 구매 고객님은 톡톡으로 전달받으신 1회용 주문 코드를 등록하시거나, 
+                  관리자 승인이 완료되면 워터마크가 즉시 제거된 정식 청첩장으로 활성화됩니다.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* 하객 공유용 청첩장 링크 */}
           <div className="p-5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80 text-left mb-4">
@@ -940,20 +1137,6 @@ export default function CreateInvitationPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-stone-700 mb-1.5">영문 이름</label>
-                    <input
-                      type="text"
-                      name="groom_name_en"
-                      value={formData.groom_name_en}
-                      onChange={handleChange}
-                      placeholder="Minjun"
-                      className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all font-serif"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2.5">
-                  <div>
                     <label className="block text-xs font-medium text-stone-700 mb-1.5">신랑 연락처</label>
                     <input
                       type="tel"
@@ -964,17 +1147,75 @@ export default function CreateInvitationPage() {
                       className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all font-mono"
                     />
                   </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
                   <div>
-                    <label className="block text-xs font-medium text-stone-700 mb-1.5">관계 호칭</label>
+                    <label className="block text-xs font-medium text-stone-700 mb-1.5">영문 이름 (First Name)</label>
                     <input
                       type="text"
-                      name="groom_relation"
-                      value={formData.groom_relation}
-                      onChange={handleChange}
-                      placeholder="장남"
-                      className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all"
+                      name="groom_first_name_en"
+                      value={formData.groom_first_name_en}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          groom_first_name_en: val,
+                          groom_name_en: prev.groom_last_name_en ? `${val} ${prev.groom_last_name_en}`.trim() : val,
+                        }));
+                      }}
+                      placeholder="Minjun"
+                      className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all font-serif"
                     />
                   </div>
+                  <div>
+                    <label className="block text-xs font-medium text-stone-700 mb-1.5">영문 성 (Last Name)</label>
+                    <input
+                      type="text"
+                      name="groom_last_name_en"
+                      value={formData.groom_last_name_en}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          groom_last_name_en: val,
+                          groom_name_en: prev.groom_first_name_en ? `${prev.groom_first_name_en} ${val}`.trim() : val,
+                        }));
+                      }}
+                      placeholder="Kim"
+                      className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all font-serif"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-medium text-stone-700">관계 호칭</label>
+                    <div className="flex gap-1">
+                      {['장남', '차남', '삼남', '막내'].map((rel) => (
+                        <button
+                          key={rel}
+                          type="button"
+                          onClick={() => setFormData((prev) => ({ ...prev, groom_relation: rel }))}
+                          className={`px-2 py-0.5 rounded text-[10px] font-medium border transition-colors cursor-pointer ${
+                            formData.groom_relation === rel
+                              ? 'bg-stone-900 text-white border-stone-900'
+                              : 'bg-white text-stone-500 border-stone-200 hover:border-stone-400'
+                          }`}
+                        >
+                          {rel}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <input
+                    type="text"
+                    name="groom_relation"
+                    value={formData.groom_relation}
+                    onChange={handleChange}
+                    placeholder="장남"
+                    className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all"
+                  />
                 </div>
 
                 {/* 혼주 (신랑측 부모님) */}
@@ -1083,20 +1324,6 @@ export default function CreateInvitationPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-stone-700 mb-1.5">영문 이름</label>
-                    <input
-                      type="text"
-                      name="bride_name_en"
-                      value={formData.bride_name_en}
-                      onChange={handleChange}
-                      placeholder="Seoyeon"
-                      className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all font-serif"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2.5">
-                  <div>
                     <label className="block text-xs font-medium text-stone-700 mb-1.5">신부 연락처</label>
                     <input
                       type="tel"
@@ -1107,17 +1334,75 @@ export default function CreateInvitationPage() {
                       className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all font-mono"
                     />
                   </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
                   <div>
-                    <label className="block text-xs font-medium text-stone-700 mb-1.5">관계 호칭</label>
+                    <label className="block text-xs font-medium text-stone-700 mb-1.5">영문 이름 (First Name)</label>
                     <input
                       type="text"
-                      name="bride_relation"
-                      value={formData.bride_relation}
-                      onChange={handleChange}
-                      placeholder="장녀"
-                      className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all"
+                      name="bride_first_name_en"
+                      value={formData.bride_first_name_en}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          bride_first_name_en: val,
+                          bride_name_en: prev.bride_last_name_en ? `${val} ${prev.bride_last_name_en}`.trim() : val,
+                        }));
+                      }}
+                      placeholder="Seoyeon"
+                      className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all font-serif"
                     />
                   </div>
+                  <div>
+                    <label className="block text-xs font-medium text-stone-700 mb-1.5">영문 성 (Last Name)</label>
+                    <input
+                      type="text"
+                      name="bride_last_name_en"
+                      value={formData.bride_last_name_en}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          bride_last_name_en: val,
+                          bride_name_en: prev.bride_first_name_en ? `${prev.bride_first_name_en} ${val}`.trim() : val,
+                        }));
+                      }}
+                      placeholder="Lee"
+                      className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all font-serif"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-medium text-stone-700">관계 호칭</label>
+                    <div className="flex gap-1">
+                      {['장녀', '차녀', '삼녀', '막내'].map((rel) => (
+                        <button
+                          key={rel}
+                          type="button"
+                          onClick={() => setFormData((prev) => ({ ...prev, bride_relation: rel }))}
+                          className={`px-2 py-0.5 rounded text-[10px] font-medium border transition-colors cursor-pointer ${
+                            formData.bride_relation === rel
+                              ? 'bg-stone-900 text-white border-stone-900'
+                              : 'bg-white text-stone-500 border-stone-200 hover:border-stone-400'
+                          }`}
+                        >
+                          {rel}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <input
+                    type="text"
+                    name="bride_relation"
+                    value={formData.bride_relation}
+                    onChange={handleChange}
+                    placeholder="장녀"
+                    className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all"
+                  />
                 </div>
 
                 {/* 혼주 (신부측 부모님) */}
@@ -1407,34 +1692,139 @@ export default function CreateInvitationPage() {
             </div>
 
             <div className="space-y-6">
-              {/* 메인 커버 사진 */}
-              <div className="p-5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
-                <label className="block text-xs font-semibold text-stone-800 mb-1">
-                  메인 풀스크린 커버 사진 (대표 사진) *
-                </label>
-                <p className="text-[11px] text-stone-400 mb-3.5 font-light">
-                  청첩장 첫 화면에 보이는 고화질 세로형(전신/상반신) 사진을 권장합니다.
-                </p>
-                <div className="flex items-center gap-4">
-                  <div className="w-20 h-28 bg-white rounded-xl overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center shadow-xs">
-                    {mainImagePreview ? (
-                      <img src={mainImagePreview} alt="Main" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-[11px] text-stone-300 font-mono">COVER</span>
-                    )}
+              {/* 메인 풀스크린 커버 사진 & 매거진 슬리브 커버 사진 */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* 메인 풀스크린 사진 */}
+                <div className="p-5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-semibold text-stone-800">
+                      본문 메인 풀스크린 사진 *
+                    </label>
+                    <span className="text-[10px] font-mono text-stone-700 bg-stone-200/70 px-2 py-0.5 rounded-full font-medium">
+                      MAIN
+                    </span>
                   </div>
-                  <div>
+                  <p className="text-[11px] text-stone-400 mb-3.5 font-light">
+                    청첩장 본문 첫 화면의 대표 풀스크린 사진입니다.
+                  </p>
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-16 h-22 bg-white rounded-xl overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center shadow-xs">
+                      {mainImagePreview ? (
+                        <img src={mainImagePreview} alt="Main" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-[10px] text-stone-300 font-mono">MAIN</span>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          validateAndSetImage(e.target.files?.[0], setMainImageFile, setMainImagePreview, '본문 메인 사진');
+                        }}
+                        className="text-[11px] text-stone-600 file:mr-2.5 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-medium file:bg-stone-900 file:text-white hover:file:bg-black cursor-pointer transition-all w-full"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 인트로 커버 사진 (시안 1 & 시안 2 공통) */}
+                <div className="p-5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-semibold text-stone-800">
+                      인트로 커버 사진 (선택)
+                    </label>
+                    <span className="text-[10px] font-mono text-stone-700 bg-stone-200/70 px-2 py-0.5 rounded-full font-medium">
+                      OPTION 01 & 02
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-stone-400 mb-3.5 font-light">
+                    시안 1 봉투 카드 및 시안 2 매거진 슬리브 인트로 커버 (미등록 시 메인 사진 적용)
+                  </p>
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-16 h-22 bg-white rounded-xl overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center shadow-xs">
+                      {coverImagePreview ? (
+                        <img src={coverImagePreview} alt="Cover" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-[10px] text-stone-300 font-mono">COVER</span>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          validateAndSetImage(e.target.files?.[0], setCoverImageFile, setCoverImagePreview, '인트로 커버 사진');
+                        }}
+                        className="text-[11px] text-stone-600 file:mr-2.5 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-medium file:bg-stone-200 file:text-stone-800 hover:file:bg-stone-300 cursor-pointer transition-all w-full"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 신랑 & 신부 프로필 사진 (시안 1 전용 및 연락처용) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* 신랑 프로필 */}
+                <div className="p-4.5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-semibold text-stone-800">
+                      신랑 프로필 사진 (선택)
+                    </label>
+                    <span className="text-[10px] font-mono text-stone-500 bg-stone-200/60 px-2 py-0.5 rounded-full">
+                      GROOM
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-stone-400 mb-2.5">
+                    시안 1 프로필 원형 화보 및 하객 연락처 모달에 적용됩니다.
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-14 h-14 rounded-full overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center bg-white shadow-xs">
+                      {groomPhotoPreview ? (
+                        <img src={groomPhotoPreview} alt="Groom Profile" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-[10px] text-stone-300 font-mono">GROOM</span>
+                      )}
+                    </div>
                     <input
                       type="file"
                       accept="image/*"
                       onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setMainImageFile(file);
-                          setMainImagePreview(URL.createObjectURL(file));
-                        }
+                        validateAndSetImage(e.target.files?.[0], setGroomPhotoFile, setGroomPhotoPreview, '신랑 프로필 사진');
                       }}
-                      className="text-xs text-stone-600 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-medium file:bg-stone-900 file:text-white hover:file:bg-black cursor-pointer transition-all"
+                      className="text-[11px] text-stone-500 file:py-1.5 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:bg-stone-200 file:text-stone-800 cursor-pointer w-full"
+                    />
+                  </div>
+                </div>
+
+                {/* 신부 프로필 */}
+                <div className="p-4.5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-semibold text-stone-800">
+                      신부 프로필 사진 (선택)
+                    </label>
+                    <span className="text-[10px] font-mono text-stone-500 bg-stone-200/60 px-2 py-0.5 rounded-full">
+                      BRIDE
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-stone-400 mb-2.5">
+                    시안 1 프로필 원형 화보 및 하객 연락처 모달에 적용됩니다.
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-14 h-14 rounded-full overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center bg-white shadow-xs">
+                      {bridePhotoPreview ? (
+                        <img src={bridePhotoPreview} alt="Bride Profile" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-[10px] text-stone-300 font-mono">BRIDE</span>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        validateAndSetImage(e.target.files?.[0], setBridePhotoFile, setBridePhotoPreview, '신부 프로필 사진');
+                      }}
+                      className="text-[11px] text-stone-500 file:py-1.5 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:bg-stone-200 file:text-stone-800 cursor-pointer w-full"
                     />
                   </div>
                 </div>
@@ -1459,11 +1849,7 @@ export default function CreateInvitationPage() {
                       type="file"
                       accept="image/*"
                       onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setCoupleImageFile(file);
-                          setCoupleImagePreview(URL.createObjectURL(file));
-                        }
+                        validateAndSetImage(e.target.files?.[0], setCoupleImageFile, setCoupleImagePreview, '커플 사진');
                       }}
                       className="text-[11px] text-stone-500 file:py-1.5 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:bg-stone-200 file:text-stone-800 cursor-pointer w-full"
                     />
@@ -1487,11 +1873,7 @@ export default function CreateInvitationPage() {
                       type="file"
                       accept="image/*"
                       onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setEndingImageFile(file);
-                          setEndingImagePreview(URL.createObjectURL(file));
-                        }
+                        validateAndSetImage(e.target.files?.[0], setEndingImageFile, setEndingImagePreview, '엔딩 사진');
                       }}
                       className="text-[11px] text-stone-500 file:py-1.5 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:bg-stone-200 file:text-stone-800 cursor-pointer w-full"
                     />
@@ -2191,6 +2573,76 @@ export default function CreateInvitationPage() {
                     />
                     <span>축하 방명록</span>
                   </label>
+                  <label className="flex items-center gap-2.5 cursor-pointer p-3 bg-[#FAFAF9] hover:bg-stone-100/70 border border-stone-200/60 rounded-xl transition-colors select-none">
+                    <input
+                      type="checkbox"
+                      name="show_profile_photos"
+                      checked={formData.show_profile_photos}
+                      onChange={handleChange}
+                      className="rounded border-stone-300 text-stone-900 accent-stone-900"
+                    />
+                    <span>원형 프로필 화보 (시안1)</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 10. 스마트스토어 주문 인증코드 (선택) */}
+          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
+              <div className="flex items-baseline gap-2.5">
+                <span className="font-mono text-xs text-stone-400 tracking-wider">10</span>
+                <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
+                  스마트스토어 주문 인증코드 <span className="text-xs font-sans text-stone-400 font-normal">(선택)</span>
+                </h2>
+                <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase hidden sm:inline">
+                  ORDER CODE
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-stone-700 mb-1.5">
+                  1회용 정식 활성화 인증코드
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="order_code"
+                    value={formData.order_code}
+                    onChange={(e) => {
+                      const val = e.target.value.toUpperCase();
+                      setFormData((prev) => ({ ...prev, order_code: val }));
+                    }}
+                    placeholder="예: WED-8492-1049 또는 GIFT-3948-2819"
+                    className="w-full px-4 py-3 border border-stone-200 rounded-xl text-sm font-mono tracking-wider text-stone-900 placeholder:text-stone-300 placeholder:font-sans bg-white focus:outline-none focus:border-stone-900 transition-colors uppercase"
+                  />
+                  {formData.order_code && (
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, order_code: '' }))}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 text-xs cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-4 bg-[#FAFAF9] rounded-2xl border border-stone-200/60 space-y-2">
+                <div className="flex items-start gap-2">
+                  <span className="text-stone-400 text-xs mt-0.5">✦</span>
+                  <p className="text-xs text-stone-600 leading-relaxed font-light">
+                    <strong className="font-medium text-stone-800">스마트스토어 구매 고객:</strong> 주문 결제 후 네이버 톡톡 메시지로 전달받으신 1회용 인증코드를 입력하시면 워터마크가 제거된 정식 청첩장으로 즉시 개통됩니다.
+                  </p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-amber-500 text-xs mt-0.5">💡</span>
+                  <p className="text-[11px] text-stone-500 leading-relaxed font-light">
+                    <strong className="font-medium text-stone-700">코드가 아직 없으신가요?</strong> 인증코드를 비워두셔도 <strong className="text-stone-700">무료 샘플 모드</strong>로 모든 화면을 자유롭게 제작 및 실시간 테스트하실 수 있습니다. (마음에 드실 때 언제든 정식 전환 가능)
+                  </p>
                 </div>
               </div>
             </div>

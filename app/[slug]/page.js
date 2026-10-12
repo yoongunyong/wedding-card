@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import BgmPlayer from '@/components/BgmPlayer';
+import SampleWatermark from '@/components/SampleWatermark';
 import BasicTemplate from '@/components/templates/basic/BasicTemplate';
 import EditorialTemplate from '@/components/templates/editorial/EditorialTemplate';
 
@@ -75,9 +76,11 @@ export default async function WeddingCardPage({ params }) {
   }
 
   const CurrentTemplate = TEMPLATE_MAP[invitation.template_type] || BasicTemplate;
+  const isActive = invitation.is_active ?? invitation.template_config?.is_active ?? true;
 
   return (
-    <main className="min-h-screen bg-stone-100 sm:py-8 flex justify-center p-0 m-0">
+    <main className="min-h-screen bg-stone-100 sm:py-8 flex justify-center p-0 m-0 relative">
+      {!isActive && <SampleWatermark />}
       <BgmPlayer 
         bgmUrl={invitation.bgm_url} 
         hasIntro={invitation?.template_config?.show_intro !== false} 

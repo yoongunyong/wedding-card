@@ -1,6 +1,17 @@
 'use client';
 
 export default function EditorialContactModal({ invitation, onClose }) {
+  const config = invitation?.template_config || {};
+  const isGroomFatherDeceased = invitation?.groom_father_deceased ?? config.groom_father_deceased ?? false;
+  const isGroomMotherDeceased = invitation?.groom_mother_deceased ?? config.groom_mother_deceased ?? false;
+  const isBrideFatherDeceased = invitation?.bride_father_deceased ?? config.bride_father_deceased ?? false;
+  const isBrideMotherDeceased = invitation?.bride_mother_deceased ?? config.bride_mother_deceased ?? false;
+
+  const formatName = (name, isDeceased) => {
+    if (!name) return '';
+    return isDeceased ? `故 ${name}` : name;
+  };
+
   const groom = {
     role: '신랑',
     name: invitation?.groom_name || '',
@@ -8,13 +19,13 @@ export default function EditorialContactModal({ invitation, onClose }) {
   };
   const groomFather = {
     role: '신랑 아버지',
-    name: invitation?.groom_father || '',
-    phone: invitation?.groom_father_phone || '',
+    name: formatName(invitation?.groom_father, isGroomFatherDeceased),
+    phone: isGroomFatherDeceased ? '' : (invitation?.groom_father_phone || ''),
   };
   const groomMother = {
     role: '신랑 어머니',
-    name: invitation?.groom_mother || '',
-    phone: invitation?.groom_mother_phone || '',
+    name: formatName(invitation?.groom_mother, isGroomMotherDeceased),
+    phone: isGroomMotherDeceased ? '' : (invitation?.groom_mother_phone || ''),
   };
 
   const bride = {
@@ -24,13 +35,13 @@ export default function EditorialContactModal({ invitation, onClose }) {
   };
   const brideFather = {
     role: '신부 아버지',
-    name: invitation?.bride_father || '',
-    phone: invitation?.bride_father_phone || '',
+    name: formatName(invitation?.bride_father, isBrideFatherDeceased),
+    phone: isBrideFatherDeceased ? '' : (invitation?.bride_father_phone || ''),
   };
   const brideMother = {
     role: '신부 어머니',
-    name: invitation?.bride_mother || '',
-    phone: invitation?.bride_mother_phone || '',
+    name: formatName(invitation?.bride_mother, isBrideMotherDeceased),
+    phone: isBrideMotherDeceased ? '' : (invitation?.bride_mother_phone || ''),
   };
 
   const groomSide = [groom, groomFather, groomMother].filter((p) => p.name || p.phone);

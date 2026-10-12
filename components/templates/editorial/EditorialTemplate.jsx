@@ -266,6 +266,10 @@ export default function EditorialTemplate({ invitation }) {
   };
 
   const handleKakaoShare = () => {
+    const isActive = invitation?.is_active ?? config?.is_active ?? true;
+    if (!isActive) {
+      alert('현재 청첩장은 [샘플 미리보기 모드] 상태입니다.\n정식 인증 또는 관리자 활성화 후 하객분들께 공유해 주세요.');
+    }
     if (typeof window === 'undefined' || !window.Kakao) return;
     const coupleText = [invitation?.groom_name, invitation?.bride_name].filter(Boolean).join(' ♥ ');
     const shareTitle = coupleText ? `${coupleText} 결혼식에 초대합니다` : '소중한 결혼식에 초대합니다';

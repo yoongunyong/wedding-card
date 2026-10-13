@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import BasicTemplate from '@/components/templates/basic/BasicTemplate';
 import EditorialTemplate from '@/components/templates/editorial/EditorialTemplate';
@@ -57,6 +57,49 @@ const BGM_OPTIONS = [
   },
 ];
 
+// 미입력 항목이 있을 때 실시간 미리보기에서 감성적으로 채워줄 고화질 샘플 프리셋
+const PREVIEW_FALLBACK = {
+  groom_name: '이도현',
+  bride_name: '임지연',
+  groom_name_en: 'Dohyun Lee',
+  bride_name_en: 'Jiyeon Lim',
+  groom_first_name_en: 'Dohyun',
+  groom_last_name_en: 'Lee',
+  bride_first_name_en: 'Jiyeon',
+  bride_last_name_en: 'Lim',
+  main_names_en: 'Dohyun & Jiyeon',
+  groom_relation: '장남',
+  bride_relation: '차녀',
+  groom_father: '이정재',
+  groom_mother: '김선영',
+  bride_father: '임하룡',
+  bride_mother: '박미선',
+  groom_phone: '010-1234-5678',
+  bride_phone: '010-8765-4321',
+  wedding_date: '2026-11-14T14:00:00',
+  venue_name: '아펠가모 반포',
+  venue_hall: '단독홀 LL층',
+  venue_address: '서울 서초구 반포대로 235',
+  venue_detail: '고속터미널역 3번 출구 도보 5분',
+  images: {
+    main: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=85',
+    cover: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=85',
+    couple_profile: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1000&q=80',
+    ending: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1000&q=80',
+  },
+  gallery_images: [
+    'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=800&q=80',
+  ],
+  accounts: [
+    { group: '신랑측', title: '신랑', bank: '국민', number: '123-456-789012', holder: '이도현', name: '신랑 이도현' },
+    { group: '신부측', title: '신부', bank: '카카오뱅크', number: '3333-01-2345678', holder: '임지연', name: '신부 임지연' },
+  ],
+};
+
 export default function CreateInvitationPage() {
   // 1. 기본 폼 상태
   const [formData, setFormData] = useState({
@@ -111,7 +154,6 @@ export default function CreateInvitationPage() {
     show_accounts: true,
     show_rsvp: true,
     show_guestbook: true,
-    show_profile_photos: true,
     order_code: '',
   });
 
@@ -241,6 +283,72 @@ export default function CreateInvitationPage() {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [createdResult, setCreatedResult] = useState(null);
   const [showQrModal, setShowQrModal] = useState(false);
+  const isClosingRef = useRef(false);
+
+  // 실시간 미리보기 모달 열기 (브라우저 뒤로가기 이탈 방지를 위해 히스토리 푸시)
+  const openPreviewModal = () => {
+    isClosingRef.current = false;
+    setShowPreviewModal(true);
+    if (typeof window !== 'undefined') {
+      window.history.pushState({ weddingCardPreview: true }, '');
+      requestAnimationFrame(() => {
+        const previewContainer = document.getElementById('preview-scroll-container');
+        if (previewContainer) {
+          previewContainer.scrollTop = 0;
+        }
+      });
+    }
+  };
+
+  // 실시간 미리보기 모달 닫기 (중복 호출 방지 및 히스토리 안전 정리)
+  const closePreviewModal = (e) => {
+    if (e && typeof e.stopPropagation === 'function') {
+      e.stopPropagation();
+    }
+    // 이미 닫기 처리 중이면 중복 실행 차단 (이벤트 버블링으로 인한 다중 history.back 방지)
+    if (isClosingRef.current) return;
+    isClosingRef.current = true;
+
+    setShowPreviewModal(false);
+    if (typeof window !== 'undefined') {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      if (window.history.state?.weddingCardPreview) {
+        window.history.back();
+      }
+    }
+  };
+
+  // 브라우저 뒤로가기(popstate) 및 ESC 키 이벤트 연동
+  useEffect(() => {
+    if (!showPreviewModal) return;
+
+    // 모달 활성화 시 배경 스크롤 억제
+    document.body.style.overflow = 'hidden';
+
+    const handlePopState = () => {
+      isClosingRef.current = false;
+      setShowPreviewModal(false);
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        closePreviewModal(e);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showPreviewModal]);
 
   // 폼 입력값 핸들러
   const handleChange = (e) => {
@@ -255,6 +363,101 @@ export default function CreateInvitationPage() {
   const handleAutoSlug = () => {
     const randomNum = Math.floor(1000 + Math.random() * 9000);
     setFormData((prev) => ({ ...prev, slug: `wedding-${randomNum}` }));
+  };
+
+  // 예시 샘플 데이터 자동 채우기 핸들러 (체험 모드)
+  const handleFillSampleData = () => {
+    if (
+      !formData.groom_name && !formData.bride_name
+        ? true
+        : confirm('현재 작성 중인 정보에 예시 샘플 데이터를 채우시겠습니까?\n(채워진 예시를 고객님의 실제 정보로 수정하여 편리하게 청첩장을 완성하실 수 있습니다.)')
+    ) {
+      setFormData((prev) => ({
+        ...prev,
+        groom_name: '이도현',
+        groom_name_en: 'Dohyun Lee',
+        groom_first_name_en: 'Dohyun',
+        groom_last_name_en: 'Lee',
+        groom_phone: '010-1234-5678',
+        groom_relation: '장남',
+        groom_father: '이정재',
+        groom_father_phone: '010-1111-2222',
+        groom_mother: '김선영',
+        groom_mother_phone: '010-3333-4444',
+
+        bride_name: '임지연',
+        bride_name_en: 'Jiyeon Lim',
+        bride_first_name_en: 'Jiyeon',
+        bride_last_name_en: 'Lim',
+        bride_phone: '010-8765-4321',
+        bride_relation: '차녀',
+        bride_father: '임하룡',
+        bride_father_phone: '010-5555-6666',
+        bride_mother: '박미선',
+        bride_mother_phone: '010-7777-8888',
+
+        wedding_date: '2026-11-14',
+        wedding_time: '14:00',
+        venue_name: '아펠가모 반포',
+        venue_hall: '단독홀 LL층',
+        venue_address: '서울 서초구 반포대로 235',
+        venue_detail: '고속터미널역 3번 출구 도보 5분',
+        slug: prev.slug || `wedding-${Math.floor(1000 + Math.random() * 9000)}`,
+      }));
+
+      setGroomAccounts([
+        { group: '신랑측', title: '신랑', bank: '국민', number: '123-456-789012', holder: '이도현' },
+      ]);
+      setBrideAccounts([
+        { group: '신부측', title: '신부', bank: '카카오뱅크', number: '3333-01-2345678', holder: '임지연' },
+      ]);
+    }
+  };
+
+  // 폼 초기화 핸들러
+  const handleResetForm = () => {
+    if (confirm('작성 중인 폼 입력값을 모두 초기화하시겠습니까?')) {
+      setFormData((prev) => ({
+        ...prev,
+        groom_name: '',
+        groom_name_en: '',
+        groom_first_name_en: '',
+        groom_last_name_en: '',
+        groom_phone: '',
+        groom_relation: '장남',
+        groom_father: '',
+        groom_father_phone: '',
+        groom_father_deceased: false,
+        groom_mother: '',
+        groom_mother_phone: '',
+        groom_mother_deceased: false,
+
+        bride_name: '',
+        bride_name_en: '',
+        bride_first_name_en: '',
+        bride_last_name_en: '',
+        bride_phone: '',
+        bride_relation: '장녀',
+        bride_father: '',
+        bride_father_phone: '',
+        bride_father_deceased: false,
+        bride_mother: '',
+        bride_mother_phone: '',
+        bride_mother_deceased: false,
+
+        venue_name: '',
+        venue_hall: '',
+        venue_address: '',
+        venue_detail: '',
+        slug: '',
+      }));
+      setGroomAccounts([
+        { group: '신랑측', title: '신랑', bank: '국민', number: '', holder: '' },
+      ]);
+      setBrideAccounts([
+        { group: '신부측', title: '신부', bank: '카카오뱅크', number: '', holder: '' },
+      ]);
+    }
   };
 
   // 이미지 유효성 검증 및 상태 저장 헬퍼
@@ -406,80 +609,122 @@ export default function CreateInvitationPage() {
     }
   };
 
-  // 실시간 미리보기용 객체 생성
+  // 실시간 미리보기용 객체 생성 (미입력 항목은 감성 샘플 Fallback 자동 주입)
   const previewInvitation = useMemo(() => {
-    const groomFirst = (formData.groom_first_name_en || '').trim() || (formData.groom_name_en || '').trim().split(' ')[0] || (formData.groom_name_en || '').trim();
-    const groomLast = (formData.groom_last_name_en || '').trim() || (formData.groom_name_en || '').trim().split(' ').slice(1).join(' ') || '';
-    const brideFirst = (formData.bride_first_name_en || '').trim() || (formData.bride_name_en || '').trim().split(' ')[0] || (formData.bride_name_en || '').trim();
-    const brideLast = (formData.bride_last_name_en || '').trim() || (formData.bride_name_en || '').trim().split(' ').slice(1).join(' ') || '';
-    const mainNamesEn = (groomFirst && brideFirst)
-      ? `${groomFirst} & ${brideFirst}`
-      : (formData.groom_name_en && formData.bride_name_en ? `${formData.groom_name_en.trim()} & ${formData.bride_name_en.trim()}` : '');
+    const rawGroom = formData.groom_name.trim();
+    const rawBride = formData.bride_name.trim();
 
-    const allAccounts = [
-      ...groomAccounts.filter((a) => a.number && a.number.trim()).map((a) => ({
+    // 1. 성함 및 영문 네임 (고객 입력 우선 -> 미입력 시 감성 샘플 매핑)
+    const groomName = rawGroom || PREVIEW_FALLBACK.groom_name;
+    const brideName = rawBride || PREVIEW_FALLBACK.bride_name;
+
+    const groomFirst = (formData.groom_first_name_en || '').trim() || (formData.groom_name_en || '').trim().split(' ')[0] || (formData.groom_name_en || '').trim() || PREVIEW_FALLBACK.groom_first_name_en;
+    const groomLast = (formData.groom_last_name_en || '').trim() || (formData.groom_name_en || '').trim().split(' ').slice(1).join(' ') || PREVIEW_FALLBACK.groom_last_name_en;
+    const brideFirst = (formData.bride_first_name_en || '').trim() || (formData.bride_name_en || '').trim().split(' ')[0] || (formData.bride_name_en || '').trim() || PREVIEW_FALLBACK.bride_first_name_en;
+    const brideLast = (formData.bride_last_name_en || '').trim() || (formData.bride_name_en || '').trim().split(' ').slice(1).join(' ') || PREVIEW_FALLBACK.bride_last_name_en;
+
+    const hasAnyCustomEn = formData.groom_first_name_en || formData.bride_first_name_en || formData.groom_name_en || formData.bride_name_en;
+    const mainNamesEn = hasAnyCustomEn
+      ? ((groomFirst && brideFirst) ? `${groomFirst} & ${brideFirst}` : (formData.groom_name_en && formData.bride_name_en ? `${formData.groom_name_en.trim()} & ${formData.bride_name_en.trim()}` : (groomFirst || brideFirst || '')))
+      : PREVIEW_FALLBACK.main_names_en;
+
+    // 2. 다중 계좌 (고객 등록 계좌 우선 -> 0개일 때 샘플 계좌 노출)
+    const activeGroomAccounts = groomAccounts.filter((a) => a.number && a.number.trim());
+    const activeBrideAccounts = brideAccounts.filter((a) => a.number && a.number.trim());
+
+    let allAccounts = [
+      ...activeGroomAccounts.map((a) => ({
         group: '신랑측',
         title: a.title,
         bank: a.bank,
         account_number: a.number,
         number: a.number,
-        holder: a.holder || (a.title === '신랑' ? formData.groom_name : ''),
+        holder: a.holder || (a.title === '신랑' ? groomName : ''),
         name: a.holder ? `${a.title} ${a.holder}` : a.title,
       })),
-      ...brideAccounts.filter((a) => a.number && a.number.trim()).map((a) => ({
+      ...activeBrideAccounts.map((a) => ({
         group: '신부측',
         title: a.title,
         bank: a.bank,
         account_number: a.number,
         number: a.number,
-        holder: a.holder || (a.title === '신부' ? formData.bride_name : ''),
+        holder: a.holder || (a.title === '신부' ? brideName : ''),
         name: a.holder ? `${a.title} ${a.holder}` : a.title,
       })),
     ];
 
+    if (allAccounts.length === 0) {
+      allAccounts = PREVIEW_FALLBACK.accounts;
+    }
+
+    // 3. 고화질 감성 화보 사진 (고객 업로드 사진 우선 -> 미등록 시 감성 웨딩 화보)
+    const effectiveMainImage = mainImagePreview || PREVIEW_FALLBACK.images.main;
+    const effectiveCoverImage = coverImagePreview || effectiveMainImage;
+    const effectiveCoupleImage = coupleImagePreview || effectiveMainImage;
+    const effectiveEndingImage = endingImagePreview || effectiveMainImage;
+    const effectiveGalleryImages = galleryPreviews.length > 0 ? galleryPreviews : PREVIEW_FALLBACK.gallery_images;
+
+    // 4. 예식 장소 (고객 입력 우선 -> 미입력 시 아펠가모 반포 샘플)
+    const effectiveVenueName = formData.venue_name.trim() || PREVIEW_FALLBACK.venue_name;
+    const effectiveVenueHall = formData.venue_hall ? formData.venue_hall.trim() : PREVIEW_FALLBACK.venue_hall;
+    const effectiveVenueAddress = formData.venue_address.trim() || PREVIEW_FALLBACK.venue_address;
+    const effectiveVenueDetail = formData.venue_detail.trim() || PREVIEW_FALLBACK.venue_detail;
+
+    // 5. 부모님 성함 (신랑/신부 본인 이름을 안 넣었을 때는 예시 부모님도 함께 노출)
+    const effectiveGroomFather = formData.groom_father.trim() || (!rawGroom ? PREVIEW_FALLBACK.groom_father : '');
+    const effectiveGroomMother = formData.groom_mother.trim() || (!rawGroom ? PREVIEW_FALLBACK.groom_mother : '');
+    const effectiveBrideFather = formData.bride_father.trim() || (!rawBride ? PREVIEW_FALLBACK.bride_father : '');
+    const effectiveBrideMother = formData.bride_mother.trim() || (!rawBride ? PREVIEW_FALLBACK.bride_mother : '');
+
+    const effectiveGroomPhone = formData.groom_phone.trim() || (!rawGroom ? PREVIEW_FALLBACK.groom_phone : '');
+    const effectiveBridePhone = formData.bride_phone.trim() || (!rawBride ? PREVIEW_FALLBACK.bride_phone : '');
+
+    // 6. 예식 일시
+    const effectiveWeddingDate = formData.wedding_date 
+      ? `${formData.wedding_date}T${formData.wedding_time || '14:00'}:00` 
+      : PREVIEW_FALLBACK.wedding_date;
+
     return {
-      groom_name: formData.groom_name,
-      bride_name: formData.bride_name,
-      groom_name_en: formData.groom_name_en,
-      bride_name_en: formData.bride_name_en,
+      groom_name: groomName,
+      bride_name: brideName,
+      groom_name_en: (formData.groom_name_en || '').trim() || PREVIEW_FALLBACK.groom_name_en,
+      bride_name_en: (formData.bride_name_en || '').trim() || PREVIEW_FALLBACK.bride_name_en,
       groom_first_name_en: groomFirst,
       groom_last_name_en: groomLast,
       bride_first_name_en: brideFirst,
       bride_last_name_en: brideLast,
       main_names_en: mainNamesEn,
-      groom_relation: formData.groom_relation,
-      bride_relation: formData.bride_relation,
+      groom_relation: formData.groom_relation || PREVIEW_FALLBACK.groom_relation,
+      bride_relation: formData.bride_relation || PREVIEW_FALLBACK.bride_relation,
       groom_father_deceased: formData.groom_father_deceased,
       groom_mother_deceased: formData.groom_mother_deceased,
       bride_father_deceased: formData.bride_father_deceased,
       bride_mother_deceased: formData.bride_mother_deceased,
-      groom_phone: formData.groom_phone,
+      groom_phone: effectiveGroomPhone,
       groom_father_phone: formData.groom_father_phone,
       groom_mother_phone: formData.groom_mother_phone,
-      bride_phone: formData.bride_phone,
+      bride_phone: effectiveBridePhone,
       bride_father_phone: formData.bride_father_phone,
       bride_mother_phone: formData.bride_mother_phone,
-      groom_father: formData.groom_father,
-      groom_mother: formData.groom_mother,
-      bride_father: formData.bride_father,
-      bride_mother: formData.bride_mother,
-      wedding_date: formData.wedding_date ? `${formData.wedding_date}T${formData.wedding_time || '12:00'}:00` : '',
-      venue_name: formData.venue_name,
-      venue_hall: formData.venue_hall,
-      venue_address: formData.venue_address,
-      venue_detail: formData.venue_detail,
-      message: formData.message,
-      quote_content: formData.show_quote_section ? formData.quote_content : '',
-      quote_source: formData.show_quote_section ? formData.quote_source : '',
+      groom_father: effectiveGroomFather,
+      groom_mother: effectiveGroomMother,
+      bride_father: effectiveBrideFather,
+      bride_mother: effectiveBrideMother,
+      wedding_date: effectiveWeddingDate,
+      venue_name: effectiveVenueName,
+      venue_hall: effectiveVenueHall,
+      venue_address: effectiveVenueAddress,
+      venue_detail: effectiveVenueDetail,
+      message: formData.message || GREETING_PRESETS[0].content,
+      quote_content: formData.show_quote_section ? (formData.quote_content || QUOTE_PRESETS[0].content) : '',
+      quote_source: formData.show_quote_section ? (formData.quote_source || QUOTE_PRESETS[0].source) : '',
       images: {
-        main: mainImagePreview,
-        cover: coverImagePreview || mainImagePreview,
-        couple_profile: coupleImagePreview || mainImagePreview,
-        ending: endingImagePreview || mainImagePreview,
-        groom_profile: groomPhotoPreview,
-        bride_profile: bridePhotoPreview,
+        main: effectiveMainImage,
+        cover: effectiveCoverImage,
+        couple_profile: effectiveCoupleImage,
+        ending: effectiveEndingImage,
       },
-      gallery_images: galleryPreviews,
+      gallery_images: effectiveGalleryImages,
       accounts: allAccounts,
       transportation: transportationList.filter((t) => t.title && t.content),
       info_notices: infoCards.filter((c) => c.title && c.content),
@@ -492,14 +737,13 @@ export default function CreateInvitationPage() {
         show_rsvp: formData.show_rsvp,
         show_guestbook: formData.show_guestbook,
         show_quote_section: formData.show_quote_section,
-        show_profile_photos: formData.show_profile_photos,
-        groom_relation: formData.groom_relation,
-        bride_relation: formData.bride_relation,
+        groom_relation: formData.groom_relation || PREVIEW_FALLBACK.groom_relation,
+        bride_relation: formData.bride_relation || PREVIEW_FALLBACK.bride_relation,
         groom_father_deceased: formData.groom_father_deceased,
         groom_mother_deceased: formData.groom_mother_deceased,
         bride_father_deceased: formData.bride_father_deceased,
         bride_mother_deceased: formData.bride_mother_deceased,
-        venue_hall: formData.venue_hall,
+        venue_hall: effectiveVenueHall,
       },
       bgm_url:
         bgmMode === 'preset'
@@ -515,7 +759,7 @@ export default function CreateInvitationPage() {
           : bgmMode === 'file' || bgmMode === 'url'
           ? 'custom'
           : 'none',
-      template_type: formData.template_type || 'basic',
+      template_type: formData.template_type || 'editorial',
     };
   }, [
     formData,
@@ -527,8 +771,6 @@ export default function CreateInvitationPage() {
     coverImagePreview,
     coupleImagePreview,
     endingImagePreview,
-    groomPhotoPreview,
-    bridePhotoPreview,
     galleryPreviews,
     bgmMode,
     bgmPresetUrl,
@@ -661,18 +903,6 @@ export default function CreateInvitationPage() {
         if (u) uploadedEndingUrl = u;
       }
 
-      let uploadedGroomPhoto = groomPhotoPreview;
-      if (groomPhotoFile) {
-        const u = await uploadFileToStorage(groomPhotoFile, `${cleanSlug}/groom`);
-        if (u) uploadedGroomPhoto = u;
-      }
-
-      let uploadedBridePhoto = bridePhotoPreview;
-      if (bridePhotoFile) {
-        const u = await uploadFileToStorage(bridePhotoFile, `${cleanSlug}/bride`);
-        if (u) uploadedBridePhoto = u;
-      }
-
       // 2. 갤러리 다중 이미지 업로드
       setUploadStatus('갤러리 사진들을 업로드하고 있습니다...');
       const uploadedGalleryUrls = [];
@@ -792,8 +1022,6 @@ export default function CreateInvitationPage() {
           cover: uploadedCoverUrl || uploadedMainUrl || '',
           couple_profile: uploadedCoupleUrl || uploadedMainUrl || '',
           ending: uploadedEndingUrl || uploadedMainUrl || '',
-          groom_profile: uploadedGroomPhoto || '',
-          bride_profile: uploadedBridePhoto || '',
         },
         gallery_images: finalGalleryImages,
         accounts: allAccounts,
@@ -828,7 +1056,6 @@ export default function CreateInvitationPage() {
           show_rsvp: formData.show_rsvp,
           show_guestbook: formData.show_guestbook,
           show_quote_section: formData.show_quote_section,
-          show_profile_photos: Boolean(formData.show_profile_photos),
           groom_relation: formData.groom_relation,
           bride_relation: formData.bride_relation,
           groom_father_deceased: formData.groom_father_deceased,
@@ -1088,6 +1315,37 @@ export default function CreateInvitationPage() {
 
         {/* 폼 본문 */}
         <form onSubmit={handleSubmit} className="space-y-8">
+
+          {/* 예시 데이터 채우기 배너 */}
+          <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 sm:p-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-left shadow-2xs">
+            <div className="flex items-start sm:items-center gap-2.5">
+              <span className="text-amber-600 text-lg sm:text-xl shrink-0 leading-none">✨</span>
+              <div>
+                <p className="text-xs sm:text-[13px] font-semibold text-amber-950">
+                  어떻게 작성해야 할지 고민되시나요?
+                </p>
+                <p className="text-[11px] text-amber-850 font-light mt-0.5">
+                  샘플 예시 데이터를 한 번에 불러와 내 정보로 수정하며 편리하게 청첩장을 완성해보세요.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleFillSampleData}
+                className="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white text-xs font-medium rounded-xl transition-all cursor-pointer shadow-xs whitespace-nowrap"
+              >
+                예시 데이터 채우기
+              </button>
+              <button
+                type="button"
+                onClick={handleResetForm}
+                className="px-3 py-2 bg-stone-200/80 hover:bg-stone-300 text-stone-700 text-xs font-medium rounded-xl transition-all cursor-pointer whitespace-nowrap"
+              >
+                초기화
+              </button>
+            </div>
+          </div>
 
           {/* 00. 디자인 템플릿 선택 */}
           <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
@@ -1819,73 +2077,6 @@ export default function CreateInvitationPage() {
                         className="text-[11px] text-stone-600 file:mr-2.5 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-medium file:bg-stone-200 file:text-stone-800 hover:file:bg-stone-300 cursor-pointer transition-all w-full"
                       />
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 신랑 & 신부 프로필 사진 (시안 1 전용 및 연락처용) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* 신랑 프로필 */}
-                <div className="p-4.5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-semibold text-stone-800">
-                      신랑 프로필 사진 (선택)
-                    </label>
-                    <span className="text-[10px] font-mono text-stone-500 bg-stone-200/60 px-2 py-0.5 rounded-full">
-                      GROOM
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-stone-400 mb-2.5">
-                    시안 1 프로필 원형 화보 및 하객 연락처 모달에 적용됩니다.
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-full overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center bg-white shadow-xs">
-                      {groomPhotoPreview ? (
-                        <img src={groomPhotoPreview} alt="Groom Profile" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-[10px] text-stone-300 font-mono">GROOM</span>
-                      )}
-                    </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        validateAndSetImage(e.target.files?.[0], setGroomPhotoFile, setGroomPhotoPreview, '신랑 프로필 사진');
-                      }}
-                      className="text-[11px] text-stone-500 file:py-1.5 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:bg-stone-200 file:text-stone-800 cursor-pointer w-full"
-                    />
-                  </div>
-                </div>
-
-                {/* 신부 프로필 */}
-                <div className="p-4.5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-semibold text-stone-800">
-                      신부 프로필 사진 (선택)
-                    </label>
-                    <span className="text-[10px] font-mono text-stone-500 bg-stone-200/60 px-2 py-0.5 rounded-full">
-                      BRIDE
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-stone-400 mb-2.5">
-                    시안 1 프로필 원형 화보 및 하객 연락처 모달에 적용됩니다.
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-full overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center bg-white shadow-xs">
-                      {bridePhotoPreview ? (
-                        <img src={bridePhotoPreview} alt="Bride Profile" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-[10px] text-stone-300 font-mono">BRIDE</span>
-                      )}
-                    </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        validateAndSetImage(e.target.files?.[0], setBridePhotoFile, setBridePhotoPreview, '신부 프로필 사진');
-                      }}
-                      className="text-[11px] text-stone-500 file:py-1.5 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:bg-stone-200 file:text-stone-800 cursor-pointer w-full"
-                    />
                   </div>
                 </div>
               </div>
@@ -2633,16 +2824,6 @@ export default function CreateInvitationPage() {
                     />
                     <span>축하 방명록</span>
                   </label>
-                  <label className="flex items-center gap-2.5 cursor-pointer p-3 bg-[#FAFAF9] hover:bg-stone-100/70 border border-stone-200/60 rounded-xl transition-colors select-none">
-                    <input
-                      type="checkbox"
-                      name="show_profile_photos"
-                      checked={formData.show_profile_photos}
-                      onChange={handleChange}
-                      className="rounded border-stone-300 text-stone-900 accent-stone-900"
-                    />
-                    <span>원형 프로필 화보 (시안1)</span>
-                  </label>
                 </div>
               </div>
             </div>
@@ -2712,7 +2893,7 @@ export default function CreateInvitationPage() {
           <div className="sticky bottom-6 z-30 bg-white/90 backdrop-blur-xl p-3.5 sm:p-4 rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.08)] border border-stone-200/80 flex gap-3 items-center">
             <button
               type="button"
-              onClick={() => setShowPreviewModal(true)}
+              onClick={openPreviewModal}
               className="flex-1 py-4 px-4 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-2"
             >
               <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
@@ -2742,29 +2923,86 @@ export default function CreateInvitationPage() {
       {/* 실시간 미리보기 모달 */}
       {showPreviewModal && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4"
-          onClick={() => setShowPreviewModal(false)}
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-xs p-2 sm:p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              closePreviewModal(e);
+            }
+          }}
         >
+          {/* 데스크톱용 상단 우측 플로팅 닫기 버튼 */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              closePreviewModal(e);
+            }}
+            className="hidden sm:flex fixed top-5 right-6 z-[100] items-center gap-1.5 px-4 py-2 bg-stone-900/90 hover:bg-black text-stone-200 hover:text-white text-xs font-medium rounded-full shadow-lg border border-stone-700/80 backdrop-blur-md cursor-pointer transition-transform hover:scale-105 active:scale-95"
+            title="ESC 키로도 닫을 수 있습니다"
+          >
+            <span className="text-sm font-bold">✕</span>
+            <span>닫기 (ESC)</span>
+          </button>
+
+          {/* 모바일/PC 공통 하단 중앙 플로팅 닫기 버튼 (스크롤 위치 및 인트로에 구애받지 않고 언제든 복귀) */}
           <div 
-            className="bg-white w-full max-w-[430px] h-[90vh] rounded-3xl overflow-hidden shadow-2xl relative flex flex-col border border-stone-800"
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] pointer-events-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                closePreviewModal(e);
+              }}
+              className="flex items-center gap-2 px-5 py-3 bg-stone-900/95 hover:bg-black text-white text-xs sm:text-sm font-semibold rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.5)] backdrop-blur-md border border-stone-600/80 transition-all hover:scale-105 active:scale-95 cursor-pointer ring-2 ring-white/20"
+            >
+              <svg className="w-4 h-4 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              <span>미리보기 닫기 (작성으로 복귀)</span>
+            </button>
+          </div>
+
+          <div 
+            className="bg-white w-full max-w-[430px] h-[92vh] sm:h-[90vh] rounded-3xl overflow-hidden shadow-2xl relative flex flex-col border border-stone-800"
             onClick={(e) => e.stopPropagation()}
           >
             {/* 미리보기 상단 헤더 */}
-            <div className="py-3 px-5 bg-stone-950 text-white flex items-center justify-between shrink-0 border-b border-stone-800">
-              <span className="text-xs font-mono tracking-widest uppercase text-stone-300">
-                LIVE PREVIEW — WEDDING CARD
-              </span>
+            <div className="py-3 px-4 sm:px-5 bg-stone-950 text-white flex items-center justify-between shrink-0 border-b border-stone-800 z-10">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[11px] sm:text-xs font-mono tracking-wider sm:tracking-widest uppercase text-stone-300">
+                  LIVE PREVIEW
+                </span>
+              </div>
               <button
                 type="button"
-                onClick={() => setShowPreviewModal(false)}
-                className="text-stone-400 hover:text-white text-base leading-none cursor-pointer w-7 h-7 flex items-center justify-center rounded-full hover:bg-stone-800 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  closePreviewModal(e);
+                }}
+                className="flex items-center gap-1.5 px-3 py-1 bg-stone-800 hover:bg-stone-700 text-stone-200 hover:text-white rounded-full text-xs font-medium transition-colors cursor-pointer border border-stone-700 active:scale-95 shadow-sm"
+                aria-label="미리보기 닫기"
               >
-                ✕
+                <span className="text-xs leading-none font-bold">✕</span>
+                <span>닫기</span>
               </button>
             </div>
 
+            {/* 미입력 시 스마트 샘플 Fallback 안내 띠배너 */}
+            {(!formData.groom_name.trim() || !formData.bride_name.trim() || !mainImagePreview) && (
+              <div className="py-2 px-4 bg-stone-900 text-amber-300 text-[11px] font-sans border-b border-stone-800 flex items-center justify-center gap-1.5 shrink-0 select-none">
+                <span>💡</span>
+                <span>미입력 항목은 <strong>예시 샘플 데이터</strong>로 미리보기가 표시됩니다.</span>
+              </div>
+            )}
+
             {/* 실제 청첩장 템플릿 렌더링 */}
-            <div className="flex-1 overflow-y-auto relative bg-[#FCFBF7]">
+            <div 
+              id="preview-scroll-container"
+              className={`flex-1 overflow-y-auto relative ${previewInvitation?.template_type === 'editorial' ? 'bg-white' : 'bg-[#FCFBF7]'}`}
+            >
               <BgmPlayer
                 bgmUrl={previewInvitation.bgm_url}
                 hasIntro={previewInvitation?.template_config?.show_intro !== false}

@@ -27,6 +27,7 @@ export default function BasicTemplate({ invitation }) {
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
   const galleryTouchStartX = useRef(null);
   const thumbnailContainerRef = useRef(null);
+  const isInitialGalleryMount = useRef(true);
 
   // 계좌 아코디언 상태
   const [openGroomAccount, setOpenGroomAccount] = useState(true);
@@ -86,12 +87,24 @@ export default function BasicTemplate({ invitation }) {
   const initialGalleryImages = parseGalleryImages(invitation?.gallery_images) || [];
   const galleryImages = initialGalleryImages;
 
-  // 갤러리 썸네일 활성 항목 자동 스크롤
+  // 갤러리 썸네일 활성 항목 가로 자동 스크롤 (부모 세로 스크롤에 절대 간섭하지 않음)
   useEffect(() => {
-    if (!thumbnailContainerRef.current) return;
-    const activeThumb = thumbnailContainerRef.current.children[activeGalleryIndex];
+    // 첫 마운트 시에는 스크롤 조작하지 않음 (상단 커버 화면 보존)
+    if (isInitialGalleryMount.current) {
+      isInitialGalleryMount.current = false;
+      return;
+    }
+    const container = thumbnailContainerRef.current;
+    if (!container) return;
+    const activeThumb = container.children[activeGalleryIndex];
     if (activeThumb) {
-      activeThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      const thumbLeft = activeThumb.offsetLeft;
+      const thumbWidth = activeThumb.offsetWidth;
+      const containerWidth = container.offsetWidth;
+      container.scrollTo({
+        left: thumbLeft - containerWidth / 2 + thumbWidth / 2,
+        behavior: 'smooth',
+      });
     }
   }, [activeGalleryIndex]);
 
@@ -608,45 +621,6 @@ export default function BasicTemplate({ invitation }) {
             </button>
           </div>
         </ScrollReveal>
-
-        {/* 선택적 원형 프로필 사진 (설정 시 활성화) */}
-        {config.show_profile_photos && (
-          <ScrollReveal delay={200}>
-            <div className="mt-20">
-              <p className="font-cormorant italic text-2xl text-stone-800 mb-8">
-                We are getting married
-              </p>
-
-              <div className="flex justify-center items-center gap-10">
-                {/* 신랑 */}
-                <div className="text-center">
-                  <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-2.5 shadow-sm border border-stone-200">
-                    <img 
-                      src={groomPhoto} 
-                      alt="신랑 프로필" 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <p className="text-xs font-sans text-stone-500">신랑</p>
-                  <p className="text-sm font-sans font-medium text-stone-800">{invitation?.groom_name || ''}</p>
-                </div>
-
-                {/* 신부 */}
-                <div className="text-center">
-                  <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-2.5 shadow-sm border border-stone-200">
-                    <img 
-                      src={bridePhoto} 
-                      alt="신부 프로필" 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <p className="text-xs font-sans text-stone-500">신부</p>
-                  <p className="text-sm font-sans font-medium text-stone-800">{invitation?.bride_name || ''}</p>
-                </div>
-              </div>
-            </div>
-          </ScrollReveal>
-        )}
       </section>
 
       {/* 2-1. 커플 사진 및 영화 대사 (Couple Photo & Movie Quote) */}

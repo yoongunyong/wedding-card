@@ -11,6 +11,11 @@ export default function BasicGuestbookModal({ invitationId, onClose, onSuccess }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!invitationId) {
+      alert('실시간 미리보기 모드입니다.\n청첩장 제작 신청 완료 후 실제 발급된 링크에서 축하 메시지를 등록하실 수 있습니다.');
+      if (onClose) onClose();
+      return;
+    }
     if (!author.trim()) return alert('성함을 입력해 주세요.');
     if (!password.trim()) return alert('비밀번호를 입력해 주세요.');
     if (!content.trim()) return alert('축하 메시지를 입력해 주세요.');

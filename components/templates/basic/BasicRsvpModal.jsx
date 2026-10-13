@@ -13,6 +13,11 @@ export default function BasicRsvpModal({ invitationId, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!invitationId) {
+      alert('실시간 미리보기 모드입니다.\n청첩장 제작 신청 완료 후 실제 발급된 링크에서 참석 정보를 전달하실 수 있습니다.');
+      if (onClose) onClose();
+      return;
+    }
     if (!name.trim()) return alert('성함을 입력해 주세요.');
     if (!phone.trim()) return alert('핸드폰 번호 뒤 4자리를 입력해 주세요.');
 

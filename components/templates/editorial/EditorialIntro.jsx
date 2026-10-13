@@ -101,19 +101,21 @@ export default function EditorialIntro({ invitation, onOpen }) {
       }
       setTransitionStep('revealing');
 
-      // 3단계: 어둠이 안개처럼 걷힌 후 인트로 언마운트 (사용자 스크롤 위치 유지)
+      // 3단계: 어둠이 안개처럼 걷힌 후 인트로 언마운트 (항상 청첩장 최상단 보장)
       setTimeout(() => {
         if (typeof window !== 'undefined') {
           document.body.style.overflow = '';
           document.documentElement.style.overflow = '';
+          window.scrollTo(0, 0);
         }
-        const currentY = typeof window !== 'undefined' ? window.scrollY : 0;
+        // 부모 모달 컨테이너 스크롤도 최상단 리셋
+        if (typeof document !== 'undefined') {
+          const previewContainer = document.getElementById('preview-scroll-container');
+          if (previewContainer) {
+            previewContainer.scrollTop = 0;
+          }
+        }
         if (onOpen) onOpen();
-        if (typeof window !== 'undefined' && currentY > 0) {
-          requestAnimationFrame(() => {
-            window.scrollTo({ top: currentY, behavior: 'instant' });
-          });
-        }
       }, 1250);
     }, 850);
   };

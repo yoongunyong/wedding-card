@@ -142,20 +142,51 @@ export default function AdminDashboardPage() {
     return `${prefix}-${part1}-${part2}`;
   };
 
-  // 신규 1회용 코드 발행
+  // 신규 1회용 코드 발행 (중복 자동 검증 및 실시간 재발급 Auto-Retry)
   const handleCreateCode = async (e) => {
     e.preventDefault();
     setGeneratingCode(true);
 
-    const generated = generateRandomCode(newCodeType);
-    const newEntry = {
-      code: generated,
-      type: newCodeType,
-      note: newCodeNote.trim() || (newCodeType === 'store' ? '스마트스토어 주문' : '지인 선물'),
-      is_used: false,
-    };
-
     try {
+      let uniqueCode = '';
+      let isUnique = false;
+      let attempts = 0;
+      const MAX_ATTEMPTS = 10;
+
+      // 1. 이미 존재하는 코드인지 실시간 검사 후, 겹치면 즉시 새 난수로 재발급
+      while (!isUnique && attempts < MAX_ATTEMPTS) {
+        attempts++;
+        const candidate = generateRandomCode(newCodeType);
+
+        const { data: existing, error: checkError } = await supabase
+          .from('order_codes')
+          .select('id')
+          .eq('code', candidate)
+          .maybeSingle();
+
+        if (checkError) {
+          console.warn('Code uniqueness check warning:', checkError);
+        }
+
+        if (!existing) {
+          uniqueCode = candidate;
+          isUnique = true;
+        } else {
+          console.info(`[코드 중복 감지] '${candidate}' 코드가 이미 존재하여 즉시 재발급을 시도합니다. (시도 ${attempts}회)`);
+        }
+      }
+
+      if (!uniqueCode) {
+        throw new Error('고유 코드 생성에 실패했습니다. 다시 시도해 주세요.');
+      }
+
+      const newEntry = {
+        code: uniqueCode,
+        type: newCodeType,
+        note: newCodeNote.trim() || (newCodeType === 'store' ? '스마트스토어 주문' : '지인 선물'),
+        is_used: false,
+      };
+
       const { data, error } = await supabase
         .from('order_codes')
         .insert([newEntry])
@@ -167,8 +198,8 @@ export default function AdminDashboardPage() {
       } else {
         setCodes((prev) => [data, ...prev]);
         setNewCodeNote('');
-        navigator.clipboard.writeText(generated);
-        alert(`[${generated}] 코드가 발급되어 클립보드에 복사되었습니다!\n고객이나 지인에게 바로 전달해 주세요.`);
+        navigator.clipboard.writeText(uniqueCode);
+        alert(`[${uniqueCode}] 코드가 안전하게 발급되어 클립보드에 복사되었습니다!\n고객이나 지인에게 바로 전달해 주세요.`);
       }
     } catch (err) {
       alert(`오류: ${err.message}`);

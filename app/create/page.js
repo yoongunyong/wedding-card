@@ -805,6 +805,19 @@ export default function CreateInvitationPage() {
         template_type: formData.template_type || 'editorial',
         is_active: willBeActive,
         order_code: inputCode || null,
+        service_expired_at: (() => {
+          try {
+            const wDate = new Date(`${formData.wedding_date}T${formData.wedding_time}:00`);
+            if (!isNaN(wDate.getTime())) {
+              const exp = new Date(wDate);
+              exp.setFullYear(exp.getFullYear() + 1);
+              return exp.toISOString();
+            }
+          } catch {}
+          const fallbackExp = new Date();
+          fallbackExp.setFullYear(fallbackExp.getFullYear() + 1);
+          return fallbackExp.toISOString();
+        })(),
 
         template_config: {
           title_color: formData.title_color,
@@ -825,6 +838,19 @@ export default function CreateInvitationPage() {
           venue_hall: formData.venue_hall,
           is_active: willBeActive,
           order_code: inputCode || null,
+          service_expired_at: (() => {
+            try {
+              const wDate = new Date(`${formData.wedding_date}T${formData.wedding_time}:00`);
+              if (!isNaN(wDate.getTime())) {
+                const exp = new Date(wDate);
+                exp.setFullYear(exp.getFullYear() + 1);
+                return exp.toISOString();
+              }
+            } catch {}
+            const fallbackExp = new Date();
+            fallbackExp.setFullYear(fallbackExp.getFullYear() + 1);
+            return fallbackExp.toISOString();
+          })(),
         },
       };
 

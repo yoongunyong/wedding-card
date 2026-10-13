@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import QrCodeModal from '@/components/QrCodeModal';
+import ExpiryAdjustModal from '@/components/ExpiryAdjustModal';
 
 // 관리자 로그인용 기본 비밀번호 (환경변수 또는 로컬 설정)
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'weddingadmin1234!';
@@ -25,6 +26,16 @@ export default function AdminDashboardPage() {
   const [togglingSlug, setTogglingSlug] = useState(null);
   const [confirmTarget, setConfirmTarget] = useState(null); // { inv, nextActive }
   const [selectedQrInv, setSelectedQrInv] = useState(null); // QR코드 모달 대상 청첩장
+  const [selectedExpiryInv, setSelectedExpiryInv] = useState(null); // 만료일 조정 모달 대상 청첩장
+  const [currentTimestamp, setCurrentTimestamp] = useState(0);
+
+  // 컴포넌트 마운트 시 현재 타임스탬프 설정 (렌더 중 Date.now 호출 방지)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setCurrentTimestamp(Date.now());
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   // 세션 복원
   useEffect(() => {
@@ -66,7 +77,7 @@ export default function AdminDashboardPage() {
     try {
       const { data, error } = await supabase
         .from('invitations')
-        .select('id, slug, groom_name, bride_name, wedding_date, template_type, is_active, template_config, order_code, created_at, manage_token')
+        .select('id, slug, groom_name, bride_name, wedding_date, template_type, is_active, template_config, order_code, created_at, manage_token, service_expired_at')
         .order('created_at', { ascending: false });
 
       if (!error && data) {
@@ -88,7 +99,7 @@ export default function AdminDashboardPage() {
       try {
         const [codesRes, invsRes] = await Promise.all([
           supabase.from('order_codes').select('*').order('created_at', { ascending: false }),
-          supabase.from('invitations').select('id, slug, groom_name, bride_name, wedding_date, template_type, is_active, template_config, order_code, created_at, manage_token').order('created_at', { ascending: false }),
+          supabase.from('invitations').select('id, slug, groom_name, bride_name, wedding_date, template_type, is_active, template_config, order_code, created_at, manage_token, service_expired_at').order('created_at', { ascending: false }),
         ]);
 
         if (isMounted) {
@@ -242,6 +253,51 @@ export default function AdminDashboardPage() {
       alert(`오류: ${err.message}`);
     } finally {
       setTogglingSlug(null);
+    }
+  };
+
+  // 서비스 만료일 업데이트 함수 (+6개월, +1년, 무제한, 직접 지정)
+  const handleUpdateExpiry = async (invId, newExpiryIsoOrNull) => {
+    try {
+      const targetInv = invitations.find((i) => i.id === invId);
+      const updatedConfig = {
+        ...(targetInv?.template_config || {}),
+        service_expired_at: newExpiryIsoOrNull,
+      };
+
+      const { error } = await supabase
+        .from('invitations')
+        .update({
+          service_expired_at: newExpiryIsoOrNull,
+          template_config: updatedConfig,
+        })
+        .eq('id', invId);
+
+      if (error) {
+        // service_expired_at 컬럼이 아직 DB에 없을 때를 대비한 하위 호환
+        const { error: confError } = await supabase
+          .from('invitations')
+          .update({ template_config: updatedConfig })
+          .eq('id', invId);
+
+        if (confError) {
+          alert(`만료일 변경 실패: ${confError.message}`);
+          return;
+        }
+      }
+
+      setInvitations((prev) =>
+        prev.map((item) =>
+          item.id === invId
+            ? { ...item, service_expired_at: newExpiryIsoOrNull, template_config: updatedConfig }
+            : item
+        )
+      );
+
+      setSelectedExpiryInv(null);
+      alert('서비스 만료일이 성공적으로 변경되었습니다.');
+    } catch (err) {
+      alert(`오류: ${err.message}`);
     }
   };
 
@@ -422,16 +478,16 @@ export default function AdminDashboardPage() {
                   <p className="text-xs text-stone-400">위 폼에서 신규 1회용 코드를 발급해 보세요.</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs text-stone-700">
-                    <thead className="bg-[#FAFAF9] text-stone-500 uppercase font-mono text-[10px] border-b border-stone-100">
+                <div className="overflow-x-auto -mx-2 sm:mx-0">
+                  <table className="w-full min-w-[850px] text-left text-xs text-stone-700 border-collapse">
+                    <thead className="bg-[#FAFAF9] text-stone-500 uppercase font-mono text-[11px] border-b border-stone-200/80">
                       <tr>
-                        <th className="py-3 px-4">인증코드</th>
-                        <th className="py-3 px-4">구분</th>
-                        <th className="py-3 px-4">메모</th>
-                        <th className="py-3 px-4">상태</th>
-                        <th className="py-3 px-4">사용된 청첩장</th>
-                        <th className="py-3 px-4 text-right">관리</th>
+                        <th className="py-3.5 px-4 whitespace-nowrap font-medium">인증코드</th>
+                        <th className="py-3.5 px-4 whitespace-nowrap font-medium">구분</th>
+                        <th className="py-3.5 px-4 whitespace-nowrap font-medium">메모</th>
+                        <th className="py-3.5 px-4 whitespace-nowrap font-medium">상태</th>
+                        <th className="py-3.5 px-4 whitespace-nowrap font-medium">사용된 청첩장</th>
+                        <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium">관리</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-stone-100 font-sans">
@@ -523,90 +579,150 @@ export default function AdminDashboardPage() {
                 제작된 청첩장이 아직 없습니다.
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs text-stone-700">
-                  <thead className="bg-[#FAFAF9] text-stone-500 uppercase font-mono text-[10px] border-b border-stone-100">
+              <div className="overflow-x-auto -mx-2 sm:mx-0">
+                <table className="w-full min-w-[1080px] text-left text-xs text-stone-700 border-collapse">
+                  <thead className="bg-[#FAFAF9] text-stone-500 uppercase font-mono text-[11px] border-b border-stone-200/80">
                     <tr>
-                      <th className="py-3 px-4">신랑 & 신부</th>
-                      <th className="py-3 px-4">시안</th>
-                      <th className="py-3 px-4">예식 일시</th>
-                      <th className="py-3 px-4">영문 주소 (URL)</th>
-                      <th className="py-3 px-4">정식 활성화 상태</th>
-                      <th className="py-3 px-4 text-right">링크 바로가기</th>
+                      <th className="py-3.5 px-4 whitespace-nowrap font-medium">신랑 & 신부</th>
+                      <th className="py-3.5 px-4 whitespace-nowrap font-medium">시안</th>
+                      <th className="py-3.5 px-4 whitespace-nowrap font-medium">예식 일시</th>
+                      <th className="py-3.5 px-4 whitespace-nowrap font-medium">서비스 만료일</th>
+                      <th className="py-3.5 px-4 whitespace-nowrap font-medium">영문 주소 (URL)</th>
+                      <th className="py-3.5 px-4 whitespace-nowrap font-medium">정식 활성화 상태</th>
+                      <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium">관리</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-100 font-sans">
                     {invitations.map((inv) => {
                       const isActive = Boolean(inv.is_active ?? inv.template_config?.is_active ?? false);
-                      const isExpired = (() => {
-                        if (!inv.wedding_date) return false;
-                        try {
-                          const wd = new Date(inv.wedding_date.replace(' ', 'T'));
-                          return !isNaN(wd.getTime()) && Date.now() > wd.getTime() + (365 * 24 * 60 * 60 * 1000);
-                        } catch {
-                          return false;
-                        }
+                      
+                      // 서비스 만료일 계산
+                      const rawExpiry = inv.service_expired_at !== undefined ? inv.service_expired_at : inv.template_config?.service_expired_at;
+                      const isUnlimited = rawExpiry === null;
+                      const expDate = isUnlimited 
+                        ? null 
+                        : (rawExpiry ? new Date(rawExpiry) : (inv.wedding_date ? new Date(new Date(inv.wedding_date.replace(' ', 'T')).getTime() + 365 * 24 * 60 * 60 * 1000) : null));
+                      const isExpired = !isUnlimited && expDate && currentTimestamp > 0 && currentTimestamp > expDate.getTime();
+                      const daysLeft = !isUnlimited && expDate && currentTimestamp > 0 ? Math.ceil((expDate.getTime() - currentTimestamp) / (1000 * 60 * 60 * 24)) : null;
+
+                      const formattedExp = isUnlimited 
+                        ? '무제한 (영구)' 
+                        : (expDate && !isNaN(expDate.getTime()) 
+                            ? `${expDate.getFullYear()}.${String(expDate.getMonth() + 1).padStart(2, '0')}.${String(expDate.getDate()).padStart(2, '0')}` 
+                            : '-');
+
+                      // 예식일 파싱 (YYYY.MM.DD HH:mm 깔끔한 포맷)
+                      const weddingDateFormatted = (() => {
+                        if (!inv.wedding_date) return '-';
+                        const parts = inv.wedding_date.replace('T', ' ').split(' ');
+                        const d = parts[0] ? parts[0].replace(/-/g, '.') : '-';
+                        const t = parts[1] ? parts[1].slice(0, 5) : '';
+                        return t ? `${d} ${t}` : d;
                       })();
 
                       return (
-                        <tr key={inv.id} className="hover:bg-stone-50/50">
-                          <td className="py-3.5 px-4 font-semibold text-stone-900">
+                        <tr key={inv.id} className="hover:bg-stone-50/70 transition-colors">
+                          {/* 1. 신랑 & 신부 */}
+                          <td className="py-4 px-4 whitespace-nowrap font-semibold text-stone-900 text-sm">
                             {inv.groom_name} & {inv.bride_name}
                           </td>
-                          <td className="py-3.5 px-4">
-                            <span className="text-[10px] font-mono uppercase bg-stone-100 px-2 py-0.5 rounded text-stone-700">
+
+                          {/* 2. 시안 */}
+                          <td className="py-4 px-4 whitespace-nowrap">
+                            <span className="text-[11px] font-mono px-2.5 py-1 rounded-full bg-stone-100 text-stone-700 font-medium border border-stone-200/60 inline-block">
                               {inv.template_type === 'editorial' ? '시안 2 (에디토리얼)' : '시안 1 (모던)'}
                             </span>
                           </td>
-                          <td className="py-3.5 px-4 text-stone-500 font-mono text-[11px]">
-                            <div>{inv.wedding_date?.replace('T', ' ') || '-'}</div>
-                            {isExpired && (
-                              <span className="inline-block mt-1 text-[9px] font-mono bg-stone-200 text-stone-600 px-1.5 py-0.2 rounded font-medium">
-                                1년 만료됨
-                              </span>
-                            )}
+
+                          {/* 3. 예식 일시 */}
+                          <td className="py-4 px-4 whitespace-nowrap font-mono text-xs text-stone-600">
+                            {weddingDateFormatted}
                           </td>
-                          <td className="py-3.5 px-4 font-mono font-medium text-stone-800">
-                            /{inv.slug}
+
+                          {/* 4. 서비스 만료일 */}
+                          <td className="py-4 px-4 whitespace-nowrap">
+                            <div className="flex flex-col gap-1 items-start">
+                              <div className="flex items-center gap-1.5 font-mono text-xs font-medium text-stone-800">
+                                <span>{formattedExp}</span>
+                                {isUnlimited ? (
+                                  <span className="text-[10px] bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded-full font-mono font-bold whitespace-nowrap inline-block">
+                                    영구
+                                  </span>
+                                ) : isExpired ? (
+                                  <span className="text-[10px] bg-stone-100 text-stone-500 border border-stone-200 px-2 py-0.5 rounded-full font-mono font-medium whitespace-nowrap inline-block">
+                                    만료됨
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-mono font-bold whitespace-nowrap inline-block">
+                                    D-{daysLeft}
+                                  </span>
+                                )}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setSelectedExpiryInv(inv)}
+                                className="text-[11px] text-stone-400 hover:text-stone-800 underline font-mono cursor-pointer transition-colors inline-flex items-center gap-0.5"
+                              >
+                                <span>만료일 조정</span>
+                                <span className="text-[10px]">✎</span>
+                              </button>
+                            </div>
                           </td>
-                          <td className="py-3.5 px-4">
+
+                          {/* 5. 영문 주소 (URL) */}
+                          <td className="py-4 px-4 whitespace-nowrap font-mono font-medium text-stone-700 text-xs">
+                            <span className="bg-stone-50 border border-stone-200/80 px-2.5 py-1 rounded-md text-stone-800">
+                              /{inv.slug}
+                            </span>
+                          </td>
+
+                          {/* 6. 정식 활성화 상태 (슬림 & 세련된 스위치 버튼) */}
+                          <td className="py-4 px-4 whitespace-nowrap">
                             <button
                               onClick={() => handleToggleActive(inv)}
                               disabled={togglingSlug === inv.slug}
-                              className={`py-1.5 px-3 rounded-full text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                              className={`py-1.5 px-3 rounded-full text-xs font-semibold transition-all cursor-pointer inline-flex items-center gap-1.5 border whitespace-nowrap ${
                                 isActive
-                                  ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
-                                  : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100 shadow-2xs'
+                                  : 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100'
                               }`}
+                              title={isActive ? '정식 서비스 중 (클릭 시 샘플 모드로 전환)' : '샘플 모드 (클릭 시 정식 활성화)'}
                             >
                               <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                              <span>{isActive ? '정식 활성화 ON' : '샘플 모드 (스위치 클릭 시 ON)'}</span>
+                              <span>{isActive ? '정식 활성화 ON' : '샘플 모드 (클릭 시 ON)'}</span>
                             </button>
                           </td>
-                          <td className="py-3.5 px-4 text-right space-x-1.5 whitespace-nowrap">
-                            <button
-                              type="button"
-                              onClick={() => setSelectedQrInv(inv)}
-                              className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-medium inline-block cursor-pointer transition-colors"
-                            >
-                              QR코드 ⬇
-                            </button>
-                            <a
-                              href={`/${inv.slug}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-lg text-xs font-medium inline-block"
-                            >
-                              하객 화면 ↗
-                            </a>
-                            <a
-                              href={`/manage/${inv.slug}?token=${inv.manage_token}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="px-2.5 py-1 bg-stone-900 hover:bg-black text-white rounded-lg text-xs font-medium inline-block"
-                            >
-                              참석자 관리 ↗
-                            </a>
+
+                          {/* 7. 관리 버튼 그룹 */}
+                          <td className="py-4 px-4 text-right whitespace-nowrap">
+                            <div className="inline-flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => setSelectedQrInv(inv)}
+                                className="px-2.5 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-medium cursor-pointer transition-colors inline-flex items-center gap-1 border border-stone-200/60"
+                              >
+                                <span>QR코드</span>
+                                <span className="text-[10px] text-stone-500">⬇</span>
+                              </button>
+                              <a
+                                href={`/${inv.slug}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="px-2.5 py-1.5 bg-white hover:bg-stone-50 text-stone-700 rounded-lg text-xs font-medium transition-colors border border-stone-200 inline-flex items-center gap-1"
+                              >
+                                <span>하객 화면</span>
+                                <span className="text-[10px] text-stone-400">↗</span>
+                              </a>
+                              <a
+                                href={`/manage/${inv.slug}?token=${inv.manage_token}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="px-2.5 py-1.5 bg-stone-900 hover:bg-black text-white rounded-lg text-xs font-medium transition-colors shadow-2xs inline-flex items-center gap-1"
+                              >
+                                <span>참석자 관리</span>
+                                <span className="text-[10px] text-stone-400">↗</span>
+                              </a>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -717,6 +833,17 @@ export default function AdminDashboardPage() {
           url={typeof window !== 'undefined' ? `${window.location.origin}/${selectedQrInv.slug}` : `/${selectedQrInv.slug}`}
           title={`${selectedQrInv.groom_name}_${selectedQrInv.bride_name}`}
           slug={selectedQrInv.slug}
+        />
+      )}
+
+      {/* 서비스 만료일(service_expired_at) 조정 모달 */}
+      {selectedExpiryInv && (
+        <ExpiryAdjustModal
+          key={selectedExpiryInv.id}
+          isOpen={Boolean(selectedExpiryInv)}
+          onClose={() => setSelectedExpiryInv(null)}
+          invitation={selectedExpiryInv}
+          onSave={handleUpdateExpiry}
         />
       )}
 

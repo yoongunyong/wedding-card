@@ -76,9 +76,26 @@ export default async function WeddingCardPage({ params }) {
     return notFound();
   }
 
-  // 예식일 기준 1년(365일) 경과 여부 확인
+  // 서비스 만료일시(service_expired_at) 기준 만료 여부 확인
   let isExpired = false;
-  if (invitation.wedding_date) {
+  const rawExpiredAt = invitation.service_expired_at ?? invitation.template_config?.service_expired_at;
+
+  if (rawExpiredAt !== undefined) {
+    if (rawExpiredAt === null) {
+      // null로 명시된 경우 무제한(영구 보관) 상태 -> 절대 만료되지 않음
+      isExpired = false;
+    } else {
+      try {
+        const expDate = new Date(rawExpiredAt);
+        if (!isNaN(expDate.getTime())) {
+          isExpired = Date.now() > expDate.getTime();
+        }
+      } catch (e) {
+        console.warn('service_expired_at parse error:', e);
+      }
+    }
+  } else if (invitation.wedding_date) {
+    // 하위 호환: 컬럼 값이 아직 없는 레코드는 예식일 + 1년으로 fallback
     try {
       const weddingDate = new Date(invitation.wedding_date.replace(' ', 'T'));
       if (!isNaN(weddingDate.getTime())) {
@@ -88,7 +105,7 @@ export default async function WeddingCardPage({ params }) {
         }
       }
     } catch (e) {
-      console.warn('Wedding date parse error:', e);
+      console.warn('Wedding date fallback parse error:', e);
     }
   }
 

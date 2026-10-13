@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import BasicTemplate from '@/components/templates/basic/BasicTemplate';
 import EditorialTemplate from '@/components/templates/editorial/EditorialTemplate';
+import PlaylistTemplate from '@/components/templates/playlist/PlaylistTemplate';
 import BgmPlayer from '@/components/BgmPlayer';
 
 // 추천 감성 초대글 샘플 3종
@@ -1057,7 +1058,7 @@ export default function EditInvitationPage({ params }) {
               시안마다 사진 연출(봉투 오프닝 vs 화보 룩북)이 다르므로, 시안을 바꾸신 후 하단의 <strong>[👁️ 실시간 미리보기]</strong>로 전체적인 느낌을 확인해 보세요.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div
                 onClick={() => setFormData((prev) => ({ ...prev, template_type: 'basic' }))}
                 className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative ${
@@ -1095,6 +1096,26 @@ export default function EditInvitationPage({ params }) {
                 <h3 className="text-sm font-semibold text-stone-900 mb-1">에디토리얼 (Editorial)</h3>
                 <p className="text-xs text-stone-500 font-light leading-relaxed">
                   패션 매거진 룩북 인트로 & 감각적인 세리프 타이포그래피 시안
+                </p>
+              </div>
+
+              <div
+                onClick={() => setFormData((prev) => ({ ...prev, template_type: 'playlist' }))}
+                className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative ${
+                  formData.template_type === 'playlist'
+                    ? 'border-emerald-700 bg-emerald-50/40 shadow-sm'
+                    : 'border-stone-200 hover:border-stone-300 bg-white'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-mono text-emerald-700 font-semibold tracking-widest">OPTION 03 · NEW</span>
+                  {formData.template_type === 'playlist' && (
+                    <span className="w-2 h-2 rounded-full bg-emerald-700" />
+                  )}
+                </div>
+                <h3 className="text-sm font-semibold text-stone-900 mb-1">플레이리스트 (Playlist)</h3>
+                <p className="text-xs text-stone-500 font-light leading-relaxed">
+                  포레스트 그린 & 빈티지 폴라로이드, 뮤직 플레이어 위젯 시안
                 </p>
               </div>
             </div>
@@ -2003,13 +2024,21 @@ export default function EditInvitationPage({ params }) {
             {/* 실제 청첩장 템플릿 렌더링 */}
             <div 
               id="preview-scroll-container"
-              className={`flex-1 overflow-y-auto relative ${previewInvitation?.template_type === 'editorial' ? 'bg-white' : 'bg-[#FCFBF7]'}`}
+              className={`flex-1 overflow-y-auto relative ${
+                previewInvitation?.template_type === 'playlist' 
+                  ? 'bg-[#F7F9F6]' 
+                  : previewInvitation?.template_type === 'editorial' 
+                  ? 'bg-white' 
+                  : 'bg-[#FCFBF7]'
+              }`}
             >
               <BgmPlayer
                 bgmUrl={previewInvitation.bgm_url}
                 hasIntro={previewInvitation?.template_config?.show_intro !== false}
               />
-              {previewInvitation?.template_type === 'editorial' ? (
+              {previewInvitation?.template_type === 'playlist' ? (
+                <PlaylistTemplate invitation={previewInvitation} />
+              ) : previewInvitation?.template_type === 'editorial' ? (
                 <EditorialTemplate invitation={previewInvitation} />
               ) : (
                 <BasicTemplate invitation={previewInvitation} />

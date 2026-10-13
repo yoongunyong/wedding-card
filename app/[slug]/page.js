@@ -5,6 +5,7 @@ import SampleWatermark from '@/components/SampleWatermark';
 import ExpiredWeddingCard from '@/components/ExpiredWeddingCard';
 import BasicTemplate from '@/components/templates/basic/BasicTemplate';
 import EditorialTemplate from '@/components/templates/editorial/EditorialTemplate';
+import PlaylistTemplate from '@/components/templates/playlist/PlaylistTemplate';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -13,6 +14,7 @@ const TEMPLATE_MAP = {
   basic: BasicTemplate,
   modern: BasicTemplate, // 기존 DB 데이터 하위 호환
   editorial: EditorialTemplate,
+  playlist: PlaylistTemplate,
 };
 
 // SNS/카카오톡 공유 메타데이터 (OG 태그)

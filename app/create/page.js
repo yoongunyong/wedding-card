@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import BasicTemplate from '@/components/templates/basic/BasicTemplate';
 import EditorialTemplate from '@/components/templates/editorial/EditorialTemplate';
+import PlaylistTemplate from '@/components/templates/playlist/PlaylistTemplate';
 import BgmPlayer from '@/components/BgmPlayer';
 import QrCodeModal from '@/components/QrCodeModal';
 
@@ -1361,7 +1362,7 @@ export default function CreateInvitationPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {/* 시안 1: 모던 클래식 */}
               <div
                 onClick={() => setFormData((prev) => ({ ...prev, template_type: 'basic' }))}
@@ -1382,10 +1383,10 @@ export default function CreateInvitationPage() {
                   </div>
                 </div>
                 <h3 className="text-sm font-semibold text-stone-900 mb-1">
-                  시안 1 : 모던 클래식 (Modern Classic)
+                  모던 클래식 (Modern)
                 </h3>
                 <p className="text-xs text-stone-500 font-light leading-relaxed">
-                  절제된 모던 룩과 블러 화보 갤러리, 다크 캘린더 카운트다운이 돋보이는 정갈한 시안
+                  편지 봉투 오프닝 카드 & 정갈하고 따뜻한 크림 베이지 톤 시안
                 </p>
               </div>
 
@@ -1399,8 +1400,8 @@ export default function CreateInvitationPage() {
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-mono tracking-widest uppercase font-semibold text-white bg-stone-900 px-2 py-0.5 rounded-full">
-                    OPTION 02 · NEW
+                  <span className="text-[10px] font-mono tracking-widest uppercase font-semibold text-stone-700 bg-stone-200/70 px-2 py-0.5 rounded-full">
+                    OPTION 02
                   </span>
                   <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
                     formData.template_type === 'editorial' ? 'border-stone-900 bg-stone-900' : 'border-stone-300'
@@ -1409,10 +1410,37 @@ export default function CreateInvitationPage() {
                   </div>
                 </div>
                 <h3 className="text-sm font-semibold text-stone-900 mb-1">
-                  시안 2 : 클래식 에디토리얼 (Editorial Lookbook)
+                  에디토리얼 (Editorial)
                 </h3>
                 <p className="text-xs text-stone-500 font-light leading-relaxed">
-                  매거진 커버와 비대칭 세로형 성함 타이포그래피, 대형 날짜와 룩북 갤러리의 감성 시안
+                  패션 매거진 룩북 인트로 & 감각적인 세리프 타이포그래피 시안
+                </p>
+              </div>
+
+              {/* 시안 3: 플레이리스트 & 바이닐 (신규) */}
+              <div
+                onClick={() => setFormData((prev) => ({ ...prev, template_type: 'playlist' }))}
+                className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative ${
+                  formData.template_type === 'playlist'
+                    ? 'border-emerald-700 bg-emerald-50/40 shadow-sm'
+                    : 'border-stone-200/80 bg-white hover:border-stone-300'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-mono tracking-widest uppercase font-semibold text-white bg-emerald-700 px-2 py-0.5 rounded-full">
+                    OPTION 03 · NEW
+                  </span>
+                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                    formData.template_type === 'playlist' ? 'border-emerald-700 bg-emerald-700' : 'border-stone-300'
+                  }`}>
+                    {formData.template_type === 'playlist' && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                  </div>
+                </div>
+                <h3 className="text-sm font-semibold text-stone-900 mb-1">
+                  플레이리스트 (Playlist)
+                </h3>
+                <p className="text-xs text-stone-500 font-light leading-relaxed">
+                  포레스트 그린 & 빈티지 폴라로이드, 뮤직 플레이어 위젯 시안
                 </p>
               </div>
             </div>
@@ -3001,13 +3029,21 @@ export default function CreateInvitationPage() {
             {/* 실제 청첩장 템플릿 렌더링 */}
             <div 
               id="preview-scroll-container"
-              className={`flex-1 overflow-y-auto relative ${previewInvitation?.template_type === 'editorial' ? 'bg-white' : 'bg-[#FCFBF7]'}`}
+              className={`flex-1 overflow-y-auto relative ${
+                previewInvitation?.template_type === 'playlist' 
+                  ? 'bg-[#F7F9F6]' 
+                  : previewInvitation?.template_type === 'editorial' 
+                  ? 'bg-white' 
+                  : 'bg-[#FCFBF7]'
+              }`}
             >
               <BgmPlayer
                 bgmUrl={previewInvitation.bgm_url}
                 hasIntro={previewInvitation?.template_config?.show_intro !== false}
               />
-              {previewInvitation?.template_type === 'editorial' ? (
+              {previewInvitation?.template_type === 'playlist' ? (
+                <PlaylistTemplate invitation={previewInvitation} />
+              ) : previewInvitation?.template_type === 'editorial' ? (
                 <EditorialTemplate invitation={previewInvitation} />
               ) : (
                 <BasicTemplate invitation={previewInvitation} />

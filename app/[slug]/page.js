@@ -6,6 +6,9 @@ import ExpiredWeddingCard from '@/components/ExpiredWeddingCard';
 import BasicTemplate from '@/components/templates/basic/BasicTemplate';
 import EditorialTemplate from '@/components/templates/editorial/EditorialTemplate';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const TEMPLATE_MAP = {
   basic: BasicTemplate,
   modern: BasicTemplate, // 기존 DB 데이터 하위 호환

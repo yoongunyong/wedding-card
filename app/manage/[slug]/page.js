@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, use } from 'react';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useSearchParams } from 'next/navigation';
 import QrCodeModal from '@/components/QrCodeModal';
@@ -163,24 +164,56 @@ export default function ManageRsvpPage({ params }) {
               {invitation.groom_name} &middot; {invitation.bride_name} 참석자 현황
             </h1>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <Link
+              href={`/${slug}`}
+              target="_blank"
+              className="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors"
+            >
+              <span>청첩장 바로보기</span>
+              <span className="text-[10px] opacity-70">↗</span>
+            </Link>
+            <Link
+              href={`/manage/${slug}/edit?token=${token}`}
+              className="px-3.5 py-2 bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+            >
+              <span>✏️</span>
+              <span>내용·사진 수정</span>
+            </Link>
             <button
               onClick={() => setShowQrModal(true)}
-              className="px-3.5 py-2 bg-stone-900 hover:bg-black text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+              className="px-3 py-2 bg-stone-900 hover:bg-black text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
             >
               <svg className="w-3.5 h-3.5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
               </svg>
-              <span>종이청첩장 QR코드</span>
+              <span>종이청첩장 QR</span>
             </button>
             <button
               onClick={downloadCSV}
-              className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors shrink-0"
+              className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors shrink-0"
             >
               <span>📊</span>
-              <span>엑셀(CSV) 다운로드</span>
+              <span>엑셀 다운로드</span>
             </button>
           </div>
+        </div>
+
+        {/* 청첩장 정보 안내 및 간편 수정 배너 */}
+        <div className="mt-4 p-3.5 bg-rose-50/70 border border-rose-100 rounded-xl flex items-center justify-between gap-3 text-xs text-rose-900">
+          <div className="flex items-center gap-2">
+            <span className="text-base">💡</span>
+            <span>
+              예식 날짜/시간, 모시는 글, 대표·갤러리 사진, BGM, 계좌번호 등은 언제든 수정하실 수 있습니다. 
+              <strong className="font-semibold block sm:inline sm:ml-1 text-rose-950">(기존 청첩장 주소와 종이 QR코드는 그대로 유지됩니다)</strong>
+            </span>
+          </div>
+          <Link
+            href={`/manage/${slug}/edit?token=${token}`}
+            className="shrink-0 px-3 py-1.5 bg-white hover:bg-rose-100/50 text-rose-600 font-semibold border border-rose-200 rounded-lg text-xs transition-colors"
+          >
+            수정하기 &rarr;
+          </Link>
         </div>
 
         {/* 요약 대시보드 카드 */}

@@ -49,7 +49,11 @@ body {
 }
 
 .font-script {
-  font-family: 'Alex Brush', cursive !important;
+  font-family: 'Pinyon Script', 'Alex Brush', cursive !important;
+}
+
+.font-cormorant {
+  font-family: 'Cormorant Garamond', Georgia, serif !important;
 }
 
 .font-handwriting {

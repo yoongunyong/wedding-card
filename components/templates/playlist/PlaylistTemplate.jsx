@@ -57,7 +57,7 @@ export default function PlaylistTemplate({ invitation }) {
   const showQuoteSection = config.show_quote_section !== false;
 
   // 대표 이미지 매핑 (원본 보존)
-  const mainImage = images.main || images.cover || invitation?.main_image || '/cover.jpg';
+  const mainImage = images.main || images.cover || invitation?.main_image || '';
   const couplePhoto = images.couple_profile || images.couple || extra.couple_profile_image || mainImage;
   const endingImage = images.ending || extra.ending_image || invitation?.ending_image || mainImage;
 
@@ -74,12 +74,12 @@ export default function PlaylistTemplate({ invitation }) {
     }
   }, [invitation?.gallery_images]);
 
-  // 성함 데이터
-  const groomName = invitation?.groom_name || '신랑';
-  const brideName = invitation?.bride_name || '신부';
-  const groomFirstEn = invitation?.groom_first_name_en || (invitation?.groom_name_en || '').split(' ')[0] || 'Groom';
-  const brideFirstEn = invitation?.bride_first_name_en || (invitation?.bride_name_en || '').split(' ')[0] || 'Bride';
-  const coupleNamesEn = invitation?.main_names_en || `${groomFirstEn} & ${brideFirstEn}`;
+  // 성함 데이터 (하드코딩 제거: 미입력 시 빈 문자열)
+  const groomName = invitation?.groom_name || '';
+  const brideName = invitation?.bride_name || '';
+  const groomFirstEn = invitation?.groom_first_name_en || (invitation?.groom_name_en || '').split(' ')[0] || '';
+  const brideFirstEn = invitation?.bride_first_name_en || (invitation?.bride_name_en || '').split(' ')[0] || '';
+  const coupleNamesEn = invitation?.main_names_en || [groomFirstEn, brideFirstEn].filter(Boolean).join(' & ');
 
   // 날짜 파싱
   const weddingDateStr = invitation?.wedding_date ? invitation.wedding_date.replace(' ', 'T') : '';
@@ -415,11 +415,12 @@ export default function PlaylistTemplate({ invitation }) {
               </div>
             )}
 
-            {/* 모시는 글 본문 */}
-            <p className="text-xs sm:text-[13px] text-stone-600 leading-loose font-light whitespace-pre-line break-keep">
-              {invitation?.message ||
-                `서로를 만나 평범했던 하루가\n조금 더 따뜻하고 특별해졌습니다.\n\n우리가 함께 듣던 멜로디처럼\n잔잔하고 다정하게 서로의 곁을 지키겠습니다.\n\n새로운 계절을 시작하는 날,\n귀한 걸음으로 축복해 주시면 감사하겠습니다.`}
-            </p>
+            {/* 모시는 글 본문 (동적 데이터만 노출, 하드코딩 제거) */}
+            {invitation?.message && (
+              <p className="text-xs sm:text-[13px] text-stone-600 leading-loose font-light whitespace-pre-line break-keep">
+                {invitation.message}
+              </p>
+            )}
 
             {/* 감성 커플 화보 (빈티지 폴라로이드 프레임 & 손글씨) */}
             {couplePhoto && (
@@ -440,29 +441,39 @@ export default function PlaylistTemplate({ invitation }) {
               </div>
             )}
 
-
             {/* 양가 혼주 & 신랑 신부 정보 (음반 크레딧 스타일) */}
-            <div className="mt-10 pt-8 border-t border-stone-200/60 space-y-3 text-xs sm:text-[13px]">
-              <div className="flex items-center justify-center gap-2 text-stone-700">
-                <span className="text-stone-500">
-                  {invitation?.groom_father && `${invitation.groom_father}${config.groom_father_deceased ? ' 故' : ''}`}
-                  {invitation?.groom_father && invitation?.groom_mother && ' · '}
-                  {invitation?.groom_mother && `${invitation.groom_mother}${config.groom_mother_deceased ? ' 故' : ''}`}
-                </span>
-                <span className="text-emerald-700 text-[11px] font-medium">의 {config.groom_relation || '장남'}</span>
-                <span className="font-semibold text-stone-900 ml-1">{groomName}</span>
-              </div>
+            {(groomName || brideName || invitation?.groom_father || invitation?.bride_father) && (
+              <div className="mt-10 pt-8 border-t border-stone-200/60 space-y-3 text-xs sm:text-[13px]">
+                {(invitation?.groom_father || invitation?.groom_mother || groomName) && (
+                  <div className="flex items-center justify-center gap-2 text-stone-700">
+                    <span className="text-stone-500">
+                      {invitation?.groom_father && `${invitation.groom_father}${config.groom_father_deceased ? ' 故' : ''}`}
+                      {invitation?.groom_father && invitation?.groom_mother && ' · '}
+                      {invitation?.groom_mother && `${invitation.groom_mother}${config.groom_mother_deceased ? ' 故' : ''}`}
+                    </span>
+                    {(config.groom_relation || invitation?.groom_father || invitation?.groom_mother) && (
+                      <span className="text-emerald-700 text-[11px] font-medium">의 {config.groom_relation || '장남'}</span>
+                    )}
+                    {groomName && <span className="font-semibold text-stone-900 ml-1">{groomName}</span>}
+                  </div>
+                )}
 
-              <div className="flex items-center justify-center gap-2 text-stone-700">
-                <span className="text-stone-500">
-                  {invitation?.bride_father && `${invitation.bride_father}${config.bride_father_deceased ? ' 故' : ''}`}
-                  {invitation?.bride_father && invitation?.bride_mother && ' · '}
-                  {invitation?.bride_mother && `${invitation.bride_mother}${config.bride_mother_deceased ? ' 故' : ''}`}
-                </span>
-                <span className="text-emerald-700 text-[11px] font-medium">의 {config.bride_relation || '장녀'}</span>
-                <span className="font-semibold text-stone-900 ml-1">{brideName}</span>
+                {(invitation?.bride_father || invitation?.bride_mother || brideName) && (
+                  <div className="flex items-center justify-center gap-2 text-stone-700">
+                    <span className="text-stone-500">
+                      {invitation?.bride_father && `${invitation.bride_father}${config.bride_father_deceased ? ' 故' : ''}`}
+                      {invitation?.bride_father && invitation?.bride_mother && ' · '}
+                      {invitation?.bride_mother && `${invitation.bride_mother}${config.bride_mother_deceased ? ' 故' : ''}`}
+                    </span>
+                    {(config.bride_relation || invitation?.bride_father || invitation?.bride_mother) && (
+                      <span className="text-emerald-700 text-[11px] font-medium">의 {config.bride_relation || '장녀'}</span>
+                    )}
+                    {brideName && <span className="font-semibold text-stone-900 ml-1">{brideName}</span>}
+                  </div>
+                )}
               </div>
-            </div>
+            )}
+
 
             {/* 축하 연락하기 버튼 */}
             <div className="mt-8">
@@ -628,15 +639,20 @@ export default function PlaylistTemplate({ invitation }) {
             <span className="font-mono text-[11px] tracking-[0.25em] text-emerald-700 uppercase block mb-2 font-semibold">
               VENUE &middot; LOCATION
             </span>
-            <h2 className="font-serif text-2xl text-stone-900 font-normal">
-              {invitation?.venue_name || '웨딩홀 이름'}
-            </h2>
+            {invitation?.venue_name && (
+              <h2 className="font-serif text-2xl text-stone-900 font-normal">
+                {invitation.venue_name}
+              </h2>
+            )}
             {config?.venue_hall && (
               <p className="text-xs text-emerald-700 mt-1 font-medium">{config.venue_hall}</p>
             )}
-            <p className="text-xs text-stone-600 mt-2 font-light">
-              {invitation?.venue_address || '서울시 예식장 상세 주소'}
-            </p>
+            {invitation?.venue_address && (
+              <p className="text-xs text-stone-600 mt-2 font-light">
+                {invitation.venue_address}
+              </p>
+            )}
+
           </div>
 
           {/* 카카오맵 지도 */}
@@ -725,7 +741,7 @@ export default function PlaylistTemplate({ invitation }) {
                               {acc.bank} {acc.number || acc.account_number}
                             </span>
                             <span className="text-stone-500 text-[11px] mt-0.5 block">
-                              예금주: {acc.holder || acc.name || '신랑'}
+                              예금주: {acc.holder || acc.name || ''}
                             </span>
                           </div>
                           <button
@@ -762,7 +778,7 @@ export default function PlaylistTemplate({ invitation }) {
                               {acc.bank} {acc.number || acc.account_number}
                             </span>
                             <span className="text-stone-500 text-[11px] mt-0.5 block">
-                              예금주: {acc.holder || acc.name || '신부'}
+                              예금주: {acc.holder || acc.name || ''}
                             </span>
                           </div>
                           <button
@@ -878,18 +894,20 @@ export default function PlaylistTemplate({ invitation }) {
           </p>
 
           {/* 따뜻한 감성 엔딩 사진 프레임 */}
-          <div className="w-full max-w-[280px] aspect-3/4 mx-auto rounded-3xl overflow-hidden border-4 border-white shadow-[0_20px_45px_rgba(40,55,45,0.12)] relative mb-8 group bg-white">
-            <img
-              src={endingImage}
-              alt="Bonus Track Moment"
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-103"
-            />
-            {/* 햇살 라이트 오버레이 */}
-            <div className="absolute inset-0 bg-linear-to-t from-black/30 via-transparent to-transparent" />
-            <div className="absolute bottom-3 left-0 right-0 text-white font-serif italic text-xs drop-shadow-md">
-              Forever and Always
+          {endingImage && (
+            <div className="w-full max-w-[280px] aspect-3/4 mx-auto rounded-3xl overflow-hidden border-4 border-white shadow-[0_20px_45px_rgba(40,55,45,0.12)] relative mb-8 group bg-white">
+              <img
+                src={endingImage}
+                alt="Bonus Track Moment"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-103"
+              />
+              {/* 햇살 라이트 오버레이 */}
+              <div className="absolute inset-0 bg-linear-to-t from-black/30 via-transparent to-transparent" />
+              <div className="absolute bottom-3 left-0 right-0 text-white font-serif italic text-xs drop-shadow-md">
+                Forever and Always
+              </div>
             </div>
-          </div>
+          )}
 
           {/* ✨ 하객 참여형 축하 꽃가루(Confetti) 팡팡 인터랙션 버튼 */}
           <div className="mb-8">

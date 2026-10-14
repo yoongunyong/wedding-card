@@ -49,9 +49,9 @@ export default function EditorialTemplate({ invitation }) {
   const showQuoteSection = config.show_quote_section !== false;
 
   // 대표 이미지 매핑
-  const mainImage = images.main || images.cover || invitation?.main_image || '/cover.jpg';
+  const mainImage = images.main || images.cover || invitation?.main_image || '';
   const couplePhoto = images.couple_profile || images.couple || extra.couple_profile_image || mainImage;
-  const endingImage = images.ending || extra.ending_image || invitation?.ending_image || '/ending.jpg';
+  const endingImage = images.ending || extra.ending_image || invitation?.ending_image || mainImage;
 
   // 갤러리 이미지 안전 파싱
   const galleryImages = useMemo(() => {
@@ -1172,18 +1172,20 @@ export default function EditorialTemplate({ invitation }) {
       <section className="pt-24 sm:pt-32 pb-24 sm:pb-32 px-6 bg-white text-center">
         <ScrollReveal duration={1000}>
           {/* 매거진 백커버 사진 액자 */}
-          <div className="max-w-[340px] mx-auto mb-10 overflow-hidden bg-white p-2 border border-stone-200 shadow-sm">
-            <img
-              src={endingImage}
-              alt="Wedding ending"
-              className="w-full aspect-[4/3] object-cover grayscale-[5%]"
-              onError={(e) => {
-                if (e.currentTarget.src !== mainImage) {
-                  e.currentTarget.src = mainImage;
-                }
-              }}
-            />
-          </div>
+          {endingImage && (
+            <div className="max-w-[340px] mx-auto mb-10 overflow-hidden bg-white p-2 border border-stone-200 shadow-sm">
+              <img
+                src={endingImage}
+                alt="Wedding ending"
+                className="w-full aspect-[4/3] object-cover grayscale-[5%]"
+                onError={(e) => {
+                  if (e.currentTarget.src !== mainImage) {
+                    e.currentTarget.src = mainImage;
+                  }
+                }}
+              />
+            </div>
+          )}
 
           <h2 className="font-editorial-title italic text-[44px] sm:text-[48px] text-stone-900 leading-none mb-3">
             Thank you

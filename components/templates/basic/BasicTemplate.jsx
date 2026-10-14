@@ -48,12 +48,12 @@ export default function BasicTemplate({ invitation }) {
   const showGuestbookSection = config.show_guestbook !== false;
 
   // 본문 메인 풀스크린 사진 (images.main 최우선)
-  const mainImage = images.main || extra.main_image || invitation?.main_image || invitation?.cover_image || '/cover.jpg';
+  const mainImage = images.main || images.cover || extra.main_image || invitation?.main_image || invitation?.cover_image || '';
   const hasBakedInText = Boolean(extra.has_baked_in_text);
 
   // 신랑/신부 프로필 사진 (images.groom_profile / bride_profile 최우선)
-  const groomPhoto = images.groom_profile || extra.groom_profile_image || invitation?.groom_photo || extra.groom_photo || '/groom.jpg';
-  const bridePhoto = images.bride_profile || extra.bride_profile_image || invitation?.bride_photo || extra.bride_photo || '/bride.jpg';
+  const groomPhoto = images.groom_profile || extra.groom_profile_image || invitation?.groom_photo || extra.groom_photo || '';
+  const bridePhoto = images.bride_profile || extra.bride_profile_image || invitation?.bride_photo || extra.bride_photo || '';
 
   // 둘이 함께 찍은 커플 사진 (images.couple_profile 최우선)
   const couplePhoto = images.couple_profile || images.couple || extra.couple_profile_image || extra.couple_image || mainImage;
@@ -64,7 +64,7 @@ export default function BasicTemplate({ invitation }) {
   const showQuoteSection = config.show_quote_section !== false;
 
   // 엔딩 사진 (images.ending 최우선)
-  const endingImage = images.ending || extra.ending_image || invitation?.ending_image || '/ending.jpg';
+  const endingImage = images.ending || extra.ending_image || invitation?.ending_image || mainImage;
 
   // 갤러리 이미지 안전 파싱 (배열 및 문자열 대응)
   const parseGalleryImages = (raw) => {
@@ -493,16 +493,7 @@ export default function BasicTemplate({ invitation }) {
         }}
       />
 
-      {/* 영문 필기체 폰트 */}
-      <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Pinyon+Script&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap');
-        .font-script {
-          font-family: 'Pinyon Script', 'Alex Brush', cursive !important;
-        }
-        .font-cormorant {
-          font-family: 'Cormorant Garamond', Georgia, serif !important;
-        }
-      `}</style>
+
 
       {/* 0. 인트로 편지 봉투 커버 화면 */}
       {showIntro && showIntroSection && (
@@ -1399,15 +1390,17 @@ export default function BasicTemplate({ invitation }) {
       <section className="pt-24 sm:pt-32 pb-24 sm:pb-32 bg-[#FCFBF7] text-center">
         <ScrollReveal duration={1000}>
           {/* 엔딩 사진 프레임 */}
-          <div className="w-full max-w-[390px] mx-auto px-6 mb-12 sm:mb-14">
-            <div className="w-full aspect-[4/3] overflow-hidden shadow-2xs">
-              <img
-                src={endingImage}
-                alt="Ending Cover"
-                className="w-full h-full object-cover"
-              />
+          {endingImage && (
+            <div className="w-full max-w-[390px] mx-auto px-6 mb-12 sm:mb-14">
+              <div className="w-full aspect-[4/3] overflow-hidden shadow-2xs">
+                <img
+                  src={endingImage}
+                  alt="Ending Cover"
+                  className="w-full h-full object-cover"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Thank you & 감사 문구 */}
           <div className="px-6 mb-12 sm:mb-14">

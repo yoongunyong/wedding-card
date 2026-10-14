@@ -280,14 +280,17 @@ export default function PlaylistTemplate({ invitation }) {
             </span>
           </div>
 
-          {/* 화보 중앙 하단 타이포그래피 */}
-          <div className="absolute bottom-20 left-5 right-5 text-white drop-shadow-lg text-center">
-            <p className="font-serif italic text-sm tracking-wide text-white/90 mb-1">
-              we are getting married
+          {/* 화보 중앙 하단 타이포그래피 (레퍼런스 감성 필기체 글씨체) */}
+          <div className="absolute bottom-20 left-5 right-5 text-white drop-shadow-xl text-center">
+            <p className="font-script text-4xl sm:text-5xl text-white tracking-wide mb-1 leading-none drop-shadow-lg">
+              Getting Married
             </p>
-            <h1 className="font-serif text-2xl sm:text-3xl font-normal tracking-tight">
+            <h1 className="font-serif text-xl sm:text-2xl font-normal tracking-tight text-white/95 mt-1">
               {groomName} &middot; {brideName}
             </h1>
+            <p className="font-mono text-[10px] tracking-widest text-white/75 uppercase mt-1">
+              {date} {monthEn.slice(0, 3).toUpperCase()} {year}
+            </p>
           </div>
 
           {/* 하단 플로팅 글래스모피즘 뮤직 플레이어 바 (화보 하단에 세련되게 얹힘) */}
@@ -418,16 +421,25 @@ export default function PlaylistTemplate({ invitation }) {
                 `서로를 만나 평범했던 하루가\n조금 더 따뜻하고 특별해졌습니다.\n\n우리가 함께 듣던 멜로디처럼\n잔잔하고 다정하게 서로의 곁을 지키겠습니다.\n\n새로운 계절을 시작하는 날,\n귀한 걸음으로 축복해 주시면 감사하겠습니다.`}
             </p>
 
-            {/* 감성 커플 화보 (속지 인화 사진 프레임) */}
+            {/* 감성 커플 화보 (빈티지 폴라로이드 프레임 & 손글씨) */}
             {couplePhoto && (
-              <div className="my-8 max-w-[280px] mx-auto aspect-3/4 rounded-2xl overflow-hidden border border-stone-200/90 shadow-[0_10px_30px_rgba(0,0,0,0.06)] bg-stone-100">
-                <img
-                  src={couplePhoto}
-                  alt="Couple Profile"
-                  className="w-full h-full object-cover"
-                />
+              <div className="my-8 max-w-[280px] mx-auto p-3.5 pb-4 bg-white rounded-2xl border border-stone-200/90 shadow-[0_12px_32px_rgba(0,0,0,0.06)] text-center">
+                <p className="font-handwriting text-lg text-stone-500 mb-2 select-none tracking-wide">
+                  we are getting married -
+                </p>
+                <div className="w-full aspect-3/4 rounded-xl overflow-hidden bg-stone-100 mb-2.5">
+                  <img
+                    src={couplePhoto}
+                    alt="Couple Profile"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <p className="font-handwriting text-base text-stone-400 select-none">
+                  on {monthEn} {date}, {year}
+                </p>
               </div>
             )}
+
 
             {/* 양가 혼주 & 신랑 신부 정보 (음반 크레딧 스타일) */}
             <div className="mt-10 pt-8 border-t border-stone-200/60 space-y-3 text-xs sm:text-[13px]">

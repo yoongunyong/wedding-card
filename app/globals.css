@@ -34,3 +34,25 @@ body {
 .font-pretendard {
   font-family: var(--font-pretendard) !important;
 }
+
+/* 에디토리얼 & 플레이리스트 전용 감성 폰트 클래스 */
+.font-editorial-serif {
+  font-family: 'Cormorant Garamond', 'Playfair Display', serif !important;
+}
+
+.font-editorial-title {
+  font-family: 'Italiana', 'Cormorant Garamond', serif !important;
+}
+
+.font-korean-serif {
+  font-family: 'Noto Serif KR', var(--font-serif-kr), serif !important;
+}
+
+.font-script {
+  font-family: 'Alex Brush', cursive !important;
+}
+
+.font-handwriting {
+  font-family: 'Caveat', cursive !important;
+}
+

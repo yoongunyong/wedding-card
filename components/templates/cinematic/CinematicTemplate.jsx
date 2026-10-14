@@ -29,7 +29,11 @@ export default function CinematicTemplate({ invitation }) {
   const [activeInfoIdx, setActiveInfoIdx] = useState(0);
   const infoContainerRef = useRef(null);
 
-  // 6. 데이터 언패킹 & fallback
+  // 6. 데이터 언패킹 & 샘플 모드 판별
+  // 공식 데모 청첩장(slug: 'cinematic') 또는 실시간 샘플 프리뷰일 때만 데모용 플레이스홀더를 제공하고,
+  // 실제 고객 청첩장에서는 고객이 미입력한 항목에 대해 타인의 정보나 더미가 절대 노출되지 않도록 공백/미노출 처리합니다.
+  const isSample = invitation?.slug === 'cinematic' || invitation?.is_sample_preview === true;
+
   const config = invitation?.template_config || {};
   const images = invitation?.images || {};
   const extra = invitation?.extra_data || {};
@@ -38,13 +42,6 @@ export default function CinematicTemplate({ invitation }) {
   const showGallerySection = config.show_gallery !== false;
   const showAccountsSection = config.show_accounts !== false;
   const showRsvpSection = config.show_rsvp !== false;
-
-  // 대표 이미지 매핑 (영상 레퍼런스 스타일 기본값)
-  const mainImage = images.main || images.cover || invitation?.main_image || 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=85';
-  const celebrationPhoto = images.couple_profile || images.couple || extra.couple_profile_image || 'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?auto=format&fit=crop&w=1200&q=80';
-  const bridePhoto = images.bride_profile || extra.bride_profile_image || invitation?.bride_photo || 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=800&q=80';
-  const groomPhoto = images.groom_profile || extra.groom_profile_image || invitation?.groom_photo || 'https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=800&q=80';
-  const datePhoto = 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80';
 
   // 갤러리 이미지 안전 파싱 & Our Story / Wedding Photo 컬렉션 분리
   const rawGallery = invitation?.gallery_images;
@@ -59,21 +56,21 @@ export default function CinematicTemplate({ invitation }) {
     return null;
   }, [rawGallery]);
 
-  const defaultOurStoryImages = useMemo(() => [
+  const defaultOurStoryImages = useMemo(() => isSample ? [
     'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1000&q=80',
     'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1000&q=80',
     'https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&w=1000&q=80',
     'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=1000&q=80',
     'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1000&q=80',
-  ], []);
+  ] : [], [isSample]);
 
-  const defaultWeddingPhotoImages = useMemo(() => [
+  const defaultWeddingPhotoImages = useMemo(() => isSample ? [
     'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=1000&q=80',
     'https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=1000&q=80',
     'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?auto=format&fit=crop&w=1000&q=80',
     'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1000&q=80',
     'https://images.unsplash.com/photo-1545232979-8bf68ee9b1af?auto=format&fit=crop&w=1000&q=80',
-  ], []);
+  ] : [], [isSample]);
 
   const ourStoryImages = useMemo(() => {
     if (!userGallery) return defaultOurStoryImages;
@@ -90,28 +87,35 @@ export default function CinematicTemplate({ invitation }) {
   }, [userGallery, defaultWeddingPhotoImages]);
 
   const activeGalleryImages = galleryTab === 'wedding' ? weddingPhotoImages : ourStoryImages;
-  const galleryImages = userGallery || [...defaultOurStoryImages, ...defaultWeddingPhotoImages];
+  const galleryImages = userGallery || (isSample ? [...defaultOurStoryImages, ...defaultWeddingPhotoImages] : []);
 
-  // 성함 데이터
-  const groomName = invitation?.groom_name || '데이';
-  const brideName = invitation?.bride_name || '이브';
-  const groomFirstEn = invitation?.groom_first_name_en || (invitation?.groom_name_en || '').split(' ')[0] || 'Day';
-  const brideFirstEn = invitation?.bride_first_name_en || (invitation?.bride_name_en || '').split(' ')[0] || 'Eve';
-  const displayNamesEn = invitation?.main_names_en || `${groomFirstEn} & ${brideFirstEn}`;
+  // 대표 이미지 매핑 (고객 등록 사진 최우선 매핑, 미등록 시 타인의 사진이 노출되지 않도록 제어)
+  const mainImage = images.main || images.cover || invitation?.main_image || (isSample ? 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=85' : '');
+  const celebrationPhoto = images.couple_profile || images.couple || extra.couple_profile_image || (isSample ? 'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?auto=format&fit=crop&w=1200&q=80' : images.main || '');
+  const bridePhoto = images.bride_profile || extra.bride_profile_image || invitation?.bride_photo || (isSample ? 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=800&q=80' : '');
+  const groomPhoto = images.groom_profile || extra.groom_profile_image || invitation?.groom_photo || (isSample ? 'https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=800&q=80' : '');
+  const datePhoto = images.ending || (userGallery && userGallery.length > 1 ? userGallery[1] : null) || (isSample ? 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80' : '');
 
-  // 부모님 성함
+  // 성함 데이터 (하드코딩 더미 성함 제거)
+  const groomName = invitation?.groom_name || (isSample ? '데이' : '');
+  const brideName = invitation?.bride_name || (isSample ? '이브' : '');
+  const groomFirstEn = invitation?.groom_first_name_en || (invitation?.groom_name_en || '').split(' ')[0] || (isSample ? 'Day' : '');
+  const brideFirstEn = invitation?.bride_first_name_en || (invitation?.bride_name_en || '').split(' ')[0] || (isSample ? 'Eve' : '');
+  const displayNamesEn = invitation?.main_names_en || (groomFirstEn && brideFirstEn ? `${groomFirstEn} & ${brideFirstEn}` : (isSample ? 'Day & Eve' : ''));
+
+  // 부모님 성함 (하드코딩 더미 제거)
   const groomParents = [
     invitation?.groom_father && `${invitation.groom_father}${config.groom_father_deceased ? ' (故)' : ''}`,
     invitation?.groom_mother && `${invitation.groom_mother}${config.groom_mother_deceased ? ' (故)' : ''}`,
-  ].filter(Boolean).join(' · ') || '루카스 · 소피아';
+  ].filter(Boolean).join(' · ') || (isSample ? '루카스 · 소피아' : '');
 
   const brideParents = [
     invitation?.bride_father && `${invitation.bride_father}${config.bride_father_deceased ? ' (故)' : ''}`,
     invitation?.bride_mother && `${invitation.bride_mother}${config.bride_mother_deceased ? ' (故)' : ''}`,
-  ].filter(Boolean).join(' · ') || '에이든 · 미엘라';
+  ].filter(Boolean).join(' · ') || (isSample ? '에이든 · 미엘라' : '');
 
-  const groomRelation = config.groom_relation || invitation?.groom_relation || '아들';
-  const brideRelation = config.bride_relation || invitation?.bride_relation || '딸';
+  const groomRelation = config.groom_relation || invitation?.groom_relation || (isSample ? '아들' : '');
+  const brideRelation = config.bride_relation || invitation?.bride_relation || (isSample ? '딸' : '');
 
   // 날짜 계산 (기본값: 2026-12-24 15:00)
   const weddingDateStr = invitation?.wedding_date || '2026-12-24 15:00:00';
@@ -174,44 +178,47 @@ export default function CinematicTemplate({ invitation }) {
     };
   }, [targetDate]);
 
-  // 예식장 정보
-  const venueFullName = [invitation?.venue_name || '더채플앳청담', config?.venue_hall || '커티지홀'].filter(Boolean).join(' ');
-  const venueAddress = invitation?.venue_address || '서울특별시 강남구 선릉로 757';
+  // 예식장 정보 (하드코딩 더채플앳청담 제거 -> 미입력 시 공백 처리)
+  const venueFullName = [invitation?.venue_name, config?.venue_hall || invitation?.venue_hall].filter(Boolean).join(' ') || (isSample ? '더채플앳청담 커티지홀' : '');
+  const venueAddress = invitation?.venue_address || (isSample ? '서울특별시 강남구 선릉로 757' : '');
 
-  // 안내 카드 리스트 (영상 4종 기본값)
+  // 안내 카드 리스트 (미등록 시 실제 고객 청첩장에서는 미노출)
   const infoCards = useMemo(() => {
     if (Array.isArray(invitation?.info_notices) && invitation.info_notices.length > 0) {
       return invitation.info_notices;
     }
-    return [
-      {
-        title: 'Special Moment',
-        subtitle: 'Special Moment',
-        content: '평생 간직할 소중한 추억을 만들어가는 시간입니다.\n웨딩의 모든 순간이 특별한 기억으로 남을 것입니다.',
-        image: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80',
-      },
-      {
-        title: 'Celebration Time',
-        subtitle: 'Celebration Time',
-        content: '사랑하는 사람들과 함께 축하하며 즐거운 시간을 보내세요.\n여러분의 참석이 저희에게 큰 기쁨이 됩니다.',
-        image: 'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?auto=format&fit=crop&w=800&q=80',
-      },
-      {
-        title: 'Dining Experience',
-        subtitle: 'Dining Experience',
-        content: '정성껏 준비한 다양한 메뉴를 맛보시며 편안한 식사 시간을 가지세요.\n맛있는 음식과 함께 즐거운 대화를 나누실 수 있습니다.',
-        image: 'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=800&q=80',
-      },
-      {
-        title: 'Reception Party',
-        subtitle: 'Wedding Ceremony',
-        content: '아름다운 예식장에서 진행되는 특별한 순간을 함께해주세요.\n소중한 분들과 함께하는 행복한 시간이 될 것입니다.',
-        image: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=80',
-      },
-    ];
-  }, [invitation?.info_notices]);
+    if (isSample) {
+      return [
+        {
+          title: 'Special Moment',
+          subtitle: 'Special Moment',
+          content: '평생 간직할 소중한 추억을 만들어가는 시간입니다.\n웨딩의 모든 순간이 특별한 기억으로 남을 것입니다.',
+          image: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80',
+        },
+        {
+          title: 'Celebration Time',
+          subtitle: 'Celebration Time',
+          content: '사랑하는 사람들과 함께 축하하며 즐거운 시간을 보내세요.\n여러분의 참석이 저희에게 큰 기쁨이 됩니다.',
+          image: 'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?auto=format&fit=crop&w=800&q=80',
+        },
+        {
+          title: 'Dining Experience',
+          subtitle: 'Dining Experience',
+          content: '정성껏 준비한 다양한 메뉴를 맛보시며 편안한 식사 시간을 가지세요.\n맛있는 음식과 함께 즐거운 대화를 나누실 수 있습니다.',
+          image: 'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=800&q=80',
+        },
+        {
+          title: 'Reception Party',
+          subtitle: 'Wedding Ceremony',
+          content: '아름다운 예식장에서 진행되는 특별한 순간을 함께해주세요.\n소중한 분들과 함께하는 행복한 시간이 될 것입니다.',
+          image: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=80',
+        },
+      ];
+    }
+    return [];
+  }, [invitation?.info_notices, isSample]);
 
-  // 계좌 분리 (영상 스타일)
+  // 계좌 분리 (미등록 시 실제 고객 청첩장에서는 계좌 섹션 미노출)
   const allAccounts = useMemo(() => {
     const raw = invitation?.accounts;
     if (Array.isArray(raw) && raw.length > 0) return raw;
@@ -219,31 +226,37 @@ export default function CinematicTemplate({ invitation }) {
       const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
       if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     } catch {}
-    return [
-      { group: '신랑측', name: '신랑 데이', holder: '데이', title: '신랑', bank: '카카오뱅크', number: '1002-753-478932' },
-      { group: '신랑측', name: '아버지 루카스', holder: '루카스', title: '아버지', bank: '우리은행', number: '8223-7323-4123556' },
-      { group: '신랑측', name: '어머니 소피아', holder: '소피아', title: '어머니', bank: 'IBK 기업은행', number: '76443-2231-22345' },
-      { group: '신부측', name: '신부 이브', holder: '이브', title: '신부', bank: '카카오뱅크', number: '1002-753-478932' },
-      { group: '신부측', name: '아버지 에이든', holder: '에이든', title: '아버지', bank: '우리은행', number: '8223-7323-4123556' },
-    ];
-  }, [invitation?.accounts]);
+    if (isSample) {
+      return [
+        { group: '신랑측', name: '신랑 데이', holder: '데이', title: '신랑', bank: '카카오뱅크', number: '1002-753-478932' },
+        { group: '신랑측', name: '아버지 루카스', holder: '루카스', title: '아버지', bank: '우리은행', number: '8223-7323-4123556' },
+        { group: '신랑측', name: '어머니 소피아', holder: '소피아', title: '어머니', bank: 'IBK 기업은행', number: '76443-2231-22345' },
+        { group: '신부측', name: '신부 이브', holder: '이브', title: '신부', bank: '카카오뱅크', number: '1002-753-478932' },
+        { group: '신부측', name: '아버지 에이든', holder: '에이든', title: '아버지', bank: '우리은행', number: '8223-7323-4123556' },
+      ];
+    }
+    return [];
+  }, [invitation?.accounts, isSample]);
 
   const groomAccounts = allAccounts.filter((a) => a.group === '신랑측' || a.name?.includes('신랑') || a.holder?.includes('신랑'));
   const brideAccounts = allAccounts.filter((a) => a.group === '신부측' || a.name?.includes('신부') || a.holder?.includes('신부'));
   const currentAccounts = accountTab === 'groom' ? groomAccounts : brideAccounts;
 
-  // 교통편 리스트 (영상 4종 기본값)
+  // 교통편 리스트 (미등록 시 실제 고객 청첩장에서는 미노출)
   const transportationList = useMemo(() => {
     if (Array.isArray(invitation?.transportation) && invitation.transportation.length > 0) {
       return invitation.transportation;
     }
-    return [
-      { title: '셔틀버스', content: '행사 당일 30분 간격 운행\n청담역 9번 출구 인근 탑승' },
-      { title: 'SRT/KTX', content: '수서역 하차 ➔ 택시 15분 내외' },
-      { title: '버스', content: '간선 143, 240, 301 / 지선 2412, 4312\n청담동 주민센터 정류장 하차 후 도보 5분' },
-      { title: '자차이용', content: '네비게이션: 더채플앳청담\n주차: 건물 내 지하주차장 이용' },
-    ];
-  }, [invitation?.transportation]);
+    if (isSample) {
+      return [
+        { title: '셔틀버스', content: '행사 당일 30분 간격 운행\n청담역 9번 출구 인근 탑승' },
+        { title: 'SRT/KTX', content: '수서역 하차 ➔ 택시 15분 내외' },
+        { title: '버스', content: '간선 143, 240, 301 / 지선 2412, 4312\n청담동 주민센터 정류장 하차 후 도보 5분' },
+        { title: '자차이용', content: '네비게이션: 더채플앳청담\n주차: 건물 내 지하주차장 이용' },
+      ];
+    }
+    return [];
+  }, [invitation?.transportation, isSample]);
 
   // 클립보드 복사
   const handleCopy = (text, label) => {
@@ -358,14 +371,16 @@ export default function CinematicTemplate({ invitation }) {
           01. 커버 섹션 (Our First Page)
           ======================================================== */}
       <section className="relative w-full pt-[calc(env(safe-area-inset-top,0px)+3.8rem)] pb-12 px-5 text-center select-none">
-        {/* 상단 서브 인디케이터 (day / eve) */}
-        <div 
-          style={serifItalic}
-          className="flex items-center justify-between text-xs text-stone-400 mb-5 px-1 tracking-wider lowercase"
-        >
-          <span>day</span>
-          <span>eve</span>
-        </div>
+        {/* 상단 서브 인디케이터 (신랑/신부 영문 퍼스트네임 소문자 동적 표시) */}
+        {(groomFirstEn || brideFirstEn) && (
+          <div 
+            style={serifItalic}
+            className="flex items-center justify-between text-xs text-stone-400 mb-5 px-1 tracking-wider lowercase"
+          >
+            <span>{groomFirstEn ? groomFirstEn.toLowerCase() : ''}</span>
+            <span>{brideFirstEn ? brideFirstEn.toLowerCase() : ''}</span>
+          </div>
+        )}
 
         {/* 메인 흑백 시네마틱 화보 프레임 (하단 흰색 블렌딩 페이드) */}
         {mainImage && (
@@ -471,13 +486,17 @@ export default function CinematicTemplate({ invitation }) {
       {/* ========================================================
           03. 모시는 글 & 2분할 흑백 인물 스냅 (Bride / Groom)
           ======================================================== */}
+      {/* ========================================================
+          03. 모시는 글 & 2분할 흑백 인물 스냅 (Bride / Groom)
+          ======================================================== */}
       <section className="py-16 px-5 text-center">
         <ScrollReveal>
-          {/* 모시는 글 본문 (영상 레퍼런스 스타일) */}
-          <div className={`text-xs sm:text-[13px] leading-[2.6] font-light max-w-[320px] mx-auto whitespace-pre-line break-keep mb-12 ${
-            isNightMode ? 'text-stone-300' : 'text-stone-700'
-          }`}>
-            {invitation?.message || `서로에게 행복을 주는 사람을 만났습니다.
+          {/* 모시는 글 본문 (미입력 시 가짜 더미 텍스트 노출 차단) */}
+          {(invitation?.message || isSample) && (
+            <div className={`text-xs sm:text-[13px] leading-[2.6] font-light max-w-[320px] mx-auto whitespace-pre-line break-keep mb-12 ${
+              isNightMode ? 'text-stone-300' : 'text-stone-700'
+            }`}>
+              {invitation?.message || `서로에게 행복을 주는 사람을 만났습니다.
 웃는 모습이 너무나 예쁜 그 사람을 만났습니다.
 운명처럼 만나게 된 우리의 인연
 그 인연에 이끌려 이제 영원을 함께 약속하려 합니다.
@@ -487,58 +506,84 @@ export default function CinematicTemplate({ invitation }) {
 둘이 함께 맞이하는 3번째 겨울,
 저희 두 사람 여러분 앞에 결혼합니다.
 앞으로 맞이할 저희의 봄날을 축복해 주세요.`}
-          </div>
+            </div>
+          )}
 
-          {/* 2분할 신랑 & 신부 흑백 인물 스냅 사진 (영상 레퍼런스: 각진 사각 프레임) */}
-          <div className="grid grid-cols-2 gap-3 max-w-[340px] mx-auto mb-10">
-            {/* 신부 카드 */}
-            <div className="flex flex-col items-center">
-              <div className="w-full aspect-[4/5] rounded-none overflow-hidden bg-stone-100 dark:bg-stone-900 mb-2.5">
-                <img
-                  src={bridePhoto}
-                  alt={brideName}
-                  className="w-full h-full object-cover grayscale"
-                />
+          {/* 2분할 신랑 & 신부 흑백 인물 스냅 사진 (사진이 등록된 경우에만 사진 프레임 노출) */}
+          {(bridePhoto || groomPhoto) ? (
+            <div className="grid grid-cols-2 gap-3 max-w-[340px] mx-auto mb-10">
+              {/* 신부 카드 */}
+              <div className="flex flex-col items-center">
+                {bridePhoto ? (
+                  <div className="w-full aspect-[4/5] rounded-none overflow-hidden bg-stone-100 dark:bg-stone-900 mb-2.5">
+                    <img
+                      src={bridePhoto}
+                      alt={brideName}
+                      className="w-full h-full object-cover grayscale"
+                    />
+                  </div>
+                ) : null}
+                {brideName && (
+                  <span 
+                    style={serifItalic}
+                    className="text-xs text-stone-500"
+                  >
+                    Bride. <strong className={`font-sans font-medium not-italic ml-1 ${isNightMode ? 'text-white' : 'text-stone-900'}`}>{brideName}</strong>
+                  </span>
+                )}
               </div>
-              <span 
-                style={serifItalic}
-                className="text-xs text-stone-500"
-              >
-                Bride. <strong className={`font-sans font-medium not-italic ml-1 ${isNightMode ? 'text-white' : 'text-stone-900'}`}>{brideName}</strong>
-              </span>
-            </div>
 
-            {/* 신랑 카드 */}
-            <div className="flex flex-col items-center">
-              <div className="w-full aspect-[4/5] rounded-none overflow-hidden bg-stone-100 dark:bg-stone-900 mb-2.5">
-                <img
-                  src={groomPhoto}
-                  alt={groomName}
-                  className="w-full h-full object-cover grayscale"
-                />
+              {/* 신랑 카드 */}
+              <div className="flex flex-col items-center">
+                {groomPhoto ? (
+                  <div className="w-full aspect-[4/5] rounded-none overflow-hidden bg-stone-100 dark:bg-stone-900 mb-2.5">
+                    <img
+                      src={groomPhoto}
+                      alt={groomName}
+                      className="w-full h-full object-cover grayscale"
+                    />
+                  </div>
+                ) : null}
+                {groomName && (
+                  <span 
+                    style={serifItalic}
+                    className="text-xs text-stone-500"
+                  >
+                    Groom. <strong className={`font-sans font-medium not-italic ml-1 ${isNightMode ? 'text-white' : 'text-stone-900'}`}>{groomName}</strong>
+                  </span>
+                )}
               </div>
-              <span 
-                style={serifItalic}
-                className="text-xs text-stone-500"
-              >
-                Groom. <strong className={`font-sans font-medium not-italic ml-1 ${isNightMode ? 'text-white' : 'text-stone-900'}`}>{groomName}</strong>
-              </span>
             </div>
-          </div>
+          ) : (
+            /* 인물 사진이 미등록된 경우 타인의 사진 대신 단정한 성함 라인으로 노출 */
+            (groomName || brideName) && (
+              <div className="flex items-center justify-center gap-6 mb-10 text-sm">
+                {groomName && <span>Groom. <strong className={isNightMode ? 'text-white' : 'text-stone-900'}>{groomName}</strong></span>}
+                {groomName && brideName && <span className="text-stone-300">·</span>}
+                {brideName && <span>Bride. <strong className={isNightMode ? 'text-white' : 'text-stone-900'}>{brideName}</strong></span>}
+              </div>
+            )
+          )}
 
-          {/* 양가 부모님 정보 (영상 정렬 스타일) */}
-          <div className={`space-y-2.5 text-xs sm:text-[13px] font-light max-w-[280px] mx-auto ${
-            isNightMode ? 'text-stone-400' : 'text-stone-600'
-          }`}>
-            <div className="flex items-center justify-between">
-              <span>{groomParents} 의 {groomRelation}</span>
-              <strong className={`font-medium ${isNightMode ? 'text-white' : 'text-stone-900'}`}>{groomName}</strong>
+          {/* 양가 부모님 정보 (부모님 정보가 입력된 경우에만 깔끔하게 노출) */}
+          {(groomParents || brideParents) && (
+            <div className={`space-y-2.5 text-xs sm:text-[13px] font-light max-w-[280px] mx-auto ${
+              isNightMode ? 'text-stone-400' : 'text-stone-600'
+            }`}>
+              {groomParents && (
+                <div className="flex items-center justify-between">
+                  <span>{groomParents} {groomRelation && `의 ${groomRelation}`}</span>
+                  <strong className={`font-medium ${isNightMode ? 'text-white' : 'text-stone-900'}`}>{groomName}</strong>
+                </div>
+              )}
+              {brideParents && (
+                <div className="flex items-center justify-between">
+                  <span>{brideParents} {brideRelation && `의 ${brideRelation}`}</span>
+                  <strong className={`font-medium ${isNightMode ? 'text-white' : 'text-stone-900'}`}>{brideName}</strong>
+                </div>
+              )}
             </div>
-            <div className="flex items-center justify-between">
-              <span>{brideParents} 의 {brideRelation}</span>
-              <strong className={`font-medium ${isNightMode ? 'text-white' : 'text-stone-900'}`}>{brideName}</strong>
-            </div>
-          </div>
+          )}
         </ScrollReveal>
       </section>
 
@@ -622,14 +667,16 @@ export default function CinematicTemplate({ invitation }) {
               DATE
             </h2>
 
-            {/* 캘린더 상단 정사각형 감성 스냅 사진 (뛰어가는 다리 스냅) */}
-            <div className="w-36 h-36 mx-auto rounded-none overflow-hidden mb-6 bg-stone-100 dark:bg-stone-900">
-              <img
-                src={datePhoto}
-                alt="Couple Running"
-                className="w-full h-full object-cover grayscale"
-              />
-            </div>
+            {/* 캘린더 상단 정사각형 감성 스냅 사진 (등록된 경우에만 노출) */}
+            {datePhoto && (
+              <div className="w-36 h-36 mx-auto rounded-none overflow-hidden mb-6 bg-stone-100 dark:bg-stone-900">
+                <img
+                  src={datePhoto}
+                  alt="Wedding Moment"
+                  className="w-full h-full object-cover grayscale"
+                />
+              </div>
+            )}
 
             {/* 필기체 영문 월명 (December.) */}
             <p 
@@ -773,116 +820,126 @@ export default function CinematicTemplate({ invitation }) {
       )}
 
       {/* ========================================================
-          07. WEDDING LOCATION (식장 위치 & 3대 내비게이션)
+          07. WEDDING LOCATION (식장 위치 & 3대 내비게이션 - 정보가 있을 때만 노출)
           ======================================================== */}
-      <section className="py-20 px-5 text-center">
-        <ScrollReveal>
-          <h2 
-            style={serifItalic}
-            className={`text-xl tracking-[0.25em] uppercase mb-4 ${
-              isNightMode ? 'text-white' : 'text-stone-900'
-            }`}
-          >
-            WEDDING LOCATION
-          </h2>
-          <p 
-            style={serifItalic}
-            className={`text-base font-medium mb-1 ${isNightMode ? 'text-white' : 'text-stone-900'}`}
-          >
-            {venueFullName}
-          </p>
-
-          {/* 주소 박스 & 복사 */}
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <span className="text-xs font-mono text-stone-400">{venueAddress}</span>
-            <button
-              type="button"
-              onClick={() => handleCopy(venueAddress, '주소가')}
-              className="text-stone-400 hover:text-stone-700 text-xs cursor-pointer"
-              aria-label="주소 복사"
-            >
-              ⎘
-            </button>
-          </div>
-
-          {/* 지도 컴포넌트 */}
-          <div className="w-full max-w-[390px] mx-auto rounded-none overflow-hidden shadow-xs border border-stone-100 mb-6 bg-stone-100">
-            <KakaoMap
-              address={venueAddress}
-              venueName={invitation?.venue_name || '더채플앳청담'}
-              className="w-full h-[280px]"
-            />
-          </div>
-
-          {/* 3대 내비게이션 버튼 (네이버 지도, 티맵, 카카오내비) */}
-          <div className="grid grid-cols-3 gap-2 max-w-[390px] mx-auto mb-10 text-xs font-medium font-sans">
-            <button
-              type="button"
-              onClick={() => {
-                const q = invitation?.venue_name || venueAddress;
-                window.open(`https://map.naver.com/p/search/${encodeURIComponent(q)}`, '_blank');
-              }}
-              className={`py-3 px-2 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer ${
-                isNightMode ? 'bg-stone-900 hover:bg-stone-800 text-stone-200' : 'bg-stone-100 hover:bg-stone-200 text-stone-800'
+      {(venueFullName || venueAddress) && (
+        <section className="py-20 px-5 text-center">
+          <ScrollReveal>
+            <h2 
+              style={serifItalic}
+              className={`text-xl tracking-[0.25em] uppercase mb-4 ${
+                isNightMode ? 'text-white' : 'text-stone-900'
               }`}
             >
-              <span className="font-bold text-emerald-600">N</span>
-              <span>네이버 지도</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                const q = invitation?.venue_name || venueAddress;
-                window.open(`tmap://search?name=${encodeURIComponent(q)}`, '_blank');
-              }}
-              className={`py-3 px-2 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer ${
-                isNightMode ? 'bg-stone-900 hover:bg-stone-800 text-stone-200' : 'bg-stone-100 hover:bg-stone-200 text-stone-800'
-              }`}
-            >
-              <span className="font-bold text-red-600">T</span>
-              <span>티맵</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                const q = invitation?.venue_name || venueAddress;
-                window.open(`https://map.kakao.com/link/search/${encodeURIComponent(q)}`, '_blank');
-              }}
-              className={`py-3 px-2 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer ${
-                isNightMode ? 'bg-stone-900 hover:bg-stone-800 text-stone-200' : 'bg-stone-100 hover:bg-stone-200 text-stone-800'
-              }`}
-            >
-              <span className="font-bold text-amber-500">K</span>
-              <span>카카오내비</span>
-            </button>
-          </div>
+              WEDDING LOCATION
+            </h2>
+            {venueFullName && (
+              <p 
+                style={serifItalic}
+                className={`text-base font-medium mb-1 ${isNightMode ? 'text-white' : 'text-stone-900'}`}
+              >
+                {venueFullName}
+              </p>
+            )}
 
-          {/* 교통편 안내 리스트 (영상 스타일 회색 뱃지) */}
-          {transportationList.length > 0 && (
-            <div className="space-y-4 max-w-[390px] mx-auto text-left font-sans">
-              {transportationList.map((item, idx) => (
-                <div key={idx} className="text-xs">
-                  <span className={`inline-block px-2.5 py-0.5 rounded text-[11px] font-mono font-medium uppercase mb-1.5 ${
-                    isNightMode ? 'bg-stone-800 text-stone-300' : 'bg-stone-100 text-stone-700'
-                  }`}>
-                    {item.title}
-                  </span>
-                  <p className={`leading-relaxed font-light whitespace-pre-line break-keep ${
-                    isNightMode ? 'text-stone-400' : 'text-stone-600'
-                  }`}>
-                    {item.content}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-        </ScrollReveal>
-      </section>
+            {/* 주소 박스 & 복사 */}
+            {venueAddress && (
+              <div className="flex items-center justify-center gap-2 mb-6">
+                <span className="text-xs font-mono text-stone-400">{venueAddress}</span>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(venueAddress, '주소가')}
+                  className="text-stone-400 hover:text-stone-700 text-xs cursor-pointer"
+                  aria-label="주소 복사"
+                >
+                  ⎘
+                </button>
+              </div>
+            )}
+
+            {/* 지도 컴포넌트 */}
+            {venueAddress && (
+              <div className="w-full max-w-[390px] mx-auto rounded-none overflow-hidden shadow-xs border border-stone-100 mb-6 bg-stone-100">
+                <KakaoMap
+                  address={venueAddress}
+                  venueName={invitation?.venue_name || venueFullName}
+                  className="w-full h-[280px]"
+                />
+              </div>
+            )}
+
+            {/* 3대 내비게이션 버튼 (네이버 지도, 티맵, 카카오내비) */}
+            {venueAddress && (
+              <div className="grid grid-cols-3 gap-2 max-w-[390px] mx-auto mb-10 text-xs font-medium font-sans">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const q = invitation?.venue_name || venueAddress;
+                    window.open(`https://map.naver.com/p/search/${encodeURIComponent(q)}`, '_blank');
+                  }}
+                  className={`py-3 px-2 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer ${
+                    isNightMode ? 'bg-stone-900 hover:bg-stone-800 text-stone-200' : 'bg-stone-100 hover:bg-stone-200 text-stone-800'
+                  }`}
+                >
+                  <span className="font-bold text-emerald-600">N</span>
+                  <span>네이버 지도</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const q = invitation?.venue_name || venueAddress;
+                    window.open(`tmap://search?name=${encodeURIComponent(q)}`, '_blank');
+                  }}
+                  className={`py-3 px-2 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer ${
+                    isNightMode ? 'bg-stone-900 hover:bg-stone-800 text-stone-200' : 'bg-stone-100 hover:bg-stone-200 text-stone-800'
+                  }`}
+                >
+                  <span className="font-bold text-red-600">T</span>
+                  <span>티맵</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const q = invitation?.venue_name || venueAddress;
+                    window.open(`https://map.kakao.com/link/search/${encodeURIComponent(q)}`, '_blank');
+                  }}
+                  className={`py-3 px-2 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer ${
+                    isNightMode ? 'bg-stone-900 hover:bg-stone-800 text-stone-200' : 'bg-stone-100 hover:bg-stone-200 text-stone-800'
+                  }`}
+                >
+                  <span className="font-bold text-amber-500">K</span>
+                  <span>카카오내비</span>
+                </button>
+              </div>
+            )}
+
+            {/* 교통편 안내 리스트 (영상 스타일 회색 뱃지) */}
+            {transportationList.length > 0 && (
+              <div className="space-y-4 max-w-[390px] mx-auto text-left font-sans">
+                {transportationList.map((item, idx) => (
+                  <div key={idx} className="text-xs">
+                    <span className={`inline-block px-2.5 py-0.5 rounded text-[11px] font-mono font-medium uppercase mb-1.5 ${
+                      isNightMode ? 'bg-stone-800 text-stone-300' : 'bg-stone-100 text-stone-700'
+                    }`}>
+                      {item.title}
+                    </span>
+                    <p className={`leading-relaxed font-light whitespace-pre-line break-keep ${
+                      isNightMode ? 'text-stone-400' : 'text-stone-600'
+                    }`}>
+                      {item.content}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </ScrollReveal>
+        </section>
+      )}
 
       {/* ========================================================
-          08. WEDDING GIFT (영상 1:1 슬림 행 계좌)
+          08. WEDDING GIFT (등록된 계좌가 있을 때만 노출)
           ======================================================== */}
-      {showAccountsSection && (
+      {showAccountsSection && allAccounts.length > 0 && (
         <section className="py-20 px-5 text-center">
           <ScrollReveal>
             <h2 

@@ -745,11 +745,14 @@ export default function CreateInvitationPage() {
       message: formData.message || GREETING_PRESETS[0].content,
       quote_content: formData.show_quote_section ? (formData.quote_content || QUOTE_PRESETS[0].content) : '',
       quote_source: formData.show_quote_section ? (formData.quote_source || QUOTE_PRESETS[0].source) : '',
+      is_sample_preview: true,
       images: {
         main: effectiveMainImage,
         cover: effectiveCoverImage,
         couple_profile: effectiveCoupleImage,
         ending: effectiveEndingImage,
+        bride_profile: bridePhotoPreview || (formData.template_type === 'cinematic' ? PREVIEW_FALLBACK.images.bride_profile : ''),
+        groom_profile: groomPhotoPreview || (formData.template_type === 'cinematic' ? PREVIEW_FALLBACK.images.groom_profile : ''),
       },
       gallery_images: effectiveGalleryImages,
       accounts: allAccounts,
@@ -930,6 +933,18 @@ export default function CreateInvitationPage() {
         if (u) uploadedEndingUrl = u;
       }
 
+      let uploadedGroomUrl = groomPhotoPreview;
+      if (groomPhotoFile) {
+        const u = await uploadFileToStorage(groomPhotoFile, `${cleanSlug}/groom_profile`);
+        if (u) uploadedGroomUrl = u;
+      }
+
+      let uploadedBrideUrl = bridePhotoPreview;
+      if (bridePhotoFile) {
+        const u = await uploadFileToStorage(bridePhotoFile, `${cleanSlug}/bride_profile`);
+        if (u) uploadedBrideUrl = u;
+      }
+
       // 2. 갤러리 다중 이미지 업로드
       setUploadStatus('갤러리 사진들을 업로드하고 있습니다...');
       const uploadedGalleryUrls = [];
@@ -1049,6 +1064,8 @@ export default function CreateInvitationPage() {
           cover: uploadedCoverUrl || uploadedMainUrl || '',
           couple_profile: uploadedCoupleUrl || uploadedMainUrl || '',
           ending: uploadedEndingUrl || uploadedMainUrl || '',
+          groom_profile: uploadedGroomUrl || '',
+          bride_profile: uploadedBrideUrl || '',
         },
         gallery_images: finalGalleryImages,
         accounts: allAccounts,
@@ -2154,47 +2171,116 @@ export default function CreateInvitationPage() {
                 </div>
 
                 {/* 인트로 커버 사진 (시안 1 & 시안 2 공통) */}
-                <div className="p-5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-semibold text-stone-800">
-                      인트로 커버 사진 (선택)
+                {(formData.template_type === 'basic' || formData.template_type === 'editorial') && (
+                  <div className="p-5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-semibold text-stone-800">
+                        인트로 커버 사진 (선택)
+                      </label>
+                      <span className="text-[10px] font-mono text-stone-700 bg-stone-200/70 px-2 py-0.5 rounded-full font-medium">
+                        OPTION 01 & 02
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-stone-400 mb-3.5 font-light">
+                      시안 1 봉투 카드 및 시안 2 매거진 슬리브 인트로 커버 (미등록 시 메인 사진 적용)
+                    </p>
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-16 h-22 bg-white rounded-xl overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center shadow-xs">
+                        {coverImagePreview ? (
+                          <img src={coverImagePreview} alt="Cover" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-[10px] text-stone-300 font-mono">COVER</span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            validateAndSetImage(e.target.files?.[0], setCoverImageFile, setCoverImagePreview, '인트로 커버 사진');
+                          }}
+                          className="text-[11px] text-stone-600 file:mr-2.5 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-medium file:bg-stone-200 file:text-stone-800 hover:file:bg-stone-300 cursor-pointer transition-all w-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 시안 4 (시네마틱) 전용: 신랑 & 신부 단독 흑백 인물 스냅 사진 */}
+              {formData.template_type === 'cinematic' && (
+                <div className="p-5 bg-stone-50/80 rounded-2xl border-2 border-stone-900/40">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-bold text-stone-900">
+                      신랑 & 신부 개별 인물 스냅 사진 (선택)
                     </label>
-                    <span className="text-[10px] font-mono text-stone-700 bg-stone-200/70 px-2 py-0.5 rounded-full font-medium">
-                      OPTION 01 & 02
+                    <span className="text-[10px] font-mono bg-stone-900 text-white px-2 py-0.5 rounded-full font-semibold">
+                      OPTION 04 전용
                     </span>
                   </div>
-                  <p className="text-[11px] text-stone-400 mb-3.5 font-light">
-                    시안 1 봉투 카드 및 시안 2 매거진 슬리브 인트로 커버 (미등록 시 메인 사진 적용)
+                  <p className="text-[11px] text-stone-500 mb-4 font-light">
+                    시안 4의 2분할 흑백 인물 스냅(Bride & Groom)에 들어가는 개별 단독 사진입니다. (미등록 시 사진 없이 성함 텍스트만 깔끔하게 노출됩니다)
                   </p>
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-16 h-22 bg-white rounded-xl overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center shadow-xs">
-                      {coverImagePreview ? (
-                        <img src={coverImagePreview} alt="Cover" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-[10px] text-stone-300 font-mono">COVER</span>
-                      )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* 신부 단독 사진 */}
+                    <div className="p-3.5 bg-white rounded-xl border border-stone-200 flex items-center gap-3">
+                      <div className="w-14 h-18 bg-stone-100 rounded-lg overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center">
+                        {bridePhotoPreview ? (
+                          <img src={bridePhotoPreview} alt="Bride" className="w-full h-full object-cover grayscale" />
+                        ) : (
+                          <span className="text-[9px] text-stone-400 font-mono text-center">BRIDE</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className="block text-xs font-semibold text-stone-800 mb-1">신부 단독 사진</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            validateAndSetImage(e.target.files?.[0], setBridePhotoFile, setBridePhotoPreview, '신부 단독 사진');
+                          }}
+                          className="text-[11px] text-stone-500 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:bg-stone-200 file:text-stone-800 cursor-pointer w-full"
+                        />
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          validateAndSetImage(e.target.files?.[0], setCoverImageFile, setCoverImagePreview, '인트로 커버 사진');
-                        }}
-                        className="text-[11px] text-stone-600 file:mr-2.5 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-medium file:bg-stone-200 file:text-stone-800 hover:file:bg-stone-300 cursor-pointer transition-all w-full"
-                      />
+
+                    {/* 신랑 단독 사진 */}
+                    <div className="p-3.5 bg-white rounded-xl border border-stone-200 flex items-center gap-3">
+                      <div className="w-14 h-18 bg-stone-100 rounded-lg overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center">
+                        {groomPhotoPreview ? (
+                          <img src={groomPhotoPreview} alt="Groom" className="w-full h-full object-cover grayscale" />
+                        ) : (
+                          <span className="text-[9px] text-stone-400 font-mono text-center">GROOM</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className="block text-xs font-semibold text-stone-800 mb-1">신랑 단독 사진</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            validateAndSetImage(e.target.files?.[0], setGroomPhotoFile, setGroomPhotoPreview, '신랑 단독 사진');
+                          }}
+                          className="text-[11px] text-stone-500 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:bg-stone-200 file:text-stone-800 cursor-pointer w-full"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* 커플 사진 & 엔딩 사진 (선택) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4.5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
-                  <label className="block text-xs font-semibold text-stone-800 mb-1">
-                    커플 사진 (인용구 섹션용)
-                  </label>
-                  <p className="text-[10px] text-stone-400 mb-2.5">미등록 시 메인 사진이 자동 적용됩니다.</p>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-semibold text-stone-800">
+                      {formData.template_type === 'cinematic' ? '축하 와이드 사진 (CELEBRATE)' : '커플 사진 (인용구 섹션용)'}
+                    </label>
+                    <span className="text-[10px] font-mono text-stone-500">선택</span>
+                  </div>
+                  <p className="text-[10px] text-stone-400 mb-2.5">
+                    {formData.template_type === 'cinematic' ? '시안 4 상단 CELEBRATE 16:9 와이드 화보용' : '미등록 시 메인 사진이 자동 적용됩니다.'}
+                  </p>
                   <div className="flex items-center gap-3">
                     <div className="w-16 h-16 bg-white rounded-xl overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center shadow-xs">
                       {coupleImagePreview ? (
@@ -2215,10 +2301,15 @@ export default function CreateInvitationPage() {
                 </div>
 
                 <div className="p-4.5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
-                  <label className="block text-xs font-semibold text-stone-800 mb-1">
-                    엔딩 사진 (최하단 감사 인사용)
-                  </label>
-                  <p className="text-[10px] text-stone-400 mb-2.5">미등록 시 메인 사진이 자동 적용됩니다.</p>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-semibold text-stone-800">
+                      {formData.template_type === 'cinematic' ? '캘린더 감성 스냅 사진' : '엔딩 사진 (최하단 감사 인사용)'}
+                    </label>
+                    <span className="text-[10px] font-mono text-stone-500">선택</span>
+                  </div>
+                  <p className="text-[10px] text-stone-400 mb-2.5">
+                    {formData.template_type === 'cinematic' ? '시안 4 DATE 캘린더 상단 정사각형 스냅용' : '미등록 시 메인 사진이 자동 적용됩니다.'}
+                  </p>
                   <div className="flex items-center gap-3">
                     <div className="w-16 h-16 bg-white rounded-xl overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center shadow-xs">
                       {endingImagePreview ? (

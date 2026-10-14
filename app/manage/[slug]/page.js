@@ -213,6 +213,28 @@ export default function ManageRsvpPage({ params }) {
           </p>
         </div>
 
+        {/* 카카오톡 공유 캐시 갱신 팁 */}
+        <div className="mt-2.5 p-3.5 bg-amber-50/70 border border-amber-200/80 rounded-xl text-xs text-amber-900 leading-relaxed flex items-start gap-2.5">
+          <span className="text-sm shrink-0 mt-0.5">💬</span>
+          <div>
+            <p className="font-semibold text-amber-950 text-[12px]">
+              수정 후 카카오톡으로 보냈을 때 이전 사진이나 예식 정보가 뜨나요?
+            </p>
+            <p className="text-[11px] text-amber-900/90 mt-1 font-light leading-normal">
+              카카오톡 서버가 이전 미리보기를 24시간 동안 기억(캐싱)하기 때문입니다. 카카오톡 앱을 완전히 종료 후 다시 열어보시거나,{' '}
+              <a 
+                href="https://developers.kakao.com/tool/clear/og" 
+                target="_blank" 
+                rel="noreferrer" 
+                className="font-medium underline underline-offset-2 hover:text-black cursor-pointer"
+              >
+                카카오 캐시 초기화 도구
+              </a>
+              에서 청첩장 주소를 넣고 [초기화]를 누르시면 새 사진이 즉시 반영됩니다.
+            </p>
+          </div>
+        </div>
+
         {/* 요약 대시보드 카드 */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 my-6">
           <div className="p-4 bg-stone-50 rounded-xl text-center border border-stone-100">

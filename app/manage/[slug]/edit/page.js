@@ -8,6 +8,7 @@ import BasicTemplate from '@/components/templates/basic/BasicTemplate';
 import EditorialTemplate from '@/components/templates/editorial/EditorialTemplate';
 import PlaylistTemplate from '@/components/templates/playlist/PlaylistTemplate';
 import BgmPlayer from '@/components/BgmPlayer';
+import { compressImage } from '@/lib/imageCompressor';
 
 // 추천 감성 초대글 샘플 3종
 const GREETING_PRESETS = [
@@ -418,30 +419,38 @@ export default function EditInvitationPage({ params }) {
     }));
   };
 
-  // 이미지 유효성 검증 및 상태 저장
-  const validateAndSetImage = (file, setFile, setPreview, label = '사진') => {
+  // 이미지 유효성 검증 및 초고화질 자동 압축 상태 저장
+  const validateAndSetImage = async (file, setFile, setPreview, label = '사진') => {
     if (!file) return;
     if (!file.type.startsWith('image/')) {
       return alert(`${label}은(는) 이미지 파일(JPG, PNG, WEBP 등)만 등록하실 수 있습니다.`);
     }
     const sizeMb = file.size / (1024 * 1024);
-    if (sizeMb > 20) {
-      return alert(`${label} 파일 용량이 너무 큽니다 (${sizeMb.toFixed(1)}MB). 20MB 이하의 이미지를 선택해 주세요.`);
+    if (sizeMb > 30) {
+      return alert(`${label} 파일 용량이 너무 큽니다 (${sizeMb.toFixed(1)}MB). 30MB 이하의 이미지를 선택해 주세요.`);
     }
-    setFile(file);
-    setPreview(URL.createObjectURL(file));
+
+    try {
+      // 스튜디오 원본 초고용량 이미지 브라우저 무손실 경량 최적화
+      const optimizedFile = await compressImage(file);
+      setFile(optimizedFile);
+      setPreview(URL.createObjectURL(optimizedFile));
+    } catch {
+      setFile(file);
+      setPreview(URL.createObjectURL(file));
+    }
   };
 
-  // 갤러리 이미지 추가 / 삭제
-  const handleNewGalleryImagesChange = (e) => {
+  // 갤러리 이미지 추가 / 삭제 (자동 압축 포함)
+  const handleNewGalleryImagesChange = async (e) => {
     const rawFiles = Array.from(e.target.files || []);
     const validFiles = rawFiles.filter((f) => {
       if (!f.type.startsWith('image/')) {
         alert(`${f.name} 파일은 이미지가 아니므로 제외되었습니다.`);
         return false;
       }
-      if (f.size > 20 * 1024 * 1024) {
-        alert(`${f.name} 파일 용량이 20MB를 초과하여 제외되었습니다.`);
+      if (f.size > 30 * 1024 * 1024) {
+        alert(`${f.name} 파일 용량이 30MB를 초과하여 제외되었습니다.`);
         return false;
       }
       return true;
@@ -454,8 +463,11 @@ export default function EditInvitationPage({ params }) {
 
     const slicedFiles = validFiles.slice(0, Math.max(0, totalAllowed));
     if (slicedFiles.length > 0) {
-      setNewGalleryFiles((prev) => [...prev, ...slicedFiles]);
-      const newPreviews = slicedFiles.map((f) => URL.createObjectURL(f));
+      const optimizedFiles = await Promise.all(
+        slicedFiles.map((file) => compressImage(file))
+      );
+      setNewGalleryFiles((prev) => [...prev, ...optimizedFiles]);
+      const newPreviews = optimizedFiles.map((f) => URL.createObjectURL(f));
       setNewGalleryPreviews((prev) => [...prev, ...newPreviews]);
     }
   };

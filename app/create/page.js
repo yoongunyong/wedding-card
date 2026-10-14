@@ -7,6 +7,7 @@ import EditorialTemplate from '@/components/templates/editorial/EditorialTemplat
 import PlaylistTemplate from '@/components/templates/playlist/PlaylistTemplate';
 import BgmPlayer from '@/components/BgmPlayer';
 import QrCodeModal from '@/components/QrCodeModal';
+import { compressImage } from '@/lib/imageCompressor';
 
 // 추천 감성 초대글 샘플 3종
 const GREETING_PRESETS = [
@@ -282,6 +283,17 @@ export default function CreateInvitationPage() {
   const [submitting, setSubmitting] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+
+  // URL 파라미터로 전달된 템플릿 타입 자동 선택 (예: /create?template=playlist)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const t = params.get('template');
+      if (t && ['basic', 'editorial', 'playlist'].includes(t)) {
+        setFormData((prev) => ({ ...prev, template_type: t }));
+      }
+    }
+  }, []);
   const [createdResult, setCreatedResult] = useState(null);
   const [showQrModal, setShowQrModal] = useState(false);
   const isClosingRef = useRef(false);
@@ -461,38 +473,49 @@ export default function CreateInvitationPage() {
     }
   };
 
-  // 이미지 유효성 검증 및 상태 저장 헬퍼
-  const validateAndSetImage = (file, setFile, setPreview, label = '사진') => {
+  // 이미지 유효성 검증 및 초고화질 자동 압축 상태 저장 헬퍼
+  const validateAndSetImage = async (file, setFile, setPreview, label = '사진') => {
     if (!file) return;
     if (!file.type.startsWith('image/')) {
       return alert(`${label}은(는) 이미지 파일(JPG, PNG, WEBP 등)만 등록하실 수 있습니다.`);
     }
     const sizeMb = file.size / (1024 * 1024);
-    if (sizeMb > 20) {
-      return alert(`${label} 파일 용량이 너무 큽니다 (${sizeMb.toFixed(1)}MB). 20MB 이하의 이미지를 선택해 주세요.`);
+    if (sizeMb > 30) {
+      return alert(`${label} 파일 용량이 너무 큽니다 (${sizeMb.toFixed(1)}MB). 30MB 이하의 이미지를 선택해 주세요.`);
     }
-    setFile(file);
-    setPreview(URL.createObjectURL(file));
+
+    try {
+      // 스튜디오 원본 초고용량 이미지 브라우저 무손실 경량 최적화
+      const optimizedFile = await compressImage(file);
+      setFile(optimizedFile);
+      setPreview(URL.createObjectURL(optimizedFile));
+    } catch {
+      setFile(file);
+      setPreview(URL.createObjectURL(file));
+    }
   };
 
-  // 갤러리 이미지 추가 / 삭제
-  const handleGalleryImagesChange = (e) => {
+  // 갤러리 이미지 추가 / 삭제 (자동 압축 포함)
+  const handleGalleryImagesChange = async (e) => {
     const rawFiles = Array.from(e.target.files || []);
     const validFiles = rawFiles.filter((f) => {
       if (!f.type.startsWith('image/')) {
         alert(`${f.name} 파일은 이미지가 아니므로 제외되었습니다.`);
         return false;
       }
-      if (f.size > 20 * 1024 * 1024) {
-        alert(`${f.name} 파일 용량이 20MB를 초과하여 제외되었습니다.`);
+      if (f.size > 30 * 1024 * 1024) {
+        alert(`${f.name} 파일 용량이 30MB를 초과하여 제외되었습니다.`);
         return false;
       }
       return true;
     });
 
     if (validFiles.length > 0) {
-      setGalleryFiles((prev) => [...prev, ...validFiles].slice(0, 20));
-      const newPreviews = validFiles.map((f) => URL.createObjectURL(f));
+      const optimizedFiles = await Promise.all(
+        validFiles.map((file) => compressImage(file))
+      );
+      setGalleryFiles((prev) => [...prev, ...optimizedFiles].slice(0, 20));
+      const newPreviews = optimizedFiles.map((f) => URL.createObjectURL(f));
       setGalleryPreviews((prev) => [...prev, ...newPreviews].slice(0, 20));
     }
   };
@@ -1242,30 +1265,56 @@ export default function CreateInvitationPage() {
             </button>
           </div>
 
-          {/* 신랑신부 전용 관리자 링크 */}
-          <div className="p-5 bg-[#FAF8F5] rounded-2xl border border-[#E8E2D8] text-left mb-8">
+          {/* 신랑신부 전용 관리자 링크 (분실 방지 강화) */}
+          <div className="p-5 sm:p-6 bg-amber-50/80 rounded-2xl border-2 border-amber-300 text-left mb-8 shadow-sm">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-mono tracking-widest text-stone-700 bg-[#EFE9DF] px-2 py-0.5 rounded-full uppercase font-medium">
-                PRIVATE ADMIN LINK
+              <span className="text-[10px] font-mono tracking-widest text-amber-900 bg-amber-200/80 px-2.5 py-0.5 rounded-full uppercase font-bold">
+                ⚠️ IMPORTANT · 신랑·신부 전용 관리 링크
               </span>
-              <span className="text-[11px] text-stone-400 font-light">신랑·신부 전용</span>
+              <span className="text-[11px] text-amber-800 font-medium">수정 및 하객 관리용</span>
             </div>
-            <p className="text-xs font-mono text-stone-800 break-all my-2.5 font-medium">
-              {manageUrl}
+            
+            <p className="text-xs text-amber-950 font-normal leading-relaxed mt-2 mb-3">
+              예식 전까지 <strong>사진, 모시는 글, 예식 시간, 계좌번호 등을 언제든 수정</strong>하고 하객 참석 여부를 확인하실 수 있는 전용 관리 링크입니다.
             </p>
-            <button
-              type="button"
-              onClick={() => {
-                navigator.clipboard.writeText(manageUrl);
-                alert('관리자 전용 링크가 복사되었습니다! 이 링크는 신랑·신부님만 보관해 주세요.');
-              }}
-              className="w-full py-2.5 bg-stone-800 hover:bg-stone-900 text-white text-xs font-medium rounded-xl transition-all cursor-pointer shadow-xs"
-            >
-              관리자 페이지 링크 복사
-            </button>
-            <p className="text-[10px] text-stone-400 mt-2 font-light">
-              ※ 관리자 링크에는 관리 토큰이 포함되어 있으니 신랑·신부님만 보관해 주세요.
-            </p>
+
+            <div className="p-2.5 bg-white/90 rounded-xl border border-amber-200/90 mb-3">
+              <p className="text-xs font-mono text-stone-800 break-all select-all font-medium">
+                {manageUrl}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(manageUrl);
+                  alert('✅ 관리자 전용 링크가 복사되었습니다!\n\n카카오톡 [나와의 채팅방] 또는 메모장에 바로 붙여넣어 꼭 보관해 두세요.\n(이 링크가 있어야 추후 사진과 내용을 수정하실 수 있습니다)');
+                }}
+                className="w-full py-3 bg-amber-600 hover:bg-amber-700 active:scale-98 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
+              >
+                <span>📋</span>
+                <span>관리 링크 복사하기</span>
+              </button>
+
+              <a
+                href={manageUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full py-3 bg-stone-900 hover:bg-black active:scale-98 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
+              >
+                <span>⚙️</span>
+                <span>관리 페이지 바로가기</span>
+                <span className="text-[10px] opacity-70">↗</span>
+              </a>
+            </div>
+
+            <div className="mt-3 pt-3 border-t border-amber-200/70 flex items-start gap-1.5 text-[11px] text-amber-900/90 leading-tight">
+              <span>💡</span>
+              <p>
+                <strong>보관 필수:</strong> 관리 링크를 잃어버리시면 수정을 위해 판매자에게 직접 문의하셔야 하니 지금 꼭 카카오톡에 남겨두세요!
+              </p>
+            </div>
           </div>
 
           {/* 종이 청첩장용 QR코드 모달 */}

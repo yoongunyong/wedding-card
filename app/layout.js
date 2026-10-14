@@ -45,7 +45,7 @@ export default function RootLayout({ children }) {
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
         />
       </head>
-      <body className="antialiased m-0 p-0 bg-[#FCFBF7]">
+      <body className="antialiased m-0 p-0 bg-white">
         {children}
       </body>
     </html>

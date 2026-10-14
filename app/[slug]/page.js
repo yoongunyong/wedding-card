@@ -6,6 +6,7 @@ import ExpiredWeddingCard from '@/components/ExpiredWeddingCard';
 import BasicTemplate from '@/components/templates/basic/BasicTemplate';
 import EditorialTemplate from '@/components/templates/editorial/EditorialTemplate';
 import PlaylistTemplate from '@/components/templates/playlist/PlaylistTemplate';
+import CinematicTemplate from '@/components/templates/cinematic/CinematicTemplate';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -15,6 +16,7 @@ const TEMPLATE_MAP = {
   modern: BasicTemplate, // 기존 DB 데이터 하위 호환
   editorial: EditorialTemplate,
   playlist: PlaylistTemplate,
+  cinematic: CinematicTemplate,
 };
 
 // SNS/카카오톡 공유 메타데이터 (OG 태그)
@@ -121,8 +123,10 @@ export default async function WeddingCardPage({ params }) {
   const CurrentTemplate = TEMPLATE_MAP[invitation.template_type] || BasicTemplate;
   const isActive = invitation.is_active ?? invitation.template_config?.is_active ?? true;
 
+  const isCinematic = invitation.template_type === 'cinematic';
+
   return (
-    <main className="min-h-screen bg-stone-100 sm:py-8 flex justify-center p-0 m-0 relative">
+    <main className={`min-h-screen ${isCinematic ? 'bg-neutral-100' : 'bg-stone-100'} sm:py-8 flex justify-center p-0 m-0 relative`}>
       {!isActive && <SampleWatermark />}
       <BgmPlayer 
         bgmUrl={invitation.bgm_url} 

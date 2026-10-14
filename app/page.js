@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export const metadata = {
   title: '아뜰리에 드 마리아주 (Atelier de Mariage) — 감성 모바일 청첩장',
-  description: '단 하나의 소중한 순간을 담은 프리미엄 모바일 청첩장. 모던 클래식, 에디토리얼 매거진, 플레이리스트 바이닐 시안을 경험해 보세요.',
+  description: '단 하나의 소중한 순간을 담은 프리미엄 모바일 청첩장. 모던 클래식, 에디토리얼 룩북, 플레이리스트 바이닐, 시네마틱 모노리스 등 4가지 감각의 디자인 시안을 경험해 보세요.',
 };
 
 export default function HomePage() {
@@ -36,12 +36,24 @@ export default function HomePage() {
       option: 'OPTION 03',
       title: '감성 플레이리스트',
       subTitle: 'Playlist & Vinyl',
-      badge: 'NEW 시안',
+      badge: '추천 디자인',
       badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-200',
       description: 'LP 바이닐 턴테이블과 빈티지 폴라로이드 화보가 어우러진 음악 감성 시안입니다. 화사한 샴페인 피날레와 하객 축하 꽃가루 인터랙션을 선사합니다.',
       features: ['화이트 필기체 Getting Married', '빈티지 폴라로이드 손글씨', 'LP 바이닐 회전 애니메이션', '하객 축하 꽃가루 버튼'],
       previewUrl: '/playlist',
       accentColor: '#047857',
+    },
+    {
+      id: 'cinematic',
+      option: 'OPTION 04',
+      title: '시네마틱 모노리스',
+      subTitle: 'Cinematic Monolith',
+      badge: 'NEW 시안',
+      badgeColor: 'bg-stone-900 text-white border-stone-800',
+      description: '☀️ Day / 🌙 Night 듀얼 무드 테마 스위처와 시네마틱 흑백 인물 스냅이 돋보이는 모노크롬 시안입니다. 영화 같은 깊은 감동을 선사합니다.',
+      features: ['☀️ Day ↔ 🌙 Night 듀얼 테마', '시네마틱 흑백 커버 & 와이드 컷', '신랑·신부 2분할 인물 스냅', '탭형 시크 축의금 카드'],
+      previewUrl: '/cinematic',
+      accentColor: '#000000',
     },
   ];
 
@@ -119,7 +131,7 @@ export default function HomePage() {
         </h1>
         <p className="font-serif text-sm sm:text-base text-stone-600 leading-relaxed font-light max-w-xl mx-auto mb-10 break-keep">
           형식적인 템플릿을 넘어, 두 사람의 취향과 분위기에 맞춘 독보적인 감각.<br className="hidden sm:inline" />
-          마치 잡지나 음반을 펼치듯 완성도 높은 세 가지 시안을 직접 스마트폰으로 경험해 보세요.
+          마치 영화나 잡지, 바이닐 음반을 펼치듯 완성도 높은 네 가지 시안을 직접 스마트폰으로 경험해 보세요.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-sm mx-auto">
@@ -133,12 +145,12 @@ export default function HomePage() {
             href="#templates"
             className="w-full sm:w-auto px-7 py-3.5 bg-white hover:bg-stone-50 text-stone-800 text-sm font-medium rounded-xl border border-stone-200/80 shadow-2xs transition-all"
           >
-            시안 3종 둘러보기 ↓
+            시안 4종 둘러보기 ↓
           </a>
         </div>
       </section>
 
-      {/* 3. 디자인 시안 3종 쇼케이스 섹션 */}
+      {/* 3. 디자인 시안 4종 쇼케이스 섹션 */}
       <section id="templates" className="py-20 px-6 bg-white border-y border-stone-200/80 scroll-mt-14">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
@@ -146,14 +158,14 @@ export default function HomePage() {
               CURATED TEMPLATES
             </span>
             <h2 className="font-editorial-title text-3xl sm:text-4xl text-stone-900 font-normal">
-              세 가지 감각의 디자인 시안
+              네 가지 감각의 디자인 시안
             </h2>
             <p className="text-xs sm:text-sm text-stone-500 font-light mt-2">
               버튼을 누르시면 실제 하객들이 열어보는 청첩장 화면을 그대로 체험하실 수 있습니다.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-6">
             {templates.map((tpl) => (
               <div
                 key={tpl.id}

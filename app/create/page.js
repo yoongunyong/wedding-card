@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import BasicTemplate from '@/components/templates/basic/BasicTemplate';
 import EditorialTemplate from '@/components/templates/editorial/EditorialTemplate';
 import PlaylistTemplate from '@/components/templates/playlist/PlaylistTemplate';
+import CinematicTemplate from '@/components/templates/cinematic/CinematicTemplate';
 import BgmPlayer from '@/components/BgmPlayer';
 import QrCodeModal from '@/components/QrCodeModal';
 import { compressImage } from '@/lib/imageCompressor';
@@ -86,7 +87,9 @@ const PREVIEW_FALLBACK = {
   images: {
     main: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=85',
     cover: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=85',
-    couple_profile: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1000&q=80',
+    couple_profile: 'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?auto=format&fit=crop&w=1000&q=80',
+    bride_profile: 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=800&q=80',
+    groom_profile: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=800&q=80',
     ending: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1000&q=80',
   },
   gallery_images: [
@@ -289,7 +292,7 @@ export default function CreateInvitationPage() {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const t = params.get('template');
-      if (t && ['basic', 'editorial', 'playlist'].includes(t)) {
+      if (t && ['basic', 'editorial', 'playlist', 'cinematic'].includes(t)) {
         setFormData((prev) => ({ ...prev, template_type: t }));
       }
     }
@@ -1411,7 +1414,7 @@ export default function CreateInvitationPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* 시안 1: 모던 클래식 */}
               <div
                 onClick={() => setFormData((prev) => ({ ...prev, template_type: 'basic' }))}
@@ -1466,7 +1469,7 @@ export default function CreateInvitationPage() {
                 </p>
               </div>
 
-              {/* 시안 3: 플레이리스트 & 바이닐 (신규) */}
+              {/* 시안 3: 플레이리스트 & 바이닐 */}
               <div
                 onClick={() => setFormData((prev) => ({ ...prev, template_type: 'playlist' }))}
                 className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative ${
@@ -1477,7 +1480,7 @@ export default function CreateInvitationPage() {
               >
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-[10px] font-mono tracking-widest uppercase font-semibold text-white bg-emerald-700 px-2 py-0.5 rounded-full">
-                    OPTION 03 · NEW
+                    OPTION 03
                   </span>
                   <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
                     formData.template_type === 'playlist' ? 'border-emerald-700 bg-emerald-700' : 'border-stone-300'
@@ -1490,6 +1493,33 @@ export default function CreateInvitationPage() {
                 </h3>
                 <p className="text-xs text-stone-500 font-light leading-relaxed">
                   포레스트 그린 & 빈티지 폴라로이드, 뮤직 플레이어 위젯 시안
+                </p>
+              </div>
+
+              {/* 시안 4: 시네마틱 모노리스 (신규) */}
+              <div
+                onClick={() => setFormData((prev) => ({ ...prev, template_type: 'cinematic' }))}
+                className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative ${
+                  formData.template_type === 'cinematic'
+                    ? 'border-black bg-stone-100/70 shadow-sm'
+                    : 'border-stone-200/80 bg-white hover:border-stone-300'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-mono tracking-widest uppercase font-semibold text-white bg-black px-2 py-0.5 rounded-full">
+                    OPTION 04 · NEW
+                  </span>
+                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                    formData.template_type === 'cinematic' ? 'border-black bg-black' : 'border-stone-300'
+                  }`}>
+                    {formData.template_type === 'cinematic' && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                  </div>
+                </div>
+                <h3 className="text-sm font-semibold text-stone-900 mb-1">
+                  시네마틱 (Cinematic)
+                </h3>
+                <p className="text-xs text-stone-500 font-light leading-relaxed">
+                  ☀️ Day / 🌙 Night 듀얼 테마 & 흑백 모노크롬 인물 스냅 시안
                 </p>
               </div>
             </div>
@@ -3079,7 +3109,9 @@ export default function CreateInvitationPage() {
             <div 
               id="preview-scroll-container"
               className={`flex-1 overflow-y-auto relative ${
-                previewInvitation?.template_type === 'playlist' 
+                previewInvitation?.template_type === 'cinematic'
+                  ? 'bg-white'
+                  : previewInvitation?.template_type === 'playlist' 
                   ? 'bg-[#F7F9F6]' 
                   : previewInvitation?.template_type === 'editorial' 
                   ? 'bg-white' 
@@ -3090,7 +3122,9 @@ export default function CreateInvitationPage() {
                 bgmUrl={previewInvitation.bgm_url}
                 hasIntro={previewInvitation?.template_config?.show_intro !== false}
               />
-              {previewInvitation?.template_type === 'playlist' ? (
+              {previewInvitation?.template_type === 'cinematic' ? (
+                <CinematicTemplate invitation={previewInvitation} />
+              ) : previewInvitation?.template_type === 'playlist' ? (
                 <PlaylistTemplate invitation={previewInvitation} />
               ) : previewInvitation?.template_type === 'editorial' ? (
                 <EditorialTemplate invitation={previewInvitation} />

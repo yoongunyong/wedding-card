@@ -29,11 +29,7 @@ export default function PlaylistTemplate({ invitation }) {
   const [audioTotalDuration, setAudioTotalDuration] = useState('3:15');
 
 
-  // 4. ✨ 축하 꽃잎/컨페티 팡팡 인터랙션 상태
-  const [celebrateCount, setCelebrateCount] = useState(128); // 기본 축하 수
-  const [confettiParticles, setConfettiParticles] = useState([]);
-
-  // 5. 계좌 아코디언 토글
+  // 4. 계좌 아코디언 토글
   const [openGroomAccount, setOpenGroomAccount] = useState(true);
   const [openBrideAccount, setOpenBrideAccount] = useState(true);
 
@@ -151,29 +147,6 @@ export default function PlaylistTemplate({ invitation }) {
     setTimeout(() => setHeartAnim(false), 400);
   };
 
-  // 축하하기 클릭 시 화사한 꽃가루/하트 팡팡 인터랙션
-  const handleCelebrate = () => {
-    setCelebrateCount((prev) => prev + 1);
-
-    // 24개의 랜덤 파티클 생성
-    const items = ['🌸', '✨', '💖', '🎉', '🥂', '💐', '🤍'];
-    const newParticles = Array.from({ length: 24 }).map((_, i) => ({
-      id: Date.now() + i,
-      char: items[Math.floor(Math.random() * items.length)],
-      left: Math.random() * 85 + 5, // 5% ~ 90%
-      animDelay: Math.random() * 0.3,
-      animDuration: 1.5 + Math.random() * 1.0,
-      scale: 0.8 + Math.random() * 0.8,
-    }));
-
-    setConfettiParticles((prev) => [...prev, ...newParticles]);
-
-    // 2.5초 후 파티클 정리
-    setTimeout(() => {
-      setConfettiParticles((prev) => prev.filter((p) => !newParticles.includes(p)));
-    }, 2500);
-  };
-
   // 방명록 로드
   useEffect(() => {
     if (!invitation?.slug) return;
@@ -219,27 +192,6 @@ export default function PlaylistTemplate({ invitation }) {
   return (
     <div className="w-full max-w-[440px] min-h-screen bg-[#FBF9F5] text-[#222E26] font-sans mx-auto shadow-2xl relative overflow-hidden select-none">
       
-      {/* 화면 전체를 수놓는 축하 꽃가루 파티클 컨테이너 */}
-      {confettiParticles.length > 0 && (
-        <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
-          {confettiParticles.map((p) => (
-            <div
-              key={p.id}
-              className="absolute text-xl animate-[floatUp_2s_ease-out_forwards]"
-              style={{
-                left: `${p.left}%`,
-                bottom: '15%',
-                animationDelay: `${p.animDelay}s`,
-                animationDuration: `${p.animDuration}s`,
-                transform: `scale(${p.scale})`,
-              }}
-            >
-              {p.char}
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* ========================================================
           01. HERO SECTION: CINEMATIC FULL ALBUM JACKET & MUSIC BAR
               (시원한 3:4 풀 프레임 웨딩 화보 + 플로팅 글래스 플레이어)
@@ -280,15 +232,15 @@ export default function PlaylistTemplate({ invitation }) {
             </span>
           </div>
 
-          {/* 화보 중앙 하단 타이포그래피 (레퍼런스 감성 필기체 글씨체) */}
-          <div className="absolute bottom-20 left-5 right-5 text-white drop-shadow-xl text-center">
+          {/* 화보 중앙 하단 타이포그래피 (레퍼런스 감성 필기체 글씨체 - 플레이어 바와 여유 있는 간격 확보) */}
+          <div className="absolute bottom-28 sm:bottom-32 left-5 right-5 text-white drop-shadow-xl text-center select-none">
             <p className="font-script text-4xl sm:text-5xl text-white tracking-wide mb-1 leading-none drop-shadow-lg">
               Getting Married
             </p>
-            <h1 className="font-serif text-xl sm:text-2xl font-normal tracking-tight text-white/95 mt-1">
+            <h1 className="font-serif text-xl sm:text-2xl font-normal tracking-tight text-white/95 mt-1.5 drop-shadow-md">
               {groomName} &middot; {brideName}
             </h1>
-            <p className="font-mono text-[10px] tracking-widest text-white/75 uppercase mt-1">
+            <p className="font-mono text-[10px] tracking-widest text-white/80 uppercase mt-1 drop-shadow-sm">
               {date} {monthEn.slice(0, 3).toUpperCase()} {year}
             </p>
           </div>
@@ -908,23 +860,6 @@ export default function PlaylistTemplate({ invitation }) {
               </div>
             </div>
           )}
-
-          {/* ✨ 하객 참여형 축하 꽃가루(Confetti) 팡팡 인터랙션 버튼 */}
-          <div className="mb-8">
-            <button
-              onClick={handleCelebrate}
-              className="px-6 py-3 rounded-full bg-linear-to-r from-emerald-700 to-emerald-800 hover:from-emerald-800 hover:to-emerald-900 text-white text-xs font-medium shadow-[0_8px_24px_rgba(40,80,50,0.25)] transition-all transform active:scale-90 inline-flex items-center gap-2 cursor-pointer"
-            >
-              <span>🎉</span>
-              <span>두 분의 앞날을 축복합니다!</span>
-              <span className="px-2 py-0.5 rounded-full bg-white/20 text-[11px] font-mono font-bold">
-                +{celebrateCount}
-              </span>
-            </button>
-            <p className="text-[11px] text-stone-500 font-light mt-2">
-              버튼을 누르시면 축하 꽃가루가 피어납니다 ✨
-            </p>
-          </div>
 
           <p className="font-mono text-[10px] tracking-widest text-stone-400 uppercase">
             &copy; {year} {coupleNamesEn}. ALL RIGHTS RESERVED.

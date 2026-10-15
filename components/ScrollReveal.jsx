@@ -21,6 +21,8 @@ export default function ScrollReveal({
     if (typeof window === 'undefined') return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
+    const scrollContainer = domRef.current?.closest('#preview-scroll-container') || null;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -31,8 +33,9 @@ export default function ScrollReveal({
         });
       },
       {
-        threshold: 0.12,
-        rootMargin: '0px 0px -75px 0px', // 스크롤 시 화면에 확실히 들어왔을 때 우아하게 시작
+        root: scrollContainer,
+        threshold: scrollContainer ? 0.05 : 0.12,
+        rootMargin: scrollContainer ? '0px 0px -20px 0px' : '0px 0px -75px 0px',
       }
     );
 

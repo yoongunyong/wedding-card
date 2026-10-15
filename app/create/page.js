@@ -3518,7 +3518,7 @@ export default function CreateInvitationPage() {
                 previewInvitation?.template_type === 'cinematic'
                   ? 'bg-white'
                   : previewInvitation?.template_type === 'playlist' 
-                  ? 'bg-[#F7F9F6]' 
+                  ? 'bg-[#FBF9F5]' 
                   : previewInvitation?.template_type === 'editorial' 
                   ? 'bg-white' 
                   : 'bg-[#FCFBF7]'

@@ -230,6 +230,15 @@ export default function CreateInvitationPage() {
   const [galleryFiles, setGalleryFiles] = useState([]);
   const [galleryPreviews, setGalleryPreviews] = useState([]);
 
+  // 이미지 파일 인풋 DOM 참조 (네이티브 브라우저 UI 숨김 및 파일 리셋용)
+  const mainImageInputRef = useRef(null);
+  const coverImageInputRef = useRef(null);
+  const coupleImageInputRef = useRef(null);
+  const endingImageInputRef = useRef(null);
+  const groomPhotoInputRef = useRef(null);
+  const bridePhotoInputRef = useRef(null);
+  const galleryInputRef = useRef(null);
+
   // BGM (배경음악) 상태
   const [bgmMode, setBgmMode] = useState('preset'); // 'preset' | 'file' | 'url' | 'none'
   const [bgmPresetUrl, setBgmPresetUrl] = useState(BGM_OPTIONS[0].url);
@@ -473,17 +482,48 @@ export default function CreateInvitationPage() {
       setBrideAccounts([
         { group: '신부측', title: '신부', bank: '카카오뱅크', number: '', holder: '' },
       ]);
+
+      // 이미지 상태 및 input value 초기화
+      setMainImageFile(null); setMainImagePreview('');
+      setCoverImageFile(null); setCoverImagePreview('');
+      setCoupleImageFile(null); setCoupleImagePreview('');
+      setEndingImageFile(null); setEndingImagePreview('');
+      setGroomPhotoFile(null); setGroomPhotoPreview('');
+      setBridePhotoFile(null); setBridePhotoPreview('');
+      setGalleryFiles([]); setGalleryPreviews([]);
+
+      if (mainImageInputRef.current) mainImageInputRef.current.value = '';
+      if (coverImageInputRef.current) coverImageInputRef.current.value = '';
+      if (coupleImageInputRef.current) coupleImageInputRef.current.value = '';
+      if (endingImageInputRef.current) endingImageInputRef.current.value = '';
+      if (groomPhotoInputRef.current) groomPhotoInputRef.current.value = '';
+      if (bridePhotoInputRef.current) bridePhotoInputRef.current.value = '';
+      if (galleryInputRef.current) galleryInputRef.current.value = '';
+    }
+  };
+
+  // 단일 이미지 삭제 (클린 리셋)
+  const handleClearSingleImage = (setFile, setPreview, inputRef) => {
+    setFile(null);
+    setPreview('');
+    if (inputRef?.current) {
+      inputRef.current.value = '';
     }
   };
 
   // 이미지 유효성 검증 및 초고화질 자동 압축 상태 저장 헬퍼
-  const validateAndSetImage = async (file, setFile, setPreview, label = '사진') => {
-    if (!file) return;
+  const validateAndSetImage = async (file, setFile, setPreview, label = '사진', inputRef = null) => {
+    if (!file) {
+      if (inputRef?.current) inputRef.current.value = '';
+      return;
+    }
     if (!file.type.startsWith('image/')) {
+      if (inputRef?.current) inputRef.current.value = '';
       return alert(`${label}은(는) 이미지 파일(JPG, PNG, WEBP 등)만 등록하실 수 있습니다.`);
     }
     const sizeMb = file.size / (1024 * 1024);
     if (sizeMb > 30) {
+      if (inputRef?.current) inputRef.current.value = '';
       return alert(`${label} 파일 용량이 너무 큽니다 (${sizeMb.toFixed(1)}MB). 30MB 이하의 이미지를 선택해 주세요.`);
     }
 
@@ -496,11 +536,19 @@ export default function CreateInvitationPage() {
       setFile(file);
       setPreview(URL.createObjectURL(file));
     }
+    // 동일한 파일 재선택 가능하도록 input value 리셋
+    if (inputRef?.current) {
+      inputRef.current.value = '';
+    }
   };
 
-  // 갤러리 이미지 추가 / 삭제 (자동 압축 포함)
+  // 갤러리 이미지 추가 (자동 압축 포함 & 파일 인풋 즉시 리셋)
   const handleGalleryImagesChange = async (e) => {
     const rawFiles = Array.from(e.target.files || []);
+    if (rawFiles.length === 0) return;
+    // 다음 동일 파일 선택을 허용하고 브라우저 네이티브 파일명 잔류를 방지하기 위해 즉시 리셋
+    e.target.value = '';
+
     const validFiles = rawFiles.filter((f) => {
       if (!f.type.startsWith('image/')) {
         alert(`${f.name} 파일은 이미지가 아니므로 제외되었습니다.`);
@@ -514,18 +562,49 @@ export default function CreateInvitationPage() {
     });
 
     if (validFiles.length > 0) {
+      const remainingSlots = 20 - galleryPreviews.length;
+      if (remainingSlots <= 0) {
+        return alert('웨딩 갤러리 화보 사진은 최대 20장까지 등록 가능합니다.');
+      }
+      const filesToProcess = validFiles.slice(0, remainingSlots);
+      if (validFiles.length > remainingSlots) {
+        alert(`최대 20장까지만 등록 가능하여 초과된 ${validFiles.length - remainingSlots}장은 제외되었습니다.`);
+      }
+
       const optimizedFiles = await Promise.all(
-        validFiles.map((file) => compressImage(file))
+        filesToProcess.map((file) => compressImage(file))
       );
-      setGalleryFiles((prev) => [...prev, ...optimizedFiles].slice(0, 20));
+      setGalleryFiles((prev) => [...prev, ...optimizedFiles]);
       const newPreviews = optimizedFiles.map((f) => URL.createObjectURL(f));
-      setGalleryPreviews((prev) => [...prev, ...newPreviews].slice(0, 20));
+      setGalleryPreviews((prev) => [...prev, ...newPreviews]);
     }
   };
 
+  // 갤러리 개별 이미지 삭제
   const removeGalleryImage = (index) => {
-    setGalleryFiles((prev) => prev.filter((_, idx) => idx !== index));
-    setGalleryPreviews((prev) => prev.filter((_, idx) => idx !== index));
+    setGalleryFiles((prev) => {
+      const next = prev.filter((_, idx) => idx !== index);
+      if (next.length === 0 && galleryInputRef.current) {
+        galleryInputRef.current.value = '';
+      }
+      return next;
+    });
+    setGalleryPreviews((prev) => {
+      const next = prev.filter((_, idx) => idx !== index);
+      if (next.length === 0 && galleryInputRef.current) {
+        galleryInputRef.current.value = '';
+      }
+      return next;
+    });
+  };
+
+  // 갤러리 전체 이미지 비우기
+  const clearAllGalleryImages = () => {
+    setGalleryFiles([]);
+    setGalleryPreviews([]);
+    if (galleryInputRef.current) {
+      galleryInputRef.current.value = '';
+    }
   };
 
   // 계좌 추가 및 제어
@@ -1384,7 +1463,7 @@ export default function CreateInvitationPage() {
         </div>
 
         {/* 폼 본문 */}
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-8 pb-28 sm:pb-36">
 
           {/* 예시 데이터 채우기 배너 */}
           <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 sm:p-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-left shadow-2xs">
@@ -2137,42 +2216,83 @@ export default function CreateInvitationPage() {
               {/* 메인 풀스크린 커버 사진 & 매거진 슬리브 커버 사진 */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* 메인 풀스크린 사진 */}
-                <div className="p-5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
+                <div className="p-4.5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-xs font-semibold text-stone-800">
-                      본문 메인 풀스크린 사진 *
+                      본문 메인 풀스크린 사진 <span className="text-rose-500 font-bold">*</span>
                     </label>
                     <span className="text-[10px] font-mono text-stone-700 bg-stone-200/70 px-2 py-0.5 rounded-full font-medium">
                       MAIN
                     </span>
                   </div>
-                  <p className="text-[11px] text-stone-400 mb-3.5 font-light">
+                  <p className="text-[11px] text-stone-400 mb-3 font-light">
                     청첩장 본문 첫 화면의 대표 풀스크린 사진입니다.
                   </p>
+                  <input
+                    ref={mainImageInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => validateAndSetImage(e.target.files?.[0], setMainImageFile, setMainImagePreview, '본문 메인 사진', mainImageInputRef)}
+                    className="hidden"
+                  />
                   <div className="flex items-center gap-3.5">
                     <div className="w-16 h-22 bg-white rounded-xl overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center shadow-xs">
                       {mainImagePreview ? (
                         <img src={mainImagePreview} alt="Main" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-[10px] text-stone-300 font-mono">MAIN</span>
+                        <div className="flex flex-col items-center justify-center text-stone-300 p-1 text-center">
+                          <svg className="w-5 h-5 mb-0.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <span className="text-[9px] font-mono font-medium">MAIN</span>
+                        </div>
                       )}
                     </div>
-                    <div className="flex-1">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          validateAndSetImage(e.target.files?.[0], setMainImageFile, setMainImagePreview, '본문 메인 사진');
-                        }}
-                        className="text-[11px] text-stone-600 file:mr-2.5 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-medium file:bg-stone-900 file:text-white hover:file:bg-black cursor-pointer transition-all w-full"
-                      />
+                    <div className="flex-1 min-w-0">
+                      {mainImagePreview ? (
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 font-medium">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                            <span>사진 등록 완료</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => mainImageInputRef.current?.click()}
+                              className="px-3 py-1.5 bg-stone-900 hover:bg-black text-white text-xs font-medium rounded-xl transition-all cursor-pointer shadow-2xs active:scale-95"
+                            >
+                              사진 변경
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleClearSingleImage(setMainImageFile, setMainImagePreview, mainImageInputRef)}
+                              className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/60 text-xs font-medium rounded-xl transition-all cursor-pointer active:scale-95 flex items-center gap-1"
+                            >
+                              <span>✕</span>
+                              <span>삭제</span>
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <button
+                            type="button"
+                            onClick={() => mainImageInputRef.current?.click()}
+                            className="px-3.5 py-2 bg-stone-900 hover:bg-black text-white text-xs font-medium rounded-xl transition-all cursor-pointer active:scale-95 inline-flex items-center gap-1.5 shadow-2xs"
+                          >
+                            <span>+</span>
+                            <span>메인 사진 선택하기</span>
+                          </button>
+                          <p className="text-[10px] text-stone-400 mt-1 font-light">JPG, PNG 등 고화질 이미지 (최대 30MB)</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
 
                 {/* 인트로 커버 사진 (시안 1 & 시안 2 공통) */}
                 {(formData.template_type === 'basic' || formData.template_type === 'editorial') && (
-                  <div className="p-5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
+                  <div className="p-4.5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
                     <div className="flex items-center justify-between mb-1">
                       <label className="block text-xs font-semibold text-stone-800">
                         인트로 커버 사진 (선택)
@@ -2181,26 +2301,67 @@ export default function CreateInvitationPage() {
                         OPTION 01 & 02
                       </span>
                     </div>
-                    <p className="text-[11px] text-stone-400 mb-3.5 font-light">
+                    <p className="text-[11px] text-stone-400 mb-3 font-light">
                       시안 1 봉투 카드 및 시안 2 매거진 슬리브 인트로 커버 (미등록 시 메인 사진 적용)
                     </p>
+                    <input
+                      ref={coverImageInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => validateAndSetImage(e.target.files?.[0], setCoverImageFile, setCoverImagePreview, '인트로 커버 사진', coverImageInputRef)}
+                      className="hidden"
+                    />
                     <div className="flex items-center gap-3.5">
                       <div className="w-16 h-22 bg-white rounded-xl overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center shadow-xs">
                         {coverImagePreview ? (
                           <img src={coverImagePreview} alt="Cover" className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-[10px] text-stone-300 font-mono">COVER</span>
+                          <div className="flex flex-col items-center justify-center text-stone-300 p-1 text-center">
+                            <svg className="w-5 h-5 mb-0.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span className="text-[9px] font-mono font-medium">COVER</span>
+                          </div>
                         )}
                       </div>
-                      <div className="flex-1">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            validateAndSetImage(e.target.files?.[0], setCoverImageFile, setCoverImagePreview, '인트로 커버 사진');
-                          }}
-                          className="text-[11px] text-stone-600 file:mr-2.5 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-medium file:bg-stone-200 file:text-stone-800 hover:file:bg-stone-300 cursor-pointer transition-all w-full"
-                        />
+                      <div className="flex-1 min-w-0">
+                        {coverImagePreview ? (
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 font-medium">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                              <span>사진 등록 완료</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => coverImageInputRef.current?.click()}
+                                className="px-3 py-1.5 bg-stone-900 hover:bg-black text-white text-xs font-medium rounded-xl transition-all cursor-pointer shadow-2xs active:scale-95"
+                              >
+                                사진 변경
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleClearSingleImage(setCoverImageFile, setCoverImagePreview, coverImageInputRef)}
+                                className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/60 text-xs font-medium rounded-xl transition-all cursor-pointer active:scale-95 flex items-center gap-1"
+                              >
+                                <span>✕</span>
+                                <span>삭제</span>
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            <button
+                              type="button"
+                              onClick={() => coverImageInputRef.current?.click()}
+                              className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-200/80 text-xs font-medium rounded-xl transition-all cursor-pointer active:scale-95 inline-flex items-center gap-1.5 shadow-2xs"
+                            >
+                              <span>+</span>
+                              <span>커버 사진 선택</span>
+                            </button>
+                            <p className="text-[10px] text-stone-400 mt-1 font-light">선택 사항 (미등록 시 메인 사진 적용)</p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -2223,46 +2384,106 @@ export default function CreateInvitationPage() {
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* 신부 단독 사진 */}
-                    <div className="p-3.5 bg-white rounded-xl border border-stone-200 flex items-center gap-3">
-                      <div className="w-14 h-18 bg-stone-100 rounded-lg overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center">
-                        {bridePhotoPreview ? (
-                          <img src={bridePhotoPreview} alt="Bride" className="w-full h-full object-cover grayscale" />
-                        ) : (
-                          <span className="text-[9px] text-stone-400 font-mono text-center">BRIDE</span>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <span className="block text-xs font-semibold text-stone-800 mb-1">신부 단독 사진</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            validateAndSetImage(e.target.files?.[0], setBridePhotoFile, setBridePhotoPreview, '신부 단독 사진');
-                          }}
-                          className="text-[11px] text-stone-500 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:bg-stone-200 file:text-stone-800 cursor-pointer w-full"
-                        />
+                    <div className="p-4 bg-white rounded-xl border border-stone-200">
+                      <span className="block text-xs font-semibold text-stone-800 mb-2">신부 단독 사진</span>
+                      <input
+                        ref={bridePhotoInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => validateAndSetImage(e.target.files?.[0], setBridePhotoFile, setBridePhotoPreview, '신부 단독 사진', bridePhotoInputRef)}
+                        className="hidden"
+                      />
+                      <div className="flex items-center gap-3">
+                        <div className="w-14 h-18 bg-stone-100 rounded-lg overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center">
+                          {bridePhotoPreview ? (
+                            <img src={bridePhotoPreview} alt="Bride" className="w-full h-full object-cover grayscale" />
+                          ) : (
+                            <span className="text-[9px] text-stone-400 font-mono text-center">BRIDE</span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          {bridePhotoPreview ? (
+                            <div className="space-y-1.5">
+                              <span className="text-[11px] text-emerald-600 font-medium block">● 등록됨</span>
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => bridePhotoInputRef.current?.click()}
+                                  className="px-2.5 py-1 bg-stone-900 text-white text-[11px] rounded-lg cursor-pointer"
+                                >
+                                  변경
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleClearSingleImage(setBridePhotoFile, setBridePhotoPreview, bridePhotoInputRef)}
+                                  className="px-2 py-1 bg-rose-50 text-rose-600 text-[11px] rounded-lg cursor-pointer border border-rose-200/60"
+                                >
+                                  삭제
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => bridePhotoInputRef.current?.click()}
+                              className="px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium rounded-lg cursor-pointer"
+                            >
+                              + 사진 선택
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
 
                     {/* 신랑 단독 사진 */}
-                    <div className="p-3.5 bg-white rounded-xl border border-stone-200 flex items-center gap-3">
-                      <div className="w-14 h-18 bg-stone-100 rounded-lg overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center">
-                        {groomPhotoPreview ? (
-                          <img src={groomPhotoPreview} alt="Groom" className="w-full h-full object-cover grayscale" />
-                        ) : (
-                          <span className="text-[9px] text-stone-400 font-mono text-center">GROOM</span>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <span className="block text-xs font-semibold text-stone-800 mb-1">신랑 단독 사진</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            validateAndSetImage(e.target.files?.[0], setGroomPhotoFile, setGroomPhotoPreview, '신랑 단독 사진');
-                          }}
-                          className="text-[11px] text-stone-500 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:bg-stone-200 file:text-stone-800 cursor-pointer w-full"
-                        />
+                    <div className="p-4 bg-white rounded-xl border border-stone-200">
+                      <span className="block text-xs font-semibold text-stone-800 mb-2">신랑 단독 사진</span>
+                      <input
+                        ref={groomPhotoInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => validateAndSetImage(e.target.files?.[0], setGroomPhotoFile, setGroomPhotoPreview, '신랑 단독 사진', groomPhotoInputRef)}
+                        className="hidden"
+                      />
+                      <div className="flex items-center gap-3">
+                        <div className="w-14 h-18 bg-stone-100 rounded-lg overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center">
+                          {groomPhotoPreview ? (
+                            <img src={groomPhotoPreview} alt="Groom" className="w-full h-full object-cover grayscale" />
+                          ) : (
+                            <span className="text-[9px] text-stone-400 font-mono text-center">GROOM</span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          {groomPhotoPreview ? (
+                            <div className="space-y-1.5">
+                              <span className="text-[11px] text-emerald-600 font-medium block">● 등록됨</span>
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => groomPhotoInputRef.current?.click()}
+                                  className="px-2.5 py-1 bg-stone-900 text-white text-[11px] rounded-lg cursor-pointer"
+                                >
+                                  변경
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleClearSingleImage(setGroomPhotoFile, setGroomPhotoPreview, groomPhotoInputRef)}
+                                  className="px-2 py-1 bg-rose-50 text-rose-600 text-[11px] rounded-lg cursor-pointer border border-rose-200/60"
+                                >
+                                  삭제
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => groomPhotoInputRef.current?.click()}
+                              className="px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium rounded-lg cursor-pointer"
+                            >
+                              + 사진 선택
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -2271,6 +2492,7 @@ export default function CreateInvitationPage() {
 
               {/* 커플 사진 & 엔딩 사진 (선택) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* 축하 와이드 사진 / 커플 사진 */}
                 <div className="p-4.5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-xs font-semibold text-stone-800">
@@ -2278,10 +2500,17 @@ export default function CreateInvitationPage() {
                     </label>
                     <span className="text-[10px] font-mono text-stone-500">선택</span>
                   </div>
-                  <p className="text-[10px] text-stone-400 mb-2.5">
+                  <p className="text-[10px] text-stone-400 mb-3">
                     {formData.template_type === 'cinematic' ? '시안 4 상단 CELEBRATE 16:9 와이드 화보용' : '미등록 시 메인 사진이 자동 적용됩니다.'}
                   </p>
-                  <div className="flex items-center gap-3">
+                  <input
+                    ref={coupleImageInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => validateAndSetImage(e.target.files?.[0], setCoupleImageFile, setCoupleImagePreview, '커플 사진', coupleImageInputRef)}
+                    className="hidden"
+                  />
+                  <div className="flex items-center gap-3.5">
                     <div className="w-16 h-16 bg-white rounded-xl overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center shadow-xs">
                       {coupleImagePreview ? (
                         <img src={coupleImagePreview} alt="Couple" className="w-full h-full object-cover" />
@@ -2289,17 +2518,42 @@ export default function CreateInvitationPage() {
                         <span className="text-[10px] text-stone-300 font-mono">COUPLE</span>
                       )}
                     </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        validateAndSetImage(e.target.files?.[0], setCoupleImageFile, setCoupleImagePreview, '커플 사진');
-                      }}
-                      className="text-[11px] text-stone-500 file:py-1.5 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:bg-stone-200 file:text-stone-800 cursor-pointer w-full"
-                    />
+                    <div className="flex-1 min-w-0">
+                      {coupleImagePreview ? (
+                        <div className="space-y-1.5">
+                          <span className="text-[11px] text-emerald-600 font-medium block">● 등록됨</span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => coupleImageInputRef.current?.click()}
+                              className="px-3 py-1.5 bg-stone-900 text-white text-xs font-medium rounded-xl cursor-pointer"
+                            >
+                              변경
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleClearSingleImage(setCoupleImageFile, setCoupleImagePreview, coupleImageInputRef)}
+                              className="px-2.5 py-1.5 bg-rose-50 text-rose-600 border border-rose-200/60 text-xs font-medium rounded-xl cursor-pointer"
+                            >
+                              삭제
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => coupleImageInputRef.current?.click()}
+                          className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-200/80 text-xs font-medium rounded-xl cursor-pointer inline-flex items-center gap-1.5"
+                        >
+                          <span>+</span>
+                          <span>사진 선택하기</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
 
+                {/* 캘린더 스냅 사진 / 엔딩 사진 */}
                 <div className="p-4.5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-xs font-semibold text-stone-800">
@@ -2307,10 +2561,17 @@ export default function CreateInvitationPage() {
                     </label>
                     <span className="text-[10px] font-mono text-stone-500">선택</span>
                   </div>
-                  <p className="text-[10px] text-stone-400 mb-2.5">
+                  <p className="text-[10px] text-stone-400 mb-3">
                     {formData.template_type === 'cinematic' ? '시안 4 DATE 캘린더 상단 정사각형 스냅용' : '미등록 시 메인 사진이 자동 적용됩니다.'}
                   </p>
-                  <div className="flex items-center gap-3">
+                  <input
+                    ref={endingImageInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => validateAndSetImage(e.target.files?.[0], setEndingImageFile, setEndingImagePreview, '엔딩 사진', endingImageInputRef)}
+                    className="hidden"
+                  />
+                  <div className="flex items-center gap-3.5">
                     <div className="w-16 h-16 bg-white rounded-xl overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center shadow-xs">
                       {endingImagePreview ? (
                         <img src={endingImagePreview} alt="Ending" className="w-full h-full object-cover" />
@@ -2318,14 +2579,38 @@ export default function CreateInvitationPage() {
                         <span className="text-[10px] text-stone-300 font-mono">ENDING</span>
                       )}
                     </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        validateAndSetImage(e.target.files?.[0], setEndingImageFile, setEndingImagePreview, '엔딩 사진');
-                      }}
-                      className="text-[11px] text-stone-500 file:py-1.5 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:bg-stone-200 file:text-stone-800 cursor-pointer w-full"
-                    />
+                    <div className="flex-1 min-w-0">
+                      {endingImagePreview ? (
+                        <div className="space-y-1.5">
+                          <span className="text-[11px] text-emerald-600 font-medium block">● 등록됨</span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => endingImageInputRef.current?.click()}
+                              className="px-3 py-1.5 bg-stone-900 text-white text-xs font-medium rounded-xl cursor-pointer"
+                            >
+                              변경
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleClearSingleImage(setEndingImageFile, setEndingImagePreview, endingImageInputRef)}
+                              className="px-2.5 py-1.5 bg-rose-50 text-rose-600 border border-rose-200/60 text-xs font-medium rounded-xl cursor-pointer"
+                            >
+                              삭제
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => endingImageInputRef.current?.click()}
+                          className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-200/80 text-xs font-medium rounded-xl cursor-pointer inline-flex items-center gap-1.5"
+                        >
+                          <span>+</span>
+                          <span>사진 선택하기</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2333,29 +2618,59 @@ export default function CreateInvitationPage() {
               {/* 갤러리 다중 사진 */}
               <div className="p-5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block text-xs font-semibold text-stone-800">
-                    웨딩 갤러리 화보 사진 (최대 20장)
-                  </label>
-                  <span className="text-[11px] font-mono text-stone-400">
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-800">
+                      웨딩 갤러리 화보 사진 (최대 20장)
+                    </label>
+                    <p className="text-[11px] text-stone-400 font-light mt-0.5">
+                      여러 장을 한 번에 선택하여 등록하실 수 있습니다.
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-mono text-stone-500 font-medium bg-stone-200/60 px-2.5 py-0.5 rounded-full">
                     {galleryPreviews.length} / 20 PIC
                   </span>
                 </div>
+
                 <input
+                  ref={galleryInputRef}
                   type="file"
                   accept="image/*"
                   multiple
                   onChange={handleGalleryImagesChange}
-                  className="text-xs text-stone-600 file:mr-3 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:text-xs file:font-medium file:bg-stone-200 file:text-stone-800 hover:file:bg-stone-300 cursor-pointer mb-3.5"
+                  className="hidden"
                 />
+
+                <div className="flex items-center gap-2 my-3">
+                  <button
+                    type="button"
+                    onClick={() => galleryInputRef.current?.click()}
+                    className="px-4 py-2 bg-stone-900 hover:bg-black text-white text-xs font-medium rounded-xl transition-all cursor-pointer active:scale-95 inline-flex items-center gap-1.5 shadow-xs"
+                  >
+                    <span>+</span>
+                    <span>갤러리 사진 추가</span>
+                  </button>
+                  {galleryPreviews.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={clearAllGalleryImages}
+                      className="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/60 text-xs font-medium rounded-xl transition-all cursor-pointer active:scale-95 flex items-center gap-1"
+                    >
+                      <span>✕</span>
+                      <span>전체 삭제</span>
+                    </button>
+                  )}
+                </div>
+
                 {galleryPreviews.length > 0 && (
-                  <div className="grid grid-cols-4 sm:grid-cols-6 gap-2.5 pt-1">
+                  <div className="grid grid-cols-4 sm:grid-cols-6 gap-2.5 pt-2">
                     {galleryPreviews.map((src, idx) => (
                       <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-stone-200 group shadow-xs">
                         <img src={src} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
                         <button
                           type="button"
                           onClick={() => removeGalleryImage(idx)}
-                          className="absolute top-1 right-1 w-5 h-5 bg-black/70 hover:bg-black text-white rounded-full text-xs flex items-center justify-center transition-colors cursor-pointer"
+                          className="absolute top-1 right-1 w-5 h-5 bg-black/75 hover:bg-black text-white rounded-full text-xs flex items-center justify-center transition-colors cursor-pointer shadow-sm active:scale-90"
+                          title="삭제"
                         >
                           ✕
                         </button>
@@ -3087,8 +3402,8 @@ export default function CreateInvitationPage() {
             </div>
           </div>
 
-          {/* 하단 고정 플로팅 액션 바 */}
-          <div className="sticky bottom-6 z-30 bg-white/90 backdrop-blur-xl p-3.5 sm:p-4 rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.08)] border border-stone-200/80 flex gap-3 items-center">
+          {/* 하단 고정 플로팅 액션 바 (100% 불투명 솔리드 배경으로 하단 텍스트 겹침 완벽 차단) */}
+          <div className="sticky bottom-4 z-40 bg-white p-3.5 sm:p-4 rounded-2xl shadow-[0_4px_30px_rgba(0,0,0,0.12)] border border-stone-200/90 flex gap-3 items-center">
             <button
               type="button"
               onClick={openPreviewModal}

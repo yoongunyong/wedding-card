@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 
-export default function BgmPlayer({ bgmUrl, hasIntro = true }) {
+export default function BgmPlayer({ bgmUrl, hasIntro = true, template }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef(null);
 
@@ -96,35 +96,56 @@ export default function BgmPlayer({ bgmUrl, hasIntro = true }) {
         .wave-bar-4 { animation: soundWave4 0.9s ease-in-out infinite 0.1s; }
       `}</style>
 
-      <button
-        onClick={togglePlay}
-        aria-label={isPlaying ? '음악 정지' : '음악 재생'}
-        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 1.25rem)' }}
-        className="fixed right-5 z-40 flex items-center justify-center w-8 h-8 rounded-full bg-black/75 hover:bg-black text-white shadow-md active:scale-95 transition-all"
-      >
-        <div className="flex items-center justify-center gap-[2.5px] h-4 w-4">
-          <span
-            className={`w-[2px] bg-white rounded-full transition-all duration-300 ${
-              isPlaying ? 'wave-bar-1' : 'h-[3px]'
-            }`}
-          />
-          <span
-            className={`w-[2px] bg-white rounded-full transition-all duration-300 ${
-              isPlaying ? 'wave-bar-2' : 'h-[7px]'
-            }`}
-          />
-          <span
-            className={`w-[2px] bg-white rounded-full transition-all duration-300 ${
-              isPlaying ? 'wave-bar-3' : 'h-[11px]'
-            }`}
-          />
-          <span
-            className={`w-[2px] bg-white rounded-full transition-all duration-300 ${
-              isPlaying ? 'wave-bar-4' : 'h-[5px]'
-            }`}
-          />
-        </div>
-      </button>
+      {template === 'scene' ? (
+        <button
+          type="button"
+          onClick={togglePlay}
+          aria-label={isPlaying ? '음악 정지' : '음악 재생'}
+          style={{ top: 'calc(env(safe-area-inset-top, 0px) + 1.25rem)' }}
+          className="fixed left-5 sm:left-[calc(50%-215px+1.5rem)] z-40 p-2 text-stone-800 hover:text-black cursor-pointer active:scale-90 transition-transform select-none"
+        >
+          {isPlaying ? (
+            <div className="flex items-center gap-[3px] h-4">
+              <span className="w-[2px] h-3.5 bg-stone-800 rounded-full" />
+              <span className="w-[2px] h-3.5 bg-stone-800 rounded-full" />
+            </div>
+          ) : (
+            <svg className="w-3.5 h-3.5 fill-stone-800" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          )}
+        </button>
+      ) : (
+        <button
+          onClick={togglePlay}
+          aria-label={isPlaying ? '음악 정지' : '음악 재생'}
+          style={{ top: 'calc(env(safe-area-inset-top, 0px) + 1.25rem)' }}
+          className="fixed right-5 z-40 flex items-center justify-center w-8 h-8 rounded-full bg-black/75 hover:bg-black text-white shadow-md active:scale-95 transition-all"
+        >
+          <div className="flex items-center justify-center gap-[2.5px] h-4 w-4">
+            <span
+              className={`w-[2px] bg-white rounded-full transition-all duration-300 ${
+                isPlaying ? 'wave-bar-1' : 'h-[3px]'
+              }`}
+            />
+            <span
+              className={`w-[2px] bg-white rounded-full transition-all duration-300 ${
+                isPlaying ? 'wave-bar-2' : 'h-[7px]'
+              }`}
+            />
+            <span
+              className={`w-[2px] bg-white rounded-full transition-all duration-300 ${
+                isPlaying ? 'wave-bar-3' : 'h-[11px]'
+              }`}
+            />
+            <span
+              className={`w-[2px] bg-white rounded-full transition-all duration-300 ${
+                isPlaying ? 'wave-bar-4' : 'h-[5px]'
+              }`}
+            />
+          </div>
+        </button>
+      )}
     </>
   );
 }

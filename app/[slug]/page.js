@@ -133,6 +133,7 @@ export default async function WeddingCardPage({ params }) {
       <BgmPlayer 
         bgmUrl={invitation.bgm_url} 
         hasIntro={invitation?.template_config?.show_intro !== false} 
+        template={invitation.template_type}
       />
       <CurrentTemplate invitation={invitation} />
     </main>

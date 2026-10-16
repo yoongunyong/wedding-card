@@ -148,6 +148,7 @@ export default function EditInvitationPage({ params }) {
     show_gallery: true,
     show_accounts: true,
     show_rsvp: true,
+    show_rsvp_bus: false,
     show_guestbook: true,
   });
 
@@ -162,7 +163,7 @@ export default function EditInvitationPage({ params }) {
   const [infoCards, setInfoCards] = useState([]);
 
   // 4-1. 시안 5 (Scene) 전용: 신랑 & 신부 인터뷰 (우리의 이야기)
-  const [interviews, setInterviews] = useState(DEFAULT_INTERVIEWS);
+  const [interviews, setInterviews] = useState([]);
 
   // 5. 이미지 파일 및 프리뷰 상태 (새 파일 선택 시 File 객체, 미변경 시 null)
   const [mainImageFile, setMainImageFile] = useState(null);
@@ -302,6 +303,7 @@ export default function EditInvitationPage({ params }) {
         show_gallery: config.show_gallery !== false,
         show_accounts: config.show_accounts !== false,
         show_rsvp: config.show_rsvp !== false,
+        show_rsvp_bus: Boolean(config.show_rsvp_bus),
         show_guestbook: config.show_guestbook !== false,
       });
 
@@ -361,12 +363,12 @@ export default function EditInvitationPage({ params }) {
         ]);
       }
 
-      // 신랑 & 신부 인터뷰 로드
+      // 신랑 & 신부 인터뷰 로드 (기존에 작성된 게 있을 때만 로드, 없으면 빈 배열)
       const rawInterviews = card.interviews || [];
       if (Array.isArray(rawInterviews) && rawInterviews.length > 0) {
         setInterviews(rawInterviews);
       } else {
-        setInterviews(DEFAULT_INTERVIEWS);
+        setInterviews([]);
       }
 
       // 이미지 프리뷰 초기화
@@ -808,6 +810,7 @@ export default function EditInvitationPage({ params }) {
         show_gallery: formData.show_gallery,
         show_accounts: formData.show_accounts,
         show_rsvp: formData.show_rsvp,
+        show_rsvp_bus: Boolean(formData.show_rsvp_bus),
         show_guestbook: formData.show_guestbook,
         show_quote_section: formData.show_quote_section,
         groom_relation: formData.groom_relation,
@@ -1053,7 +1056,12 @@ export default function EditInvitationPage({ params }) {
         transportation: transportationList.filter((t) => t.title.trim() && t.content.trim()),
         info_notices: infoCards.filter((c) => c.title.trim() && c.content.trim()),
         interviews: formData.template_type === 'scene'
-          ? interviews.filter((item) => item.question?.trim() && (item.groom_answer?.trim() || item.bride_answer?.trim()))
+          ? (Array.isArray(interviews) ? interviews : []).filter((item) => {
+              const q = (item.question || '').trim();
+              const ga = (item.groom_answer || '').trim();
+              const ba = (item.bride_answer || '').trim();
+              return q && (ga || ba);
+            })
           : (interviews && interviews.length > 0 ? interviews : (originalCard?.interviews || [])),
 
         bgm_url: finalBgmUrl,
@@ -1068,6 +1076,7 @@ export default function EditInvitationPage({ params }) {
           show_gallery: formData.show_gallery,
           show_accounts: formData.show_accounts,
           show_rsvp: formData.show_rsvp,
+          show_rsvp_bus: Boolean(formData.show_rsvp_bus),
           show_guestbook: formData.show_guestbook,
           show_quote_section: formData.show_quote_section,
           groom_relation: formData.groom_relation,
@@ -1722,13 +1731,54 @@ export default function EditInvitationPage({ params }) {
               </p>
 
               <div className="space-y-5">
-                {interviews.map((item, index) => (
-                  <div key={item.id || index} className="p-5 bg-stone-50/70 rounded-2xl border border-stone-200/80 space-y-3.5 relative">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-stone-800 font-mono">
-                        QUESTION #{index + 1}
-                      </span>
-                      {interviews.length > 1 && (
+                {interviews.length === 0 ? (
+                  <div className="p-6 bg-stone-50/70 rounded-2xl border border-dashed border-stone-300 text-center space-y-3">
+                    <p className="text-xs text-stone-500 font-light">
+                      아직 등록된 인터뷰 질문이 없습니다.<br />
+                      추천 질문을 불러와 답변을 작성하시거나, 직접 질문을 추가해 보세요.
+                    </p>
+                    <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setInterviews(
+                            DEFAULT_INTERVIEWS.map((item) => ({
+                              id: item.id,
+                              question: item.question,
+                              groom_answer: '',
+                              bride_answer: '',
+                            }))
+                          );
+                        }}
+                        className="px-4 py-2 bg-stone-900 text-white rounded-xl text-xs font-medium hover:bg-black transition-colors cursor-pointer"
+                      >
+                        ✨ 추천 질문 3종 불러오기
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setInterviews([
+                            {
+                              id: Date.now(),
+                              question: '',
+                              groom_answer: '',
+                              bride_answer: '',
+                            },
+                          ]);
+                        }}
+                        className="px-4 py-2 bg-stone-100 border border-stone-200 text-stone-700 rounded-xl text-xs font-medium hover:bg-stone-200 transition-colors cursor-pointer"
+                      >
+                        + 직접 질문 작성
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  interviews.map((item, index) => (
+                    <div key={item.id || index} className="p-5 bg-stone-50/70 rounded-2xl border border-stone-200/80 space-y-3.5 relative">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-stone-800 font-mono">
+                          QUESTION #{index + 1}
+                        </span>
                         <button
                           type="button"
                           onClick={() => setInterviews((prev) => prev.filter((_, i) => i !== index))}
@@ -1736,76 +1786,91 @@ export default function EditInvitationPage({ params }) {
                         >
                           ✕ 삭제
                         </button>
-                      )}
-                    </div>
+                      </div>
 
-                    <div>
-                      <label className="block text-[11px] font-medium text-stone-600 mb-1">질문 제목</label>
-                      <input
-                        type="text"
-                        value={item.question || ''}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setInterviews((prev) => prev.map((q, i) => i === index ? { ...q, question: val } : q));
-                        }}
-                        placeholder="예: 서로의 첫인상은 어땠나요?"
-                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-hidden focus:border-stone-900 font-medium"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                       <div>
-                        <label className="block text-[11px] font-medium text-stone-700 mb-1">
-                          신랑 답변 ({formData.groom_name || '신랑'})
-                        </label>
-                        <textarea
-                          rows={3}
-                          value={item.groom_answer || ''}
+                        <label className="block text-[11px] font-medium text-stone-600 mb-1">질문 제목</label>
+                        <input
+                          type="text"
+                          value={item.question || ''}
                           onChange={(e) => {
                             const val = e.target.value;
-                            setInterviews((prev) => prev.map((q, i) => i === index ? { ...q, groom_answer: val } : q));
+                            setInterviews((prev) => prev.map((q, i) => i === index ? { ...q, question: val } : q));
                           }}
-                          placeholder="신랑님의 생각을 적어주세요."
-                          className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-800 focus:outline-hidden focus:border-stone-900 leading-relaxed"
+                          placeholder="예: 서로의 첫인상은 어땠나요?"
+                          className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-hidden focus:border-stone-900 font-medium"
                         />
                       </div>
-                      <div>
-                        <label className="block text-[11px] font-medium text-stone-700 mb-1">
-                          신부 답변 ({formData.bride_name || '신부'})
-                        </label>
-                        <textarea
-                          rows={3}
-                          value={item.bride_answer || ''}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setInterviews((prev) => prev.map((q, i) => i === index ? { ...q, bride_answer: val } : q));
-                          }}
-                          placeholder="신부님의 생각을 적어주세요."
-                          className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-800 focus:outline-hidden focus:border-stone-900 leading-relaxed"
-                        />
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        <div>
+                          <label className="block text-[11px] font-medium text-stone-700 mb-1">
+                            신랑 답변 ({formData.groom_name || '신랑'})
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={item.groom_answer || ''}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setInterviews((prev) => prev.map((q, i) => i === index ? { ...q, groom_answer: val } : q));
+                            }}
+                            placeholder="신랑님의 생각을 적어주세요."
+                            className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-800 focus:outline-hidden focus:border-stone-900 leading-relaxed"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-medium text-stone-700 mb-1">
+                            신부 답변 ({formData.bride_name || '신부'})
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={item.bride_answer || ''}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setInterviews((prev) => prev.map((q, i) => i === index ? { ...q, bride_answer: val } : q));
+                            }}
+                            placeholder="신부님의 생각을 적어주세요."
+                            className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-800 focus:outline-hidden focus:border-stone-900 leading-relaxed"
+                          />
+                        </div>
                       </div>
                     </div>
+                  ))
+                )}
+
+                {interviews.length > 0 && (
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setInterviews((prev) => [
+                          ...prev,
+                          {
+                            id: Date.now(),
+                            question: '',
+                            groom_answer: '',
+                            bride_answer: '',
+                          },
+                        ]);
+                      }}
+                      className="flex-1 py-2.5 bg-stone-100 hover:bg-stone-200/80 text-stone-700 text-xs font-medium rounded-xl border border-stone-200 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <span>+</span>
+                      <span>인터뷰 질문 추가하기</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (confirm('작성 중인 인터뷰를 모두 비우시겠습니까?')) {
+                          setInterviews([]);
+                        }
+                      }}
+                      className="px-3.5 py-2.5 text-rose-500 hover:bg-rose-50 border border-rose-200/60 text-xs font-medium rounded-xl transition-colors cursor-pointer"
+                    >
+                      전체 비우기
+                    </button>
                   </div>
-                ))}
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setInterviews((prev) => [
-                      ...prev,
-                      {
-                        id: Date.now(),
-                        question: '',
-                        groom_answer: '',
-                        bride_answer: '',
-                      },
-                    ]);
-                  }}
-                  className="w-full py-2.5 bg-stone-100 hover:bg-stone-200/80 text-stone-700 text-xs font-medium rounded-xl border border-stone-200 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-                >
-                  <span>+</span>
-                  <span>인터뷰 질문 추가하기</span>
-                </button>
+                )}
               </div>
             </div>
           )}
@@ -2235,6 +2300,16 @@ export default function EditInvitationPage({ params }) {
                   </span>
                 </div>
 
+                {formData.template_type === 'cinematic' && (
+                  <div className="mb-3 p-3 bg-stone-100/80 border border-stone-200 rounded-xl text-xs text-stone-700 leading-relaxed flex items-start gap-2">
+                    <span className="text-sm">💡</span>
+                    <div>
+                      <strong className="text-stone-900 font-semibold block mb-0.5">시안 4 (시네마틱 모노리스) 갤러리 안내</strong>
+                      등록하신 사진 순서대로 <strong>앞쪽 절반은 [OUR STORY]</strong> 탭에, <strong>뒤쪽 절반은 [WEDDING PHOTO]</strong> 탭에 자동으로 나누어 전시됩니다.
+                    </div>
+                  </div>
+                )}
+
                 <input
                   ref={galleryInputRef}
                   type="file"
@@ -2526,6 +2601,7 @@ export default function EditInvitationPage({ params }) {
                 { name: 'show_gallery', label: '사진 갤러리' },
                 { name: 'show_accounts', label: '축의금 계좌 안내' },
                 { name: 'show_rsvp', label: '참석 의사(RSVP)' },
+                { name: 'show_rsvp_bus', label: '전세버스 탑승 조사' },
                 { name: 'show_guestbook', label: '축하 방명록' },
               ].map((opt) => (
                 <label key={opt.name} className="flex items-center gap-2 p-3 bg-[#FAFAF9] rounded-xl border border-stone-200/60 cursor-pointer">

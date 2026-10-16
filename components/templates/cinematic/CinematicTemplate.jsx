@@ -117,17 +117,19 @@ export default function CinematicTemplate({ invitation }) {
   const groomRelation = config.groom_relation || invitation?.groom_relation || (isSample ? '아들' : '');
   const brideRelation = config.bride_relation || invitation?.bride_relation || (isSample ? '딸' : '');
 
-  // 날짜 계산 (기본값: 2026-12-24 15:00)
-  const weddingDateStr = invitation?.wedding_date || '2026-12-24 15:00:00';
+  // 날짜 계산 (샘플 모드일 때만 기본 데모 일시 사용, 실제 고객은 미입력 시 공백 처리)
+  const weddingDateStr = invitation?.wedding_date || (isSample ? '2026-12-24 15:00:00' : '');
   const targetDate = useMemo(() => {
+    if (!weddingDateStr) return null;
     const normalized = typeof weddingDateStr === 'string' ? weddingDateStr.replace(' ', 'T') : weddingDateStr;
     const d = new Date(normalized);
-    return isNaN(d.getTime()) ? new Date('2026-12-24T15:00:00') : d;
+    return isNaN(d.getTime()) ? null : d;
   }, [weddingDateStr]);
 
   // D-Day 계산
   const [timeLeft, setTimeLeft] = useState({ totalDays: 0, isPast: false });
   useEffect(() => {
+    if (!targetDate) return;
     const calc = () => {
       const now = new Date();
       const diffMs = targetDate.getTime() - now.getTime();
@@ -142,6 +144,7 @@ export default function CinematicTemplate({ invitation }) {
 
   // 캘린더 데이터 생성 (숫자만 7열)
   const calendarData = useMemo(() => {
+    if (!targetDate) return null;
     const year = targetDate.getFullYear();
     const month = targetDate.getMonth(); // 0-based
     const weddingDay = targetDate.getDate();
@@ -152,6 +155,7 @@ export default function CinematicTemplate({ invitation }) {
 
   // 포맷된 날짜 텍스트
   const formattedDates = useMemo(() => {
+    if (!targetDate) return { fullDateDot: '', monthScript: '', timeStr: '', timeStrShort: '', dowEn: '', fullEn: '' };
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const dowsEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 

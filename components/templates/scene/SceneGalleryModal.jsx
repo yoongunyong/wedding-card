@@ -127,27 +127,27 @@ export default function SceneGalleryModal({ isOpen, images = [], initialIndex = 
           }`}
         />
 
-        {/* 이전 버튼 */}
+        {/* 이전 버튼 (영상 frame_022와 일치하는 반투명 사각 버튼) */}
         {images.length > 1 && (
           <button
             type="button"
             onClick={prevImage}
-            className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs active:scale-90"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-12 bg-stone-300/40 hover:bg-stone-300/60 text-stone-700 flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs active:scale-95 text-lg"
             aria-label="이전 사진"
           >
-            ‹
+            ←
           </button>
         )}
 
-        {/* 다음 버튼 */}
+        {/* 다음 버튼 (영상 frame_022와 일치하는 반투명 사각 버튼) */}
         {images.length > 1 && (
           <button
             type="button"
             onClick={nextImage}
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs active:scale-90"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-12 bg-stone-300/40 hover:bg-stone-300/60 text-stone-700 flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs active:scale-95 text-lg"
             aria-label="다음 사진"
           >
-            ›
+            →
           </button>
         )}
       </div>

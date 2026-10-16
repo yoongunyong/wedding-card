@@ -403,8 +403,8 @@ export default function PlaylistTemplate({ invitation }) {
                       {invitation?.groom_father && invitation?.groom_mother && ' · '}
                       {invitation?.groom_mother && `${invitation.groom_mother}${config.groom_mother_deceased ? ' 故' : ''}`}
                     </span>
-                    {(config.groom_relation || invitation?.groom_father || invitation?.groom_mother) && (
-                      <span className="text-emerald-700 text-[11px] font-medium">의 {config.groom_relation || '장남'}</span>
+                    {(config.groom_relation || invitation?.groom_relation) && (
+                      <span className="text-emerald-700 text-[11px] font-medium">의 {config.groom_relation || invitation?.groom_relation}</span>
                     )}
                     {groomName && <span className="font-semibold text-stone-900 ml-1">{groomName}</span>}
                   </div>
@@ -417,8 +417,8 @@ export default function PlaylistTemplate({ invitation }) {
                       {invitation?.bride_father && invitation?.bride_mother && ' · '}
                       {invitation?.bride_mother && `${invitation.bride_mother}${config.bride_mother_deceased ? ' 故' : ''}`}
                     </span>
-                    {(config.bride_relation || invitation?.bride_father || invitation?.bride_mother) && (
-                      <span className="text-emerald-700 text-[11px] font-medium">의 {config.bride_relation || '장녀'}</span>
+                    {(config.bride_relation || invitation?.bride_relation) && (
+                      <span className="text-emerald-700 text-[11px] font-medium">의 {config.bride_relation || invitation?.bride_relation}</span>
                     )}
                     {brideName && <span className="font-semibold text-stone-900 ml-1">{brideName}</span>}
                   </div>

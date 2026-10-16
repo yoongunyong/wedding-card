@@ -2,11 +2,16 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 
-export default function SceneGalleryModal({ images = [], initialIndex = 0, onClose }) {
+export default function SceneGalleryModal({ isOpen, images = [], initialIndex = 0, onClose }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
   const isSwiping = useRef(false);
+
+  // initialIndex 변경 시 동기화
+  useEffect(() => {
+    setCurrentIndex(initialIndex);
+  }, [initialIndex]);
 
   const prevImage = useCallback(() => {
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
@@ -43,6 +48,7 @@ export default function SceneGalleryModal({ images = [], initialIndex = 0, onClo
   };
 
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') onClose();
       if (e.key === 'ArrowLeft') prevImage();
@@ -50,8 +56,10 @@ export default function SceneGalleryModal({ images = [], initialIndex = 0, onClo
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose, prevImage, nextImage]);
+  }, [isOpen, onClose, prevImage, nextImage]);
 
+  // isOpen이 false이거나 이미지가 없으면 절대 렌더링하지 않음
+  if (!isOpen) return null;
   if (!images || images.length === 0) return null;
 
   return (
@@ -68,6 +76,7 @@ export default function SceneGalleryModal({ images = [], initialIndex = 0, onClo
           {currentIndex + 1} / {images.length}
         </span>
         <button
+          type="button"
           onClick={onClose}
           className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-lg font-light transition-colors cursor-pointer"
           aria-label="닫기"
@@ -93,6 +102,7 @@ export default function SceneGalleryModal({ images = [], initialIndex = 0, onClo
         {/* 이전 버튼 */}
         {images.length > 1 && (
           <button
+            type="button"
             onClick={prevImage}
             className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs active:scale-90"
             aria-label="이전 사진"
@@ -104,6 +114,7 @@ export default function SceneGalleryModal({ images = [], initialIndex = 0, onClo
         {/* 다음 버튼 */}
         {images.length > 1 && (
           <button
+            type="button"
             onClick={nextImage}
             className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs active:scale-90"
             aria-label="다음 사진"
@@ -113,27 +124,28 @@ export default function SceneGalleryModal({ images = [], initialIndex = 0, onClo
         )}
       </div>
 
-      {/* 하단 썸네일 바 */}
-      <div 
-        className="w-full max-w-[430px] pb-4 px-2 z-10 overflow-x-auto no-scrollbar shrink-0"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-center gap-1.5 py-1">
+      {/* 하단 썸네일 스트립 */}
+      {images.length > 1 && (
+        <div 
+          className="w-full max-w-[430px] overflow-x-auto py-3 px-2 flex items-center justify-center gap-2 z-10 shrink-0 no-scrollbar"
+          onClick={(e) => e.stopPropagation()}
+        >
           {images.map((img, idx) => (
             <button
               key={idx}
+              type="button"
               onClick={() => setCurrentIndex(idx)}
-              className={`w-9 h-9 rounded-md overflow-hidden shrink-0 border transition-all ${
-                currentIndex === idx 
-                  ? 'border-white scale-110 opacity-100 shadow-md' 
-                  : 'border-transparent opacity-40 hover:opacity-75'
+              className={`w-10 h-10 rounded-md overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
+                currentIndex === idx
+                  ? 'border-white opacity-100 scale-105'
+                  : 'border-transparent opacity-40 hover:opacity-70'
               }`}
             >
-              <img src={img} alt={`Thumb ${idx + 1}`} className="w-full h-full object-cover" />
+              <img src={img} alt="thumb" className="w-full h-full object-cover" />
             </button>
           ))}
         </div>
-      </div>
+      )}
     </div>
   );
 }

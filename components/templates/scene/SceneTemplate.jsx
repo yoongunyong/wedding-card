@@ -1246,21 +1246,25 @@ export default function SceneTemplate({ invitation }) {
       </footer>
 
       {/* 신랑 & 신부 인터뷰 모달 */}
-      <SceneInterviewModal
-        isOpen={interviewModalOpen}
-        onClose={() => setInterviewModalOpen(false)}
-        interviews={interviews}
-        groomName={groomName}
-        brideName={brideName}
-      />
+      {interviewModalOpen && (
+        <SceneInterviewModal
+          isOpen={interviewModalOpen}
+          onClose={() => setInterviewModalOpen(false)}
+          interviews={interviews}
+          groomName={groomName}
+          brideName={brideName}
+        />
+      )}
 
       {/* 사진 라이트박스 뷰어 모달 */}
-      <SceneGalleryModal
-        isOpen={galleryModalOpen}
-        onClose={() => setGalleryModalOpen(false)}
-        images={galleryImages}
-        initialIndex={galleryModalIndex}
-      />
+      {galleryModalOpen && (
+        <SceneGalleryModal
+          isOpen={galleryModalOpen}
+          onClose={() => setGalleryModalOpen(false)}
+          images={galleryImages}
+          initialIndex={galleryModalIndex}
+        />
+      )}
 
     </div>
   );

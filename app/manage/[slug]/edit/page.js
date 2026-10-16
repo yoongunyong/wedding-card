@@ -8,8 +8,31 @@ import BasicTemplate from '@/components/templates/basic/BasicTemplate';
 import EditorialTemplate from '@/components/templates/editorial/EditorialTemplate';
 import PlaylistTemplate from '@/components/templates/playlist/PlaylistTemplate';
 import CinematicTemplate from '@/components/templates/cinematic/CinematicTemplate';
+import SceneTemplate from '@/components/templates/scene/SceneTemplate';
 import BgmPlayer from '@/components/BgmPlayer';
 import { compressImage } from '@/lib/imageCompressor';
+
+// 시안 5 (Scene) 신랑 & 신부 인터뷰 (우리의 이야기) 기본 질문-답변 프리셋
+const DEFAULT_INTERVIEWS = [
+  {
+    id: 1,
+    question: '서로의 첫인상은 어땠나요?',
+    groom_answer: '처음 만난 순간 따뜻하고 환하게 웃어주던 모습이 가장 기억에 남아요. 이야기를 나눌수록 배려심 깊은 사람이라는 걸 느꼈습니다.',
+    bride_answer: '조용하지만 듬직하고, 한마디 한마디 진심이 느껴지는 사람이었어요. 편안하게 제 이야기를 들어주던 모습에 호감을 가졌습니다.',
+  },
+  {
+    id: 2,
+    question: '결혼을 결심하게 된 특별한 계기가 있나요?',
+    groom_answer: '함께 있으면 사소한 일상도 특별해지고, 어떤 힘든 일도 이 사람과 함께라면 이겨낼 수 있겠다는 확신이 들었습니다.',
+    bride_answer: '언제나 변함없이 제 편이 되어주고, 서로에게 가장 좋은 영향을 주는 모습을 보며 평생을 함께하고 싶어졌어요.',
+  },
+  {
+    id: 3,
+    question: '어떤 부부가 되고 싶으신가요?',
+    groom_answer: '서로에게 늘 쉼터가 되어주고, 함께 늙어가는 시간이 늘 설레고 따뜻한 친구 같은 부부가 되고 싶습니다.',
+    bride_answer: '기쁨은 두 배로 나누고 슬픔은 함께 보듬으며, 늘 감사하고 사랑하는 마음을 잊지 않는 단단한 가정을 이루겠습니다.',
+  },
+];
 
 // 추천 감성 초대글 샘플 3종
 const GREETING_PRESETS = [
@@ -137,6 +160,9 @@ export default function EditInvitationPage({ params }) {
 
   // 4. 동적 정보 카드 리스트 (INFORMATION)
   const [infoCards, setInfoCards] = useState([]);
+
+  // 4-1. 시안 5 (Scene) 전용: 신랑 & 신부 인터뷰 (우리의 이야기)
+  const [interviews, setInterviews] = useState(DEFAULT_INTERVIEWS);
 
   // 5. 이미지 파일 및 프리뷰 상태 (새 파일 선택 시 File 객체, 미변경 시 null)
   const [mainImageFile, setMainImageFile] = useState(null);
@@ -333,6 +359,14 @@ export default function EditInvitationPage({ params }) {
           { title: '식사 안내', subtitle: '', content: '정성껏 준비한 피로연 식사가 마련되어 있습니다.\n편안하게 오셔서 식사를 즐겨주시기 바랍니다.' },
           { title: '화환 안내', subtitle: '', content: '화환은 정중히 사양하오니 너른 양해 부탁드립니다.' },
         ]);
+      }
+
+      // 신랑 & 신부 인터뷰 로드
+      const rawInterviews = card.interviews || [];
+      if (Array.isArray(rawInterviews) && rawInterviews.length > 0) {
+        setInterviews(rawInterviews);
+      } else {
+        setInterviews(DEFAULT_INTERVIEWS);
       }
 
       // 이미지 프리뷰 초기화
@@ -766,6 +800,7 @@ export default function EditInvitationPage({ params }) {
       accounts: allAccounts,
       transportation: transportationList.filter((t) => t.title && t.content),
       info_notices: infoCards.filter((c) => c.title && c.content),
+      interviews: interviews && interviews.length > 0 ? interviews : DEFAULT_INTERVIEWS,
       template_config: {
         title_color: formData.title_color,
         show_intro: formData.show_intro,
@@ -805,10 +840,13 @@ export default function EditInvitationPage({ params }) {
     brideAccounts,
     transportationList,
     infoCards,
+    interviews,
     mainImagePreview,
     coverImagePreview,
     coupleImagePreview,
     endingImagePreview,
+    groomPhotoPreview,
+    bridePhotoPreview,
     existingGalleryUrls,
     newGalleryPreviews,
     bgmMode,
@@ -1014,6 +1052,9 @@ export default function EditInvitationPage({ params }) {
         accounts: allAccounts,
         transportation: transportationList.filter((t) => t.title.trim() && t.content.trim()),
         info_notices: infoCards.filter((c) => c.title.trim() && c.content.trim()),
+        interviews: formData.template_type === 'scene'
+          ? interviews.filter((item) => item.question?.trim() && (item.groom_answer?.trim() || item.bride_answer?.trim()))
+          : (interviews && interviews.length > 0 ? interviews : (originalCard?.interviews || [])),
 
         bgm_url: finalBgmUrl,
         bgm_mode: finalBgmMode,
@@ -1149,7 +1190,7 @@ export default function EditInvitationPage({ params }) {
               시안마다 사진 연출(봉투 오프닝 vs 화보 룩북)이 다르므로, 시안을 바꾸신 후 하단의 <strong>[👁️ 실시간 미리보기]</strong>로 전체적인 느낌을 확인해 보세요.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div
                 onClick={() => setFormData((prev) => ({ ...prev, template_type: 'basic' }))}
                 className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative ${
@@ -1227,6 +1268,27 @@ export default function EditInvitationPage({ params }) {
                 <h3 className="text-sm font-semibold text-stone-900 mb-1">시네마틱 (Cinematic)</h3>
                 <p className="text-xs text-stone-500 font-light leading-relaxed">
                   ☀️ Day / 🌙 Night 듀얼 테마 & 흑백 모노크롬 인물 스냅 시안
+                </p>
+              </div>
+
+              {/* 시안 5: 모던 씬 (Scene 02) */}
+              <div
+                onClick={() => setFormData((prev) => ({ ...prev, template_type: 'scene' }))}
+                className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative ${
+                  formData.template_type === 'scene'
+                    ? 'border-stone-900 bg-stone-50/50 shadow-sm'
+                    : 'border-stone-200 hover:border-stone-300 bg-white'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-mono text-stone-900 font-semibold tracking-widest">OPTION 05 · NEW</span>
+                  {formData.template_type === 'scene' && (
+                    <span className="w-2 h-2 rounded-full bg-stone-900" />
+                  )}
+                </div>
+                <h3 className="text-sm font-semibold text-stone-900 mb-1">모던 씬 (Scene 02)</h3>
+                <p className="text-xs text-stone-500 font-light leading-relaxed">
+                  우아하고 차분한 모던 클래식 & 인터뷰 Q&A, 3열 캘린더, 전세버스/식사 RSVP
                 </p>
               </div>
             </div>
@@ -1637,6 +1699,117 @@ export default function EditInvitationPage({ params }) {
             </div>
           </div>
 
+          {/* 시안 5 (모던 씬) 전용: 신랑 & 신부 인터뷰 (우리의 이야기) */}
+          {formData.template_type === 'scene' && (
+            <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
+              <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
+                <div className="flex items-baseline gap-2.5">
+                  <span className="font-mono text-xs text-stone-400 tracking-wider">03-1</span>
+                  <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
+                    신랑 & 신부 인터뷰 (우리의 이야기)
+                  </h2>
+                  <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase hidden sm:inline">
+                    INTERVIEW Q&A
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono bg-stone-900 text-white px-2 py-0.5 rounded-full font-semibold">
+                  OPTION 05 전용
+                </span>
+              </div>
+
+              <p className="text-xs text-stone-500 mb-6 font-light leading-relaxed">
+                모바일 청첩장의 [인터뷰 읽어보기] 버튼을 눌렀을 때 나타나는 신랑·신부님의 문답 스토리입니다. 질문과 답변을 자유롭게 수정하거나 추가해 보세요. (문답을 비워두실 경우 청첩장 본문에서 인터뷰 버튼이 자동으로 숨김 처리됩니다)
+              </p>
+
+              <div className="space-y-5">
+                {interviews.map((item, index) => (
+                  <div key={item.id || index} className="p-5 bg-stone-50/70 rounded-2xl border border-stone-200/80 space-y-3.5 relative">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-stone-800 font-mono">
+                        QUESTION #{index + 1}
+                      </span>
+                      {interviews.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => setInterviews((prev) => prev.filter((_, i) => i !== index))}
+                          className="text-[11px] text-rose-500 hover:text-rose-700 cursor-pointer font-medium"
+                        >
+                          ✕ 삭제
+                        </button>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-medium text-stone-600 mb-1">질문 제목</label>
+                      <input
+                        type="text"
+                        value={item.question || ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setInterviews((prev) => prev.map((q, i) => i === index ? { ...q, question: val } : q));
+                        }}
+                        placeholder="예: 서로의 첫인상은 어땠나요?"
+                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-hidden focus:border-stone-900 font-medium"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                      <div>
+                        <label className="block text-[11px] font-medium text-stone-700 mb-1">
+                          신랑 답변 ({formData.groom_name || '신랑'})
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={item.groom_answer || ''}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setInterviews((prev) => prev.map((q, i) => i === index ? { ...q, groom_answer: val } : q));
+                          }}
+                          placeholder="신랑님의 생각을 적어주세요."
+                          className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-800 focus:outline-hidden focus:border-stone-900 leading-relaxed"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-medium text-stone-700 mb-1">
+                          신부 답변 ({formData.bride_name || '신부'})
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={item.bride_answer || ''}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setInterviews((prev) => prev.map((q, i) => i === index ? { ...q, bride_answer: val } : q));
+                          }}
+                          placeholder="신부님의 생각을 적어주세요."
+                          className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-800 focus:outline-hidden focus:border-stone-900 leading-relaxed"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInterviews((prev) => [
+                      ...prev,
+                      {
+                        id: Date.now(),
+                        question: '',
+                        groom_answer: '',
+                        bride_answer: '',
+                      },
+                    ]);
+                  }}
+                  className="w-full py-2.5 bg-stone-100 hover:bg-stone-200/80 text-stone-700 text-xs font-medium rounded-xl border border-stone-200 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <span>+</span>
+                  <span>인터뷰 질문 추가하기</span>
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* 04. 웨딩 사진 교체 및 갤러리 관리 */}
           <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
@@ -1799,19 +1972,19 @@ export default function EditInvitationPage({ params }) {
                 </div>
               )}
 
-              {/* 시안 4 (시네마틱) 전용: 신랑 & 신부 단독 흑백 인물 스냅 사진 */}
-              {formData.template_type === 'cinematic' && (
+              {/* 시안 4 (시네마틱) & 시안 5 (모던 씬) 전용: 신랑 & 신부 단독 인물 스냅 사진 */}
+              {['cinematic', 'scene'].includes(formData.template_type) && (
                 <div className="p-5 bg-stone-50/80 rounded-2xl border-2 border-stone-900/40">
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-xs font-bold text-stone-900">
                       신랑 & 신부 개별 인물 스냅 사진 (선택)
                     </label>
                     <span className="text-[10px] font-mono bg-stone-900 text-white px-2 py-0.5 rounded-full font-semibold">
-                      OPTION 04 전용
+                      OPTION 04, 05 전용
                     </span>
                   </div>
                   <p className="text-[11px] text-stone-500 mb-4 font-light">
-                    시안 4의 2분할 흑백 인물 스냅(Bride & Groom)에 들어가는 개별 단독 사진입니다. (미등록 시 사진 없이 성함 텍스트만 깔끔하게 노출됩니다)
+                    시안 4 및 시안 5의 2열 인물 스냅(Bride & Groom)에 들어가는 개별 단독 사진입니다. (미등록 시 사진 없이 성함 텍스트만 깔끔하게 노출됩니다)
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* 신부 단독 사진 */}
@@ -2474,7 +2647,9 @@ export default function EditInvitationPage({ params }) {
             <div 
               id="preview-scroll-container"
               className={`flex-1 overflow-y-auto relative ${
-                previewInvitation?.template_type === 'cinematic'
+                previewInvitation?.template_type === 'scene'
+                  ? 'bg-white'
+                  : previewInvitation?.template_type === 'cinematic'
                   ? 'bg-white'
                   : previewInvitation?.template_type === 'playlist' 
                   ? 'bg-[#FBF9F5]' 
@@ -2487,7 +2662,9 @@ export default function EditInvitationPage({ params }) {
                 bgmUrl={previewInvitation.bgm_url}
                 hasIntro={previewInvitation?.template_config?.show_intro !== false}
               />
-              {previewInvitation?.template_type === 'cinematic' ? (
+              {previewInvitation?.template_type === 'scene' ? (
+                <SceneTemplate invitation={previewInvitation} />
+              ) : previewInvitation?.template_type === 'cinematic' ? (
                 <CinematicTemplate invitation={previewInvitation} />
               ) : previewInvitation?.template_type === 'playlist' ? (
                 <PlaylistTemplate invitation={previewInvitation} />

@@ -89,13 +89,15 @@ export default function ManageRsvpPage({ params }) {
   const downloadCSV = () => {
     if (rsvpList.length === 0) return alert('다운로드할 참석자 내역이 없습니다.');
 
-    const headers = ['구분', '성함', '연락처', '참석여부', '동행인원', '등록일시'];
+    const headers = ['구분', '성함', '연락처', '참석여부', '동행인원', '식사여부', '전세버스', '등록일시'];
     const rows = rsvpList.map((r) => [
       r.side === 'groom' ? '신랑측' : '신부측',
       r.name,
       r.phone || '-',
       r.attend ? '참석' : '불참',
       r.attend ? (r.companion_count || 0) : '-',
+      r.attend ? (r.meal || '-') : '-',
+      r.attend ? (r.bus || '-') : '-',
       new Date(r.created_at).toLocaleString('ko-KR'),
     ]);
 
@@ -265,13 +267,15 @@ export default function ManageRsvpPage({ params }) {
                 <th className="py-2.5 px-3">연락처</th>
                 <th className="py-2.5 px-3 text-center">참석 여부</th>
                 <th className="py-2.5 px-3 text-center">동행 인원</th>
+                <th className="py-2.5 px-3 text-center">식사 여부</th>
+                <th className="py-2.5 px-3 text-center">전세버스</th>
                 <th className="py-2.5 px-3 whitespace-nowrap">등록일시</th>
               </tr>
             </thead>
             <tbody>
               {rsvpList.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-stone-400">
+                  <td colSpan={8} className="py-8 text-center text-stone-400">
                     아직 등록된 참석 의사가 없습니다.
                   </td>
                 </tr>
@@ -296,6 +300,12 @@ export default function ManageRsvpPage({ params }) {
                     </td>
                     <td className="py-3 px-3 text-center font-medium">
                       {row.attend ? (row.companion_count > 0 ? `+${row.companion_count}명` : '0명') : '-'}
+                    </td>
+                    <td className="py-3 px-3 text-center font-medium text-stone-700">
+                      {row.attend ? (row.meal || '-') : '-'}
+                    </td>
+                    <td className="py-3 px-3 text-center font-medium text-stone-700">
+                      {row.attend ? (row.bus || '-') : '-'}
                     </td>
                     <td className="py-3 px-3 text-stone-500 whitespace-nowrap">
                       {formatDate(row.created_at)}

@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export const metadata = {
   title: '아뜰리에 드 마리아주 (Atelier de Mariage) — 감성 모바일 청첩장',
-  description: '단 하나의 소중한 순간을 담은 프리미엄 모바일 청첩장. 모던 클래식, 에디토리얼 룩북, 플레이리스트 바이닐, 시네마틱 모노리스 등 4가지 감각의 디자인 시안을 경험해 보세요.',
+  description: '단 하나의 소중한 순간을 담은 프리미엄 모바일 청첩장. 모던 클래식, 에디토리얼 룩북, 플레이리스트 바이닐, 시네마틱 모노리스, 모던 씬 등 5가지 감각의 디자인 시안을 경험해 보세요.',
 };
 
 export default function HomePage() {
@@ -48,12 +48,24 @@ export default function HomePage() {
       option: 'OPTION 04',
       title: '시네마틱 모노리스',
       subTitle: 'Cinematic Monolith',
-      badge: 'NEW 시안',
+      badge: '인기 시안',
       badgeColor: 'bg-stone-900 text-white border-stone-800',
       description: '☀️ Day / 🌙 Night 듀얼 무드 테마 스위처와 시네마틱 흑백 인물 스냅이 돋보이는 모노크롬 시안입니다. 영화 같은 깊은 감동을 선사합니다.',
       features: ['☀️ Day ↔ 🌙 Night 듀얼 테마', '시네마틱 흑백 커버 & 와이드 컷', '신랑·신부 2분할 인물 스냅', '탭형 시크 축의금 카드'],
       previewUrl: '/cinematic',
       accentColor: '#000000',
+    },
+    {
+      id: 'scene',
+      option: 'OPTION 05',
+      title: '모던 씬 (Scene 02)',
+      subTitle: 'Modern Elegance & Classic',
+      badge: 'NEW 시안',
+      badgeColor: 'bg-stone-900 text-white border-stone-800',
+      description: '우아하고 차분한 모던 클래식 감성에 신랑·신부 인터뷰 Q&A 문답 바텀시트, 3열 캘린더 손그림 애니메이션, 식사/전세버스 확장 RSVP를 결합한 프리미엄 시안입니다.',
+      features: ['신랑·신부 인터뷰 (우리의 이야기)', '3열 캘린더 & 빨간 원형 애니메이션', '확장형 RSVP (식사 & 전세버스)', '2열 인물 스냅 & 와이드 갤러리'],
+      previewUrl: '/scene',
+      accentColor: '#333333',
     },
   ];
 
@@ -145,12 +157,12 @@ export default function HomePage() {
             href="#templates"
             className="w-full sm:w-auto px-7 py-3.5 bg-white hover:bg-stone-50 text-stone-800 text-sm font-medium rounded-xl border border-stone-200/80 shadow-2xs transition-all"
           >
-            시안 4종 둘러보기 ↓
+            시안 5종 둘러보기 ↓
           </a>
         </div>
       </section>
 
-      {/* 3. 디자인 시안 4종 쇼케이스 섹션 */}
+      {/* 3. 디자인 시안 5종 쇼케이스 섹션 */}
       <section id="templates" className="py-20 px-6 bg-white border-y border-stone-200/80 scroll-mt-14">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
@@ -158,14 +170,14 @@ export default function HomePage() {
               CURATED TEMPLATES
             </span>
             <h2 className="font-editorial-title text-3xl sm:text-4xl text-stone-900 font-normal">
-              네 가지 감각의 디자인 시안
+              다섯 가지 감각의 디자인 시안
             </h2>
             <p className="text-xs sm:text-sm text-stone-500 font-light mt-2">
               버튼을 누르시면 실제 하객들이 열어보는 청첩장 화면을 그대로 체험하실 수 있습니다.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-6">
             {templates.map((tpl) => (
               <div
                 key={tpl.id}

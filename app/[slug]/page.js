@@ -7,6 +7,7 @@ import BasicTemplate from '@/components/templates/basic/BasicTemplate';
 import EditorialTemplate from '@/components/templates/editorial/EditorialTemplate';
 import PlaylistTemplate from '@/components/templates/playlist/PlaylistTemplate';
 import CinematicTemplate from '@/components/templates/cinematic/CinematicTemplate';
+import SceneTemplate from '@/components/templates/scene/SceneTemplate';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -17,6 +18,7 @@ const TEMPLATE_MAP = {
   editorial: EditorialTemplate,
   playlist: PlaylistTemplate,
   cinematic: CinematicTemplate,
+  scene: SceneTemplate,
 };
 
 // SNS/카카오톡 공유 메타데이터 (OG 태그)

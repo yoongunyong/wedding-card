@@ -336,9 +336,7 @@ export default function SceneTemplate({ invitation }) {
         {
           invitation_id: invitation.id,
           author: guestbookName.trim(),
-          name: guestbookName.trim(),
           content: guestbookMessage.trim(),
-          message: guestbookMessage.trim(),
           password: guestbookPassword.trim(),
         },
       ])

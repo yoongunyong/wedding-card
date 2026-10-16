@@ -13,6 +13,35 @@ export default function SceneTemplate({ invitation }) {
   const images = invitation?.images || {};
   const extra = invitation?.extra_data || {};
 
+  // 0. 오프닝 단계별 시퀀스 애니메이션 (영상 00:02 ~ 00:10 1:1 일치)
+  // step 0: 시작 (모두 숨김)
+  // step 1: 1행 "함께하는 오늘이" 페이드인 (0.3s)
+  // step 2: 2행 "오래도록 기억될 아름다운 순간이 되기를 바라며" 페이드인 (0.9s)
+  // step 3: 3행 "저희의 결혼식에 초대합니다" 페이드인 (1.5s)
+  // step 4: 신랑신부 이름 "남세희 & 윤지호" 페이드인 (2.1s)
+  // step 5: 사진이 중앙에서 쫘아악 펼쳐지며 소개글은 위로, 이름은 아래로 이동! (2.8s)
+  const [heroStep, setHeroStep] = useState(0);
+
+  useEffect(() => {
+    const timers = [
+      setTimeout(() => setHeroStep(1), 400),
+      setTimeout(() => setHeroStep(2), 1200),
+      setTimeout(() => setHeroStep(3), 2000),
+      setTimeout(() => setHeroStep(4), 2800),
+      setTimeout(() => setHeroStep(5), 3700),
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  // BGM 재생/일시정지 토글 상태 (영상 00:03 좌측 상단 || 버튼)
+  const [isPlayingBgm, setIsPlayingBgm] = useState(true);
+  const toggleBgm = () => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('toggle-wedding-bgm'));
+      setIsPlayingBgm(!isPlayingBgm);
+    }
+  };
+
   // 1. 모달 상태
   const [interviewModalOpen, setInterviewModalOpen] = useState(false);
   const [galleryModalOpen, setGalleryModalOpen] = useState(false);
@@ -21,9 +50,9 @@ export default function SceneTemplate({ invitation }) {
   // 2. 갤러리 더보기 상태 (기본 9장 노출 ➔ 더보기 시 전체 노출)
   const [galleryExpanded, setGalleryExpanded] = useState(false);
 
-  // 3. 계좌 아코디언 토글 (기본 펼침)
-  const [openGroomAccount, setOpenGroomAccount] = useState(true);
-  const [openBrideAccount, setOpenBrideAccount] = useState(true);
+  // 3. 계좌 아코디언 토글 (영상 00:56 ~ 00:57과 같이 기본은 닫힘 상태)
+  const [openGroomAccount, setOpenGroomAccount] = useState(false);
+  const [openBrideAccount, setOpenBrideAccount] = useState(false);
 
   // 4. 정보 카드 캐러셀 인덱스
   const [infoCardIndex, setInfoCardIndex] = useState(0);
@@ -44,6 +73,40 @@ export default function SceneTemplate({ invitation }) {
   const [rsvpBus, setRsvpBus] = useState('미탑승'); // '탑승' | '미탑승'
   const [rsvpConsent, setRsvpConsent] = useState(false);
   const [submittingRsvp, setSubmittingRsvp] = useState(false);
+
+  // 7. 캘린더 IntersectionObserver (영상 00:20~00:21 스크롤 진입 시 빨간 동그라미 드로잉 트리거)
+  const calendarRef = useRef(null);
+  const [isCalendarInView, setIsCalendarInView] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const target = calendarRef.current;
+    if (!target) return;
+
+    // 모달 안의 스크롤 컨테이너(#preview-scroll-container) 또는 윈도우 스크롤 탐색
+    const scrollContainer = target.closest('#preview-scroll-container') || null;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsCalendarInView(true);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        root: scrollContainer,
+        threshold: 0.35,
+        rootMargin: '0px 0px -40px 0px',
+      }
+    );
+
+    observer.observe(target);
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   // 기본 정보
   const groomName = invitation?.groom_name || '';
@@ -353,11 +416,33 @@ export default function SceneTemplate({ invitation }) {
         }}
       />
 
-      {/* 캘린더 날짜 + 텍스트 전체를 감싸는 빨간 타원형 손그림 드로잉 애니메이션 */}
+      {/* 시안5 맞춤형 애니메이션 키프레임 (오프닝 언블러 페이드, 빨간 펜 드로잉 등) */}
       <style jsx global>{`
+        @keyframes sceneFadeUp {
+          0% {
+            opacity: 0;
+            transform: translateY(16px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes sceneUnblur {
+          0% {
+            filter: blur(24px);
+            transform: scale(1.05);
+            opacity: 0.85;
+          }
+          100% {
+            filter: blur(0px);
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
         @keyframes drawOval {
           0% {
-            stroke-dashoffset: 420;
+            stroke-dashoffset: 380;
           }
           100% {
             stroke-dashoffset: 0;
@@ -366,41 +451,94 @@ export default function SceneTemplate({ invitation }) {
       `}</style>
 
       {/* ========================================================
-          01. 상단 인트로 & 메인 풀스크린 커버 (영상 00:03 ~ 00:12 1:1 일치)
-          - 감성 문구 ➔ 한글 성함 ➔ 전면 메인 웨딩 사진
+          01. 상단 인트로 & 메인 풀스크린 커버 (영상 00:02 ~ 00:10 1:1 일치)
+          - 소개글 3줄 한 줄씩 페이드인 ➔ 끝에 신랑신부 이름 등장
+          - 2.8s: 사진이 중앙에서 쫘아악 펼쳐지며 소개글은 위로, 이름은 아래로 이동!
           ======================================================== */}
-      <section className="pt-20 pb-10 px-6 text-center select-none bg-white">
-        <ScrollReveal>
-          {/* 상단 감성 오프닝 문구 */}
-          <div className="text-xs sm:text-[13px] leading-[2.3] text-stone-600 font-light max-w-[310px] mx-auto mb-9 whitespace-pre-line tracking-tight">
-            함께하는 오늘이<br />
-            오래도록 기억될 아름다운 순간이 되기를 바라며<br />
-            저희의 결혼식에 초대합니다
-          </div>
+      <section className="min-h-[100dvh] sm:min-h-[820px] flex flex-col justify-center items-center px-6 py-12 bg-white relative overflow-hidden select-none">
+        
+        {/* 좌측 상단 BGM 재생 토글 버튼 (영상 00:03 좌측 상단 || 아이콘 1:1) */}
+        <button
+          type="button"
+          onClick={toggleBgm}
+          className="absolute left-6 top-6 z-20 w-8 h-8 flex items-center justify-center text-stone-500 hover:text-stone-900 cursor-pointer transition-colors"
+          aria-label="음악 재생/일시정지"
+        >
+          {isPlayingBgm ? (
+            <span className="font-mono text-sm tracking-tighter font-semibold">||</span>
+          ) : (
+            <span className="text-xs">▶</span>
+          )}
+        </button>
 
-          {/* 신랑 & 신부 한글 성함 */}
-          <h1 className="font-serif text-xl sm:text-[22px] tracking-[0.1em] text-[#111111] font-normal mb-8">
+        {/* 1. 상단 소개글 (처음엔 화면 중앙 위치 ➔ 사진 펼쳐질 때 위로 부드럽게 쑥 이동) */}
+        <div 
+          className={`w-full max-w-[320px] mx-auto text-center text-xs sm:text-[13px] leading-[2.4] text-stone-600 font-light whitespace-pre-line tracking-tight transition-all duration-[1800ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            heroStep >= 5 ? 'mb-6 translate-y-0' : 'mb-2 translate-y-8 sm:translate-y-10'
+          }`}
+        >
+          <p 
+            className={`transition-all duration-700 ease-out ${
+              heroStep >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
+            }`}
+          >
+            함께하는 오늘이
+          </p>
+          <p 
+            className={`transition-all duration-700 ease-out ${
+              heroStep >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
+            }`}
+          >
+            오래도록 기억될 아름다운 순간이 되기를 바라며
+          </p>
+          <p 
+            className={`transition-all duration-700 ease-out ${
+              heroStep >= 3 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
+            }`}
+          >
+            저희의 결혼식에 초대합니다
+          </p>
+        </div>
+
+        {/* 2. 중앙 메인 사진 (그리드 트랜지션 0fr -> 1fr로 덜컹거림 없이 아주 부드럽고 우아하게 서서히 펼쳐짐) */}
+        {mainImage && (
+          <div 
+            className={`w-full max-w-[380px] mx-auto grid transition-all duration-[1800ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              heroStep >= 5 
+                ? 'grid-rows-[1fr] my-4 opacity-100' 
+                : 'grid-rows-[0fr] my-0 opacity-0 pointer-events-none'
+            }`}
+          >
+            <div className="overflow-hidden">
+              <div className="w-full aspect-[4/5] sm:aspect-[3/4] overflow-hidden bg-stone-100 shadow-xs">
+                <img
+                  src={mainImage}
+                  alt="Main Wedding Couple"
+                  fetchPriority="high"
+                  className={`w-full h-full object-cover object-center transition-all duration-[2000ms] ease-out will-change-[filter,transform] ${
+                    heroStep >= 5 ? 'filter-none scale-100' : 'filter blur-[24px] scale-105'
+                  }`}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 3. 신랑신부 한글 성함 (처음엔 소개글 바로 밑 중앙에 페이드인 ➔ 사진 열릴 때 사진 아래로 부드럽게 쑥 이동!) */}
+        <div 
+          className={`w-full text-center transition-all duration-[1800ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            heroStep >= 5 ? 'mt-4 translate-y-0' : 'mt-2 translate-y-8 sm:translate-y-10'
+          }`}
+        >
+          <h1 
+            className={`font-serif text-lg sm:text-[21px] tracking-[0.12em] text-[#111111] font-normal transition-all duration-800 ease-out ${
+              heroStep >= 4 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
+            }`}
+          >
             {groomName} <span className="font-light text-stone-300 text-base mx-1.5">&</span> {brideName}
           </h1>
+        </div>
 
-          {/* 중앙 전면 메인 웨딩 사진 (여백 최소화 와이드 커버) */}
-          {mainImage && (
-            <div className="w-full aspect-[4/5] sm:aspect-[3/4] mx-auto overflow-hidden bg-stone-100 shadow-xs mb-3">
-              <img
-                src={mainImage}
-                alt="Main Wedding Couple"
-                className="w-full h-full object-cover object-center"
-              />
-            </div>
-          )}
-
-          {/* 사진 아래 영문/한글 이름 재노출 */}
-          <div className="text-center pt-2">
-            <span className="font-serif text-sm tracking-[0.08em] text-stone-800 font-light">
-              {groomName} <span className="font-light text-stone-300 mx-1">&</span> {brideName}
-            </span>
-          </div>
-        </ScrollReveal>
       </section>
 
       {/* ========================================================
@@ -420,18 +558,18 @@ export default function SceneTemplate({ invitation }) {
 
           {/* 신랑 & 신부 2단 정사각 인물 스냅 사진 */}
           <div className="grid grid-cols-2 gap-3 max-w-[330px] mx-auto mb-10">
-            <div className="aspect-square overflow-hidden bg-stone-100 shadow-2xs">
+            <div className="aspect-square overflow-hidden bg-stone-100 shadow-2xs group">
               <img
                 src={groomPhoto}
                 alt="Groom Portrait"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
             </div>
-            <div className="aspect-square overflow-hidden bg-stone-100 shadow-2xs">
+            <div className="aspect-square overflow-hidden bg-stone-100 shadow-2xs group">
               <img
                 src={bridePhoto}
                 alt="Bride Portrait"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
             </div>
           </div>
@@ -462,14 +600,18 @@ export default function SceneTemplate({ invitation }) {
       </section>
 
       {/* ========================================================
-          03. CALENDAR (순백 화이트 베이스 + 은은한 사진 페이드 + 타원 손그림 드로잉)
+          03. CALENDAR (순백 화이트 베이스 + 은은한 사진 페이드 + 스크롤 시 붓펜 드로잉)
           - 영상 00:19 ~ 00:22 1:1 일치
+          - 사용자가 캘린더를 보는 순간 빨간 타원형 원이 슥 그려집니다.
           ======================================================== */}
-      <section className="relative py-20 px-6 text-center overflow-hidden bg-white border-t border-stone-100">
+      <section 
+        ref={calendarRef}
+        className="relative py-20 px-6 text-center overflow-hidden bg-white border-t border-stone-100"
+      >
         {/* 은은한 배경 사진 페이드 */}
         {mainImage && (
           <div 
-            className="absolute inset-0 bg-cover bg-center opacity-[0.07] pointer-events-none filter blur-[1px]"
+            className="absolute inset-0 bg-cover bg-center opacity-[0.06] pointer-events-none filter blur-[2px]"
             style={{ backgroundImage: `url(${mainImage})` }}
           />
         )}
@@ -495,7 +637,7 @@ export default function SceneTemplate({ invitation }) {
                   </span>
                 </div>
 
-                {/* 2. 예식 당일 (날짜 + 텍스트 전체를 감싸는 빨간 타원형 손그림 애니메이션) */}
+                {/* 2. 예식 당일 (날짜 + 텍스트 전체를 감싸는 빨간 타원형 손그림 드로잉 모션) */}
                 <div className="py-2 relative flex flex-col items-center justify-center">
                   <span className="block font-mono text-[10px] tracking-wider text-stone-700 uppercase font-semibold mb-1">
                     {dateDetails.dayEn}
@@ -516,7 +658,7 @@ export default function SceneTemplate({ invitation }) {
                       </span>
                     </div>
 
-                    {/* 날짜와 텍스트를 함께 감싸는 큼직한 타원형 빨간색 손그림 드로잉 SVG */}
+                    {/* 날짜와 텍스트를 함께 감싸는 큼직한 타원형 빨간색 손그림 드로잉 SVG (뷰포트 진입 시 재생) */}
                     <svg
                       className="absolute -inset-2.5 w-[calc(100%+20px)] h-[calc(100%+20px)] pointer-events-none"
                       viewBox="0 0 120 140"
@@ -532,10 +674,12 @@ export default function SceneTemplate({ invitation }) {
                         strokeLinecap="round"
                         style={{
                           strokeDasharray: 380,
-                          strokeDashoffset: 0,
-                          animation: 'drawOval 1.5s ease-out forwards',
+                          strokeDashoffset: isCalendarInView ? 0 : 380,
+                          animation: isCalendarInView ? 'drawOval 1.4s cubic-bezier(0.25, 1, 0.5, 1) forwards' : 'none',
                           transform: 'rotate(-10deg)',
                           transformOrigin: '50% 50%',
+                          opacity: isCalendarInView ? 1 : 0,
+                          transition: 'opacity 0.2s ease-out',
                         }}
                       />
                     </svg>
@@ -569,6 +713,7 @@ export default function SceneTemplate({ invitation }) {
       {/* ========================================================
           04. INTERVIEW (신랑·신부 인터뷰 - 우리의 이야기)
           - 영상 00:23 ~ 00:36 1:1 일치
+          - 버튼 탭 시 화면 하단에서 스르륵 올라오는 바텀시트 슬라이드업 애니메이션
           ======================================================== */}
       {interviews && interviews.length > 0 && (
         <section className="py-20 px-6 text-center bg-white border-t border-stone-100">
@@ -599,6 +744,7 @@ export default function SceneTemplate({ invitation }) {
       {/* ========================================================
           05. GALLERY (와이드 2장 전면 + 3열 촘촘한 정사각 그리드)
           - 영상 00:37 ~ 00:49 1:1 일치
+          - 더보기 클릭 시 숨겨진 사진들이 스르륵 아래로 펼쳐지는 확장 모션
           ======================================================== */}
       {galleryImages.length > 0 && (
         <section className="py-20 px-6 bg-white border-t border-stone-100">
@@ -650,13 +796,13 @@ export default function SceneTemplate({ invitation }) {
               </div>
             )}
 
-            {/* 더보기 버튼 */}
+            {/* 더보기 버튼 (클릭 시 사진들이 부드럽게 펼쳐짐) */}
             {gridPhotos.length > 9 && !galleryExpanded && (
               <div className="text-center mt-6">
                 <button
                   type="button"
                   onClick={() => setGalleryExpanded(true)}
-                  className="px-6 py-2 rounded-full border border-stone-200 hover:border-stone-400 text-stone-600 text-xs font-light transition-colors cursor-pointer bg-white"
+                  className="px-6 py-2 rounded-full border border-stone-200 hover:border-stone-400 text-stone-600 text-xs font-light transition-colors cursor-pointer bg-white active:scale-95"
                 >
                   더보기 ({gridPhotos.length - 9}장) ↓
                 </button>
@@ -685,7 +831,7 @@ export default function SceneTemplate({ invitation }) {
             <button
               type="button"
               onClick={() => handleCopy(invitation?.venue_address, '예식장 주소가')}
-              className="text-[11px] text-stone-500 hover:text-stone-900 border border-stone-200 px-3 py-1 rounded-full cursor-pointer inline-flex items-center gap-1 bg-white"
+              className="text-[11px] text-stone-500 hover:text-stone-900 border border-stone-200 px-3 py-1 rounded-full cursor-pointer inline-flex items-center gap-1 bg-white active:scale-95 transition-all"
             >
               <span>주소복사</span>
             </button>
@@ -715,20 +861,19 @@ export default function SceneTemplate({ invitation }) {
             </div>
           )}
 
-          {/* 내비게이션 길안내 버튼 3개 */}
+          {/* 내비게이션 길안내 버튼 (카카오, 네이버) */}
           <div className="pt-5">
             <div className="flex items-center justify-between text-xs text-stone-700">
               <span className="font-medium text-stone-600">내비게이션</span>
               <div className="flex items-center gap-2">
                 {[
-                  { name: '티맵', url: `tmap://search?name=${encodeURIComponent(invitation?.venue_name || '')}` },
                   { name: '카카오', url: `kakaonavi://search?q=${encodeURIComponent(invitation?.venue_name || '')}` },
                   { name: '네이버', url: `nmap://action/search?query=${encodeURIComponent(invitation?.venue_name || '')}` },
                 ].map((nav) => (
                   <a
                     key={nav.name}
                     href={nav.url}
-                    className="px-3 py-1.5 bg-[#F9F9F9] hover:bg-stone-200/80 border border-stone-200 rounded-lg text-xs font-medium text-stone-800 transition-colors"
+                    className="px-3 py-1.5 bg-[#F9F9F9] hover:bg-stone-200/80 border border-stone-200 rounded-lg text-xs font-medium text-stone-800 transition-colors active:scale-95"
                   >
                     {nav.name}
                   </a>
@@ -740,8 +885,9 @@ export default function SceneTemplate({ invitation }) {
       </section>
 
       {/* ========================================================
-          07. ACCOUNT (마음 전하실 곳 - 아코디언)
+          07. ACCOUNT (마음 전하실 곳 - 부드러운 아코디언 애니메이션)
           - 순백 화이트 베이스 + 영상 00:56 ~ 01:00 1:1 일치
+          - 기본은 접힘 상태이며 누르면 화살표 회전과 함께 부드럽게 펼쳐집니다.
           ======================================================== */}
       {(groomAccounts.length > 0 || brideAccounts.length > 0) && (
         <section className="py-20 px-6 bg-white border-t border-stone-100">
@@ -762,81 +908,93 @@ export default function SceneTemplate({ invitation }) {
             <div className="space-y-3 max-w-[370px] mx-auto">
               {/* 신랑측 계좌 아코디언 */}
               {groomAccounts.length > 0 && (
-                <div className="bg-white rounded-xl border border-stone-200 shadow-2xs overflow-hidden">
+                <div className="bg-white rounded-xl border border-stone-200 shadow-2xs overflow-hidden transition-all duration-300">
                   <button
                     type="button"
                     onClick={() => setOpenGroomAccount(!openGroomAccount)}
                     className="w-full p-4 flex items-center justify-between text-xs font-semibold text-stone-800 cursor-pointer select-none"
                   >
                     <span>신랑측 계좌번호</span>
-                    <span className={`text-stone-400 transition-transform ${openGroomAccount ? 'rotate-180' : ''}`}>
+                    <span className={`text-stone-400 transition-transform duration-300 transform ${openGroomAccount ? 'rotate-180' : ''}`}>
                       ∨
                     </span>
                   </button>
 
-                  {openGroomAccount && (
-                    <div className="px-4 pb-4 space-y-2 pt-1 border-t border-stone-100">
-                      {groomAccounts.map((acc, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-3 bg-[#F9F9F9] rounded-xl text-xs border border-stone-100">
-                          <div>
-                            <span className="font-semibold text-stone-800 block">
-                              {acc.holder || acc.title} ({acc.bank})
-                            </span>
-                            <span className="font-mono text-stone-500 text-[11px]">
-                              {acc.number || acc.account_number}
-                            </span>
+                  <div 
+                    className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+                      openGroomAccount ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                    }`}
+                  >
+                    <div className="overflow-hidden">
+                      <div className="px-4 pb-4 space-y-2 pt-1 border-t border-stone-100">
+                        {groomAccounts.map((acc, idx) => (
+                          <div key={idx} className="flex items-center justify-between p-3 bg-[#F9F9F9] rounded-xl text-xs border border-stone-100">
+                            <div>
+                              <span className="font-semibold text-stone-800 block">
+                                {acc.holder || acc.title} ({acc.bank})
+                              </span>
+                              <span className="font-mono text-stone-500 text-[11px]">
+                                {acc.number || acc.account_number}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleCopy(acc.number || acc.account_number, `${acc.holder || acc.title} 계좌번호가`)}
+                              className="px-2.5 py-1 bg-white border border-stone-200 rounded-lg text-[11px] font-medium text-stone-700 hover:bg-stone-50 cursor-pointer shadow-2xs active:scale-95 transition-all"
+                            >
+                              복사하기
+                            </button>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => handleCopy(acc.number || acc.account_number, `${acc.holder || acc.title} 계좌번호가`)}
-                            className="px-2.5 py-1 bg-white border border-stone-200 rounded-lg text-[11px] font-medium text-stone-700 hover:bg-stone-50 cursor-pointer shadow-2xs"
-                          >
-                            복사하기
-                          </button>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  )}
+                  </div>
                 </div>
               )}
 
               {/* 신부측 계좌 아코디언 */}
               {brideAccounts.length > 0 && (
-                <div className="bg-white rounded-xl border border-stone-200 shadow-2xs overflow-hidden">
+                <div className="bg-white rounded-xl border border-stone-200 shadow-2xs overflow-hidden transition-all duration-300">
                   <button
                     type="button"
                     onClick={() => setOpenBrideAccount(!openBrideAccount)}
                     className="w-full p-4 flex items-center justify-between text-xs font-semibold text-stone-800 cursor-pointer select-none"
                   >
                     <span>신부측 계좌번호</span>
-                    <span className={`text-stone-400 transition-transform ${openBrideAccount ? 'rotate-180' : ''}`}>
+                    <span className={`text-stone-400 transition-transform duration-300 transform ${openBrideAccount ? 'rotate-180' : ''}`}>
                       ∨
                     </span>
                   </button>
 
-                  {openBrideAccount && (
-                    <div className="px-4 pb-4 space-y-2 pt-1 border-t border-stone-100">
-                      {brideAccounts.map((acc, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-3 bg-[#F9F9F9] rounded-xl text-xs border border-stone-100">
-                          <div>
-                            <span className="font-semibold text-stone-800 block">
-                              {acc.holder || acc.title} ({acc.bank})
-                            </span>
-                            <span className="font-mono text-stone-500 text-[11px]">
-                              {acc.number || acc.account_number}
-                            </span>
+                  <div 
+                    className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+                      openBrideAccount ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                    }`}
+                  >
+                    <div className="overflow-hidden">
+                      <div className="px-4 pb-4 space-y-2 pt-1 border-t border-stone-100">
+                        {brideAccounts.map((acc, idx) => (
+                          <div key={idx} className="flex items-center justify-between p-3 bg-[#F9F9F9] rounded-xl text-xs border border-stone-100">
+                            <div>
+                              <span className="font-semibold text-stone-800 block">
+                                {acc.holder || acc.title} ({acc.bank})
+                              </span>
+                              <span className="font-mono text-stone-500 text-[11px]">
+                                {acc.number || acc.account_number}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleCopy(acc.number || acc.account_number, `${acc.holder || acc.title} 계좌번호가`)}
+                              className="px-2.5 py-1 bg-white border border-stone-200 rounded-lg text-[11px] font-medium text-stone-700 hover:bg-stone-50 cursor-pointer shadow-2xs active:scale-95 transition-all"
+                            >
+                              복사하기
+                            </button>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => handleCopy(acc.number || acc.account_number, `${acc.holder || acc.title} 계좌번호가`)}
-                            className="px-2.5 py-1 bg-white border border-stone-200 rounded-lg text-[11px] font-medium text-stone-700 hover:bg-stone-50 cursor-pointer shadow-2xs"
-                          >
-                            복사하기
-                          </button>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  )}
+                  </div>
                 </div>
               )}
             </div>
@@ -847,6 +1005,7 @@ export default function SceneTemplate({ invitation }) {
       {/* ========================================================
           08. RSVP (확장형 인페이지 참석 여부 - 영상 01:01 ~ 01:09 1:1)
           - 순백 화이트 배경 & 영상 속 라디오 체크 스타일
+          - 참석 가능/불가 전환 시 부드러운 아코디언 확장 모션
           ======================================================== */}
       <section className="py-20 px-6 bg-white border-t border-stone-100">
         <ScrollReveal>
@@ -872,7 +1031,7 @@ export default function SceneTemplate({ invitation }) {
                 <button
                   type="button"
                   onClick={() => setRsvpAttend(true)}
-                  className={`py-3 px-4 rounded-xl text-xs font-medium border flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  className={`py-3 px-4 rounded-xl text-xs font-medium border flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95 ${
                     rsvpAttend
                       ? 'border-stone-900 bg-stone-900 text-white shadow-2xs'
                       : 'border-stone-200 bg-[#F9F9F9] text-stone-600'
@@ -884,7 +1043,7 @@ export default function SceneTemplate({ invitation }) {
                 <button
                   type="button"
                   onClick={() => setRsvpAttend(false)}
-                  className={`py-3 px-4 rounded-xl text-xs font-medium border flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  className={`py-3 px-4 rounded-xl text-xs font-medium border flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95 ${
                     !rsvpAttend
                       ? 'border-stone-900 bg-stone-900 text-white shadow-2xs'
                       : 'border-stone-200 bg-[#F9F9F9] text-stone-600'
@@ -935,9 +1094,13 @@ export default function SceneTemplate({ invitation }) {
               />
             </div>
 
-            {/* 참석 가능 시 추가 옵션들 */}
-            {rsvpAttend && (
-              <>
+            {/* 참석 가능 시 추가 옵션들 (부드러운 슬라이드다운 트랜지션) */}
+            <div 
+              className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+                rsvpAttend ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+              }`}
+            >
+              <div className="overflow-hidden space-y-5">
                 {/* 3. 참석 인원 수 카운터 */}
                 <div className="flex items-center justify-between py-1">
                   <span className="text-xs font-semibold text-stone-800">* 참석 인원</span>
@@ -945,7 +1108,7 @@ export default function SceneTemplate({ invitation }) {
                     <button
                       type="button"
                       onClick={() => setRsvpCount(Math.max(1, rsvpCount - 1))}
-                      className="w-6 h-6 flex items-center justify-center text-stone-600 font-bold hover:bg-stone-200 rounded-lg cursor-pointer"
+                      className="w-6 h-6 flex items-center justify-center text-stone-600 font-bold hover:bg-stone-200 rounded-lg cursor-pointer active:scale-90"
                     >
                       -
                     </button>
@@ -955,7 +1118,7 @@ export default function SceneTemplate({ invitation }) {
                     <button
                       type="button"
                       onClick={() => setRsvpCount(rsvpCount + 1)}
-                      className="w-6 h-6 flex items-center justify-center text-stone-600 font-bold hover:bg-stone-200 rounded-lg cursor-pointer"
+                      className="w-6 h-6 flex items-center justify-center text-stone-600 font-bold hover:bg-stone-200 rounded-lg cursor-pointer active:scale-90"
                     >
                       +
                     </button>
@@ -973,7 +1136,7 @@ export default function SceneTemplate({ invitation }) {
                         key={mealOpt}
                         type="button"
                         onClick={() => setRsvpMeal(mealOpt)}
-                        className={`py-2 px-2 rounded-xl text-[11px] font-medium border transition-all cursor-pointer ${
+                        className={`py-2 px-2 rounded-xl text-[11px] font-medium border transition-all cursor-pointer active:scale-95 ${
                           rsvpMeal === mealOpt
                             ? 'border-stone-900 bg-stone-900 text-white shadow-2xs'
                             : 'border-stone-200 bg-[#F9F9F9] text-stone-600'
@@ -996,7 +1159,7 @@ export default function SceneTemplate({ invitation }) {
                         key={busOpt}
                         type="button"
                         onClick={() => setRsvpBus(busOpt)}
-                        className={`py-2 px-3 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                        className={`py-2 px-3 rounded-xl text-xs font-medium border transition-all cursor-pointer active:scale-95 ${
                           rsvpBus === busOpt
                             ? 'border-stone-900 bg-stone-900 text-white shadow-2xs'
                             : 'border-stone-200 bg-[#F9F9F9] text-stone-600'
@@ -1007,8 +1170,8 @@ export default function SceneTemplate({ invitation }) {
                     ))}
                   </div>
                 </div>
-              </>
-            )}
+              </div>
+            </div>
 
             {/* 6. 개인정보 수집 및 이용 동의 */}
             <div className="p-3.5 bg-[#F9F9F9] rounded-xl border border-stone-200/70 text-[11px] text-stone-500 space-y-2">
@@ -1059,23 +1222,23 @@ export default function SceneTemplate({ invitation }) {
                 <button
                   type="button"
                   onClick={() => setInfoCardIndex((prev) => (prev > 0 ? prev - 1 : infoNotices.length - 1))}
-                  className="p-1 hover:text-stone-800 cursor-pointer text-sm font-mono"
+                  className="p-1 hover:text-stone-800 cursor-pointer text-sm font-mono active:scale-90 transition-transform"
                 >
                   〈
                 </button>
-                <h3 className="text-sm font-bold text-stone-900 tracking-tight">
+                <h3 className="text-sm font-bold text-stone-900 tracking-tight transition-opacity duration-300">
                   {infoNotices[infoCardIndex]?.title}
                 </h3>
                 <button
                   type="button"
                   onClick={() => setInfoCardIndex((prev) => (prev < infoNotices.length - 1 ? prev + 1 : 0))}
-                  className="p-1 hover:text-stone-800 cursor-pointer text-sm font-mono"
+                  className="p-1 hover:text-stone-800 cursor-pointer text-sm font-mono active:scale-90 transition-transform"
                 >
                   〉
                 </button>
               </div>
 
-              <p className="text-xs text-stone-600 leading-relaxed font-light whitespace-pre-line break-keep min-h-[60px] flex items-center justify-center">
+              <p className="text-xs text-stone-600 leading-relaxed font-light whitespace-pre-line break-keep min-h-[60px] flex items-center justify-center transition-opacity duration-300">
                 {infoNotices[infoCardIndex]?.content}
               </p>
 
@@ -1084,7 +1247,7 @@ export default function SceneTemplate({ invitation }) {
                   {infoNotices.map((_, i) => (
                     <span
                       key={i}
-                      className={`w-1.5 h-1.5 rounded-full transition-all ${
+                      className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
                         infoCardIndex === i ? 'bg-stone-800 w-3' : 'bg-stone-300'
                       }`}
                     />
@@ -1187,7 +1350,7 @@ export default function SceneTemplate({ invitation }) {
                             type="button"
                             onClick={() => setGuestbookPage((p) => Math.max(1, p - 1))}
                             disabled={guestbookPage === 1}
-                            className="hover:text-stone-900 disabled:opacity-30 cursor-pointer"
+                            className="hover:text-stone-900 disabled:opacity-30 cursor-pointer active:scale-90"
                           >
                             이전
                           </button>
@@ -1198,7 +1361,7 @@ export default function SceneTemplate({ invitation }) {
                             type="button"
                             onClick={() => setGuestbookPage((p) => Math.min(totalPages, p + 1))}
                             disabled={guestbookPage === totalPages}
-                            className="hover:text-stone-900 disabled:opacity-30 cursor-pointer"
+                            className="hover:text-stone-900 disabled:opacity-30 cursor-pointer active:scale-90"
                           >
                             다음
                           </button>
@@ -1222,7 +1385,7 @@ export default function SceneTemplate({ invitation }) {
             <button
               type="button"
               onClick={handleKakaoShare}
-              className="w-full py-3 bg-[#F9F9F9] hover:bg-[#F2F2F2] border border-stone-200 text-stone-800 text-xs font-medium rounded-xl transition-all cursor-pointer shadow-2xs flex items-center justify-center gap-2"
+              className="w-full py-3 bg-[#F9F9F9] hover:bg-[#F2F2F2] border border-stone-200 text-stone-800 text-xs font-medium rounded-xl transition-all cursor-pointer shadow-2xs flex items-center justify-center gap-2 active:scale-98"
             >
               <span>카카오톡으로 공유하기</span>
             </button>
@@ -1233,7 +1396,7 @@ export default function SceneTemplate({ invitation }) {
                   handleCopy(window.location.href, '청첩장 링크가');
                 }
               }}
-              className="w-full py-3 bg-white hover:bg-stone-50 border border-stone-200 text-stone-800 text-xs font-medium rounded-xl transition-all cursor-pointer shadow-2xs"
+              className="w-full py-3 bg-white hover:bg-stone-50 border border-stone-200 text-stone-800 text-xs font-medium rounded-xl transition-all cursor-pointer shadow-2xs active:scale-98"
             >
               청첩장 링크 복사하기
             </button>
@@ -1245,7 +1408,7 @@ export default function SceneTemplate({ invitation }) {
         </ScrollReveal>
       </footer>
 
-      {/* 신랑 & 신부 인터뷰 모달 */}
+      {/* 신랑 & 신부 인터뷰 모달 (바텀시트 슬라이드업 애니메이션) */}
       {interviewModalOpen && (
         <SceneInterviewModal
           isOpen={interviewModalOpen}

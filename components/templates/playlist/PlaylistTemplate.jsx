@@ -615,8 +615,8 @@ export default function PlaylistTemplate({ invitation }) {
             />
           </div>
 
-          {/* 길찾기 내비게이션 바로가기 버튼 */}
-          <div className="grid grid-cols-3 gap-2">
+          {/* 길찾기 내비게이션 바로가기 버튼 (카카오맵, 네이버지도) */}
+          <div className="grid grid-cols-2 gap-2">
             <a
               href={`https://map.kakao.com/link/search/${encodeURIComponent(invitation?.venue_name || '')}`}
               target="_blank"
@@ -624,12 +624,6 @@ export default function PlaylistTemplate({ invitation }) {
               className="py-2.5 rounded-xl bg-white hover:bg-stone-50 border border-stone-200/80 text-xs text-center text-stone-800 font-medium transition-colors shadow-2xs"
             >
               카카오맵
-            </a>
-            <a
-              href={`tmap://search?name=${encodeURIComponent(invitation?.venue_name || '')}`}
-              className="py-2.5 rounded-xl bg-white hover:bg-stone-50 border border-stone-200/80 text-xs text-center text-stone-800 font-medium transition-colors shadow-2xs"
-            >
-              티맵
             </a>
             <a
               href={`nmap://search?query=${encodeURIComponent(invitation?.venue_name || '')}&appname=wedding`}

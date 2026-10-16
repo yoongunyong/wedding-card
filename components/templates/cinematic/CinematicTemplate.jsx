@@ -868,9 +868,9 @@ export default function CinematicTemplate({ invitation }) {
               </div>
             )}
 
-            {/* 3대 내비게이션 버튼 (네이버 지도, 티맵, 카카오내비) */}
+            {/* 내비게이션 버튼 (네이버 지도, 카카오내비) */}
             {venueAddress && (
-              <div className="grid grid-cols-3 gap-2 max-w-[390px] mx-auto mb-10 text-xs font-medium font-sans">
+              <div className="grid grid-cols-2 gap-2 max-w-[390px] mx-auto mb-10 text-xs font-medium font-sans">
                 <button
                   type="button"
                   onClick={() => {
@@ -883,19 +883,6 @@ export default function CinematicTemplate({ invitation }) {
                 >
                   <span className="font-bold text-emerald-600">N</span>
                   <span>네이버 지도</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const q = invitation?.venue_name || venueAddress;
-                    window.open(`tmap://search?name=${encodeURIComponent(q)}`, '_blank');
-                  }}
-                  className={`py-3 px-2 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer ${
-                    isNightMode ? 'bg-stone-900 hover:bg-stone-800 text-stone-200' : 'bg-stone-100 hover:bg-stone-200 text-stone-800'
-                  }`}
-                >
-                  <span className="font-bold text-red-600">T</span>
-                  <span>티맵</span>
                 </button>
                 <button
                   type="button"

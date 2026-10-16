@@ -3,12 +3,29 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 export default function SceneGalleryModal({ isOpen, images = [], initialIndex = 0, onClose }) {
+  const [rendered, setRendered] = useState(isOpen);
+  const [active, setActive] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
   const isSwiping = useRef(false);
 
-  // initialIndex 변경 시 동기화
+  useEffect(() => {
+    if (isOpen) {
+      setRendered(true);
+      const raf = requestAnimationFrame(() => {
+        setActive(true);
+      });
+      return () => cancelAnimationFrame(raf);
+    } else {
+      setActive(false);
+      const timer = setTimeout(() => {
+        setRendered(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     setCurrentIndex(initialIndex);
   }, [initialIndex]);
@@ -47,25 +64,33 @@ export default function SceneGalleryModal({ isOpen, images = [], initialIndex = 
     touchEndX.current = 0;
   };
 
+  const handleClose = () => {
+    setActive(false);
+    setTimeout(() => {
+      onClose();
+    }, 300);
+  };
+
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') handleClose();
       if (e.key === 'ArrowLeft') prevImage();
       if (e.key === 'ArrowRight') nextImage();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose, prevImage, nextImage]);
+  }, [isOpen, prevImage, nextImage]);
 
-  // isOpen이 false이거나 이미지가 없으면 절대 렌더링하지 않음
-  if (!isOpen) return null;
+  if (!rendered) return null;
   if (!images || images.length === 0) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-black/95 select-none p-4 animate-in fade-in duration-200"
-      onClick={onClose}
+      className={`fixed inset-0 z-50 flex flex-col items-center justify-between bg-black/95 select-none p-4 transition-opacity duration-300 ease-out ${
+        active ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+      }`}
+      onClick={handleClose}
     >
       {/* 상단 인디케이터 & 닫기 */}
       <div 
@@ -77,7 +102,7 @@ export default function SceneGalleryModal({ isOpen, images = [], initialIndex = 
         </span>
         <button
           type="button"
-          onClick={onClose}
+          onClick={handleClose}
           className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-lg font-light transition-colors cursor-pointer"
           aria-label="닫기"
         >
@@ -94,9 +119,12 @@ export default function SceneGalleryModal({ isOpen, images = [], initialIndex = 
         onTouchEnd={handleTouchEnd}
       >
         <img
+          key={currentIndex}
           src={images[currentIndex]}
           alt={`Gallery ${currentIndex + 1}`}
-          className="max-h-[75vh] max-w-full object-contain rounded-lg shadow-2xl transition-all duration-300 select-none pointer-events-none"
+          className={`max-h-[75vh] max-w-full object-contain rounded-lg shadow-2xl transition-all duration-300 select-none pointer-events-none ${
+            active ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+          }`}
         />
 
         {/* 이전 버튼 */}

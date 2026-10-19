@@ -1,6 +1,6 @@
 # 💍 모바일 청첩장 프로젝트 인수인계 현황 (PROJECT_STATUS.md)
 
-> **최종 업데이트 일시**: 2026-10-16  
+> **최종 업데이트 일시**: 2026-10-19  
 > **프로젝트 경로**: `c:\Users\YOONGUNYONG\wedding-card`  
 > **핵심 프레임워크**: Next.js 16 (App Router, Turbopack) / Tailwind CSS / Supabase (PostgreSQL)  
 > **새 세션 시작 가이드**: 다른 PC나 새 채팅 세션에서 **"PROJECT_STATUS.md 읽고 이어서 작업하자"**라고 말씀하시면 AI가 이 문서의 모든 맥락을 즉시 파악하고 작업을 이어갑니다.
@@ -21,6 +21,9 @@
    - **`main` 브랜치**: 실제 고객이 접속하는 **100% 안정적인 프로덕션(운영) 라이브 환경**. 직접 작업 및 미검증 커밋 절대 금지.
    - **`dev` 브랜치**: 모든 신규 기능 개발, 버그 수정, 디자인 실험을 진행하는 **개발/테스트 브랜치**.
    - **배포 프로세스**: `dev`에서 개발 및 테스트 ➔ Vercel 프리뷰 또는 로컬에서 모바일 화면 완벽 검증 ➔ 이상 없을 시 `main`으로 병합(Merge)하여 운영 배포.
+5. **데이터베이스 완전 격리 원칙 (Prod vs Dev)**:
+   - **운영 DB (`ATELIER DE MUKIRU (Prod)`)**: 실제 유료 고객의 청첩장, 방명록, RSVP 데이터만 보관. Vercel `Production` 환경에만 연결.
+   - **개발 DB (`ATELIER DE MUKIRU (Dev)`)**: 로컬(`.env.local`) 및 Vercel 프리뷰(`All Pre-Production`) 전용. 자유로운 테스트/데이터 삭제 가능.
 
 ---
 
@@ -118,6 +121,10 @@
 12. **개발/운영 격리 브랜치 전략 'dev' 수립 및 전환 (2026-10-19)**:
     - 운영 라이브 사이트 무결성 보호 및 안정적인 배포 파이프라인을 위해 `dev` 개발 브랜치 신설.
     - 향후 모든 기능 개발 및 테스트는 `dev` 브랜치(Vercel 프리뷰)에서 진행 후 검증 완료 시 `main`으로 머지하는 프로세스 확립.
+13. **Supabase 개발 데이터베이스 분리 및 Vercel 환경변수 완벽 격리 (2026-10-19)**:
+    - 운영 DB(`ATELIER DE MUKIRU (Prod)`)와 개발 DB(`ATELIER DE MUKIRU (Dev)`)를 물리적으로 완전 분리.
+    - 운영 DB의 스펙(`wedding_date: text`, `manage_token: uuid`, 14개 RLS 정책, 2개 Storage 버킷)을 100% 동일하게 개발 DB에 복제 완료 (`scripts/setup-complete-db.sql`).
+    - 로컬 환경(`.env.local`) 및 Vercel 프리뷰 환경(`All Pre-Production`)은 개발 DB 키로 연결하고, Vercel 운영 환경(`Production`)은 운영 DB 키로 완벽 격리 검증 완료.
 
 ---
 

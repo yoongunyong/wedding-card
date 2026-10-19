@@ -11,7 +11,7 @@ const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'weddingadmin12
 export default function AdminDashboardPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
-  const [activeTab, setActiveTab] = useState('codes'); // 'codes' | 'invitations'
+  const [activeTab, setActiveTab] = useState('invitations'); // 'codes' | 'invitations' (기본: 청첩장 목록)
 
   // 1. 코드 목록 상태
   const [codes, setCodes] = useState([]);
@@ -28,6 +28,7 @@ export default function AdminDashboardPage() {
   const [selectedQrInv, setSelectedQrInv] = useState(null); // QR코드 모달 대상 청첩장
   const [selectedExpiryInv, setSelectedExpiryInv] = useState(null); // 만료일 조정 모달 대상 청첩장
   const [currentTimestamp, setCurrentTimestamp] = useState(0);
+  const [copiedNoticeSlug, setCopiedNoticeSlug] = useState(null); // 톡톡 안내문 복사 상태 피드백
 
   // 컴포넌트 마운트 시 현재 타임스탬프 설정 (렌더 중 Date.now 호출 방지)
   useEffect(() => {
@@ -222,6 +223,50 @@ export default function AdminDashboardPage() {
       }
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  // 고객 전달용 안내문 원클릭 복사 (네이버 톡톡 / 카카오톡 전송용)
+  const handleCopyCustomerNotice = (inv) => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const guestUrl = `${origin}/${inv.slug}`;
+    const manageUrl = `${origin}/manage/${inv.slug}?token=${inv.manage_token}`;
+
+    const text = `[ATELIER DE MUKIRU] 모바일 청첩장 안내
+
+안녕하세요, 신랑 ${inv.groom_name} ♥ 신부 ${inv.bride_name} 고객님!
+두 분의 모바일 청첩장이 정식 활성화되었습니다.
+
+🔗 하객 공유용 청첩장
+${guestUrl}
+
+⚙️ 신랑·신부 전용 관리 페이지
+${manageUrl}
+
+📌 전용 관리 페이지에서 하객 참석 여부(RSVP) 및 방명록을 실시간으로 확인하고, 사진이나 예식 정보를 언제든 수정하실 수 있습니다.
+📌 관리 링크는 분실되지 않도록 카카오톡 [나와의 채팅방] 또는 메모장에 꼭 보관해 두세요!
+
+감사합니다.
+ATELIER DE MUKIRU 드림`;
+
+    try {
+      if (navigator?.clipboard?.writeText) {
+        navigator.clipboard.writeText(text);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+      setCopiedNoticeSlug(inv.slug);
+      setTimeout(() => {
+        setCopiedNoticeSlug(null);
+      }, 2500);
+    } catch (copyErr) {
+      console.error('Copy notice error:', copyErr);
+      alert('안내문 복사 중 오류가 발생했습니다. 브라우저 권한을 확인해 주세요.');
     }
   };
 
@@ -592,7 +637,7 @@ export default function AdminDashboardPage() {
               <div>
                 <h3 className="text-base font-serif font-bold text-stone-900">제작된 청첩장 목록</h3>
                 <p className="text-xs text-stone-500 font-light">
-                  지인이 코드 없이 제작한 경우, 아래 활성화 스위치를 켜주시면 즉시 워터마크가 제거되고 정식 오픈됩니다.
+                  활성화 스위치를 켜면 즉시 워터마크가 제거되고 정식 서비스됩니다. <strong>[📋 안내문 복사]</strong>로 완성 링크를 고객에게 1초 만에 전송하세요.
                 </p>
               </div>
               <button
@@ -611,7 +656,7 @@ export default function AdminDashboardPage() {
               </div>
             ) : (
               <div className="overflow-x-auto -mx-2 sm:mx-0">
-                <table className="w-full min-w-[1080px] text-left text-xs text-stone-700 border-collapse">
+                <table className="w-full min-w-[1140px] text-left text-xs text-stone-700 border-collapse">
                   <thead className="bg-[#FAFAF9] text-stone-500 uppercase font-mono text-[11px] border-b border-stone-200/80">
                     <tr>
                       <th className="py-3.5 px-4 whitespace-nowrap font-medium">신랑 & 신부</th>
@@ -620,7 +665,7 @@ export default function AdminDashboardPage() {
                       <th className="py-3.5 px-4 whitespace-nowrap font-medium">서비스 만료일</th>
                       <th className="py-3.5 px-4 whitespace-nowrap font-medium">영문 주소 (URL)</th>
                       <th className="py-3.5 px-4 whitespace-nowrap font-medium">정식 활성화 상태</th>
-                      <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium">관리</th>
+                      <th className="py-3.5 px-4 text-center whitespace-nowrap font-medium">청첩장 관리 & 안내문</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-100 font-sans">
@@ -725,8 +770,20 @@ export default function AdminDashboardPage() {
                           </td>
 
                           {/* 7. 관리 버튼 그룹 */}
-                          <td className="py-4 px-4 text-right whitespace-nowrap">
-                            <div className="inline-flex items-center gap-1.5">
+                          <td className="py-4 px-4 text-center whitespace-nowrap">
+                            <div className="inline-flex items-center justify-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handleCopyCustomerNotice(inv)}
+                                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all inline-flex items-center gap-1 border shadow-2xs active:scale-98 ${
+                                  copiedNoticeSlug === inv.slug
+                                    ? 'bg-[#6A5A48] text-white border-[#6A5A48]'
+                                    : 'bg-[#F7F4EE] hover:bg-[#EFE9DF] text-[#6A5A48] border-[#DDD5C7]'
+                                }`}
+                                title="고객 전달용 완성 안내문 복사 (네이버 톡톡/카톡 전송)"
+                              >
+                                <span>{copiedNoticeSlug === inv.slug ? '✓ 복사완료!' : '📋 안내문 복사'}</span>
+                              </button>
                               <button
                                 type="button"
                                 onClick={() => setSelectedQrInv(inv)}

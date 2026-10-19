@@ -93,7 +93,12 @@
    - **시안 3 (플레이리스트)**: 본문 플레이어 바와 상단 플로팅 BGM 버튼 간 중복 노출을 해결하기 위해, 첫 화면에서는 상단 버튼을 자동 숨김 처리하고 스크롤 시 부드럽게 페이드인되도록 개선. 네이티브 오디오 이벤트(`onPlay`, `onPause`, `timeupdate`) 기반으로 두 플레이어 간 0초 무지연 실시간 양방향 동기화 구현.
    - **시안 4 (시네마틱)**: 우측 상단에서 BGM 아이콘과 100% 포개져 겹치던 테마 변경 버튼(`Brightly | Midnight`)을 좌측 상단(`fixed left-5`)으로 이동하여 좌우 완벽한 대칭 레이아웃 달성 및 겹침 버그 완전 해소.
    - **시안 5 (모던 씬)**: 좌측 상단에 혼자 별개의 재생/정지 아이콘으로 분리되어 있던 것을 다른 모든 시안과 100% 동일한 우측 상단 프리미엄 원형 블랙 이퀄라이저 파동 버튼으로 통일.
-8. **빌드 검증**:
+8. **RSVP(참석 의사 전달) 중복 방지(Upsert) 및 관리자 삭제 기능 적용 (2026-10-19)**:
+   - **전 시안(1~5) 동일 입력 통일**: 모든 템플릿(시안 1~5)에서 예외 없이 **'성함'**과 **'휴대전화 번호 뒤 4자리(숫자 4자리 고정)'**를 동일하게 입력받도록 표준화.
+   - **하객 재제출 시 덮어쓰기 (방안 1)**: 하객이 동일한 청첩장에서 동일한 성함과 휴대전화 뒤 4자리로 참석 의사를 다시 제출하면 새 Row를 생성하지 않고 기존 데이터를 최신 내용(참석/불참, 인원, 식사, 버스)으로 덮어쓰기(`UPDATE`)하여 총 참석 인원 및 식대 통계 왜곡을 원천 방지.
+   - **관리자 RSVP 개별 삭제 (방안 2)**: 신랑/신부 관리자 페이지(`/manage/[slug]`) 하객 응답 테이블에 [삭제] 버튼을 신설하여, 불필요하거나 잘못 입력된 참석 정보를 즉시 삭제할 수 있도록 구현.
+   - **DB 정책 스크립트**: Supabase RLS 정책(`scripts/setup-rsvp-rls.sql`) 생성.
+9. **빌드 검증**:
    - `npm run build` 성공 (0 error).
 
 ---
@@ -106,12 +111,17 @@
   - `components/templates/playlist/PlaylistTemplate.jsx` (시안 3)
   - `components/templates/cinematic/CinematicTemplate.jsx` (시안 4)
   - `components/templates/scene/SceneTemplate.jsx` (시안 5)
+- **RSVP 모달 및 폼**:
+  - `components/templates/basic/BasicRsvpModal.jsx` (시안 1 RSVP 모달)
+  - `components/templates/editorial/EditorialRsvpModal.jsx` (시안 2, 3, 4 RSVP 모달)
+  - `components/templates/scene/SceneTemplate.jsx` (시안 5 인페이지 RSVP)
 - **신청 및 관리 화면**:
   - `app/create/page.js` (최초 제작 신청 페이지)
   - `app/manage/[slug]/edit/page.js` (청첩장 수정 및 시안 변경 페이지)
-  - `app/manage/[slug]/page.js` (하객 명단 RSVP 관리 및 엑셀 CSV 다운로드)
+  - `app/manage/[slug]/page.js` (하객 명단 RSVP 관리, 개별 삭제, 엑셀 CSV 다운로드)
   - `app/[slug]/page.js` (하객 열람용 메인 청첩장 라우터)
 - **공통 컴포넌트 & 유틸**:
   - `lib/supabase.js` (Supabase 클라이언트)
   - `lib/imageCompressor.js` (이미지 압축)
   - `components/BgmPlayer.jsx` (전역 배경음악 제어기)
+  - `scripts/setup-rsvp-rls.sql` (RSVP UPDATE/DELETE RLS 정책 SQL)

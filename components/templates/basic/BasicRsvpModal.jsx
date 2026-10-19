@@ -19,27 +19,73 @@ export default function BasicRsvpModal({ invitationId, onClose }) {
       return;
     }
     if (!name.trim()) return alert('성함을 입력해 주세요.');
-    if (!phone.trim()) return alert('핸드폰 번호 뒤 4자리를 입력해 주세요.');
+    const cleanPhone = phone.trim().replace(/\D/g, '');
+    if (cleanPhone.length !== 4) return alert('휴대전화 번호 뒤 4자리를 정확히 입력해 주세요.');
 
     setLoading(true);
-    const { error } = await supabase.from('rsvp').insert([
-      {
-        invitation_id: invitationId,
-        side,
-        attend,
-        name: name.trim(),
-        companion_count: attend ? (parseInt(companionCount, 10) || 0) : 0,
-        phone: phone.trim(),
-        meal: null,
-      },
-    ]);
+    const cleanName = name.trim();
+    const phoneDigits = cleanPhone;
+
+    // 1. 기존 동일 하객(성함 + 연락처) 등록 여부 조회
+    const { data: existingRows } = await supabase
+      .from('rsvp')
+      .select('id, name, phone')
+      .eq('invitation_id', invitationId)
+      .eq('name', cleanName);
+
+    let matchedId = null;
+    if (existingRows && existingRows.length > 0) {
+      const match = existingRows.find((row) => {
+        const rowDigits = (row.phone || '').replace(/\D/g, '');
+        if (!rowDigits || !phoneDigits) {
+          return existingRows.length === 1;
+        }
+        return rowDigits === phoneDigits || rowDigits.endsWith(phoneDigits) || phoneDigits.endsWith(rowDigits);
+      });
+      if (match) {
+        matchedId = match.id;
+      }
+    }
+
+    const payload = {
+      invitation_id: invitationId,
+      side,
+      attend,
+      name: cleanName,
+      companion_count: attend ? (parseInt(companionCount, 10) || 0) : 0,
+      phone: cleanPhone,
+      meal: null,
+    };
+
+    let error = null;
+    let isUpdated = false;
+
+    if (matchedId) {
+      // 기존 내역 최신 내용으로 덮어쓰기 (UPDATE)
+      const res = await supabase
+        .from('rsvp')
+        .update(payload)
+        .eq('id', matchedId);
+      error = res.error;
+      isUpdated = true;
+    } else {
+      // 신규 등록 (INSERT)
+      const res = await supabase
+        .from('rsvp')
+        .insert([payload]);
+      error = res.error;
+    }
 
     setLoading(false);
     if (error) {
       console.error('RSVP 등록 에러:', error);
       alert('참석 정보 전달 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
     } else {
-      alert('소중한 참석 의사가 잘 전달되었습니다. 감사합니다!');
+      if (isUpdated) {
+        alert('이전에 제출하신 참석 정보가 최신 내용으로 안전하게 변경되었습니다. 감사합니다!');
+      } else {
+        alert('소중한 참석 의사가 잘 전달되었습니다. 감사합니다!');
+      }
       if (onClose) onClose();
     }
   };
@@ -169,18 +215,20 @@ export default function BasicRsvpModal({ invitationId, onClose }) {
             </div>
           )}
 
-          {/* 5. 핸드폰 번호 뒤 4자리 */}
+          {/* 5. 휴대전화 번호 뒤 4자리 */}
           <div>
             <label className="block text-[13px] font-medium text-stone-700 mb-1.5">
-              동명이인 체크를 위한 번호를 알려주세요.
+              휴대전화 번호 뒤 4자리
             </label>
             <input
-              type="text"
+              type="tel"
+              inputMode="numeric"
+              pattern="[0-9]*"
               required
               maxLength={4}
-              placeholder="핸드폰 번호 뒤 4자리"
+              placeholder="동명이인 구분을 위한 번호 뒤 4자리 (예: 1234)"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 4))}
               className="w-full px-3.5 py-3 border border-stone-200 rounded-xl text-stone-800 placeholder-stone-400 text-xs focus:outline-none focus:border-stone-700 transition-colors"
             />
           </div>

@@ -73,6 +73,7 @@ export default function SceneTemplate({ invitation }) {
   // 6. 인페이지 RSVP 폼 상태 (영상 1:1 일치)
   const [rsvpAttend, setRsvpAttend] = useState(true); // true: 참석 가능, false: 참석 불가
   const [rsvpName, setRsvpName] = useState('');
+  const [rsvpPhone, setRsvpPhone] = useState('');
   const [rsvpSide, setRsvpSide] = useState('groom'); // 'groom' | 'bride'
   const [rsvpCount, setRsvpCount] = useState(1);
   const [rsvpMeal, setRsvpMeal] = useState('식사 가능'); // '미정' | '식사 가능' | '식사 불가'
@@ -365,31 +366,78 @@ export default function SceneTemplate({ invitation }) {
     if (!rsvpName.trim()) {
       return alert('성함을 입력해 주세요.');
     }
+    const cleanPhone = rsvpPhone.trim().replace(/\D/g, '');
+    if (cleanPhone.length !== 4) {
+      return alert('휴대전화 번호 뒤 4자리를 정확히 입력해 주세요.');
+    }
     if (!rsvpConsent) {
       return alert('개인정보 수집 및 이용에 동의해 주세요.');
     }
 
     setSubmittingRsvp(true);
-    const { error } = await supabase.from('rsvp').insert([
-      {
-        invitation_id: invitation.id,
-        name: rsvpName.trim(),
-        side: rsvpSide,
-        attend: rsvpAttend,
-        companion_count: rsvpAttend ? Math.max(0, rsvpCount - 1) : 0,
-        meal: rsvpAttend ? rsvpMeal : null,
-        bus: (rsvpAttend && showBusOption) ? rsvpBus : null,
-        phone: '',
-      },
-    ]);
+    const cleanName = rsvpName.trim();
+
+    // 1. 기존 동일 하객(성함 + 휴대전화 번호 뒤 4자리) 등록 여부 조회
+    const { data: existingRows } = await supabase
+      .from('rsvp')
+      .select('id, name, phone, side')
+      .eq('invitation_id', invitation.id)
+      .eq('name', cleanName);
+
+    let matchedId = null;
+    if (existingRows && existingRows.length > 0) {
+      const match = existingRows.find((row) => {
+        const rowDigits = (row.phone || '').replace(/\D/g, '');
+        if (!rowDigits) return existingRows.length === 1;
+        return rowDigits === cleanPhone || rowDigits.endsWith(cleanPhone) || cleanPhone.endsWith(rowDigits);
+      });
+      if (match) {
+        matchedId = match.id;
+      }
+    }
+
+    const payload = {
+      invitation_id: invitation.id,
+      name: cleanName,
+      side: rsvpSide,
+      attend: rsvpAttend,
+      companion_count: rsvpAttend ? Math.max(0, rsvpCount - 1) : 0,
+      meal: rsvpAttend ? rsvpMeal : null,
+      bus: (rsvpAttend && showBusOption) ? rsvpBus : null,
+      phone: cleanPhone,
+    };
+
+    let error = null;
+    let isUpdated = false;
+
+    if (matchedId) {
+      // 기존 내역 최신 내용으로 덮어쓰기 (UPDATE)
+      const res = await supabase
+        .from('rsvp')
+        .update(payload)
+        .eq('id', matchedId);
+      error = res.error;
+      isUpdated = true;
+    } else {
+      // 신규 등록 (INSERT)
+      const res = await supabase
+        .from('rsvp')
+        .insert([payload]);
+      error = res.error;
+    }
 
     setSubmittingRsvp(false);
     if (error) {
       console.error('RSVP 등록 에러:', error);
       alert('참석 정보 전달 중 오류가 발생했습니다. 다시 시도해 주세요.');
     } else {
-      alert('소중한 참석 의사가 전달되었습니다. 진심으로 감사드립니다!');
+      if (isUpdated) {
+        alert('이전에 제출하신 참석 정보가 최신 내용으로 안전하게 변경되었습니다. 진심으로 감사드립니다!');
+      } else {
+        alert('소중한 참석 의사가 전달되었습니다. 진심으로 감사드립니다!');
+      }
       setRsvpName('');
+      setRsvpPhone('');
       setRsvpConsent(false);
     }
   };
@@ -1225,6 +1273,24 @@ export default function SceneTemplate({ invitation }) {
               />
             </div>
 
+            {/* 2-1. 휴대전화 번호 뒤 4자리 */}
+            <div>
+              <span className="block text-xs font-semibold text-stone-800 mb-2 text-left">
+                <span className="text-rose-500 mr-1">*</span>휴대전화 번호 뒤 4자리
+              </span>
+              <input
+                type="tel"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                required
+                maxLength={4}
+                value={rsvpPhone}
+                onChange={(e) => setRsvpPhone(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                placeholder="동명이인 구분을 위한 번호 뒤 4자리 (예: 1234)"
+                className="w-full px-3.5 py-3 bg-[#FAFAFA] border border-stone-200 rounded-xl text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-400"
+              />
+            </div>
+
             {/* 참석 가능 시 추가 옵션들 (부드러운 슬라이드다운 트랜지션) */}
             <div 
               className={`grid transition-[grid-template-rows] duration-300 ease-out ${
@@ -1341,7 +1407,7 @@ export default function SceneTemplate({ invitation }) {
                 <span>개인정보 수집 및 이용에 동의합니다.</span>
               </label>
               <div className="text-[10px] text-stone-400 font-light leading-relaxed pl-6 space-y-0.5">
-                <p>수집 항목: 성함, 참석 여부, 신랑·신부 측 구분, 참석 인원, 식사 여부{showBusOption ? ', 전세버스 탑승 여부' : ''}</p>
+                <p>수집 항목: 성함, 휴대전화 번호 뒤 4자리, 참석 여부, 신랑·신부 측 구분, 참석 인원, 식사 여부{showBusOption ? ', 전세버스 탑승 여부' : ''}</p>
                 <p>이용 목적: 예식 참석 인원, 식사{showBusOption ? ' 및 전세버스 탑승 인원' : ''} 확인</p>
                 <p>보관 기간: 예식 종료 후 즉시 파기</p>
               </div>

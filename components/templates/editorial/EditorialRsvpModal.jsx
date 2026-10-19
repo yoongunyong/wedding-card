@@ -19,27 +19,73 @@ export default function EditorialRsvpModal({ invitationId, onClose }) {
       return;
     }
     if (!name.trim()) return alert('성함을 입력해 주세요.');
-    if (!phone.trim()) return alert('연락처(핸드폰 번호 또는 뒤 4자리)를 입력해 주세요.');
+    const cleanPhone = phone.trim().replace(/\D/g, '');
+    if (cleanPhone.length !== 4) return alert('휴대전화 번호 뒤 4자리를 정확히 입력해 주세요.');
 
     setLoading(true);
-    const { error } = await supabase.from('rsvp').insert([
-      {
-        invitation_id: invitationId,
-        side,
-        attend,
-        name: name.trim(),
-        companion_count: attend ? (parseInt(companionCount, 10) || 0) : 0,
-        phone: phone.trim(),
-        meal: null,
-      },
-    ]);
+    const cleanName = name.trim();
+    const phoneDigits = cleanPhone;
+
+    // 1. 기존 동일 하객(성함 + 연락처) 등록 여부 조회
+    const { data: existingRows } = await supabase
+      .from('rsvp')
+      .select('id, name, phone')
+      .eq('invitation_id', invitationId)
+      .eq('name', cleanName);
+
+    let matchedId = null;
+    if (existingRows && existingRows.length > 0) {
+      const match = existingRows.find((row) => {
+        const rowDigits = (row.phone || '').replace(/\D/g, '');
+        if (!rowDigits || !phoneDigits) {
+          return existingRows.length === 1;
+        }
+        return rowDigits === phoneDigits || rowDigits.endsWith(phoneDigits) || phoneDigits.endsWith(rowDigits);
+      });
+      if (match) {
+        matchedId = match.id;
+      }
+    }
+
+    const payload = {
+      invitation_id: invitationId,
+      side,
+      attend,
+      name: cleanName,
+      companion_count: attend ? (parseInt(companionCount, 10) || 0) : 0,
+      phone: cleanPhone,
+      meal: null,
+    };
+
+    let error = null;
+    let isUpdated = false;
+
+    if (matchedId) {
+      // 기존 내역 최신 내용으로 덮어쓰기 (UPDATE)
+      const res = await supabase
+        .from('rsvp')
+        .update(payload)
+        .eq('id', matchedId);
+      error = res.error;
+      isUpdated = true;
+    } else {
+      // 신규 등록 (INSERT)
+      const res = await supabase
+        .from('rsvp')
+        .insert([payload]);
+      error = res.error;
+    }
 
     setLoading(false);
     if (error) {
       console.error('RSVP 등록 에러:', error);
       alert('참석 정보 전달 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
     } else {
-      alert('소중한 참석 의사가 전달되었습니다. 진심으로 감사드립니다.');
+      if (isUpdated) {
+        alert('이전에 제출하신 참석 정보가 최신 내용으로 안전하게 변경되었습니다. 진심으로 감사드립니다.');
+      } else {
+        alert('소중한 참석 의사가 전달되었습니다. 진심으로 감사드립니다.');
+      }
       if (onClose) onClose();
     }
   };
@@ -171,17 +217,20 @@ export default function EditorialRsvpModal({ invitationId, onClose }) {
             </div>
           )}
 
-          {/* 5. 연락처 */}
+          {/* 5. 휴대전화 번호 뒤 4자리 */}
           <div>
             <span className="font-editorial-serif text-[11px] tracking-widest uppercase text-stone-400 block mb-1.5 font-semibold">
-              05 · CONTACT NUMBER *
+              05 · PHONE LAST 4 DIGITS *
             </span>
             <input
               type="tel"
+              inputMode="numeric"
+              pattern="[0-9]*"
               required
+              maxLength={4}
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="핸드폰 번호 또는 뒤 4자리"
+              onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 4))}
+              placeholder="휴대전화 번호 뒤 4자리 (예: 1234)"
               className="w-full px-3.5 py-2.5 bg-white border border-stone-300 text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 text-xs font-sans transition-colors"
             />
           </div>

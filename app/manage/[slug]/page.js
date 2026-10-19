@@ -112,6 +112,26 @@ export default function ManageRsvpPage({ params }) {
     document.body.removeChild(link);
   };
 
+  // 관리자 RSVP 참석 정보 삭제
+  const handleDeleteRsvp = async (id, name) => {
+    if (!confirm(`'${name}' 님의 참석 정보를 정말 삭제하시겠습니까?`)) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from('rsvp')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('RSVP 삭제 오류:', error);
+      alert('삭제 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+    } else {
+      setRsvpList((prev) => prev.filter((item) => item.id !== id));
+      alert('참석 정보가 삭제되었습니다.');
+    }
+  };
+
   // 관리자 방명록 삭제 (비밀번호 불필요)
   const handleDeleteGuestbook = async (id, author) => {
     if (!confirm(`'${author}' 님의 방명록을 정말 삭제하시겠습니까?`)) {
@@ -270,12 +290,13 @@ export default function ManageRsvpPage({ params }) {
                 <th className="py-2.5 px-3 text-center">식사 여부</th>
                 <th className="py-2.5 px-3 text-center">전세버스</th>
                 <th className="py-2.5 px-3 whitespace-nowrap">등록일시</th>
+                <th className="py-2.5 px-3 text-center whitespace-nowrap">관리</th>
               </tr>
             </thead>
             <tbody>
               {rsvpList.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-stone-400">
+                  <td colSpan={9} className="py-8 text-center text-stone-400">
                     아직 등록된 참석 의사가 없습니다.
                   </td>
                 </tr>
@@ -309,6 +330,15 @@ export default function ManageRsvpPage({ params }) {
                     </td>
                     <td className="py-3 px-3 text-stone-500 whitespace-nowrap">
                       {formatDate(row.created_at)}
+                    </td>
+                    <td className="py-3 px-3 text-center whitespace-nowrap">
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteRsvp(row.id, row.name)}
+                        className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 font-medium rounded text-[11px] transition-colors cursor-pointer"
+                      >
+                        삭제
+                      </button>
                     </td>
                   </tr>
                 ))

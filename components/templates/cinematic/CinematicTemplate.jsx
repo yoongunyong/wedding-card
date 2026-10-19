@@ -1076,8 +1076,8 @@ export default function CinematicTemplate({ invitation }) {
               >
                 Ways to send your love
               </p>
-              <p className="font-mono text-[11px] text-stone-400 tracking-wider mb-6">
-                ATELIER DE MARIAGE
+              <p className="font-mono text-[10px] text-stone-400 tracking-widest uppercase mb-6">
+                Designed by ATELIER DE MUKIRU
               </p>
             </div>
           </ScrollReveal>

@@ -32,7 +32,7 @@ export default function SampleWatermark() {
                 SAMPLE PREVIEW
               </span>
               <span className="text-[10px] font-mono tracking-[0.3em] uppercase block opacity-80 mt-1">
-                ATELIER DE MARIAGE
+                ATELIER DE MUKIRU
               </span>
             </div>
           ))}

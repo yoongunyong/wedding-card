@@ -1298,7 +1298,7 @@ export default function CreateInvitationPage() {
       >
         <div className="w-full max-w-lg bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-8 sm:p-10 text-center border border-stone-200/80">
           <p className="text-[11px] font-mono tracking-[0.25em] text-stone-400 uppercase mb-3">
-            ATELIER DE MARIAGE — COMPLETED
+            ATELIER DE MUKIRU — COMPLETED
           </p>
           <h1 className="text-2xl sm:text-[26px] font-serif text-stone-900 mb-2 font-normal tracking-tight">
             모바일 청첩장이 완성되었습니다
@@ -1487,7 +1487,7 @@ export default function CreateInvitationPage() {
         {/* 상단 헤더 - 시니컬 & 감성 에디토리얼 */}
         <div className="text-center mb-12 pt-2">
           <p className="text-[11px] font-mono tracking-[0.28em] text-stone-400 uppercase mb-3 font-medium">
-            ATELIER DE MARIAGE — BESPOKE ORDER
+            ATELIER DE MUKIRU — BESPOKE ORDER
           </p>
           <h1 className="text-2xl sm:text-[32px] font-serif tracking-tight text-stone-900 font-normal mb-3">
             모바일 청첩장 셀프 제작 신청

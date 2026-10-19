@@ -109,20 +109,20 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
           <Link href="/" className="flex flex-col text-left">
             <span className="font-editorial-serif text-[18px] sm:text-[20px] tracking-[0.2em] font-medium uppercase text-stone-900">
-              ATELIER DE MARIAGE
+              ATELIER DE MUKIRU
             </span>
             <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase -mt-0.5">
               BOUTIQUE WEDDING CARD
             </span>
           </Link>
 
-          <div className="flex items-center gap-3">
-            <Link
-              href="/admin"
-              className="text-xs text-stone-400 hover:text-stone-700 transition-colors hidden sm:inline"
+          <div className="flex items-center gap-4">
+            <a
+              href="#templates"
+              className="text-xs text-stone-500 hover:text-stone-900 transition-colors hidden sm:inline"
             >
-              관리자 로그인
-            </Link>
+              시안 5종 둘러보기
+            </a>
             <Link
               href="/create"
               className="px-4 py-2 bg-stone-900 hover:bg-black text-white text-xs font-medium rounded-full shadow-xs transition-all active:scale-95"
@@ -143,7 +143,7 @@ export default function HomePage() {
         </h1>
         <p className="font-serif text-sm sm:text-base text-stone-600 leading-relaxed font-light max-w-xl mx-auto mb-10 break-keep">
           형식적인 템플릿을 넘어, 두 사람의 취향과 분위기에 맞춘 독보적인 감각.<br className="hidden sm:inline" />
-          마치 영화나 잡지, 바이닐 음반을 펼치듯 완성도 높은 네 가지 시안을 직접 스마트폰으로 경험해 보세요.
+          마치 영화나 잡지, 바이닐 음반을 펼치듯 완성도 높은 다섯 가지 시안을 직접 스마트폰으로 경험해 보세요.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-sm mx-auto">
@@ -233,6 +233,17 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+
+          {/* 디자인 저작권 보호 안내 배너 */}
+          <div className="mt-14 p-5 sm:p-6 bg-[#FAF9F5] border border-stone-200/90 rounded-2xl text-center max-w-2xl mx-auto shadow-2xs">
+            <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-stone-400 font-semibold block mb-1.5">
+              DESIGN INTELLECTUAL PROPERTY NOTICE
+            </span>
+            <p className="text-xs text-stone-600 font-light leading-relaxed break-keep">
+              <strong className="text-stone-800 font-medium">ATELIER DE MUKIRU</strong>의 모든 모바일 청첩장 시안(1~5종) 및 인터랙션 모션, UI 레이아웃은 저작권법의 보호를 받는 고유 창작물입니다.<br className="hidden sm:inline" />
+              무단 복제, 유사 디자인 도용 및 상업적 무단 배포 시 민·형사상 법적 조치가 진행될 수 있습니다.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -240,7 +251,7 @@ export default function HomePage() {
       <section className="py-20 px-6 max-w-5xl mx-auto">
         <div className="text-center mb-14">
           <span className="font-mono text-xs text-stone-400 tracking-[0.25em] uppercase font-semibold block mb-2">
-            WHY ATELIER
+            WHY ATELIER DE MUKIRU
           </span>
           <h2 className="font-editorial-title text-3xl sm:text-4xl text-stone-900 font-normal">
             더 안심되고 편리한 웨딩 서비스
@@ -320,22 +331,22 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="text-center sm:text-left">
             <p className="font-editorial-serif text-sm tracking-widest uppercase text-stone-200 font-medium mb-1">
-              ATELIER DE MARIAGE
+              ATELIER DE MUKIRU
             </p>
             <p className="text-[11px] text-stone-500 font-light">
-              단 하나의 특별한 순간을 완성하는 프리미엄 모바일 청첩장 아틀리에
+              단 하나의 특별한 순간을 완성하는 프리미엄 모바일 청첩장 아틀리에, 무키루(MUKIRU)
             </p>
           </div>
 
-          <div className="flex items-center gap-6 text-[11px] text-stone-400">
+          <div className="flex items-center gap-5 text-[11px] text-stone-400">
+            <a href="#templates" className="hover:text-stone-200 transition-colors">
+              시안 5종 둘러보기
+            </a>
             <Link href="/create" className="hover:text-stone-200 transition-colors">
               청첩장 제작
             </Link>
-            <Link href="/admin" className="hover:text-stone-200 transition-colors">
-              관리자 페이지
-            </Link>
-            <span className="text-stone-600">|</span>
-            <span className="font-mono text-stone-500">&copy; {new Date().getFullYear()} ATELIER DE MARIAGE.</span>
+            <span className="text-stone-700">|</span>
+            <span className="font-mono text-stone-500">&copy; {new Date().getFullYear()} ATELIER DE MUKIRU. All rights reserved.</span>
           </div>
         </div>
       </footer>

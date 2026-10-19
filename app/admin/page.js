@@ -338,7 +338,7 @@ export default function AdminDashboardPage() {
       <div className="min-h-screen bg-[#F6F5F2] flex items-center justify-center p-4 text-stone-900 font-sans">
         <div className="w-full max-w-sm bg-white rounded-3xl p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-stone-200 text-center">
           <p className="text-[11px] font-mono tracking-[0.25em] text-stone-400 uppercase mb-2">
-            ATELIER DE MARIAGE
+            ATELIER DE MUKIRU
           </p>
           <h1 className="text-xl font-serif text-stone-900 mb-6 font-semibold">
             총괄 관리자 로그인
@@ -381,7 +381,7 @@ export default function AdminDashboardPage() {
               <span className="text-[10px] font-mono tracking-widest text-white bg-stone-900 px-2.5 py-0.5 rounded-full font-semibold uppercase">
                 ADMIN CONSOLE
               </span>
-              <span className="text-xs text-stone-400 font-mono">ATELIER MASTER</span>
+              <span className="text-xs text-stone-400 font-mono">MUKIRU MASTER</span>
             </div>
             <h1 className="text-2xl font-serif font-bold text-stone-900 tracking-tight">
               모바일 청첩장 총괄 관리 대시보드

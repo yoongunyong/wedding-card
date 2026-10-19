@@ -1439,6 +1439,11 @@ export default function BasicTemplate({ invitation }) {
               링크 복사하기
             </button>
           </div>
+          <div className="text-center mt-12 pb-4">
+            <p className="font-mono text-[10px] tracking-widest text-stone-400 uppercase select-none">
+              Designed by ATELIER DE MUKIRU
+            </p>
+          </div>
         </ScrollReveal>
       </section>
 

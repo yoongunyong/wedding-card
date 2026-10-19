@@ -894,6 +894,9 @@ export default function PlaylistTemplate({ invitation }) {
           <p className="font-mono text-[10px] tracking-widest text-stone-400 uppercase">
             &copy; {year} {coupleNamesEn}. ALL RIGHTS RESERVED.
           </p>
+          <p className="font-mono text-[9px] tracking-widest text-stone-400/80 uppercase mt-1 select-none">
+            Designed by ATELIER DE MUKIRU
+          </p>
         </ScrollReveal>
       </section>
 

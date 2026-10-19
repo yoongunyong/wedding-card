@@ -1213,6 +1213,9 @@ export default function EditorialTemplate({ invitation }) {
               <span className="font-mono text-[9px] tracking-[0.3em] text-stone-400">
                 {calendarData ? `ISSUE · ${calendarData.year}${String(calendarData.month).padStart(2, '0')}${String(calendarData.weddingDay).padStart(2, '0')} · FOREVER` : 'WEDDING LOOKBOOK · FOREVER'}
               </span>
+              <p className="font-mono text-[9px] tracking-widest text-stone-400 uppercase mt-4 select-none">
+                Designed by ATELIER DE MUKIRU
+              </p>
             </div>
           </div>
         </ScrollReveal>

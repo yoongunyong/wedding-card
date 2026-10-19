@@ -32,7 +32,7 @@ export default function ExpiredWeddingCard({ invitation }) {
         
         {/* 상단 레이블 */}
         <p className="text-[10px] font-mono tracking-[0.3em] uppercase text-stone-400 mb-3">
-          ATELIER DE MARIAGE · ARCHIVE
+          ATELIER DE MUKIRU · ARCHIVE
         </p>
 
         {/* 웨딩 대표 썸네일 (은은한 흑백 감성) */}
@@ -80,7 +80,7 @@ export default function ExpiredWeddingCard({ invitation }) {
 
         <div className="pt-6 border-t border-stone-100 flex flex-col items-center gap-1.5">
           <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase">
-            ATELIER DE MARIAGE
+            ATELIER DE MUKIRU
           </span>
           <span className="text-[9px] text-stone-300 font-light">
             아름다운 순간을 기록하는 감성 모바일 청첩장

@@ -18,8 +18,15 @@ export const viewport = {
 };
 
 export const metadata = {
-  title: '모바일 청첩장',
-  description: '소중한 분들을 초대합니다.',
+  title: 'ATELIER DE MUKIRU (아틀리에 드 무키루) — 감성 프리미엄 모바일 청첩장',
+  description: '단 하나의 소중한 순간을 완성하는 부티크 모바일 청첩장 아틀리에, 무키루(MUKIRU)',
+  openGraph: {
+    title: 'ATELIER DE MUKIRU — 감성 프리미엄 모바일 청첩장',
+    description: '단 하나의 소중한 순간을 완성하는 부티크 모바일 청첩장 아틀리에, 무키루(MUKIRU)',
+    siteName: 'ATELIER DE MUKIRU',
+    locale: 'ko_KR',
+    type: 'website',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent', 

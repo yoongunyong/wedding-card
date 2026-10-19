@@ -1636,8 +1636,8 @@ export default function SceneTemplate({ invitation }) {
             </button>
           </div>
 
-          <p className="text-[11px] text-stone-400 font-serif tracking-normal">
-            ⓒAyre all rights reserved.
+          <p className="text-[10px] text-stone-400 font-mono tracking-widest uppercase select-none">
+            Designed by ATELIER DE MUKIRU
           </p>
         </ScrollReveal>
       </footer>

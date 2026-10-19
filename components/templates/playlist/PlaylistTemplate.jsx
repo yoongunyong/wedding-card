@@ -106,10 +106,12 @@ export default function PlaylistTemplate({ invitation }) {
     setDDay(diff);
   }, [weddingDateStr]);
 
-  // 전역 오디오 상태 동기화 및 제어
+  // 전역 오디오 상태 동기화 및 제어 (상단 BgmPlayer와 100% 실시간 양방향 이벤트 동기화)
   useEffect(() => {
-    const handleAudioSync = () => {
-      const audioEl = document.querySelector('audio');
+    let audioEl = null;
+
+    const syncState = () => {
+      if (!audioEl) audioEl = document.querySelector('audio');
       if (audioEl) {
         setIsPlaying(!audioEl.paused);
         if (audioEl.duration && !isNaN(audioEl.duration)) {
@@ -122,8 +124,46 @@ export default function PlaylistTemplate({ invitation }) {
       }
     };
 
-    const interval = setInterval(handleAudioSync, 500);
-    return () => clearInterval(interval);
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
+    const handleTimeUpdate = () => {
+      if (audioEl && audioEl.duration && !isNaN(audioEl.duration)) {
+        const cur = Math.floor(audioEl.currentTime);
+        const dur = Math.floor(audioEl.duration);
+        setAudioCurrentTime(`${Math.floor(cur / 60)}:${String(cur % 60).padStart(2, '0')}`);
+        setAudioTotalDuration(`${Math.floor(dur / 60)}:${String(dur % 60).padStart(2, '0')}`);
+        setTrackProgress((audioEl.currentTime / audioEl.duration) * 100);
+      }
+    };
+
+    const attachListeners = () => {
+      audioEl = document.querySelector('audio');
+      if (audioEl) {
+        syncState();
+        audioEl.addEventListener('play', handlePlay);
+        audioEl.addEventListener('pause', handlePause);
+        audioEl.addEventListener('timeupdate', handleTimeUpdate);
+      }
+    };
+
+    attachListeners();
+    // DOM 마운트 타이밍 대응 및 폴백 체크
+    const interval = setInterval(() => {
+      if (!audioEl) {
+        attachListeners();
+      } else {
+        syncState();
+      }
+    }, 500);
+
+    return () => {
+      clearInterval(interval);
+      if (audioEl) {
+        audioEl.removeEventListener('play', handlePlay);
+        audioEl.removeEventListener('pause', handlePause);
+        audioEl.removeEventListener('timeupdate', handleTimeUpdate);
+      }
+    };
   }, []);
 
   const togglePlayAudio = () => {
@@ -131,13 +171,9 @@ export default function PlaylistTemplate({ invitation }) {
     if (audioEl) {
       if (audioEl.paused) {
         audioEl.play().catch(() => {});
-        setIsPlaying(true);
       } else {
         audioEl.pause();
-        setIsPlaying(false);
       }
-    } else {
-      setIsPlaying((prev) => !prev);
     }
   };
 
@@ -149,17 +185,17 @@ export default function PlaylistTemplate({ invitation }) {
 
   // 방명록 로드
   useEffect(() => {
-    if (!invitation?.slug) return;
+    if (!invitation?.id) return;
     async function loadGuestbook() {
       const { data } = await supabase
         .from('guestbook')
         .select('*')
-        .eq('slug', invitation.slug)
+        .eq('invitation_id', invitation.id)
         .order('created_at', { ascending: false });
       if (data) setGuestbookList(data);
     }
     loadGuestbook();
-  }, [invitation?.slug]);
+  }, [invitation?.id]);
 
   // 계좌번호 파싱
   const groomAccounts = useMemo(() => {
@@ -784,10 +820,10 @@ export default function PlaylistTemplate({ invitation }) {
               <div className="mt-10 max-w-sm mx-auto">
                 <div className="p-5 rounded-2xl bg-white border border-stone-200/80 text-left relative shadow-2xs">
                   <p className="text-xs text-stone-700 leading-relaxed font-light whitespace-pre-line mb-3">
-                    &ldquo;{guestbookList[guestbookIndex]?.message}&rdquo;
+                    &ldquo;{guestbookList[guestbookIndex]?.content || guestbookList[guestbookIndex]?.message}&rdquo;
                   </p>
                   <div className="flex items-center justify-between text-[11px] text-emerald-800 font-mono font-medium">
-                    <span>— {guestbookList[guestbookIndex]?.name}</span>
+                    <span>— {guestbookList[guestbookIndex]?.author || guestbookList[guestbookIndex]?.name}</span>
                     <button
                       onClick={() => setDeleteTargetMsg(guestbookList[guestbookIndex])}
                       className="text-stone-400 hover:text-rose-600 transition-colors text-[10px]"
@@ -878,11 +914,11 @@ export default function PlaylistTemplate({ invitation }) {
         <EditorialGuestbookModal
           onClose={() => {
             setShowGuestbookModal(false);
-            if (invitation?.slug) {
+            if (invitation?.id) {
               supabase
                 .from('guestbook')
                 .select('*')
-                .eq('slug', invitation.slug)
+                .eq('invitation_id', invitation.id)
                 .order('created_at', { ascending: false })
                 .then(({ data }) => { if (data) setGuestbookList(data); });
             }
@@ -894,7 +930,7 @@ export default function PlaylistTemplate({ invitation }) {
       {deleteTargetMsg && (
         <EditorialGuestbookDeleteModal
           onClose={() => setDeleteTargetMsg(null)}
-          targetItem={deleteTargetMsg}
+          targetMsg={deleteTargetMsg}
           onDeleteSuccess={(id) => {
             setGuestbookList((prev) => prev.filter((i) => i.id !== id));
             setDeleteTargetMsg(null);

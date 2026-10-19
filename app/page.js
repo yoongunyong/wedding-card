@@ -16,7 +16,7 @@ export default function HomePage() {
       badgeColor: 'bg-amber-100 text-amber-900 border-amber-200',
       description: '부드러운 편지 봉투 오프닝 카드와 크림 베이지 톤의 정갈하고 따뜻한 시안입니다. 남녀노소 모든 하객분들께 단아하고 기품 있는 첫인상을 전합니다.',
       features: ['편지 봉투 개봉 오프닝', 'D-Day 카운트다운 타이머', '감성 블러 화보 갤러리', '식권·화환 안내 카드'],
-      previewUrl: '/kkeomuk',
+      previewUrl: '/basic',
       accentColor: '#D97706',
     },
     {

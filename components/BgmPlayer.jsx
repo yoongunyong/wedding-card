@@ -52,16 +52,31 @@ export default function BgmPlayer({ bgmUrl, hasIntro = true, template }) {
     };
   }, [bgmUrl, hasIntro]);
 
+  const isPlaylist = template === 'playlist';
+  const [scrolledPastHero, setScrolledPastHero] = useState(!isPlaylist);
+
+  // 시안 3(플레이리스트) 전용: 본문 뮤직 플레이어 바가 화면에 보이는 첫 화면에서는 상단 플로팅 버튼을 숨기고 스크롤 시 페이드인
+  useEffect(() => {
+    if (!isPlaylist) return;
+    const handleScroll = () => {
+      // 본문 앨범 자켓 높이(약 380px)를 넘어서 스크롤하면 플로팅 버튼 표시
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      setScrolledPastHero(scrollY > 320);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isPlaylist]);
+
   const togglePlay = () => {
     if (!audioRef.current) return;
 
     if (isPlaying) {
       audioRef.current.pause();
-      setIsPlaying(false);
     } else {
       audioRef.current
         .play()
-        .then(() => setIsPlaying(true))
         .catch((err) => console.error(err));
     }
   };
@@ -70,9 +85,16 @@ export default function BgmPlayer({ bgmUrl, hasIntro = true, template }) {
 
   return (
     <>
-      <audio ref={audioRef} src={bgmUrl} loop preload="auto" />
+      <audio 
+        ref={audioRef} 
+        src={bgmUrl} 
+        loop 
+        preload="auto" 
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+      />
 
-      {/* 우측 상단 오디오 이퀄라이저 파동 버튼 */}
+      {/* 우측 상단 오디오 이퀄라이저 파동 버튼 애니메이션 */}
       <style jsx>{`
         @keyframes soundWave1 {
           0%, 100% { height: 3px; }
@@ -96,56 +118,38 @@ export default function BgmPlayer({ bgmUrl, hasIntro = true, template }) {
         .wave-bar-4 { animation: soundWave4 0.9s ease-in-out infinite 0.1s; }
       `}</style>
 
-      {template === 'scene' ? (
-        <button
-          type="button"
-          onClick={togglePlay}
-          aria-label={isPlaying ? '음악 정지' : '음악 재생'}
-          style={{ top: 'calc(env(safe-area-inset-top, 0px) + 1.25rem)' }}
-          className="fixed left-5 sm:left-[calc(50%-215px+1.5rem)] z-40 p-2 text-stone-800 hover:text-black cursor-pointer active:scale-90 transition-transform select-none"
-        >
-          {isPlaying ? (
-            <div className="flex items-center gap-[3px] h-4">
-              <span className="w-[2px] h-3.5 bg-stone-800 rounded-full" />
-              <span className="w-[2px] h-3.5 bg-stone-800 rounded-full" />
-            </div>
-          ) : (
-            <svg className="w-3.5 h-3.5 fill-stone-800" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-          )}
-        </button>
-      ) : (
-        <button
-          onClick={togglePlay}
-          aria-label={isPlaying ? '음악 정지' : '음악 재생'}
-          style={{ top: 'calc(env(safe-area-inset-top, 0px) + 1.25rem)' }}
-          className="fixed right-5 z-40 flex items-center justify-center w-8 h-8 rounded-full bg-black/75 hover:bg-black text-white shadow-md active:scale-95 transition-all"
-        >
-          <div className="flex items-center justify-center gap-[2.5px] h-4 w-4">
-            <span
-              className={`w-[2px] bg-white rounded-full transition-all duration-300 ${
-                isPlaying ? 'wave-bar-1' : 'h-[3px]'
-              }`}
-            />
-            <span
-              className={`w-[2px] bg-white rounded-full transition-all duration-300 ${
-                isPlaying ? 'wave-bar-2' : 'h-[7px]'
-              }`}
-            />
-            <span
-              className={`w-[2px] bg-white rounded-full transition-all duration-300 ${
-                isPlaying ? 'wave-bar-3' : 'h-[11px]'
-              }`}
-            />
-            <span
-              className={`w-[2px] bg-white rounded-full transition-all duration-300 ${
-                isPlaying ? 'wave-bar-4' : 'h-[5px]'
-              }`}
-            />
-          </div>
-        </button>
-      )}
+      {/* 모든 시안(시안 1~5) 동일한 우측 상단 프리미엄 이퀄라이저 파동 버튼 */}
+      <button
+        onClick={togglePlay}
+        aria-label={isPlaying ? '음악 정지' : '음악 재생'}
+        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 1.25rem)' }}
+        className={`fixed right-5 z-40 flex items-center justify-center w-8 h-8 rounded-full bg-black/75 hover:bg-black text-white shadow-md active:scale-95 transition-all duration-300 cursor-pointer ${
+          isPlaylist && !scrolledPastHero ? 'opacity-0 pointer-events-none scale-90' : 'opacity-100 pointer-events-auto scale-100'
+        }`}
+      >
+        <div className="flex items-center justify-center gap-[2.5px] h-4 w-4">
+          <span
+            className={`w-[2px] bg-white rounded-full transition-all duration-300 ${
+              isPlaying ? 'wave-bar-1' : 'h-[3px]'
+            }`}
+          />
+          <span
+            className={`w-[2px] bg-white rounded-full transition-all duration-300 ${
+              isPlaying ? 'wave-bar-2' : 'h-[7px]'
+            }`}
+          />
+          <span
+            className={`w-[2px] bg-white rounded-full transition-all duration-300 ${
+              isPlaying ? 'wave-bar-3' : 'h-[11px]'
+            }`}
+          />
+          <span
+            className={`w-[2px] bg-white rounded-full transition-all duration-300 ${
+              isPlaying ? 'wave-bar-4' : 'h-[5px]'
+            }`}
+          />
+        </div>
+      </button>
     </>
   );
 }

@@ -337,11 +337,13 @@ export default function CinematicTemplate({ invitation }) {
       />
 
       {/* ========================================================
-          00. 우측 상단 플로팅 테마 스위처 (☀️ Brightly ↔ 🌙 Midnight)
+      {/* ========================================================
+          00. 좌측 상단 플로팅 테마 스위처 (☀️ Brightly ↔ 🌙 Midnight)
+              (우측 상단 BGM 플레이어와 겹치지 않도록 좌측 상단에 정갈하게 배치)
           ======================================================== */}
       <div 
-        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 1rem)' }}
-        className="fixed right-4 z-40"
+        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 1.25rem)' }}
+        className="fixed left-5 z-40"
       >
         <div className={`flex items-center p-0.5 rounded-full border shadow-sm backdrop-blur-md transition-all ${
           isNightMode ? 'bg-stone-900/90 border-stone-800' : 'bg-white/95 border-stone-200'

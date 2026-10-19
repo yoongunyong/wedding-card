@@ -278,60 +278,60 @@ export default function ManageRsvpPage({ params }) {
         </div>
 
         {/* 하객 응답 테이블 */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-stone-600 border-collapse">
+        <div className="overflow-x-auto border border-stone-200/80 rounded-2xl bg-white shadow-2xs">
+          <table className="w-full min-w-[720px] text-left text-xs text-stone-600 border-collapse">
             <thead>
-              <tr className="border-b border-stone-200 bg-stone-50 font-semibold text-stone-700">
-                <th className="py-2.5 px-3">구분</th>
-                <th className="py-2.5 px-3">성함</th>
-                <th className="py-2.5 px-3">연락처</th>
-                <th className="py-2.5 px-3 text-center">참석 여부</th>
-                <th className="py-2.5 px-3 text-center">동행 인원</th>
-                <th className="py-2.5 px-3 text-center">식사 여부</th>
-                <th className="py-2.5 px-3 text-center">전세버스</th>
-                <th className="py-2.5 px-3 whitespace-nowrap">등록일시</th>
-                <th className="py-2.5 px-3 text-center whitespace-nowrap">관리</th>
+              <tr className="border-b border-stone-200 bg-stone-50/80 font-semibold text-stone-700">
+                <th className="py-3 px-3.5 whitespace-nowrap">구분</th>
+                <th className="py-3 px-3.5 whitespace-nowrap">성함</th>
+                <th className="py-3 px-3.5 whitespace-nowrap">연락처</th>
+                <th className="py-3 px-3.5 text-center whitespace-nowrap">참석 여부</th>
+                <th className="py-3 px-3.5 text-center whitespace-nowrap">동행 인원</th>
+                <th className="py-3 px-3.5 text-center whitespace-nowrap">식사 여부</th>
+                <th className="py-3 px-3.5 text-center whitespace-nowrap">전세버스</th>
+                <th className="py-3 px-3.5 whitespace-nowrap">등록일시</th>
+                <th className="py-3 px-3.5 text-center whitespace-nowrap">관리</th>
               </tr>
             </thead>
             <tbody>
               {rsvpList.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-8 text-center text-stone-400">
+                  <td colSpan={9} className="py-10 text-center text-stone-400">
                     아직 등록된 참석 의사가 없습니다.
                   </td>
                 </tr>
               ) : (
                 rsvpList.map((row) => (
-                  <tr key={row.id} className="border-b border-stone-100 hover:bg-stone-50/50">
-                    <td className="py-3 px-3">
-                      <span className={`px-1.5 py-0.5 rounded text-[11px] font-medium ${
+                  <tr key={row.id} className="border-b border-stone-100 hover:bg-stone-50/60 transition-colors">
+                    <td className="py-3.5 px-3.5 whitespace-nowrap">
+                      <span className={`px-2 py-0.5 rounded text-[11px] font-medium whitespace-nowrap inline-block ${
                         row.side === 'groom' ? 'bg-blue-50 text-blue-700' : 'bg-pink-50 text-pink-700'
                       }`}>
                         {row.side === 'groom' ? '신랑측' : '신부측'}
                       </span>
                     </td>
-                    <td className="py-3 px-3 font-semibold text-stone-900">{row.name}</td>
-                    <td className="py-3 px-3">{row.phone || '-'}</td>
-                    <td className="py-3 px-3 text-center">
+                    <td className="py-3.5 px-3.5 font-semibold text-stone-900 whitespace-nowrap">{row.name}</td>
+                    <td className="py-3.5 px-3.5 whitespace-nowrap font-mono">{row.phone || '-'}</td>
+                    <td className="py-3.5 px-3.5 text-center whitespace-nowrap">
                       {row.attend ? (
                         <span className="text-emerald-600 font-semibold">참석</span>
                       ) : (
                         <span className="text-stone-400">불참</span>
                       )}
                     </td>
-                    <td className="py-3 px-3 text-center font-medium">
+                    <td className="py-3.5 px-3.5 text-center font-medium whitespace-nowrap">
                       {row.attend ? (row.companion_count > 0 ? `+${row.companion_count}명` : '0명') : '-'}
                     </td>
-                    <td className="py-3 px-3 text-center font-medium text-stone-700">
+                    <td className="py-3.5 px-3.5 text-center font-medium text-stone-700 whitespace-nowrap">
                       {row.attend ? (row.meal || '-') : '-'}
                     </td>
-                    <td className="py-3 px-3 text-center font-medium text-stone-700">
+                    <td className="py-3.5 px-3.5 text-center font-medium text-stone-700 whitespace-nowrap">
                       {row.attend ? (row.bus || '-') : '-'}
                     </td>
-                    <td className="py-3 px-3 text-stone-500 whitespace-nowrap">
+                    <td className="py-3.5 px-3.5 text-stone-500 whitespace-nowrap font-mono text-[11px]">
                       {formatDate(row.created_at)}
                     </td>
-                    <td className="py-3 px-3 text-center whitespace-nowrap">
+                    <td className="py-3.5 px-3.5 text-center whitespace-nowrap">
                       <button
                         type="button"
                         onClick={() => handleDeleteRsvp(row.id, row.name)}
@@ -363,14 +363,14 @@ export default function ManageRsvpPage({ params }) {
             </span>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-stone-600 border-collapse">
+          <div className="overflow-x-auto border border-stone-200/80 rounded-2xl bg-white shadow-2xs">
+            <table className="w-full min-w-[560px] text-left text-xs text-stone-600 border-collapse">
               <thead>
-                <tr className="border-b border-stone-200 bg-stone-50 font-semibold text-stone-700">
-                  <th className="py-2.5 px-3 w-24 whitespace-nowrap">작성자</th>
-                  <th className="py-2.5 px-3">메시지 내용</th>
-                  <th className="py-2.5 px-3 whitespace-nowrap w-32">작성일시</th>
-                  <th className="py-2.5 px-3 text-center w-20 whitespace-nowrap">관리</th>
+                <tr className="border-b border-stone-200 bg-stone-50/80 font-semibold text-stone-700">
+                  <th className="py-3 px-3.5 w-24 whitespace-nowrap">작성자</th>
+                  <th className="py-3 px-3.5">메시지 내용</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap w-36">작성일시</th>
+                  <th className="py-3 px-3.5 text-center w-20 whitespace-nowrap">관리</th>
                 </tr>
               </thead>
               <tbody>

@@ -345,11 +345,33 @@ export default function HomePage() {
             <Link href="/create" className="hover:text-stone-200 transition-colors">
               청첩장 제작
             </Link>
+            <a
+              href="http://pf.kakao.com/_RJamX/chat"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-amber-300 transition-colors inline-flex items-center gap-1 text-stone-300"
+            >
+              카카오톡 1:1 문의
+            </a>
             <span className="text-stone-700">|</span>
             <span className="font-mono text-stone-500">&copy; {new Date().getFullYear()} ATELIER DE MUKIRU. All rights reserved.</span>
           </div>
         </div>
       </footer>
+
+      {/* 카카오톡 1:1 상담 플로팅 버튼 */}
+      <a
+        href="http://pf.kakao.com/_RJamX/chat"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-40 bg-[#FEE500] hover:bg-[#FADA0A] text-[#191919] px-4 py-2.5 rounded-full shadow-lg font-medium text-xs flex items-center gap-2 transition-transform hover:scale-105 active:scale-95 border border-black/5"
+        title="카카오톡 1:1 문의"
+      >
+        <svg className="w-4 h-4 fill-[#191919]" viewBox="0 0 24 24">
+          <path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.557 1.707 4.8 4.27 6.054-.188.702-.682 2.545-.78 2.94-.123.498.182.49.383.357.158-.105 2.515-1.71 3.535-2.404.516.074 1.045.113 1.592.113 4.97 0 9-3.185 9-7.115S16.97 3 12 3z"/>
+        </svg>
+        <span className="font-semibold text-[13px]">카카오톡 문의</span>
+      </a>
     </div>
   );
 }

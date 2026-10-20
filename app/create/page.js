@@ -3667,6 +3667,29 @@ export default function CreateInvitationPage() {
           </div>
 
           {/* 하단 고정 플로팅 액션 바 (100% 불투명 솔리드 배경으로 하단 텍스트 겹침 완벽 차단) */}
+          {/* 고객 상담 안내 배너 */}
+          <div className="mt-8 p-4 bg-amber-50/60 rounded-2xl border border-amber-200/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+            <div>
+              <p className="text-xs font-semibold text-stone-800">
+                제작 중 궁금한 점이나 도움이 필요하신가요?
+              </p>
+              <p className="text-[11px] text-stone-500 mt-0.5">
+                사진 교체나 옵션 문의 등 무엇이든 편하게 물어보세요.
+              </p>
+            </div>
+            <a
+              href="http://pf.kakao.com/_RJamX/chat"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 bg-[#FEE500] hover:bg-[#FADA0A] text-[#191919] rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 shadow-2xs transition-transform active:scale-95 shrink-0"
+            >
+              <svg className="w-3.5 h-3.5 fill-[#191919]" viewBox="0 0 24 24">
+                <path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.557 1.707 4.8 4.27 6.054-.188.702-.682 2.545-.78 2.94-.123.498.182.49.383.357.158-.105 2.515-1.71 3.535-2.404.516.074 1.045.113 1.592.113 4.97 0 9-3.185 9-7.115S16.97 3 12 3z"/>
+              </svg>
+              <span>카카오톡 1:1 문의</span>
+            </a>
+          </div>
+
           <div className="sticky bottom-4 z-40 bg-white p-3.5 sm:p-4 rounded-2xl shadow-[0_4px_30px_rgba(0,0,0,0.12)] border border-stone-200/90 flex gap-3 items-center">
             <button
               type="button"

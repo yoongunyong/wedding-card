@@ -188,6 +188,7 @@ export default function ManageRsvpPage({ params }) {
               target="_blank"
               className="inline-flex items-center gap-1.5 text-xs text-stone-500 hover:text-stone-900 font-medium transition-colors shrink-0"
             >
+
               <span>내 청첩장 바로보기</span>
               <span className="text-[10px] opacity-70">↗</span>
             </Link>
@@ -224,6 +225,22 @@ export default function ManageRsvpPage({ params }) {
               <span>엑셀 다운로드</span>
             </button>
           </div>
+        </div>
+
+        {/* 카카오톡 1:1 고객센터 바로가기 배너 */}
+        <div className="mt-4 p-3 bg-amber-50/60 border border-amber-200/60 rounded-xl flex items-center justify-between text-xs text-stone-700">
+          <div className="flex items-center gap-2">
+            <span>💬</span>
+            <span className="font-medium text-[12px]">이용 중 문의사항이나 도움이 필요하신가요?</span>
+          </div>
+          <a
+            href="http://pf.kakao.com/_RJamX/chat"
+            target="_blank"
+            rel="noreferrer"
+            className="px-3 py-1.5 bg-[#FEE500] hover:bg-[#FADA0A] text-[#191919] font-medium rounded-lg text-[11px] shadow-2xs transition-transform active:scale-95 shrink-0"
+          >
+            카카오톡 1:1 문의
+          </a>
         </div>
 
         {/* 상단 안내 배너 */}

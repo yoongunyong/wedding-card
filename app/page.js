@@ -328,33 +328,59 @@ export default function HomePage() {
 
       {/* 6. 하단 푸터 */}
       <footer className="py-12 px-6 bg-stone-950 text-stone-400 font-sans text-xs border-t border-stone-800">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="text-center sm:text-left">
-            <p className="font-editorial-serif text-sm tracking-widest uppercase text-stone-200 font-medium mb-1">
-              ATELIER DE MUKIRU
-            </p>
-            <p className="text-[11px] text-stone-500 font-light">
-              단 하나의 특별한 순간을 완성하는 프리미엄 모바일 청첩장 아틀리에, 무키루(MUKIRU)
-            </p>
+        <div className="max-w-5xl mx-auto space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-stone-800/80">
+            <div>
+              <p className="font-editorial-serif text-sm tracking-widest uppercase text-stone-200 font-medium mb-1">
+                ATELIER DE MUKIRU
+              </p>
+              <p className="text-[11px] text-stone-500 font-light">
+                단 하나의 특별한 순간을 완성하는 프리미엄 모바일 청첩장 아틀리에, 무키루(MUKIRU)
+              </p>
+            </div>
+
+            <div className="flex items-center gap-4 text-[11px] text-stone-400">
+              <a href="#templates" className="hover:text-stone-200 transition-colors">
+                시안 5종 둘러보기
+              </a>
+              <Link href="/create" className="hover:text-stone-200 transition-colors">
+                청첩장 제작
+              </Link>
+              <a
+                href="http://pf.kakao.com/_RJamX/chat"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-amber-300 transition-colors inline-flex items-center gap-1 text-amber-200/90 font-medium"
+              >
+                카카오톡 1:1 상담
+              </a>
+            </div>
           </div>
 
-          <div className="flex items-center gap-5 text-[11px] text-stone-400">
-            <a href="#templates" className="hover:text-stone-200 transition-colors">
-              시안 5종 둘러보기
-            </a>
-            <Link href="/create" className="hover:text-stone-200 transition-colors">
-              청첩장 제작
-            </Link>
-            <a
-              href="http://pf.kakao.com/_RJamX/chat"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-amber-300 transition-colors inline-flex items-center gap-1 text-stone-300"
-            >
-              카카오톡 1:1 문의
-            </a>
-            <span className="text-stone-700">|</span>
-            <span className="font-mono text-stone-500">&copy; {new Date().getFullYear()} ATELIER DE MUKIRU. All rights reserved.</span>
+          {/* 사업자 정보 (전자상거래 표준 및 카카오 비즈니스 채널 심사 규격) */}
+          <div className="text-[11px] text-stone-500 leading-relaxed font-light space-y-1.5">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-stone-400">
+              <span><strong className="text-stone-300 font-medium">상호명:</strong> 친절한 꺼묵이네</span>
+              <span className="text-stone-700">|</span>
+              <span><strong className="text-stone-300 font-medium">대표자:</strong> 윤건용</span>
+              <span className="text-stone-700">|</span>
+              <span><strong className="text-stone-300 font-medium">사업자등록번호:</strong> 386-12-02981</span>
+              <span className="text-stone-700">|</span>
+              <span><strong className="text-stone-300 font-medium">서비스명:</strong> 아틀리에 드 무키루 (ATELIER DE MUKIRU)</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span><strong className="text-stone-400 font-medium">사업장 소재지:</strong> 경기도 안양시 동안구 시민대로 190 (힐스테이트 범계역 모비우스) 102동 3008호 (우 : 14072)</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span><strong className="text-stone-400 font-medium">고객문의:</strong> 카카오톡 1:1 채널 &apos;아틀리에 드 무키루&apos; (상담시간: 연중무휴 09:00 ~ 22:00)</span>
+              <span className="text-stone-700">|</span>
+              <span><strong className="text-stone-400 font-medium">이메일:</strong> yungunyong@naver.com</span>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-stone-900 flex flex-col sm:flex-row items-center justify-between text-[10px] text-stone-600 gap-2">
+            <span>&copy; {new Date().getFullYear()} 친절한 꺼묵이네 & ATELIER DE MUKIRU. All rights reserved.</span>
+            <span>본 사이트의 콘텐츠 및 UI/UX 디자인은 저작권법의 보호를 받습니다.</span>
           </div>
         </div>
       </footer>

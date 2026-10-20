@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: '아뜰리에 드 마리아주 (Atelier de Mariage) — 감성 모바일 청첩장',
+  title: '아틀리에 드 무키루 (ATELIER DE MUKIRU) — 감성 모바일 청첩장',
   description: '단 하나의 소중한 순간을 담은 프리미엄 모바일 청첩장. 모던 클래식, 에디토리얼 룩북, 플레이리스트 바이닐, 시네마틱 모노리스, 모던 씬 등 5가지 감각의 디자인 시안을 경험해 보세요.',
 };
 

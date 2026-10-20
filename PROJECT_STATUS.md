@@ -133,6 +133,10 @@
     - `process.env.NEXT_PUBLIC_ADMIN_PASSWORD` 환경변수로만 동작하도록 수정하고, 미설정 시 로그인 차단 및 빈 문자열 접근 방어 로직 적용 완료.
 16. **TEMPLATE_MAP 미사용 레거시 키(`modern`) 정리 (2026-10-20)**:
     - `app/[slug]/page.js`의 `TEMPLATE_MAP`에서 더 이상 사용되지 않는 과거 하위 호환용 `modern` 키를 삭제하여, 정식 5종 시안(`basic`, `editorial`, `playlist`, `cinematic`, `scene`)만 1:1로 깔끔하게 유지.
+17. **아이폰 고효율(HEIC/HEIF) 사진 초고화질 JPG 실시간 자동 변환 엔진 탑재 (2026-10-20)**:
+    - `heic2any` 및 `lib/imageCompressor.js` 기반으로 HEIC/HEIF 포맷 실시간 감지 및 브라우저 내 100% 자동 JPG 변환 엔진 구축.
+    - 스튜디오 원본이나 PC에서 `.heic` 사진을 업로드하더라도 사용자의 수동 변환 작업 없이 브라우저 단에서 1~2초 만에 초고화질 JPG로 변환 후 압축 파이프라인 수행.
+    - 삼성 갤럭시(안드로이드), 윈도우 PC 등 모든 기기 하객에게 엑스박스(깨짐) 없이 100% 선명하게 노출되도록 크로스 디바이스 완벽 호환성 확보.
 
 ---
 

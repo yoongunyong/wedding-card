@@ -545,9 +545,10 @@ export default function CreateInvitationPage() {
       if (inputRef?.current) inputRef.current.value = '';
       return;
     }
-    if (!file.type.startsWith('image/')) {
+    const isImage = file.type.startsWith('image/') || /\.(heic|heif|jpe?g|png|webp|gif)$/i.test(file.name || '');
+    if (!isImage) {
       if (inputRef?.current) inputRef.current.value = '';
-      return alert(`${label}은(는) 이미지 파일(JPG, PNG, WEBP 등)만 등록하실 수 있습니다.`);
+      return alert(`${label}은(는) 이미지 파일(JPG, PNG, HEIC 등)만 등록하실 수 있습니다.`);
     }
     const sizeMb = file.size / (1024 * 1024);
     if (sizeMb > 30) {
@@ -556,7 +557,7 @@ export default function CreateInvitationPage() {
     }
 
     try {
-      // 스튜디오 원본 초고용량 이미지 브라우저 무손실 경량 최적화
+      // 아이폰 HEIC 자동 변환 및 스튜디오 원본 초고용량 이미지 브라우저 무손실 경량 최적화
       const optimizedFile = await compressImage(file);
       setFile(optimizedFile);
       setPreview(URL.createObjectURL(optimizedFile));
@@ -578,7 +579,8 @@ export default function CreateInvitationPage() {
     e.target.value = '';
 
     const validFiles = rawFiles.filter((f) => {
-      if (!f.type.startsWith('image/')) {
+      const isImage = f.type.startsWith('image/') || /\.(heic|heif|jpe?g|png|webp|gif)$/i.test(f.name || '');
+      if (!isImage) {
         alert(`${f.name} 파일은 이미지가 아니므로 제외되었습니다.`);
         return false;
       }
@@ -2462,7 +2464,7 @@ export default function CreateInvitationPage() {
                   <input
                     ref={mainImageInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/*,.heic,.heif"
                     onChange={(e) => validateAndSetImage(e.target.files?.[0], setMainImageFile, setMainImagePreview, '본문 메인 사진', mainImageInputRef)}
                     className="hidden"
                   />
@@ -2538,7 +2540,7 @@ export default function CreateInvitationPage() {
                     <input
                       ref={coverImageInputRef}
                       type="file"
-                      accept="image/*"
+                      accept="image/*,.heic,.heif"
                       onChange={(e) => validateAndSetImage(e.target.files?.[0], setCoverImageFile, setCoverImagePreview, '인트로 커버 사진', coverImageInputRef)}
                       className="hidden"
                     />
@@ -2620,7 +2622,7 @@ export default function CreateInvitationPage() {
                       <input
                         ref={bridePhotoInputRef}
                         type="file"
-                        accept="image/*"
+                        accept="image/*,.heic,.heif"
                         onChange={(e) => validateAndSetImage(e.target.files?.[0], setBridePhotoFile, setBridePhotoPreview, '신부 단독 사진', bridePhotoInputRef)}
                         className="hidden"
                       />
@@ -2672,7 +2674,7 @@ export default function CreateInvitationPage() {
                       <input
                         ref={groomPhotoInputRef}
                         type="file"
-                        accept="image/*"
+                        accept="image/*,.heic,.heif"
                         onChange={(e) => validateAndSetImage(e.target.files?.[0], setGroomPhotoFile, setGroomPhotoPreview, '신랑 단독 사진', groomPhotoInputRef)}
                         className="hidden"
                       />
@@ -2737,7 +2739,7 @@ export default function CreateInvitationPage() {
                   <input
                     ref={coupleImageInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/*,.heic,.heif"
                     onChange={(e) => validateAndSetImage(e.target.files?.[0], setCoupleImageFile, setCoupleImagePreview, '커플 사진', coupleImageInputRef)}
                     className="hidden"
                   />
@@ -2798,7 +2800,7 @@ export default function CreateInvitationPage() {
                   <input
                     ref={endingImageInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/*,.heic,.heif"
                     onChange={(e) => validateAndSetImage(e.target.files?.[0], setEndingImageFile, setEndingImagePreview, '엔딩 사진', endingImageInputRef)}
                     className="hidden"
                   />
@@ -2875,7 +2877,7 @@ export default function CreateInvitationPage() {
                 <input
                   ref={galleryInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/*,.heic,.heif"
                   multiple
                   onChange={handleGalleryImagesChange}
                   className="hidden"

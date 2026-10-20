@@ -525,7 +525,7 @@ export default function BasicTemplate({ invitation }) {
               </h1>
               {mainDateEn && (
                 <p 
-                  className="mt-2.5 sm:mt-3 text-[15px] sm:text-[17px] font-sans font-normal tracking-[0.18em] drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
+                  className="mt-2.5 sm:mt-3 text-[15px] sm:text-[17px] font-cormorant font-normal tracking-[0.22em] drop-shadow-[0_1px_3px_rgba(0,0,0,0.45)]"
                   style={{ color: titleColor }}
                 >
                   {mainDateEn}
@@ -534,16 +534,16 @@ export default function BasicTemplate({ invitation }) {
             </div>
 
             {/* 하단: Welcome to & 신랑 신부 영문 이름 */}
-            <div className="relative z-10 pb-[calc(env(safe-area-inset-bottom,0px)+3.5rem)] px-6 text-center">
+            <div className="relative z-10 pb-[calc(env(safe-area-inset-bottom,0px)+3.8rem)] px-6 text-center">
               <p 
-                className="text-[17px] sm:text-[19px] font-sans font-light tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
+                className="font-wedding-script text-[30px] sm:text-[36px] font-normal tracking-wide drop-shadow-[0_2px_8px_rgba(0,0,0,0.55)] leading-tight"
                 style={{ color: titleColor }}
               >
                 Welcome to
               </p>
               {mainNamesEn && (
                 <p 
-                  className="mt-1.5 sm:mt-2 text-[20px] sm:text-[23px] font-sans font-normal tracking-wide drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)]"
+                  className="mt-1 sm:mt-1.5 font-wedding-script text-[34px] sm:text-[42px] font-normal tracking-wide leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]"
                   style={{ color: titleColor }}
                 >
                   {mainNamesEn}

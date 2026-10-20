@@ -99,20 +99,20 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
     }, 850);
   };
 
+  const groomName = invitation?.groom_name || '신랑';
+  const brideName = invitation?.bride_name || '신부';
+
   return (
     <>
-      {/* 1. 인트로 카드 팝업 레이어 (revealing 시 즉시 hidden 처리하여 브라우저 터치 스크롤 간섭 원천 차단) */}
+      {/* 1. 풀스크린 배경 사진 & 분리형 에어드랍 레이어 */}
       <div
-        className={`fixed inset-0 z-50 flex items-center justify-center p-4 select-none ${
+        className={`fixed inset-0 z-50 flex flex-col justify-between items-center px-6 py-14 sm:py-16 select-none overflow-hidden ${
           transitionStep === 'revealing' 
             ? 'hidden pointer-events-none' 
             : transitionStep === 'darkening'
             ? 'opacity-100 pointer-events-none'
             : 'opacity-100'
         }`}
-        style={{
-          backgroundColor: '#FFFFFF',
-        }}
       >
         <style jsx>{`
           @keyframes shakeAnim {
@@ -127,64 +127,71 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
           }
         `}</style>
 
-        {/* 시안 1:1 맞춤 모달 카드 (상하단 연회색빛, 중앙 풀위드 사진) */}
+        {/* 풀스크린 배경 사진 */}
+        <div className="absolute inset-0 -z-10 bg-stone-900">
+          <img
+            src={coverImage}
+            alt="Wedding Cover"
+            className="w-full h-full object-cover object-center pointer-events-none"
+            onError={(e) => {
+              if (e.currentTarget.src !== '/cover.jpg') {
+                e.currentTarget.src = '/cover.jpg';
+              }
+            }}
+          />
+          {/* 밝은 사진에서도 흰색 창이 또렷하게 보이도록 하는 미세 딤드 */}
+          <div className="absolute inset-0 bg-black/15 pointer-events-none" />
+        </div>
+
+        {/* 상단: 에어드랍 알림창 */}
         <div
-          className={`relative w-[84%] max-w-[285px] bg-[#ECEEF0] rounded-[26px] overflow-hidden flex flex-col transition-all duration-300 ${
+          className={`w-full max-w-[305px] bg-white/95 backdrop-blur-xl rounded-[24px] px-6 py-4.5 text-center shadow-2xl border border-white/40 transition-all duration-300 mt-2 sm:mt-6 ${
             isShaking ? 'modal-shake' : ''
           }`}
           style={{
-            boxShadow: '0 12px 35px -8px rgba(0, 0, 0, 0.12), 0 0 1px 1px rgba(0, 0, 0, 0.04)',
+            boxShadow: '0 20px 45px -10px rgba(0, 0, 0, 0.35)',
           }}
         >
-          {/* 상단 텍스트 영역 (약간의 회색빛 배경) */}
-          <div className="pt-6 pb-4 px-4 text-center bg-[#ECEEF0]">
-            <h2 className="text-[18.5px] font-bold text-[#1A1A1A] tracking-tight flex items-center justify-center gap-1.5 font-sans">
-              Wedding Day <span className="text-[17px] leading-none inline-block">💌</span>
-            </h2>
-            <p className="text-[12.5px] text-[#555555] mt-1 font-normal tracking-tight font-sans">
-              Invitation
-            </p>
+          <h2 className="text-[17.5px] font-bold text-stone-900 tracking-tight font-sans">
+            AirDrop
+          </h2>
+          <p className="text-[13px] text-stone-700 mt-1 font-normal leading-snug tracking-tight font-sans">
+            <strong className="font-semibold text-stone-900">{groomName} &amp; {brideName}</strong> would like to share
+            <br />
+            a photo.
+          </p>
+        </div>
+
+        {/* 거절 시 나타나는 위트있는 토스트 알림 (화면 정중앙 플로팅) */}
+        {declineMsg && (
+          <div className="z-30 my-auto animate-bounce">
+            <div className="bg-black/85 backdrop-blur-md text-white text-[12px] font-medium py-2 px-4 rounded-full shadow-2xl text-center">
+              {declineMsg}
+            </div>
           </div>
+        )}
 
-          {/* 중앙 커버 사진 영역: 상하단 회색 영역 사이에 좌우 꽉 차게 배치 */}
-          <div className="relative w-full aspect-[4/4.2] overflow-hidden bg-stone-200 select-none">
-            <img
-              src={coverImage}
-              alt="Wedding Day Invitation"
-              className="w-full h-full object-cover object-center pointer-events-none"
-              onError={(e) => {
-                if (e.currentTarget.src !== '/cover.jpg') {
-                  e.currentTarget.src = '/cover.jpg';
-                }
-              }}
-            />
-
-            {/* 거절 시 나타나는 위트있는 토스트 알림 */}
-            {declineMsg && (
-              <div className="absolute inset-x-2 bottom-3 z-20 flex justify-center animate-bounce">
-                <div className="bg-black/85 backdrop-blur-md text-white text-[11.5px] font-medium py-1.5 px-3 rounded-full shadow-lg text-center leading-snug">
-                  {declineMsg}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 하단 2분할 버튼 영역 (상단과 동일한 연회색빛 배경 & 흰색 구분선) */}
-          <div className="grid grid-cols-2 divide-x divide-white/80 border-t border-white/60 bg-[#ECEEF0]">
-            {/* Decline 버튼 */}
+        {/* 하단: Decline / Accept 버튼창 */}
+        <div
+          className={`w-full max-w-[305px] bg-white/95 backdrop-blur-xl rounded-[22px] overflow-hidden shadow-2xl border border-white/40 transition-all duration-300 mb-2 sm:mb-6 ${
+            isShaking ? 'modal-shake' : ''
+          }`}
+          style={{
+            boxShadow: '0 20px 45px -10px rgba(0, 0, 0, 0.35)',
+          }}
+        >
+          <div className="grid grid-cols-2 divide-x divide-stone-200/80">
             <button
               type="button"
               onClick={handleDecline}
-              className="py-3.5 text-[15.5px] font-medium text-[#F472B6] hover:bg-black/5 active:bg-black/10 transition-colors cursor-pointer select-none font-sans text-center"
+              className="py-3.5 text-[15.5px] font-medium text-[#007AFF] hover:bg-black/5 active:bg-black/10 transition-colors cursor-pointer select-none font-sans text-center"
             >
               Decline
             </button>
-
-            {/* Accept 버튼 */}
             <button
               type="button"
               onClick={handleAccept}
-              className="py-3.5 text-[15.5px] font-bold text-[#E83E6E] hover:bg-black/5 active:bg-black/10 transition-colors cursor-pointer select-none font-sans text-center"
+              className="py-3.5 text-[15.5px] font-bold text-[#007AFF] hover:bg-black/5 active:bg-black/10 transition-colors cursor-pointer select-none font-sans text-center"
             >
               Accept
             </button>

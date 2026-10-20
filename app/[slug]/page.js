@@ -134,7 +134,7 @@ export default async function WeddingCardPage({ params }) {
         hasIntro={invitation?.template_config?.show_intro !== false} 
         template={invitation.template_type}
       />
-      <CurrentTemplate invitation={invitation} />
+      <CurrentTemplate invitation={{ ...invitation, manage_token: undefined, order_code: undefined }} />
     </main>
   );
 }

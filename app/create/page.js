@@ -959,6 +959,14 @@ export default function CreateInvitationPage() {
       return alert('청첩장 영문 주소(URL SLUG)는 영문자, 숫자, 하이픈(-), 언더바(_)만 사용 가능합니다.');
     }
     const cleanSlug = rawSlug.toLowerCase();
+    const RESERVED_SLUGS = [
+      'admin', 'create', 'manage', 'api', 'auth', 'login', 'logout', 'order',
+      'basic', 'editorial', 'playlist', 'cinematic', 'scene',
+      'test', 'sample', 'preview', 'null', 'undefined', 'dashboard', 'static', 'public'
+    ];
+    if (RESERVED_SLUGS.includes(cleanSlug)) {
+      return alert(`'${cleanSlug}' 영문 주소는 시스템 예약어로 사용하실 수 없습니다. 다른 영문 주소를 입력해 주세요.`);
+    }
 
     // 6. 음원 URL 유효성 검증
     if (bgmMode === 'url' && customBgmUrl.trim()) {

@@ -575,7 +575,7 @@ export default function SceneTemplate({ invitation }) {
 
         {/* 1. 상단 소개글 (처음엔 화면 중앙 위치 ➔ 사진 펼쳐질 때 위로 부드럽게 쑥 이동) */}
         <div 
-          className={`w-full max-w-[320px] mx-auto text-center text-xs sm:text-[13px] leading-[2.4] text-stone-600 font-light whitespace-pre-line tracking-tight transition-all duration-[2200ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          className={`w-full max-w-[360px] mx-auto text-center text-[14px] sm:text-[15.5px] leading-[2.3] text-stone-700 font-light whitespace-pre-line tracking-normal transition-all duration-[2200ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
             heroStep >= 5 ? 'mb-6 translate-y-0' : 'mb-2 translate-y-8 sm:translate-y-10'
           }`}
         >
@@ -633,13 +633,13 @@ export default function SceneTemplate({ invitation }) {
           }`}
         >
           <h1 
-            className={`font-serif text-lg sm:text-[21px] tracking-[0.12em] text-[#111111] font-normal transition-all duration-800 ease-out flex items-center justify-center ${
+            className={`font-serif text-[20px] sm:text-[23px] tracking-[0.12em] text-[#111111] font-normal transition-all duration-800 ease-out flex items-center justify-center ${
               heroStep >= 4 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
             }`}
           >
             <span>{groomName}</span>
             <span className="inline-flex items-center justify-center mx-2.5 text-stone-400">
-              <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3">
+              <svg className="w-[20px] h-[20px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3">
                 <ellipse cx="8.5" cy="12.5" rx="5" ry="4.5" transform="rotate(-15 8.5 12.5)" />
                 <ellipse cx="15.5" cy="11.5" rx="5" ry="4.5" transform="rotate(15 15.5 11.5)" />
                 <path d="M15.5 6.5 L15.5 5" strokeLinecap="round" />

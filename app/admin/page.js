@@ -5,8 +5,8 @@ import { supabase } from '@/lib/supabase';
 import QrCodeModal from '@/components/QrCodeModal';
 import ExpiryAdjustModal from '@/components/ExpiryAdjustModal';
 
-// 관리자 로그인용 기본 비밀번호 (환경변수 또는 로컬 설정)
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'weddingadmin1234!';
+// 관리자 로그인 비밀번호 (Vercel 및 .env.local 환경변수로만 제어, 하드코딩 완전 제거)
+const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
 
 export default function AdminDashboardPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -122,7 +122,11 @@ export default function AdminDashboardPage() {
   // 로그인 핸들러
   const handleLogin = (e) => {
     e.preventDefault();
-    if (passwordInput === ADMIN_PASSWORD) {
+    if (!ADMIN_PASSWORD) {
+      alert('관리자 비밀번호 환경변수(NEXT_PUBLIC_ADMIN_PASSWORD)가 설정되지 않았습니다.');
+      return;
+    }
+    if (passwordInput && passwordInput === ADMIN_PASSWORD) {
       setIsAuthenticated(true);
       sessionStorage.setItem('atelier_admin_auth', 'true');
     } else {

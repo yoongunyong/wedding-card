@@ -1,6 +1,6 @@
 # 💍 모바일 청첩장 프로젝트 인수인계 현황 (PROJECT_STATUS.md)
 
-> **최종 업데이트 일시**: 2026-10-19  
+> **최종 업데이트 일시**: 2026-10-20  
 > **프로젝트 경로**: `c:\Users\YOONGUNYONG\wedding-card`  
 > **핵심 프레임워크**: Next.js 16 (App Router, Turbopack) / Tailwind CSS / Supabase (PostgreSQL)  
 > **새 세션 시작 가이드**: 다른 PC나 새 채팅 세션에서 **"PROJECT_STATUS.md 읽고 이어서 작업하자"**라고 말씀하시면 AI가 이 문서의 모든 맥락을 즉시 파악하고 작업을 이어갑니다.
@@ -125,6 +125,14 @@
     - 운영 DB(`ATELIER DE MUKIRU (Prod)`)와 개발 DB(`ATELIER DE MUKIRU (Dev)`)를 물리적으로 완전 분리.
     - 운영 DB의 스펙(`wedding_date: text`, `manage_token: uuid`, 14개 RLS 정책, 2개 Storage 버킷)을 100% 동일하게 개발 DB에 복제 완료 (`scripts/setup-complete-db.sql`).
     - 로컬 환경(`.env.local`) 및 Vercel 프리뷰 환경(`All Pre-Production`)은 개발 DB 키로 연결하고, Vercel 운영 환경(`Production`)은 운영 DB 키로 완벽 격리 검증 완료.
+14. **신랑·신부 전용 관리 페이지 모바일 빈 상태(0건) UI 반응형 개선 (2026-10-20)**:
+    - `app/manage/[slug]/page.js`에서 하객 참석 명단(RSVP) 및 방명록 축하 메시지가 0건일 때, 테이블의 최소 너비(`min-w-[720px]`, `min-w-[560px]`)로 인해 모바일 기기 화면 오른쪽으로 글자가 치우쳐 잘리던 현상 수정.
+    - 데이터가 0건일 때는 불필요한 가로 스크롤 테이블을 감추고 모바일 뷰포트 정중앙에 단정하게 배치되는 카드형 빈 상태 UI(`border rounded-2xl bg-white py-12 px-4 text-center`)로 개선하여 모바일과 PC 모두에서 시각적 완성도 확보.
+15. **관리자 로그인 비밀번호 하드코딩 완전 제거 (2026-10-20)**:
+    - `app/admin/page.js`에 기본 fallback으로 남아있던 `'weddingadmin1234!'` 하드코딩 문자열을 완전히 삭제.
+    - `process.env.NEXT_PUBLIC_ADMIN_PASSWORD` 환경변수로만 동작하도록 수정하고, 미설정 시 로그인 차단 및 빈 문자열 접근 방어 로직 적용 완료.
+16. **TEMPLATE_MAP 미사용 레거시 키(`modern`) 정리 (2026-10-20)**:
+    - `app/[slug]/page.js`의 `TEMPLATE_MAP`에서 더 이상 사용되지 않는 과거 하위 호환용 `modern` 키를 삭제하여, 정식 5종 시안(`basic`, `editorial`, `playlist`, `cinematic`, `scene`)만 1:1로 깔끔하게 유지.
 
 ---
 

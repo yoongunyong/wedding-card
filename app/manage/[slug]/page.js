@@ -278,30 +278,34 @@ export default function ManageRsvpPage({ params }) {
         </div>
 
         {/* 하객 응답 테이블 */}
-        <div className="overflow-x-auto border border-stone-200/80 rounded-2xl bg-white shadow-2xs">
-          <table className="w-full min-w-[720px] text-left text-xs text-stone-600 border-collapse">
-            <thead>
-              <tr className="border-b border-stone-200 bg-stone-50/80 font-semibold text-stone-700">
-                <th className="py-3 px-3.5 whitespace-nowrap">구분</th>
-                <th className="py-3 px-3.5 whitespace-nowrap">성함</th>
-                <th className="py-3 px-3.5 whitespace-nowrap">연락처</th>
-                <th className="py-3 px-3.5 text-center whitespace-nowrap">참석 여부</th>
-                <th className="py-3 px-3.5 text-center whitespace-nowrap">동행 인원</th>
-                <th className="py-3 px-3.5 text-center whitespace-nowrap">식사 여부</th>
-                <th className="py-3 px-3.5 text-center whitespace-nowrap">전세버스</th>
-                <th className="py-3 px-3.5 whitespace-nowrap">등록일시</th>
-                <th className="py-3 px-3.5 text-center whitespace-nowrap">관리</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rsvpList.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="py-10 text-center text-stone-400">
-                    아직 등록된 참석 의사가 없습니다.
-                  </td>
+        {rsvpList.length === 0 ? (
+          <div className="border border-stone-200/80 rounded-2xl bg-white shadow-2xs py-12 px-4 text-center">
+            <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-stone-100 flex items-center justify-center text-stone-400">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-stone-600">아직 등록된 참석 의사가 없습니다.</p>
+            <p className="text-xs text-stone-400 mt-1">하객분들이 청첩장에서 참석 여부를 제출하면 이곳에 실시간으로 집계됩니다.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto border border-stone-200/80 rounded-2xl bg-white shadow-2xs">
+            <table className="w-full min-w-[720px] text-left text-xs text-stone-600 border-collapse">
+              <thead>
+                <tr className="border-b border-stone-200 bg-stone-50/80 font-semibold text-stone-700">
+                  <th className="py-3 px-3.5 whitespace-nowrap">구분</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap">성함</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap">연락처</th>
+                  <th className="py-3 px-3.5 text-center whitespace-nowrap">참석 여부</th>
+                  <th className="py-3 px-3.5 text-center whitespace-nowrap">동행 인원</th>
+                  <th className="py-3 px-3.5 text-center whitespace-nowrap">식사 여부</th>
+                  <th className="py-3 px-3.5 text-center whitespace-nowrap">전세버스</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap">등록일시</th>
+                  <th className="py-3 px-3.5 text-center whitespace-nowrap">관리</th>
                 </tr>
-              ) : (
-                rsvpList.map((row) => (
+              </thead>
+              <tbody>
+                {rsvpList.map((row) => (
                   <tr key={row.id} className="border-b border-stone-100 hover:bg-stone-50/60 transition-colors">
                     <td className="py-3.5 px-3.5 whitespace-nowrap">
                       <span className={`px-2 py-0.5 rounded text-[11px] font-medium whitespace-nowrap inline-block ${
@@ -341,11 +345,11 @@ export default function ManageRsvpPage({ params }) {
                       </button>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {/* 방명록 관리 섹션 */}
         <div className="pt-8 mt-8 border-t border-stone-200">
@@ -363,25 +367,29 @@ export default function ManageRsvpPage({ params }) {
             </span>
           </div>
 
-          <div className="overflow-x-auto border border-stone-200/80 rounded-2xl bg-white shadow-2xs">
-            <table className="w-full min-w-[560px] text-left text-xs text-stone-600 border-collapse">
-              <thead>
-                <tr className="border-b border-stone-200 bg-stone-50/80 font-semibold text-stone-700">
-                  <th className="py-3 px-3.5 w-24 whitespace-nowrap">작성자</th>
-                  <th className="py-3 px-3.5">메시지 내용</th>
-                  <th className="py-3 px-3.5 whitespace-nowrap w-36">작성일시</th>
-                  <th className="py-3 px-3.5 text-center w-20 whitespace-nowrap">관리</th>
-                </tr>
-              </thead>
-              <tbody>
-                {guestbookList.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="py-8 text-center text-stone-400">
-                      등록된 방명록 메시지가 없습니다.
-                    </td>
+          {guestbookList.length === 0 ? (
+            <div className="border border-stone-200/80 rounded-2xl bg-white shadow-2xs py-12 px-4 text-center">
+              <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-stone-100 flex items-center justify-center text-stone-400">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </div>
+              <p className="text-sm font-medium text-stone-600">등록된 방명록 메시지가 없습니다.</p>
+              <p className="text-xs text-stone-400 mt-1">하객분들이 남겨주시는 따뜻한 축하 글이 이곳에 차례대로 표시됩니다.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto border border-stone-200/80 rounded-2xl bg-white shadow-2xs">
+              <table className="w-full min-w-[560px] text-left text-xs text-stone-600 border-collapse">
+                <thead>
+                  <tr className="border-b border-stone-200 bg-stone-50/80 font-semibold text-stone-700">
+                    <th className="py-3 px-3.5 w-24 whitespace-nowrap">작성자</th>
+                    <th className="py-3 px-3.5">메시지 내용</th>
+                    <th className="py-3 px-3.5 whitespace-nowrap w-36">작성일시</th>
+                    <th className="py-3 px-3.5 text-center w-20 whitespace-nowrap">관리</th>
                   </tr>
-                ) : (
-                  guestbookList.map((row) => (
+                </thead>
+                <tbody>
+                  {guestbookList.map((row) => (
                     <tr key={row.id} className="border-b border-stone-100 hover:bg-stone-50/50">
                       <td className="py-3 px-3 font-semibold text-stone-900 align-top whitespace-nowrap">
                         {row.author}
@@ -402,11 +410,11 @@ export default function ManageRsvpPage({ params }) {
                         </button>
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         {/* 종이 청첩장용 QR코드 모달 */}

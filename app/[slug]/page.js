@@ -14,7 +14,6 @@ export const revalidate = 0;
 
 const TEMPLATE_MAP = {
   basic: BasicTemplate,
-  modern: BasicTemplate, // 기존 DB 데이터 하위 호환
   editorial: EditorialTemplate,
   playlist: PlaylistTemplate,
   cinematic: CinematicTemplate,

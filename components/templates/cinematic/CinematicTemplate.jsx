@@ -648,7 +648,7 @@ export default function CinematicTemplate({ invitation }) {
                   <img
                     src={src}
                     alt={`웨딩 갤러리 ${idx + 1}`}
-                    className="w-full h-full object-cover grayscale transition-transform duration-700 hover:scale-102"
+                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-102"
                     loading="lazy"
                   />
                 </div>

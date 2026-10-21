@@ -206,6 +206,14 @@ function CreateInvitationContent() {
     };
   });
 
+  // URL의 ?template= 파라미터 감지 및 실시간 동기화 (시안 제작하기 클릭 시 100% 선택 반영)
+  useEffect(() => {
+    const targetTemplate = templateParam || (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('template') : null);
+    if (targetTemplate && VALID_TEMPLATES.includes(targetTemplate)) {
+      setFormData((prev) => (prev.template_type === targetTemplate ? prev : { ...prev, template_type: targetTemplate }));
+    }
+  }, [templateParam]);
+
   // 2. 다중 계좌 상태
   const [groomAccounts, setGroomAccounts] = useState([
     { group: '신랑측', title: '신랑', bank: '국민', number: '', holder: '' },

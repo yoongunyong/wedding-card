@@ -83,6 +83,13 @@ export default function HeroCardSwiper() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
+  const touchStartY = useRef(0);
+  const touchEndY = useRef(0);
+  const isSwipedRef = useRef(false);
+
+  // 상단 템플릿 뱃지 가로 스크롤 컨테이너 & 활성 탭 참조
+  const tabsContainerRef = useRef(null);
+  const activeTabRef = useRef(null);
 
   // 새로고침 시 스크롤 최상단 이동 처리
   useEffect(() => {
@@ -93,6 +100,17 @@ export default function HeroCardSwiper() {
       window.scrollTo(0, 0);
     }
   }, []);
+
+  // 카드 변경 시 상단 뱃지도 해당 탭으로 부드럽게 가로 스크롤 동기화
+  useEffect(() => {
+    if (activeTabRef.current && tabsContainerRef.current) {
+      activeTabRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center',
+      });
+    }
+  }, [currentIndex]);
 
   const currentTpl = HERO_TEMPLATES[currentIndex];
 
@@ -105,26 +123,48 @@ export default function HeroCardSwiper() {
   };
 
   const openPreview = (tpl) => {
+    // 스와이프 제스처 직후 발생한 합성 클릭 이벤트는 무시 (원치 않는 시안 열림 방지)
+    if (isSwipedRef.current) {
+      isSwipedRef.current = false;
+      return;
+    }
     setSelectedTemplate(tpl || currentTpl);
     setIsModalOpen(true);
   };
 
   const handleTouchStart = (e) => {
-    touchStartX.current = e.touches[0].clientX;
+    const touch = e.touches[0];
+    touchStartX.current = touch.clientX;
+    touchEndX.current = touch.clientX; // 잔여 좌표 방지를 위해 동일 좌표로 리셋
+    touchStartY.current = touch.clientY;
+    touchEndY.current = touch.clientY;
+    isSwipedRef.current = false;
   };
 
   const handleTouchMove = (e) => {
-    touchEndX.current = e.touches[0].clientX;
+    const touch = e.touches[0];
+    touchEndX.current = touch.clientX;
+    touchEndY.current = touch.clientY;
   };
 
   const handleTouchEnd = () => {
-    const diff = touchStartX.current - touchEndX.current;
-    if (Math.abs(diff) > 40) {
-      if (diff > 0) {
+    const diffX = touchStartX.current - touchEndX.current;
+    const diffY = touchStartY.current - touchEndY.current;
+
+    // 세로 스크롤보다 가로 스와이프 의도가 뚜렷하고 50px 이상 이동한 경우에만 카드 전환
+    if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
+      isSwipedRef.current = true;
+      if (diffX > 0) {
         handleNext();
       } else {
         handlePrev();
       }
+      // 합성 클릭 방지 타이머
+      setTimeout(() => {
+        isSwipedRef.current = false;
+      }, 350);
+    } else {
+      isSwipedRef.current = false;
     }
   };
 
@@ -148,12 +188,19 @@ export default function HeroCardSwiper() {
         </div>
 
         {/* 템플릿 퀵 셀렉터 탭 (넘기지 않고도 즉시 탭해서 바꿀 수 있도록 지원) */}
-        <div className="flex items-center justify-center gap-1.5 max-w-md mx-auto mb-6 px-2 overflow-x-auto no-scrollbar">
+        <div
+          ref={tabsContainerRef}
+          className="flex items-center justify-start sm:justify-center gap-1.5 max-w-lg mx-auto mb-6 px-4 overflow-x-auto no-scrollbar scroll-smooth"
+        >
           {HERO_TEMPLATES.map((tpl, idx) => (
             <button
               key={tpl.id}
-              onClick={() => setCurrentIndex(idx)}
-              className={`px-3 py-1.5 rounded-full text-xs transition-all whitespace-nowrap font-medium ${
+              ref={currentIndex === idx ? activeTabRef : null}
+              onClick={() => {
+                isSwipedRef.current = false;
+                setCurrentIndex(idx);
+              }}
+              className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs transition-all whitespace-nowrap font-medium ${
                 currentIndex === idx
                   ? 'bg-gray-900 text-white font-bold shadow-xs scale-105'
                   : 'bg-gray-100 text-gray-500 hover:text-gray-900'
@@ -510,7 +557,10 @@ export default function HeroCardSwiper() {
             {HERO_TEMPLATES.map((tpl, idx) => (
               <button
                 key={tpl.id}
-                onClick={() => setCurrentIndex(idx)}
+                onClick={() => {
+                  isSwipedRef.current = false;
+                  setCurrentIndex(idx);
+                }}
                 aria-label={`${tpl.title} 시안 선택`}
                 className={`transition-all duration-300 rounded-full ${
                   idx === currentIndex

@@ -29,42 +29,31 @@ export default function TodayConciergeCard({ invitation, forceShow = false }) {
     return false;
   }, [forceShow]);
 
-  // 예식 일시 파싱
+  // 예식 일시 파싱 (DB 스키마: wedding_date text 컬럼에 'YYYY-MM-DDTHH:mm:ss'로 날짜와 시간이 함께 저장됨)
   const weddingDateStr = invitation?.wedding_date;
-  const weddingTimeStr = invitation?.wedding_time || '13:00';
 
   const targetDateTime = useMemo(() => {
     if (!weddingDateStr) return null;
 
-    // YYYY-MM-DD 추출 (타임존 오차 방지)
-    const dateMatch = typeof weddingDateStr === 'string' ? weddingDateStr.match(/(\d{4})-(\d{1,2})-(\d{1,2})/) : null;
-    if (!dateMatch) {
-      const fallback = new Date(weddingDateStr);
+    // ISO 문자열 정규화 (' ' -> 'T')
+    const normalized = typeof weddingDateStr === 'string' ? weddingDateStr.replace(' ', 'T') : '';
+    
+    // YYYY-MM-DD 및 HH:mm 추출
+    const match = normalized.match(/(\d{4})-(\d{1,2})-(\d{1,2})(?:T(\d{1,2}):(\d{2}))?/);
+    if (!match) {
+      const fallback = new Date(normalized);
       return isNaN(fallback.getTime()) ? null : fallback;
     }
 
-    const year = parseInt(dateMatch[1], 10);
-    const month = parseInt(dateMatch[2], 10) - 1; // 0-based
-    const day = parseInt(dateMatch[3], 10);
-
-    // 시간 파싱 (HH:mm)
-    let hours = 13;
-    let minutes = 0;
-    const timeMatch = (weddingTimeStr || '').match(/(\d{1,2}):(\d{2})/);
-    if (timeMatch) {
-      hours = parseInt(timeMatch[1], 10);
-      minutes = parseInt(timeMatch[2], 10);
-    } else if (typeof weddingDateStr === 'string' && weddingDateStr.includes('T')) {
-      const dtMatch = weddingDateStr.match(/T(\d{1,2}):(\d{2})/);
-      if (dtMatch) {
-        hours = parseInt(dtMatch[1], 10);
-        minutes = parseInt(dtMatch[2], 10);
-      }
-    }
+    const year = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10) - 1; // 0-based
+    const day = parseInt(match[3], 10);
+    const hours = match[4] !== undefined ? parseInt(match[4], 10) : 13;
+    const minutes = match[5] !== undefined ? parseInt(match[5], 10) : 0;
 
     // 브라우저 로컬 타임존 기준 정밀 Date 생성
     return new Date(year, month, day, hours, minutes, 0, 0);
-  }, [weddingDateStr, weddingTimeStr]);
+  }, [weddingDateStr]);
 
   // 당일 여부 확인
   const isToday = useMemo(() => {

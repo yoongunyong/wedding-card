@@ -8,14 +8,21 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
   const [isShaking, setIsShaking] = useState(false);
   const [declineMsg, setDeclineMsg] = useState('');
 
-  // 중앙에 들어갈 실제 커플 사진 (사용자 업로드 사진 우선, 기본 예시 상태일 땐 피켓 사진 우선)
-  const isDefaultUnsplash = 
-    invitation?.images?.cover?.includes('photo-1519741497674-611481863552') ||
-    invitation?.cover_image?.includes('photo-1519741497674-611481863552');
+  // DB images.cover 최우선 매핑 (고객이 업로드한 대표 커버 사진)
+  const rawCover = 
+    invitation?.images?.cover || 
+    invitation?.cover_image || 
+    invitation?.images?.couple_profile ||
+    invitation?.images?.main;
 
-  const couplePhoto =
-    (!isDefaultUnsplash && (invitation?.images?.cover || invitation?.cover_image || invitation?.extra_data?.cover_image)) ||
-    '/airdrop-couple.png';
+  // DB에 유효한 커버 사진이 없을 때(또는 배경/더미 링크일 때)만 기본 피켓 커플 화보로 안전하게 fallback
+  const isInvalidCover = 
+    !rawCover || 
+    typeof rawCover !== 'string' ||
+    rawCover.includes('airdrop-bg') || 
+    rawCover.includes('photo-1519741497674-611481863552');
+
+  const couplePhoto = !isInvalidCover ? rawCover : '/airdrop-couple.png';
 
   // 뒷배경: 원본 스크린샷 특유의 고급스러운 웜 브라운 아치 시그니처 블러 배경 고정 (옵션 B)
   const bgImage = invitation?.extra_data?.bg_image || '/airdrop-bg.jpg';

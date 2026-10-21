@@ -376,11 +376,11 @@ export default function HeroCardSwiper() {
               </div>
             )}
 
-            {/* [시안 03: 감성 플레이리스트] - 미니멀 뮤직 플레이어 카드 룩 (레퍼런스 100% 매칭) */}
+            {/* [시안 03: 감성 플레이리스트] - 기준 이미지 1:1 완벽 일치 목업 카드 */}
             {currentTpl.id === 'playlist' && (
-              <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden bg-[#FAF8F5] p-3.5 flex flex-col justify-between border border-stone-200/80 shadow-inner">
-                {/* 1. 상단 둥근 사진 */}
-                <div className="relative w-full aspect-[506/500] rounded-xl overflow-hidden bg-stone-200 shadow-xs shrink-0">
+              <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden bg-[#FAF8F5] p-3 flex flex-col justify-between border border-stone-200/80 shadow-inner">
+                {/* 1. 상단 둥근 사진 (기준 이미지 aspect-[537/525]) */}
+                <div className="relative w-full aspect-[537/525] rounded-[22px] overflow-hidden bg-stone-200 shadow-xs shrink-0">
                   <img
                     src={currentTpl.coverImage}
                     alt="플레이리스트 화보"
@@ -402,7 +402,9 @@ export default function HeroCardSwiper() {
                       <span className="text-xs">💗</span>
                       <span>{currentTpl.bride}</span>
                     </span>
-                    <span className="text-xs text-[#1C1C1E]">♡</span>
+                    <svg className="w-3.5 h-3.5 text-[#1C1C1E] fill-none stroke-current" strokeWidth="1.3" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                    </svg>
                   </div>
                   <p 
                     style={{ fontFamily: "'Noto Serif KR', 'Nanum Myeongjo', serif" }}
@@ -412,10 +414,10 @@ export default function HeroCardSwiper() {
                   </p>
                 </div>
 
-                {/* 3. 재생 바 */}
+                {/* 3. 재생 바 (기준 이미지 38% 위치 + 동그란 핸들) */}
                 <div className="px-1 pt-1.5">
                   <div className="w-full h-[2.5px] bg-[#E5E5EA] rounded-full flex items-center">
-                    <div className="w-2/5 h-full bg-[#1C1C1E] rounded-full relative flex items-center justify-end">
+                    <div className="w-[38%] h-full bg-[#1C1C1E] rounded-full relative flex items-center justify-end">
                       <div className="w-2 h-2 rounded-full bg-[#1C1C1E] shadow-xs -mr-1" />
                     </div>
                   </div>
@@ -425,24 +427,43 @@ export default function HeroCardSwiper() {
                   </div>
                 </div>
 
-                {/* 4. 컨트롤러 5버튼 (정밀 SVG 아이콘) */}
-                <div className="flex items-center justify-between px-1 pt-1 pb-0.5 text-[#1C1C1E]">
-                  <svg className="w-3.5 h-3.5 fill-none stroke-current" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                    <polyline points="16 3 21 3 21 8" /><line x1="4" y1="20" x2="21" y2="3" /><polyline points="21 16 21 21 16 21" /><line x1="15" y1="15" x2="21" y2="21" /><line x1="4" y1="4" x2="9" y2="9" />
+                {/* 4. 컨트롤러 5버튼 (기준 이미지와 동일하게 시원하게 펼쳐진 1:1 배치) */}
+                <div className="flex items-center justify-between px-1.5 w-full pt-1.5 pb-0.5 text-[#1C1C1E]">
+                  {/* 셔플 */}
+                  <svg className="w-3.5 h-3.5 fill-none stroke-current" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                    <path d="M16 3h5v5" />
+                    <path d="M4 20L21 3" />
+                    <path d="M21 16v5h-5" />
+                    <path d="M15 15l6 6" />
+                    <path d="M4 4l5 5" />
                   </svg>
-                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                    <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+
+                  {/* 이전 곡 */}
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <rect x="4" y="4" width="3" height="16" rx="1.2" />
+                    <path d="M20 5.2v13.6a1 1 0 0 1-1.6.8L9.2 12.8a1 1 0 0 1 0-1.6L18.4 4.4a1 1 0 0 1 1.6.8z" />
                   </svg>
-                  <div className="w-8 h-8 rounded-full bg-[#1C1C1E] text-white flex items-center justify-center shadow-sm">
-                    <svg className="w-3 h-3 fill-white" viewBox="0 0 24 24">
-                      <rect x="6" y="5" width="4" height="14" rx="1.5" /><rect x="14" y="5" width="4" height="14" rx="1.5" />
+
+                  {/* 중앙 재생 버튼 (기준 이미지 1:1 비례) */}
+                  <div className="w-8 h-8 rounded-full bg-[#1C1C1E] text-white flex items-center justify-center shadow-xs shrink-0">
+                    <svg className="w-3 h-3.5 fill-white" viewBox="0 0 20 24">
+                      <rect x="2.5" y="3" width="5" height="18" rx="1.5" />
+                      <rect x="12.5" y="3" width="5" height="18" rx="1.5" />
                     </svg>
                   </div>
-                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                    <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+
+                  {/* 다음 곡 */}
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M4 5.2v13.6a1 1 0 0 0 1.6.8L14.8 12.8a1 1 0 0 0 0-1.6L5.6 4.4a1 1 0 0 0-1.6.8z" />
+                    <rect x="17" y="4" width="3" height="16" rx="1.2" />
                   </svg>
-                  <svg className="w-3.5 h-3.5 fill-none stroke-current" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                    <polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14" /><polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 0 1-4 4H3" />
+
+                  {/* 반복 (기준 이미지 원작 루프) */}
+                  <svg className="w-3.5 h-3.5 fill-none stroke-current" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                    <path d="M17 2l4 4-4 4" />
+                    <path d="M3 11v-1a4 4 0 0 1 4-4h14" />
+                    <path d="M7 22l-4-4 4-4" />
+                    <path d="M21 13v1a4 4 0 0 1-4 4H3" />
                   </svg>
                 </div>
               </div>

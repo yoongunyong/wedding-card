@@ -22,11 +22,11 @@ export default function PlaylistTemplate({ invitation }) {
 
   // 2. 뮤직 플레이어 위젯 & 바이닐 LP 애니메이션 상태
   const [isPlaying, setIsPlaying] = useState(false);
-  const [trackProgress, setTrackProgress] = useState(35);
-  const [isLiked, setIsLiked] = useState(true);
+  const [trackProgress, setTrackProgress] = useState(0);
+  const [isLiked, setIsLiked] = useState(false);
   const [heartAnim, setHeartAnim] = useState(false);
-  const [audioCurrentTime, setAudioCurrentTime] = useState('0:48');
-  const [audioTotalDuration, setAudioTotalDuration] = useState('3:15');
+  const [audioCurrentTime, setAudioCurrentTime] = useState('0:00');
+  const [audioTotalDuration, setAudioTotalDuration] = useState('3:19');
 
 
   // 4. 계좌 아코디언 토글
@@ -234,11 +234,11 @@ export default function PlaylistTemplate({ invitation }) {
           ======================================================== */}
       <section className="relative px-4 pt-7 pb-10 bg-linear-to-b from-[#F7F5EE] via-[#FAF8F5] to-[#FAF8F5]">
         
-        {/* 감성 뮤직 플레이어 카드 (682x1024 레퍼런스 규격 1:1 완벽 재현) */}
-        <div className="w-full max-w-[370px] sm:max-w-[390px] mx-auto bg-[#FAF8F5] rounded-[38px] p-4 sm:p-5 shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-stone-200/80 select-none">
+        {/* 감성 뮤직 플레이어 카드 (기준 이미지 100% 일치 규격 & 디자인) */}
+        <div className="w-full max-w-[370px] sm:max-w-[390px] mx-auto bg-[#FAF8F5] rounded-[40px] p-3.5 sm:p-4.5 pb-6 sm:pb-7 shadow-[0_20px_50px_rgba(0,0,0,0.06)] border border-stone-200/70 select-none">
           
-          {/* 1. 상단 둥근 웨딩 화보 사진 (aspect-[506/524]) */}
-          <div className="relative w-full aspect-[506/524] rounded-[26px] overflow-hidden bg-stone-200 shadow-xs">
+          {/* 1. 상단 둥근 웨딩 화보 사진 (기준 이미지 aspect-[537/525] 1:1 완벽 일치) */}
+          <div className="relative w-full aspect-[537/525] rounded-[32px] overflow-hidden bg-stone-200 shadow-xs">
             <img
               src={mainImage || '/playlist-couple.png'}
               alt="Wedding Album Cover"
@@ -254,7 +254,7 @@ export default function PlaylistTemplate({ invitation }) {
           {/* 2. 트랙 정보: 날짜, 이름(정통 Noto Serif KR 명조체), 1줄 고정 카피, 라인 하트 */}
           <div className="mt-5 px-1.5 text-left">
             {/* 영문 대문자 날짜 */}
-            <span className="text-[11px] font-sans tracking-[0.2em] text-[#8E8E93] font-normal uppercase block mb-1.5">
+            <span className="text-[11px] font-sans tracking-[0.24em] text-[#8E8E93] font-normal uppercase block mb-1.5">
               {monthEn.toUpperCase()} {date}, {year}
             </span>
 
@@ -262,14 +262,14 @@ export default function PlaylistTemplate({ invitation }) {
             <div className="flex items-center justify-between">
               <h1 
                 style={{ fontFamily: "'Noto Serif KR', 'Nanum Myeongjo', serif" }}
-                className="text-[23.5px] sm:text-[25px] font-normal text-[#1C1C1E] tracking-tight flex items-center gap-1.5"
+                className="text-[23.5px] sm:text-[25.5px] font-normal text-[#1C1C1E] tracking-tight flex items-center gap-1.5"
               >
                 <span>{groomName || '강민우'}</span>
                 <span className="text-[17px] inline-block align-middle mx-0.5">💗</span>
                 <span>{brideName || '서유진'}</span>
               </h1>
 
-              {/* 좋아요 하트 버튼 (레퍼런스 원본 라인 하트 ♡ 일치) */}
+              {/* 좋아요 하트 버튼 (기준 이미지 원본 얇은 미니멀 라인 하트 ♡ 1:1 일치) */}
               <button
                 type="button"
                 onClick={handleHeartClick}
@@ -277,13 +277,13 @@ export default function PlaylistTemplate({ invitation }) {
                 aria-label="좋아요"
               >
                 <svg
-                  className={`w-[21px] h-[21px] transition-colors ${isLiked ? 'text-[#1C1C1E]' : 'text-rose-500 fill-rose-500'}`}
+                  className={`w-[21px] h-[21px] transition-colors ${isLiked ? 'text-rose-500 fill-rose-500' : 'text-[#1C1C1E]'}`}
                   viewBox="0 0 24 24"
                   stroke="currentColor"
-                  strokeWidth="1.4"
+                  strokeWidth="1.3"
                   fill="none"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
                 </svg>
               </button>
             </div>
@@ -306,10 +306,10 @@ export default function PlaylistTemplate({ invitation }) {
             >
               <div 
                 className="h-full bg-[#1C1C1E] rounded-full transition-all duration-300 relative flex items-center justify-end"
-                style={{ width: `${isPlaying ? trackProgress : 40}%` }}
+                style={{ width: `${isPlaying ? trackProgress : 38}%` }}
               >
-                {/* 둥근 핸들 점 */}
-                <div className="w-3 h-3 rounded-full bg-[#1C1C1E] shadow-sm shrink-0 -mr-1.5" />
+                {/* 둥근 핸들 점 (기준 이미지 100% 매칭) */}
+                <div className="w-2.5 h-2.5 rounded-full bg-[#1C1C1E] shadow-sm shrink-0 -mr-1" />
               </div>
             </div>
 
@@ -320,82 +320,83 @@ export default function PlaylistTemplate({ invitation }) {
             </div>
           </div>
 
-          {/* 4. 하단 미디어 컨트롤러 (레퍼런스 아이콘 크기 & 비례 1:1 일치) */}
-          <div className="mt-5 mb-2 px-1 flex items-center justify-between">
-            {/* 셔플 (Shuffle) */}
+          {/* 4. 하단 미디어 컨트롤러 (기준 이미지 1:1 시원한 간격 & 정밀 비트맵 일치) */}
+          <div className="mt-6 mb-2 px-1 w-full flex items-center justify-between">
+            {/* 1. 셔플 (Shuffle: 원작 픽셀 매칭) */}
             <button
               type="button"
               onClick={togglePlayAudio}
-              className="w-10 h-10 flex items-center justify-center text-[#3A3A3C] hover:text-black transition-colors cursor-pointer"
+              className="w-10 h-10 flex items-center justify-center text-[#1C1C1E] hover:text-black transition-colors cursor-pointer"
               aria-label="셔플"
             >
-              <svg className="w-[18px] h-[18px] fill-none stroke-current" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                <polyline points="16 3 21 3 21 8" />
-                <line x1="4" y1="20" x2="21" y2="3" />
-                <polyline points="21 16 21 21 16 21" />
-                <line x1="15" y1="15" x2="21" y2="21" />
-                <line x1="4" y1="4" x2="9" y2="9" />
+              <svg className="w-[19px] h-[19px] fill-none stroke-current" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <path d="M16 3h5v5" />
+                <path d="M4 20L21 3" />
+                <path d="M21 16v5h-5" />
+                <path d="M15 15l6 6" />
+                <path d="M4 4l5 5" />
               </svg>
             </button>
 
-            {/* 이전 곡 (Previous: Solid) */}
+            {/* 2. 이전 곡 (Previous: 원작 Solid 매칭) */}
             <button
               type="button"
               onClick={togglePlayAudio}
               className="w-10 h-10 flex items-center justify-center text-[#1C1C1E] hover:scale-105 transition-transform cursor-pointer"
               aria-label="이전 곡"
             >
-              <svg className="w-[18px] h-[18px] fill-current" viewBox="0 0 24 24">
-                <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+              <svg className="w-[20px] h-[20px] fill-current" viewBox="0 0 24 24">
+                <rect x="4" y="4" width="3" height="16" rx="1.2" />
+                <path d="M20 5.2v13.6a1 1 0 0 1-1.6.8L9.2 12.8a1 1 0 0 1 0-1.6L18.4 4.4a1 1 0 0 1 1.6.8z" />
               </svg>
             </button>
 
-            {/* 중앙 대형 재생/일시정지 원형 버튼 (직경 64px, 레퍼런스 일치) */}
+            {/* 3. 중앙 대형 재생/일시정지 원형 버튼 (기준 이미지 1:1 직경 54px, ❚❚ / ▶ 전환) */}
             <button
               type="button"
               onClick={togglePlayAudio}
-              className="w-[62px] h-[62px] rounded-full bg-[#1C1C1E] hover:bg-black text-white flex items-center justify-center shadow-md active:scale-95 transition-all cursor-pointer"
+              className="w-[52px] h-[52px] rounded-full bg-[#1C1C1E] hover:bg-black text-white flex items-center justify-center shadow-md active:scale-95 transition-all cursor-pointer shrink-0"
               aria-label={isPlaying ? '일시정지' : '재생'}
             >
               {isPlaying ? (
-                /* 일시정지 막대 2개 */
-                <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24">
-                  <rect x="6" y="5" width="4" height="14" rx="1.5" />
-                  <rect x="14" y="5" width="4" height="14" rx="1.5" />
+                /* 재생 중: 기준 이미지 1:1 일치 일시정지 막대 2개 */
+                <svg className="w-[17px] h-[19px] fill-white" viewBox="0 0 20 24">
+                  <rect x="2.5" y="3" width="5" height="18" rx="1.5" />
+                  <rect x="12.5" y="3" width="5" height="18" rx="1.5" />
                 </svg>
               ) : (
-                /* 일시정지 막대 2개 (레퍼런스 기본 화면에 떠 있는 일시정지 아이콘과 100% 매칭) */
-                <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24">
-                  <rect x="6" y="5" width="4" height="14" rx="1.5" />
-                  <rect x="14" y="5" width="4" height="14" rx="1.5" />
+                /* 미재생: 정통 재생 삼각형 (가운데 정렬) */
+                <svg className="w-[18px] h-[19px] fill-white translate-x-0.5" viewBox="0 0 20 24">
+                  <path d="M4 3.5v17a1 1 0 0 0 1.54.85l13-8.5a1 1 0 0 0 0-1.7l-13-8.5A1 1 0 0 0 4 3.5z" />
                 </svg>
               )}
             </button>
 
-            {/* 다음 곡 (Next: Solid) */}
+            {/* 4. 다음 곡 (Next: 원작 Solid 매칭) */}
             <button
               type="button"
               onClick={togglePlayAudio}
               className="w-10 h-10 flex items-center justify-center text-[#1C1C1E] hover:scale-105 transition-transform cursor-pointer"
               aria-label="다음 곡"
             >
-              <svg className="w-[18px] h-[18px] fill-current" viewBox="0 0 24 24">
-                <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+              <svg className="w-[20px] h-[20px] fill-current" viewBox="0 0 24 24">
+                <path d="M4 5.2v13.6a1 1 0 0 0 1.6.8L14.8 12.8a1 1 0 0 0 0-1.6L5.6 4.4a1 1 0 0 0-1.6.8z" />
+                <rect x="17" y="4" width="3" height="16" rx="1.2" />
               </svg>
             </button>
 
-            {/* 반복 (Repeat) */}
+            {/* 5. 반복 (Repeat: 원작 픽셀 매칭 루프 화살표) */}
             <button
               type="button"
               onClick={togglePlayAudio}
-              className="w-10 h-10 flex items-center justify-center text-[#3A3A3C] hover:text-black transition-colors cursor-pointer"
+              className="w-10 h-10 flex items-center justify-center text-[#1C1C1E] hover:text-black transition-colors cursor-pointer"
               aria-label="반복 재생"
             >
-              <svg className="w-[18px] h-[18px] fill-none stroke-current" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                <polyline points="17 1 21 5 17 9" />
-                <path d="M3 11V9a4 4 0 0 1 4-4h14" />
-                <polyline points="7 23 3 19 7 15" />
-                <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+              <svg className="w-[19px] h-[19px] fill-none stroke-current" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <path d="M17 2l4 4-4 4" />
+                <path d="M3 11v-1a4 4 0 0 1 4-4h14" />
+                <path d="M7 22l-4-4 4-4" />
+                <path d="M21 13v1a4 4 0 0 1-4 4H3" />
               </svg>
             </button>
           </div>

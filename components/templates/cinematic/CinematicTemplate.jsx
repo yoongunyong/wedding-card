@@ -57,19 +57,19 @@ export default function CinematicTemplate({ invitation }) {
   }, [rawGallery]);
 
   const defaultOurStoryImages = useMemo(() => isSample ? [
-    'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1000&q=80',
-    'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1000&q=80',
-    'https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&w=1000&q=80',
-    'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=1000&q=80',
-    'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1000&q=80',
+    '/samples/cinematic-cover.jpg',
+    '/samples/veil-kiss-bw.jpg',
+    '/samples/garden-couple.jpg',
+    '/samples/ring-detail.jpg',
+    '/samples/scene-cover.jpg',
   ] : [], [isSample]);
 
   const defaultWeddingPhotoImages = useMemo(() => isSample ? [
-    'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=1000&q=80',
-    'https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=1000&q=80',
-    'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?auto=format&fit=crop&w=1000&q=80',
-    'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1000&q=80',
-    'https://images.unsplash.com/photo-1545232979-8bf68ee9b1af?auto=format&fit=crop&w=1000&q=80',
+    '/samples/editorial-cover.jpg',
+    '/samples/bride-solo.jpg',
+    '/samples/groom-solo.jpg',
+    '/samples/cinematic-cover.jpg',
+    '/samples/garden-couple.jpg',
   ] : [], [isSample]);
 
   const ourStoryImages = useMemo(() => {
@@ -90,11 +90,11 @@ export default function CinematicTemplate({ invitation }) {
   const galleryImages = userGallery || (isSample ? [...defaultOurStoryImages, ...defaultWeddingPhotoImages] : []);
 
   // 대표 이미지 매핑 (고객 등록 사진 최우선 매핑, 미등록 시 타인의 사진이 노출되지 않도록 제어)
-  const mainImage = images.main || images.cover || invitation?.main_image || (isSample ? 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=85' : '');
-  const celebrationPhoto = images.couple_profile || images.couple || extra.couple_profile_image || (isSample ? 'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?auto=format&fit=crop&w=1200&q=80' : images.main || '');
-  const bridePhoto = images.bride_profile || extra.bride_profile_image || invitation?.bride_photo || (isSample ? 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=800&q=80' : '');
-  const groomPhoto = images.groom_profile || extra.groom_profile_image || invitation?.groom_photo || (isSample ? 'https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=800&q=80' : '');
-  const datePhoto = images.ending || (userGallery && userGallery.length > 1 ? userGallery[1] : null) || (isSample ? 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80' : '');
+  const mainImage = images.main || images.cover || invitation?.main_image || (isSample ? '/samples/cinematic-cover.jpg' : '');
+  const celebrationPhoto = images.couple_profile || images.couple || extra.couple_profile_image || (isSample ? '/samples/garden-couple.jpg' : images.main || '');
+  const bridePhoto = images.bride_profile || extra.bride_profile_image || invitation?.bride_photo || (isSample ? '/samples/bride-solo.jpg' : '');
+  const groomPhoto = images.groom_profile || extra.groom_profile_image || invitation?.groom_photo || (isSample ? '/samples/groom-solo.jpg' : '');
+  const datePhoto = images.ending || (userGallery && userGallery.length > 1 ? userGallery[1] : null) || (isSample ? '/samples/veil-kiss-bw.jpg' : '');
 
   // 성함 데이터 (하드코딩 더미 성함 제거)
   const groomName = invitation?.groom_name || (isSample ? '데이' : '');
@@ -197,25 +197,25 @@ export default function CinematicTemplate({ invitation }) {
           title: 'Special Moment',
           subtitle: 'Special Moment',
           content: '평생 간직할 소중한 추억을 만들어가는 시간입니다.\n웨딩의 모든 순간이 특별한 기억으로 남을 것입니다.',
-          image: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80',
+          image: '/samples/cinematic-cover.jpg',
         },
         {
           title: 'Celebration Time',
           subtitle: 'Celebration Time',
           content: '사랑하는 사람들과 함께 축하하며 즐거운 시간을 보내세요.\n여러분의 참석이 저희에게 큰 기쁨이 됩니다.',
-          image: 'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?auto=format&fit=crop&w=800&q=80',
+          image: '/samples/garden-couple.jpg',
         },
         {
           title: 'Dining Experience',
           subtitle: 'Dining Experience',
           content: '정성껏 준비한 다양한 메뉴를 맛보시며 편안한 식사 시간을 가지세요.\n맛있는 음식과 함께 즐거운 대화를 나누실 수 있습니다.',
-          image: 'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=800&q=80',
+          image: '/samples/ring-detail.jpg',
         },
         {
           title: 'Reception Party',
           subtitle: 'Wedding Ceremony',
           content: '아름다운 예식장에서 진행되는 특별한 순간을 함께해주세요.\n소중한 분들과 함께하는 행복한 시간이 될 것입니다.',
-          image: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=80',
+          image: '/samples/scene-cover.jpg',
         },
       ];
     }

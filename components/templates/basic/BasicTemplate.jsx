@@ -436,7 +436,7 @@ export default function BasicTemplate({ invitation }) {
           }
           // localhost 환경이거나 이미지가 없을 경우 카카오 스크랩 검증용 고화질 웨딩 이미지 대체
           if (!shareImg || (typeof window !== 'undefined' && window.location.hostname === 'localhost')) {
-            shareImg = 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80';
+            shareImg = '/samples/garden-couple.jpg';
           }
 
           window.Kakao.Share.sendDefault({

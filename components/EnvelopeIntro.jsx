@@ -8,14 +8,17 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
   const [isShaking, setIsShaking] = useState(false);
   const [declineMsg, setDeclineMsg] = useState('');
 
-  // Supabase 신규 images.cover 최우선 매핑 (하위 호환 유지)
-  const coverImage =
-    invitation?.images?.cover ||
-    invitation?.cover_image ||
-    invitation?.extra_data?.cover_image ||
-    invitation?.extra_data?.main_image ||
-    invitation?.main_image ||
-    '/cover.jpg';
+  // 중앙에 들어갈 실제 커플 사진 (사용자 업로드 사진 우선, 기본 예시 상태일 땐 피켓 사진 우선)
+  const isDefaultUnsplash = 
+    invitation?.images?.cover?.includes('photo-1519741497674-611481863552') ||
+    invitation?.cover_image?.includes('photo-1519741497674-611481863552');
+
+  const couplePhoto =
+    (!isDefaultUnsplash && (invitation?.images?.cover || invitation?.cover_image || invitation?.extra_data?.cover_image)) ||
+    '/airdrop-couple.png';
+
+  // 뒷배경: 원본 스크린샷 특유의 고급스러운 웜 브라운 아치 시그니처 블러 배경 고정 (옵션 B)
+  const bgImage = invitation?.extra_data?.bg_image || '/airdrop-bg.jpg';
 
   useEffect(() => {
     // 인트로 표시 중 스크롤 방지 & 최상단 고정
@@ -39,7 +42,7 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
     };
   }, []);
 
-  // Decline 클릭 시 위트 있는 셰이크 & 안내
+  // 거절 클릭 시 위트 있는 셰이크 애니메이션 & 안내 토스트
   const handleDecline = (e) => {
     e.stopPropagation();
     setIsShaking(true);
@@ -48,12 +51,11 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
     setTimeout(() => setDeclineMsg(''), 2200);
   };
 
-  // Accept 클릭 시 깊고 서정적인 시네마틱 전환 효과 & BGM 재생
+  // 수락 클릭 시 시네마틱 전환 효과 & BGM 재생
   const handleAccept = (e) => {
     e.stopPropagation();
     if (transitionStep !== 'idle') return;
 
-    // 모달 버튼에 갇힌 포커스 즉시 해제 (모바일 터치 스크롤 먹통 방지)
     if (e.currentTarget instanceof HTMLElement) {
       e.currentTarget.blur();
     }
@@ -61,17 +63,16 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
       document.activeElement.blur();
     }
 
-    // 수락(Accept)을 클릭했을 때만 BGM 재생 이벤트 발생
+    // 수락 클릭 시 BGM 재생 이벤트 발생
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('play-wedding-bgm'));
     }
 
-    // 1단계: 화면이 서서히 어두워짐 (800ms)
+    // 1단계: 화면이 부드럽게 암전
     setTransitionStep('darkening');
 
-    // 2단계: 화면이 완전히 어두워진 시점(850ms) 후 본문 드러내기 시작
+    // 2단계: 본문 드러내기 시작
     setTimeout(() => {
-      // 본문이 보이기 시작하기 직전에만 딱 1회 최상단(0, 0) 보정 및 스크롤 잠금 해제
       if (typeof window !== 'undefined') {
         window.scrollTo(0, 0);
         document.body.style.overflow = '';
@@ -80,14 +81,13 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
       }
       setTransitionStep('revealing');
 
-      // 3단계: 어둠이 안개처럼 걷힌 후 인트로 컴포넌트 언마운트 (항상 청첩장 최상단 보장)
+      // 3단계: 인트로 언마운트
       setTimeout(() => {
         if (typeof window !== 'undefined') {
           document.body.style.overflow = '';
           document.documentElement.style.overflow = '';
           window.scrollTo(0, 0);
         }
-        // 부모 모달 컨테이너 스크롤도 최상단 리셋
         if (typeof document !== 'undefined') {
           const previewContainer = document.getElementById('preview-scroll-container');
           if (previewContainer) {
@@ -95,20 +95,17 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
           }
         }
         if (onOpen) onOpen();
-      }, 1250);
-    }, 850);
+      }, 1000);
+    }, 700);
   };
-
-  const groomName = invitation?.groom_name || '신랑';
-  const brideName = invitation?.bride_name || '신부';
 
   return (
     <>
-      {/* 1. 풀스크린 배경 사진 & 분리형 에어드랍 레이어 */}
+      {/* 1. iOS 정통 AirDrop 오프닝 인트로 레이어 */}
       <div
-        className={`fixed inset-0 z-50 flex flex-col justify-between items-center px-6 py-14 sm:py-16 select-none overflow-hidden ${
-          transitionStep === 'revealing' 
-            ? 'hidden pointer-events-none' 
+        className={`fixed inset-0 z-50 flex items-center justify-center p-4 select-none overflow-hidden ${
+          transitionStep === 'revealing'
+            ? 'hidden pointer-events-none'
             : transitionStep === 'darkening'
             ? 'opacity-100 pointer-events-none'
             : 'opacity-100'
@@ -117,95 +114,101 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
         <style jsx>{`
           @keyframes shakeAnim {
             0%, 100% { transform: translateX(0); }
-            20% { transform: translateX(-6px) rotate(-1deg); }
-            40% { transform: translateX(6px) rotate(1deg); }
-            60% { transform: translateX(-4px); }
-            80% { transform: translateX(4px); }
+            20% { transform: translateX(-8px) rotate(-1.5deg); }
+            40% { transform: translateX(8px) rotate(1.5deg); }
+            60% { transform: translateX(-5px); }
+            80% { transform: translateX(5px); }
           }
           .modal-shake {
             animation: shakeAnim 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
           }
         `}</style>
 
-        {/* 풀스크린 배경 사진 */}
-        <div className="absolute inset-0 -z-10 bg-stone-900">
+        {/* 원본 스크린샷 기반 시그니처 웜 브라운 아치 햇살 배경 (옵션 B) */}
+        <div className="absolute inset-0 -z-10 bg-[#2D2018] overflow-hidden">
           <img
-            src={coverImage}
-            alt="Wedding Cover"
+            src={bgImage}
+            alt="Wedding Signature Background"
             className="w-full h-full object-cover object-center pointer-events-none"
             onError={(e) => {
-              if (e.currentTarget.src !== '/cover.jpg') {
-                e.currentTarget.src = '/cover.jpg';
+              if (e.currentTarget.src !== '/airdrop-bg.jpg') {
+                e.currentTarget.src = '/airdrop-bg.jpg';
               }
             }}
           />
-          {/* 밝은 사진에서도 흰색 창이 또렷하게 보이도록 하는 미세 딤드 */}
-          <div className="absolute inset-0 bg-black/15 pointer-events-none" />
+          {/* 원본의 따뜻한 감성을 그대로 보존하기 위한 미세 비네팅 */}
+          <div className="absolute inset-0 bg-black/5 pointer-events-none" />
         </div>
 
-        {/* 상단: 에어드랍 알림창 */}
+        {/* iOS 정통 AirDrop 모달 카드 (576x1024 스크린샷 100% 픽셀 매칭) */}
         <div
-          className={`w-full max-w-[305px] bg-white/95 backdrop-blur-xl rounded-[24px] px-6 py-4.5 text-center shadow-2xl border border-white/40 transition-all duration-300 mt-2 sm:mt-6 ${
+          className={`relative w-[85%] max-w-[335px] bg-[#EFEFF4]/95 backdrop-blur-2xl rounded-[28px] overflow-hidden shadow-[0_25px_60px_-10px_rgba(0,0,0,0.5)] border border-white/40 transition-transform duration-300 flex flex-col ${
             isShaking ? 'modal-shake' : ''
           }`}
-          style={{
-            boxShadow: '0 20px 45px -10px rgba(0, 0, 0, 0.35)',
-          }}
         >
-          <h2 className="text-[17.5px] font-bold text-stone-900 tracking-tight font-sans">
-            AirDrop
-          </h2>
-          <p className="text-[13px] text-stone-700 mt-1 font-normal leading-snug tracking-tight font-sans">
-            <strong className="font-semibold text-stone-900">{groomName} &amp; {brideName}</strong> would like to share
-            <br />
-            a photo.
-          </p>
-        </div>
-
-        {/* 거절 시 나타나는 위트있는 토스트 알림 (화면 정중앙 플로팅) */}
-        {declineMsg && (
-          <div className="z-30 my-auto animate-bounce">
-            <div className="bg-black/85 backdrop-blur-md text-white text-[12px] font-medium py-2 px-4 rounded-full shadow-2xl text-center">
-              {declineMsg}
+          {/* 상단 텍스트 영역: 여백과 폰트 크기 완벽 조정 */}
+          <div className="pt-6 pb-4 px-4 text-center shrink-0">
+            <h2 className="text-[18px] font-bold text-[#111111] tracking-tight font-sans">
+              AirDrop
+            </h2>
+            <p className="text-[13px] text-[#333333] mt-1 font-normal leading-tight tracking-tight font-sans">
+              우리의 결혼식을 공유하려고 합니다.
+            </p>
+            <div className="mt-1 text-[15px] text-[#666666] font-light leading-none">
+              ♡
             </div>
           </div>
-        )}
 
-        {/* 하단: Decline / Accept 버튼창 */}
-        <div
-          className={`w-full max-w-[305px] bg-white/95 backdrop-blur-xl rounded-[22px] overflow-hidden shadow-2xl border border-white/40 transition-all duration-300 mb-2 sm:mb-6 ${
-            isShaking ? 'modal-shake' : ''
-          }`}
-          style={{
-            boxShadow: '0 20px 45px -10px rgba(0, 0, 0, 0.35)',
-          }}
-        >
-          <div className="grid grid-cols-2 divide-x divide-stone-200/80">
+          {/* 중앙 사진: 카드 좌우 폭에 100% 꽉 찬 직사각형 (aspect-[419/440]) */}
+          <div className="relative w-full aspect-[419/440] bg-[#E5E5EA] overflow-hidden shrink-0">
+            <img
+              src={couplePhoto}
+              alt="Our Wedding Day"
+              className="w-full h-full object-cover object-center pointer-events-none"
+              onError={(e) => {
+                if (e.currentTarget.src !== '/airdrop-couple.png') {
+                  e.currentTarget.src = '/airdrop-couple.png';
+                }
+              }}
+            />
+          </div>
+
+          {/* 거절 시 나타나는 위트있는 토스트 알림 */}
+          {declineMsg && (
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 w-[85%] animate-bounce">
+              <div className="bg-black/90 backdrop-blur-md text-white text-[12px] font-medium py-2.5 px-4 rounded-full shadow-2xl text-center leading-snug">
+                {declineMsg}
+              </div>
+            </div>
+          )}
+
+          {/* 하단 버튼 바: iOS 2분할 버튼 (거절 / 수락) */}
+          <div className="grid grid-cols-2 divide-x divide-[#D1D1D6] border-t border-[#D1D1D6] bg-[#EFEFF4] shrink-0">
             <button
               type="button"
               onClick={handleDecline}
-              className="py-3.5 text-[15.5px] font-medium text-[#007AFF] hover:bg-black/5 active:bg-black/10 transition-colors cursor-pointer select-none font-sans text-center"
+              className="py-3.5 text-[17px] font-normal text-[#007AFF] hover:bg-black/5 active:bg-black/10 transition-colors cursor-pointer select-none font-sans text-center"
             >
-              Decline
+              거절
             </button>
             <button
               type="button"
               onClick={handleAccept}
-              className="py-3.5 text-[15.5px] font-bold text-[#007AFF] hover:bg-black/5 active:bg-black/10 transition-colors cursor-pointer select-none font-sans text-center"
+              className="py-3.5 text-[17px] font-semibold text-[#007AFF] hover:bg-black/5 active:bg-black/10 transition-colors cursor-pointer select-none font-sans text-center"
             >
-              Accept
+              수락
             </button>
           </div>
         </div>
       </div>
 
-      {/* 2. 시네마틱 껌뻑(Blink / Fade to black) 암전 오버레이 */}
+      {/* 2. 시네마틱 페이드 암전 오버레이 */}
       <div
         className={`fixed inset-0 z-[60] bg-black pointer-events-none transition-opacity ${
           transitionStep === 'darkening'
-            ? 'opacity-100 duration-[800ms] ease-in-out'
+            ? 'opacity-100 duration-[700ms] ease-in-out'
             : transitionStep === 'revealing'
-            ? 'opacity-0 duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)]'
+            ? 'opacity-0 duration-[1000ms] ease-out'
             : 'opacity-0 duration-0'
         }`}
       />

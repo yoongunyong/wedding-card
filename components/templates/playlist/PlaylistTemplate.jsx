@@ -229,142 +229,177 @@ export default function PlaylistTemplate({ invitation }) {
     <div className="w-full max-w-[440px] min-h-screen bg-[#FBF9F5] text-[#222E26] font-sans mx-auto shadow-2xl relative overflow-hidden select-none">
       
       {/* ========================================================
-          01. HERO SECTION: CINEMATIC FULL ALBUM JACKET & MUSIC BAR
-              (시원한 3:4 풀 프레임 웨딩 화보 + 플로팅 글래스 플레이어)
+          01. HERO SECTION: PREMIUM WEDDING PLAYLIST CARD (레퍼런스 100% 픽셀 매칭)
+              (화이트/크림 카드 + 정갈한 명조체 + 1줄 고정 카피 + 정밀 컨트롤러)
           ======================================================== */}
-      <section className="relative px-5 pt-8 pb-10 bg-linear-to-b from-[#F4F1EA] via-[#FBF9F5] to-[#FBF9F5]">
+      <section className="relative px-4 pt-7 pb-10 bg-linear-to-b from-[#F7F5EE] via-[#FAF8F5] to-[#FAF8F5]">
         
-        {/* 상단 무드 헤더 */}
-        <div className="text-center mb-5">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-white/80 backdrop-blur-md rounded-full border border-stone-200/60 shadow-2xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-            <span className="font-mono text-[10px] tracking-[0.25em] text-stone-600 uppercase font-semibold">
-              OUR WEDDING SOUNDTRACK
-            </span>
-          </div>
-          <h2 className="font-serif text-xs tracking-widest text-stone-500 uppercase mt-2">
-            {dayEn}, {date} {monthEn}, {year}
-          </h2>
-        </div>
-
-        {/* 메인 풀 프레임 웨딩 화보 (비율 손실 0%, 원본 비율 그대로 시원하게 노출) */}
-        <div className="relative w-full aspect-3/4 rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.12)] border border-stone-200/70 bg-stone-100 group">
-          <img
-            src={mainImage}
-            alt="Main Wedding Album"
-            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-103"
-          />
-
-          {/* 상단 은은한 섀도우 그라데이션 */}
-          <div className="absolute inset-0 bg-linear-to-b from-black/40 via-transparent to-black/60 pointer-events-none" />
-
-          {/* 화보 위 감성 영문 레터링 */}
-          <div className="absolute top-5 left-5 right-5 flex items-center justify-between text-white/90 drop-shadow-md">
-            <span className="font-serif italic text-xs tracking-wider">
-              A Moment of Love
-            </span>
-            <span className="font-mono text-[10px] tracking-widest uppercase bg-black/20 backdrop-blur-xs px-2 py-0.5 rounded-md">
-              SIDE A &middot; 33 RPM
-            </span>
+        {/* 감성 뮤직 플레이어 카드 (682x1024 레퍼런스 규격 1:1 완벽 재현) */}
+        <div className="w-full max-w-[370px] sm:max-w-[390px] mx-auto bg-[#FAF8F5] rounded-[38px] p-4 sm:p-5 shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-stone-200/80 select-none">
+          
+          {/* 1. 상단 둥근 웨딩 화보 사진 (aspect-[506/524]) */}
+          <div className="relative w-full aspect-[506/524] rounded-[26px] overflow-hidden bg-stone-200 shadow-xs">
+            <img
+              src={mainImage || '/playlist-couple.png'}
+              alt="Wedding Album Cover"
+              className="w-full h-full object-cover grayscale contrast-105"
+              onError={(e) => {
+                if (e.currentTarget.src !== '/playlist-couple.png') {
+                  e.currentTarget.src = '/playlist-couple.png';
+                }
+              }}
+            />
           </div>
 
-          {/* 화보 중앙 하단 타이포그래피 (레퍼런스 감성 필기체 글씨체 - 플레이어 바와 여유 있는 간격 확보) */}
-          <div className="absolute bottom-28 sm:bottom-32 left-5 right-5 text-white drop-shadow-xl text-center select-none">
-            <p className="font-script text-4xl sm:text-5xl text-white tracking-wide mb-1 leading-none drop-shadow-lg">
-              Getting Married
-            </p>
-            <h1 className="font-serif text-xl sm:text-2xl font-normal tracking-tight text-white/95 mt-1.5 drop-shadow-md">
-              {groomName} &middot; {brideName}
-            </h1>
-            <p className="font-mono text-[10px] tracking-widest text-white/80 uppercase mt-1 drop-shadow-sm">
-              {date} {monthEn.slice(0, 3).toUpperCase()} {year}
-            </p>
-          </div>
+          {/* 2. 트랙 정보: 날짜, 이름(정통 Noto Serif KR 명조체), 1줄 고정 카피, 라인 하트 */}
+          <div className="mt-5 px-1.5 text-left">
+            {/* 영문 대문자 날짜 */}
+            <span className="text-[11px] font-sans tracking-[0.2em] text-[#8E8E93] font-normal uppercase block mb-1.5">
+              {monthEn.toUpperCase()} {date}, {year}
+            </span>
 
-          {/* 하단 플로팅 글래스모피즘 뮤직 플레이어 바 (화보 하단에 세련되게 얹힘) */}
-          <div className="absolute bottom-3 left-3 right-3 bg-white/90 backdrop-blur-xl border border-white/60 rounded-2xl p-3 shadow-lg">
-            <div className="flex items-center gap-3">
-              
-              {/* 회전하는 미니 바이닐 디스크 썸네일 (터치 시 재생/일시정지 토글) */}
-              <div 
-                onClick={togglePlayAudio}
-                className={`relative w-11 h-11 rounded-full bg-[#181818] shadow-md border-2 border-stone-200 flex items-center justify-center shrink-0 overflow-hidden cursor-pointer hover:scale-105 active:scale-95 transition-transform ${
-                  isPlaying ? 'animate-[spin_8s_linear_infinite]' : ''
-                }`}
-                title="LP판을 터치하여 음악 재생/정지"
+            {/* 신랑 💗 신부 (정통 본명조 Noto Serif KR 24px) & 우측 라인 하트 */}
+            <div className="flex items-center justify-between">
+              <h1 
+                style={{ fontFamily: "'Noto Serif KR', 'Nanum Myeongjo', serif" }}
+                className="text-[23.5px] sm:text-[25px] font-normal text-[#1C1C1E] tracking-tight flex items-center gap-1.5"
               >
-                {/* LP 라벨 */}
-                <div className="w-4.5 h-4.5 rounded-full bg-emerald-800 border border-white/50 flex items-center justify-center">
-                  <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                </div>
-              </div>
+                <span>{groomName || '강민우'}</span>
+                <span className="text-[17px] inline-block align-middle mx-0.5">💗</span>
+                <span>{brideName || '서유진'}</span>
+              </h1>
 
-              {/* 트랙 정보 & 음파 이퀄라이저 */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-0.5">
-                  <h4 className="font-serif text-xs font-semibold text-stone-900 truncate tracking-tight">
-                    {invitation?.quote_source ? invitation.quote_source : 'This is our song'}
-                  </h4>
-                  {/* 4밴드 음파 이퀄라이저 */}
-                  <div className="flex items-end gap-[2px] h-3 ml-2 shrink-0">
-                    <span className={`w-[2px] bg-emerald-600 rounded-full transition-all duration-300 ${isPlaying ? 'h-3 animate-pulse' : 'h-1'}`} />
-                    <span className={`w-[2px] bg-emerald-600 rounded-full transition-all duration-300 ${isPlaying ? 'h-2 animate-bounce' : 'h-1.5'}`} />
-                    <span className={`w-[2px] bg-emerald-600 rounded-full transition-all duration-300 ${isPlaying ? 'h-3 animate-pulse' : 'h-1'}`} />
-                    <span className={`w-[2px] bg-emerald-600 rounded-full transition-all duration-300 ${isPlaying ? 'h-2.5 animate-bounce' : 'h-1.5'}`} />
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between text-[10px] text-stone-500 font-mono">
-                  <span className="truncate">{coupleNamesEn}</span>
-                  <span>{audioCurrentTime} / {audioTotalDuration}</span>
-                </div>
-
-                {/* 프로그레스 바 */}
-                <div className="w-full h-1 bg-stone-200 rounded-full overflow-hidden mt-1.5">
-                  <div 
-                    className="h-full bg-emerald-600 rounded-full transition-all duration-500" 
-                    style={{ width: `${trackProgress}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* 플레이/일시정지 버튼 & 하트 */}
-              <div className="flex items-center gap-1.5 shrink-0 pl-1">
-                <button
-                  onClick={handleHeartClick}
-                  className={`p-1.5 transition-transform duration-300 cursor-pointer ${heartAnim ? 'scale-125' : 'scale-100 hover:scale-110'}`}
-                  aria-label="좋아요"
+              {/* 좋아요 하트 버튼 (레퍼런스 원본 라인 하트 ♡ 일치) */}
+              <button
+                type="button"
+                onClick={handleHeartClick}
+                className={`p-1 transition-transform duration-300 cursor-pointer ${heartAnim ? 'scale-125' : 'scale-100 hover:scale-110'}`}
+                aria-label="좋아요"
+              >
+                <svg
+                  className={`w-[21px] h-[21px] transition-colors ${isLiked ? 'text-[#1C1C1E]' : 'text-rose-500 fill-rose-500'}`}
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                  fill="none"
                 >
-                  <svg
-                    className={`w-4 h-4 transition-colors ${isLiked ? 'text-rose-500 fill-rose-500' : 'text-stone-300'}`}
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    fill={isLiked ? 'currentColor' : 'none'}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                </button>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              </button>
+            </div>
 
-                <button
-                  onClick={togglePlayAudio}
-                  className="w-8 h-8 rounded-full bg-stone-900 hover:bg-black text-white flex items-center justify-center shadow-md transition-transform active:scale-90 cursor-pointer"
-                  aria-label={isPlaying ? '일시정지' : '재생'}
-                >
-                  {isPlaying ? (
-                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                      <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-                    </svg>
-                  ) : (
-                    <svg className="w-3.5 h-3.5 fill-current ml-0.5" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  )}
-                </button>
+            {/* 1줄 고정 하드코딩 서브카피: '저희  결혼합니다.' (자간 0.18em Noto Serif KR) */}
+            <p 
+              style={{ fontFamily: "'Noto Serif KR', 'Nanum Myeongjo', serif" }}
+              className="text-[12.5px] text-[#8E8E93] tracking-[0.18em] font-normal mt-1.5"
+            >
+              저희  결혼합니다.
+            </p>
+          </div>
+
+          {/* 3. 프로그레스 바 (트랙 높이 3px, 정밀 핸들, 시간 텍스트) */}
+          <div className="mt-5 px-1.5">
+            {/* 트랙 바 */}
+            <div 
+              onClick={togglePlayAudio}
+              className="relative w-full h-[3px] bg-[#E5E5EA] rounded-full cursor-pointer flex items-center"
+            >
+              <div 
+                className="h-full bg-[#1C1C1E] rounded-full transition-all duration-300 relative flex items-center justify-end"
+                style={{ width: `${isPlaying ? trackProgress : 40}%` }}
+              >
+                {/* 둥근 핸들 점 */}
+                <div className="w-3 h-3 rounded-full bg-[#1C1C1E] shadow-sm shrink-0 -mr-1.5" />
               </div>
+            </div>
 
+            {/* 시간 표시 (3:19 / - 4:26) */}
+            <div className="mt-2 flex items-center justify-between text-[11px] font-mono text-[#8E8E93]">
+              <span>{isPlaying ? audioCurrentTime : '3:19'}</span>
+              <span>- {isPlaying ? audioTotalDuration : '4:26'}</span>
             </div>
           </div>
+
+          {/* 4. 하단 미디어 컨트롤러 (레퍼런스 아이콘 크기 & 비례 1:1 일치) */}
+          <div className="mt-5 mb-2 px-1 flex items-center justify-between">
+            {/* 셔플 (Shuffle) */}
+            <button
+              type="button"
+              onClick={togglePlayAudio}
+              className="w-10 h-10 flex items-center justify-center text-[#3A3A3C] hover:text-black transition-colors cursor-pointer"
+              aria-label="셔플"
+            >
+              <svg className="w-[18px] h-[18px] fill-none stroke-current" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <polyline points="16 3 21 3 21 8" />
+                <line x1="4" y1="20" x2="21" y2="3" />
+                <polyline points="21 16 21 21 16 21" />
+                <line x1="15" y1="15" x2="21" y2="21" />
+                <line x1="4" y1="4" x2="9" y2="9" />
+              </svg>
+            </button>
+
+            {/* 이전 곡 (Previous: Solid) */}
+            <button
+              type="button"
+              onClick={togglePlayAudio}
+              className="w-10 h-10 flex items-center justify-center text-[#1C1C1E] hover:scale-105 transition-transform cursor-pointer"
+              aria-label="이전 곡"
+            >
+              <svg className="w-[18px] h-[18px] fill-current" viewBox="0 0 24 24">
+                <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+              </svg>
+            </button>
+
+            {/* 중앙 대형 재생/일시정지 원형 버튼 (직경 64px, 레퍼런스 일치) */}
+            <button
+              type="button"
+              onClick={togglePlayAudio}
+              className="w-[62px] h-[62px] rounded-full bg-[#1C1C1E] hover:bg-black text-white flex items-center justify-center shadow-md active:scale-95 transition-all cursor-pointer"
+              aria-label={isPlaying ? '일시정지' : '재생'}
+            >
+              {isPlaying ? (
+                /* 일시정지 막대 2개 */
+                <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24">
+                  <rect x="6" y="5" width="4" height="14" rx="1.5" />
+                  <rect x="14" y="5" width="4" height="14" rx="1.5" />
+                </svg>
+              ) : (
+                /* 일시정지 막대 2개 (레퍼런스 기본 화면에 떠 있는 일시정지 아이콘과 100% 매칭) */
+                <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24">
+                  <rect x="6" y="5" width="4" height="14" rx="1.5" />
+                  <rect x="14" y="5" width="4" height="14" rx="1.5" />
+                </svg>
+              )}
+            </button>
+
+            {/* 다음 곡 (Next: Solid) */}
+            <button
+              type="button"
+              onClick={togglePlayAudio}
+              className="w-10 h-10 flex items-center justify-center text-[#1C1C1E] hover:scale-105 transition-transform cursor-pointer"
+              aria-label="다음 곡"
+            >
+              <svg className="w-[18px] h-[18px] fill-current" viewBox="0 0 24 24">
+                <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+              </svg>
+            </button>
+
+            {/* 반복 (Repeat) */}
+            <button
+              type="button"
+              onClick={togglePlayAudio}
+              className="w-10 h-10 flex items-center justify-center text-[#3A3A3C] hover:text-black transition-colors cursor-pointer"
+              aria-label="반복 재생"
+            >
+              <svg className="w-[18px] h-[18px] fill-none stroke-current" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <polyline points="17 1 21 5 17 9" />
+                <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                <polyline points="7 23 3 19 7 15" />
+                <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+              </svg>
+            </button>
+          </div>
+
         </div>
 
         {/* 하단 스크롤 인디케이터 */}

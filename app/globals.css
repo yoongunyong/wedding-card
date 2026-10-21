@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -26,7 +27,7 @@ body {
 
 /* 세리프(명조) 폰트 클래스 매핑 - 주요 섹션 제목 유지용 (초대합니다, 식장 위치 등) */
 .font-serif {
-  font-family: var(--font-serif-kr), "Noto Serif KR", serif, -apple-system, BlinkMacSystemFont !important;
+  font-family: 'Noto Serif KR', var(--font-serif-kr), serif !important;
 }
 
 /* 프리텐다드(고딕) 폰트 클래스 매핑 - 본문 및 세부 내용용 */

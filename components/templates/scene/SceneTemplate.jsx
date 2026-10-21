@@ -475,7 +475,7 @@ export default function SceneTemplate({ invitation }) {
         content: {
           title: shareTitle,
           description: shareDesc,
-          imageUrl: mainImage || 'https://images.unsplash.com/photo-1519741497674-611481863552',
+          imageUrl: mainImage || '/samples/scene-cover.jpg',
           link: {
             mobileWebUrl: currentUrl,
             webUrl: currentUrl,

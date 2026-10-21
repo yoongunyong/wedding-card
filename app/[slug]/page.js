@@ -8,6 +8,7 @@ import EditorialTemplate from '@/components/templates/editorial/EditorialTemplat
 import PlaylistTemplate from '@/components/templates/playlist/PlaylistTemplate';
 import CinematicTemplate from '@/components/templates/cinematic/CinematicTemplate';
 import SceneTemplate from '@/components/templates/scene/SceneTemplate';
+import { SAMPLE_INVITATIONS } from '@/lib/sampleInvitations';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -24,11 +25,23 @@ const TEMPLATE_MAP = {
 export async function generateMetadata({ params }) {
   const { slug } = await params;
 
-  const { data: invitation } = await supabase
-    .from('invitations')
-    .select('groom_name, bride_name, wedding_date, venue_name, venue_hall, images')
-    .eq('slug', slug)
-    .single();
+  let invitation = null;
+
+  try {
+    const { data } = await supabase
+      .from('invitations')
+      .select('groom_name, bride_name, wedding_date, venue_name, venue_hall, images')
+      .eq('slug', slug)
+      .single();
+    invitation = data;
+  } catch (err) {
+    console.warn('generateMetadata Supabase error:', err);
+  }
+
+  // DB에 없을 때 공식 5대 템플릿 샘플 fallback
+  if (!invitation && SAMPLE_INVITATIONS[slug]) {
+    invitation = SAMPLE_INVITATIONS[slug];
+  }
 
   if (!invitation) {
     return {
@@ -74,46 +87,84 @@ export async function generateMetadata({ params }) {
 export default async function WeddingCardPage({ params }) {
   const { slug } = await params;
 
-  const { data: invitation, error } = await supabase
-    .from('invitations')
-    .select('*')
-    .eq('slug', slug)
-    .single();
+  let invitation = null;
 
-  if (error || !invitation) {
+  try {
+    const { data, error } = await supabase
+      .from('invitations')
+      .select('*')
+      .eq('slug', slug)
+      .single();
+
+    if (!error && data) {
+      invitation = data;
+    }
+  } catch (err) {
+    console.warn('WeddingCardPage Supabase fetch error:', err);
+  }
+
+  // DB에 데이터가 없더라도 5대 공식 시안(basic, editorial, playlist, cinematic, scene)이면
+  // 개발 단계 및 프리뷰에서 404 없이 즉시 최고 품질의 AI 화보 샘플로 렌더링
+  const isSampleSlug = Boolean(SAMPLE_INVITATIONS[slug]);
+  if (!invitation && isSampleSlug) {
+    invitation = {
+      ...SAMPLE_INVITATIONS[slug],
+      is_sample_preview: true,
+    };
+  }
+
+  if (!invitation) {
     return notFound();
+  }
+
+  // 공식 샘플 slug인 경우 이미지/갤러리가 누락되어 있으면 기본 고화질 AI 샘플 이미지 보강
+  if (isSampleSlug && SAMPLE_INVITATIONS[slug]) {
+    const sampleRef = SAMPLE_INVITATIONS[slug];
+    invitation = {
+      ...sampleRef,
+      ...invitation,
+      images: {
+        ...sampleRef.images,
+        ...(invitation.images || {}),
+      },
+      gallery_images: (Array.isArray(invitation.gallery_images) && invitation.gallery_images.length > 0)
+        ? invitation.gallery_images
+        : sampleRef.gallery_images,
+    };
   }
 
   // 서비스 만료일시(service_expired_at) 기준 만료 여부 확인
   let isExpired = false;
-  const rawExpiredAt = invitation.service_expired_at ?? invitation.template_config?.service_expired_at;
+  if (!isSampleSlug) {
+    const rawExpiredAt = invitation.service_expired_at ?? invitation.template_config?.service_expired_at;
 
-  if (rawExpiredAt !== undefined) {
-    if (rawExpiredAt === null) {
-      // null로 명시된 경우 무제한(영구 보관) 상태 -> 절대 만료되지 않음
-      isExpired = false;
-    } else {
+    if (rawExpiredAt !== undefined) {
+      if (rawExpiredAt === null) {
+        // null로 명시된 경우 무제한(영구 보관) 상태 -> 절대 만료되지 않음
+        isExpired = false;
+      } else {
+        try {
+          const expDate = new Date(rawExpiredAt);
+          if (!isNaN(expDate.getTime())) {
+            isExpired = Date.now() > expDate.getTime();
+          }
+        } catch (e) {
+          console.warn('service_expired_at parse error:', e);
+        }
+      }
+    } else if (invitation.wedding_date) {
+      // 하위 호환: 컬럼 값이 아직 없는 레코드는 예식일 + 1년으로 fallback
       try {
-        const expDate = new Date(rawExpiredAt);
-        if (!isNaN(expDate.getTime())) {
-          isExpired = Date.now() > expDate.getTime();
+        const weddingDate = new Date(invitation.wedding_date.replace(' ', 'T'));
+        if (!isNaN(weddingDate.getTime())) {
+          const oneYearMs = 365 * 24 * 60 * 60 * 1000;
+          if (Date.now() > weddingDate.getTime() + oneYearMs) {
+            isExpired = true;
+          }
         }
       } catch (e) {
-        console.warn('service_expired_at parse error:', e);
+        console.warn('Wedding date fallback parse error:', e);
       }
-    }
-  } else if (invitation.wedding_date) {
-    // 하위 호환: 컬럼 값이 아직 없는 레코드는 예식일 + 1년으로 fallback
-    try {
-      const weddingDate = new Date(invitation.wedding_date.replace(' ', 'T'));
-      if (!isNaN(weddingDate.getTime())) {
-        const oneYearMs = 365 * 24 * 60 * 60 * 1000;
-        if (Date.now() > weddingDate.getTime() + oneYearMs) {
-          isExpired = true;
-        }
-      }
-    } catch (e) {
-      console.warn('Wedding date fallback parse error:', e);
     }
   }
 

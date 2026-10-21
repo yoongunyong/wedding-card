@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import BasicTemplate from '@/components/templates/basic/BasicTemplate';
 import EditorialTemplate from '@/components/templates/editorial/EditorialTemplate';
@@ -108,19 +109,22 @@ const PREVIEW_FALLBACK = {
   venue_address: '서울 서초구 반포대로 235',
   venue_detail: '고속터미널역 3번 출구 도보 5분',
   images: {
-    main: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=85',
-    cover: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=85',
-    couple_profile: 'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?auto=format&fit=crop&w=1000&q=80',
-    bride_profile: 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=800&q=80',
-    groom_profile: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=800&q=80',
-    ending: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1000&q=80',
+    main: '/samples/garden-couple.jpg',
+    cover: '/samples/editorial-cover.jpg',
+    couple_profile: '/samples/garden-couple.jpg',
+    bride_profile: '/samples/bride-solo.jpg',
+    groom_profile: '/samples/groom-solo.jpg',
+    ending: '/samples/scene-cover.jpg',
   },
   gallery_images: [
-    'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=800&q=80',
+    '/samples/garden-couple.jpg',
+    '/samples/editorial-cover.jpg',
+    '/samples/veil-kiss-bw.jpg',
+    '/samples/ring-detail.jpg',
+    '/samples/bride-solo.jpg',
+    '/samples/groom-solo.jpg',
+    '/samples/scene-cover.jpg',
+    '/samples/cinematic-cover.jpg',
   ],
   accounts: [
     { group: '신랑측', title: '신랑', bank: '국민', number: '123-456-789012', holder: '이도현', name: '신랑 이도현' },
@@ -129,10 +133,24 @@ const PREVIEW_FALLBACK = {
   interviews: DEFAULT_INTERVIEWS,
 };
 
-export default function CreateInvitationPage() {
-  // 1. 기본 폼 상태
-  const [formData, setFormData] = useState({
-    template_type: 'editorial', // 'basic' | 'editorial'
+const VALID_TEMPLATES = ['basic', 'editorial', 'playlist', 'cinematic', 'scene'];
+
+function CreateInvitationContent() {
+  const searchParams = useSearchParams();
+  const templateParam = searchParams ? searchParams.get('template') : null;
+
+  // 1. 기본 폼 상태 (URL 파라미터가 있으면 SSR & 첫 렌더링부터 즉시 반영)
+  const [formData, setFormData] = useState(() => {
+    let t = (templateParam && VALID_TEMPLATES.includes(templateParam)) ? templateParam : 'editorial';
+    if (typeof window !== 'undefined' && !templateParam) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlT = urlParams.get('template');
+      if (urlT && VALID_TEMPLATES.includes(urlT)) {
+        t = urlT;
+      }
+    }
+    return {
+      template_type: t, // 'basic' | 'editorial' | 'playlist' | 'cinematic' | 'scene'
     slug: '',
     groom_name: '',
     groom_name_en: '',
@@ -185,6 +203,7 @@ export default function CreateInvitationPage() {
     show_rsvp_bus: false,
     show_guestbook: true,
     order_code: '',
+    };
   });
 
   // 2. 다중 계좌 상태
@@ -324,16 +343,18 @@ export default function CreateInvitationPage() {
   const [uploadStatus, setUploadStatus] = useState('');
   const [showPreviewModal, setShowPreviewModal] = useState(false);
 
-  // URL 파라미터로 전달된 템플릿 타입 자동 선택 (예: /create?template=playlist)
+  // URL 파라미터로 전달된 템플릿 타입 자동 선택 (useSearchParams 리액티브 동기화)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const t = params.get('template');
-      if (t && ['basic', 'editorial', 'playlist', 'cinematic', 'scene'].includes(t)) {
-        setFormData((prev) => ({ ...prev, template_type: t }));
-      }
+    const targetT = templateParam || (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('template') : null);
+    if (targetT && VALID_TEMPLATES.includes(targetT)) {
+      setFormData((prev) => {
+        if (prev.template_type !== targetT) {
+          return { ...prev, template_type: targetT };
+        }
+        return prev;
+      });
     }
-  }, []);
+  }, [templateParam]);
   const [createdResult, setCreatedResult] = useState(null);
   const [showQrModal, setShowQrModal] = useState(false);
   const isClosingRef = useRef(false);
@@ -1553,6 +1574,16 @@ export default function CreateInvitationPage() {
                 </h2>
                 <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase hidden sm:inline">
                   DESIGN TEMPLATE
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-stone-900 text-white rounded-full text-xs font-medium shadow-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>
+                  {formData.template_type === 'basic' ? 'OPTION 01 · 모던 클래식' :
+                   formData.template_type === 'editorial' ? 'OPTION 02 · 에디토리얼' :
+                   formData.template_type === 'playlist' ? 'OPTION 03 · 플레이리스트' :
+                   formData.template_type === 'cinematic' ? 'OPTION 04 · 시네마틱' :
+                   formData.template_type === 'scene' ? 'OPTION 05 · 모던 씬' : '시안 선택'}
                 </span>
               </div>
             </div>
@@ -3834,5 +3865,22 @@ export default function CreateInvitationPage() {
       )}
 
     </div>
+  );
+}
+
+export default function CreateInvitationPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-stone-800 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-xs font-mono tracking-widest text-stone-500 uppercase">Loading Mukiru Studio...</p>
+          </div>
+        </div>
+      }
+    >
+      <CreateInvitationContent />
+    </Suspense>
   );
 }

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import Script from 'next/script';
 import ScrollReveal from '@/components/ScrollReveal';
+import TodayConciergeCard from '@/components/TodayConciergeCard';
 import KakaoMap from '@/components/KakaoMap';
 import EditorialRsvpModal from '../editorial/EditorialRsvpModal';
 import EditorialGuestbookModal from '../editorial/EditorialGuestbookModal';
@@ -335,6 +336,9 @@ export default function CinematicTemplate({ invitation }) {
           }
         }}
       />
+
+      {/* 예식 당일 안내 데스크 (당일 자동 전환) */}
+      <TodayConciergeCard invitation={invitation} />
 
       {/* ========================================================
       {/* ========================================================

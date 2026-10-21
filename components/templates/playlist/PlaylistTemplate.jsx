@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import Script from 'next/script';
 import ScrollReveal from '@/components/ScrollReveal';
+import TodayConciergeCard from '@/components/TodayConciergeCard';
 import EditorialContactModal from '../editorial/EditorialContactModal';
 import EditorialRsvpModal from '../editorial/EditorialRsvpModal';
 import EditorialGuestbookModal from '../editorial/EditorialGuestbookModal';
@@ -227,6 +228,9 @@ export default function PlaylistTemplate({ invitation }) {
 
   return (
     <div className="w-full max-w-[440px] min-h-screen bg-[#FBF9F5] text-[#222E26] font-sans mx-auto shadow-2xl relative overflow-hidden select-none">
+      
+      {/* 예식 당일 안내 데스크 (당일 자동 전환) */}
+      <TodayConciergeCard invitation={invitation} />
       
       {/* ========================================================
           01. HERO SECTION: PREMIUM WEDDING PLAYLIST CARD (레퍼런스 100% 픽셀 매칭)

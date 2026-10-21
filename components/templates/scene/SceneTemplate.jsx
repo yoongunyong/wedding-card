@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import Script from 'next/script';
 import KakaoMap from '@/components/KakaoMap';
 import ScrollReveal from '@/components/ScrollReveal';
+import TodayConciergeCard from '@/components/TodayConciergeCard';
 import SceneInterviewModal from './SceneInterviewModal';
 import SceneGalleryModal from './SceneGalleryModal';
 import SceneGuestbookDeleteModal from './SceneGuestbookDeleteModal';
@@ -559,6 +560,9 @@ export default function SceneTemplate({ invitation }) {
           - 소개글 3줄 한 줄씩 페이드인 ➔ 끝에 신랑신부 이름 등장
           - 2.8s: 사진이 중앙에서 쫘아악 펼쳐지며 소개글은 위로, 이름은 아래로 이동!
           ======================================================== */}
+      {/* 예식 당일 안내 데스크 (당일 자동 전환) */}
+      <TodayConciergeCard invitation={invitation} />
+
       <section className="min-h-[100dvh] sm:min-h-[820px] flex flex-col justify-center items-center px-6 py-12 relative overflow-hidden select-none bg-stone-100">
         
         {/* 뒷 배경: 영상(3번째 이미지) 1:1 일치 - 사진 전체가 가득 차게 블러되어 몽환적 실루엣과 명암이 확연히 드러남 */}

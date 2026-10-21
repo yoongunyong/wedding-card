@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import Script from 'next/script';
 import ScrollReveal from '@/components/ScrollReveal';
+import TodayConciergeCard from '@/components/TodayConciergeCard';
 import EditorialContactModal from './EditorialContactModal';
 import EditorialRsvpModal from './EditorialRsvpModal';
 import EditorialGuestbookModal from './EditorialGuestbookModal';
@@ -339,6 +340,9 @@ export default function EditorialTemplate({ invitation }) {
           font-family: 'Noto Serif KR', serif !important;
         }
       `}</style>
+
+      {/* 예식 당일 안내 데스크 (당일 자동 전환) */}
+      <TodayConciergeCard invitation={invitation} />
 
       {/* 0. 에디토리얼 매거진 룩북 인트로 커버 */}
       {showIntro && showIntroSection && (

@@ -10,6 +10,7 @@ import BasicRsvpModal from './BasicRsvpModal';
 import BasicGuestbookModal from './BasicGuestbookModal';
 import BasicGuestbookDeleteModal from './BasicGuestbookDeleteModal';
 import ScrollReveal from '@/components/ScrollReveal';
+import TodayConciergeCard from '@/components/TodayConciergeCard';
 
 export default function BasicTemplate({ invitation }) {
   const extra = { ...(invitation?.template_config || {}), ...(invitation?.extra_data || {}) };
@@ -494,6 +495,9 @@ export default function BasicTemplate({ invitation }) {
       />
 
 
+
+      {/* 예식 당일 안내 데스크 (당일 자동 전환) */}
+      <TodayConciergeCard invitation={invitation} />
 
       {/* 0. 인트로 편지 봉투 커버 화면 */}
       {showIntro && showIntroSection && (

@@ -2,9 +2,9 @@ import Link from 'next/link';
 import HeroCardSwiper from '@/components/landing/HeroCardSwiper';
 import TrustSection from '@/components/landing/TrustSection';
 import SignatureShowcase from '@/components/landing/SignatureShowcase';
-import EightReasons from '@/components/landing/EightReasons';
 import FeatureTabs from '@/components/landing/FeatureTabs';
 import StickyBottomBar from '@/components/landing/StickyBottomBar';
+import ScrollReveal from '@/components/ScrollReveal';
 
 export const metadata = {
   title: '아틀리에 드 무키루 (ATELIER DE MUKIRU) — 프리미엄 모바일 청첩장',
@@ -14,13 +14,6 @@ export const metadata = {
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-white text-gray-900 font-sans selection:bg-amber-100 selection:text-amber-900 antialiased pb-24 sm:pb-0">
-      {/* 새로고침 시 항상 최상단에서 시작하도록 스크롤 복원 차단 */}
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; window.scrollTo(0, 0); }`,
-        }}
-      />
-
       {/* 1. 상단 네비게이션 헤더 */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-5xl mx-auto px-5 py-3.5 flex items-center justify-between">
@@ -50,63 +43,66 @@ export default function HomePage() {
       {/* 3. 신뢰 & 가치 제안 (결제는 마지막에, 확인은 지금 바로) */}
       <TrustSection />
 
-      {/* 4. 데어무드 스타일 시그니처 기능 비주얼 쇼케이스 (오프닝/BGM/RSVP/당일안내) */}
+      {/* 4. 시그니처 기능 인터랙티브 쇼케이스 (오프닝/RSVP/당일안내/BGM 4단 탭 전환) */}
       <SignatureShowcase />
 
-      {/* 5. 잘 만든 모바일 청첩장 다 이유가 있어요 (8대 원칙) */}
-      <EightReasons />
-
-      {/* 6. 전체 기능 둘러보기 (4단 탭 네비게이션) */}
+      {/* 5. 전체 기능 둘러보기 (4단 탭 네비게이션) */}
       <FeatureTabs />
 
-      {/* 7. 쉬운 3단계 제작 가이드 & 하단 CTA 배너 */}
-      <section className="py-20 sm:py-28 px-4 bg-white border-t border-gray-100 text-center">
+      {/* 6. 쉬운 3단계 제작 가이드 & 하단 CTA 배너 (스크롤 리빌) */}
+      <section className="py-14 sm:py-20 px-4 bg-white border-t border-gray-100 text-center">
         <div className="max-w-3xl mx-auto">
-          <span className="font-mono text-xs text-amber-600 tracking-widest uppercase font-bold block mb-2">
-            SIMPLE PROCESS
-          </span>
-          <h2 className="font-editorial-title text-2xl sm:text-4xl text-gray-900 font-bold tracking-tight mb-4">
-            단 5분 만에 완성되는<br />두 사람만의 모바일 청첩장
-          </h2>
-          <p className="text-xs sm:text-sm text-gray-500 font-light max-w-md mx-auto mb-10">
-            복잡한 승인 과정 없이 사진과 문구를 넣으면 즉시 완성되며, 예식 전까지 언제든 자유롭게 수정하실 수 있습니다.
-          </p>
+          <ScrollReveal duration={800}>
+            <span className="font-mono text-xs text-amber-600 tracking-widest uppercase font-bold block mb-2">
+              SIMPLE PROCESS
+            </span>
+            <h2 className="font-editorial-title text-2xl sm:text-4xl text-gray-900 font-bold tracking-tight mb-4">
+              단 5분 만에 완성되는<br />두 사람만의 모바일 청첩장
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-500 font-light max-w-md mx-auto mb-10">
+              복잡한 승인 과정 없이 사진과 문구를 넣으면 즉시 완성되며, 예식 전까지 언제든 자유롭게 수정하실 수 있습니다.
+            </p>
+          </ScrollReveal>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left mb-12">
-            <div className="p-5 bg-[#F8F9FA] rounded-2xl border border-gray-200/70 shadow-2xs">
-              <span className="font-mono text-xs text-amber-600 font-bold block mb-1">STEP 01</span>
-              <h3 className="text-sm font-bold text-gray-900 mb-1">디자인 시안 선택</h3>
-              <p className="text-xs text-gray-500 font-light leading-relaxed">
-                5가지 시안 중 두 사람의 사진 분위기에 어울리는 테마를 고릅니다.
-              </p>
+          <ScrollReveal delay={150} duration={800}>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left mb-12">
+              <div className="p-5 bg-[#F8F9FA] rounded-2xl border border-gray-200/70 shadow-2xs hover:border-gray-300 transition-colors">
+                <span className="font-mono text-xs text-amber-600 font-bold block mb-1">STEP 01</span>
+                <h3 className="text-sm font-bold text-gray-900 mb-1">디자인 시안 선택</h3>
+                <p className="text-xs text-gray-500 font-light leading-relaxed">
+                  5가지 시안 중 두 사람의 사진 분위기에 어울리는 테마를 고릅니다.
+                </p>
+              </div>
+
+              <div className="p-5 bg-[#F8F9FA] rounded-2xl border border-gray-200/70 shadow-2xs hover:border-gray-300 transition-colors">
+                <span className="font-mono text-xs text-amber-600 font-bold block mb-1">STEP 02</span>
+                <h3 className="text-sm font-bold text-gray-900 mb-1">예식 정보 & 사진 입력</h3>
+                <p className="text-xs text-gray-500 font-light leading-relaxed">
+                  실시간 미리보기를 보며 사진, 초대 문구, 계좌번호를 입력합니다.
+                </p>
+              </div>
+
+              <div className="p-5 bg-[#F8F9FA] rounded-2xl border border-gray-200/70 shadow-2xs hover:border-gray-300 transition-colors">
+                <span className="font-mono text-xs text-amber-600 font-bold block mb-1">STEP 03</span>
+                <h3 className="text-sm font-bold text-gray-900 mb-1">즉시 발급 & 무제한 수정</h3>
+                <p className="text-xs text-gray-500 font-light leading-relaxed">
+                  청첩장 링크와 인쇄용 QR이 발급되며, 예식 전까지 무제한 수정됩니다.
+                </p>
+              </div>
             </div>
+          </ScrollReveal>
 
-            <div className="p-5 bg-[#F8F9FA] rounded-2xl border border-gray-200/70 shadow-2xs">
-              <span className="font-mono text-xs text-amber-600 font-bold block mb-1">STEP 02</span>
-              <h3 className="text-sm font-bold text-gray-900 mb-1">예식 정보 & 사진 입력</h3>
-              <p className="text-xs text-gray-500 font-light leading-relaxed">
-                실시간 미리보기를 보며 사진, 초대 문구, 계좌번호를 입력합니다.
-              </p>
+          <ScrollReveal delay={250} duration={800}>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                href="/create"
+                className="w-full sm:w-auto px-8 py-4 bg-gray-900 hover:bg-black text-white text-sm font-bold rounded-2xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"
+              >
+                <span>지금 무료로 시안 만들기</span>
+                <span>➔</span>
+              </Link>
             </div>
-
-            <div className="p-5 bg-[#F8F9FA] rounded-2xl border border-gray-200/70 shadow-2xs">
-              <span className="font-mono text-xs text-amber-600 font-bold block mb-1">STEP 03</span>
-              <h3 className="text-sm font-bold text-gray-900 mb-1">즉시 발급 & 무제한 수정</h3>
-              <p className="text-xs text-gray-500 font-light leading-relaxed">
-                청첩장 링크와 인쇄용 QR이 발급되며, 예식 전까지 무제한 수정됩니다.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link
-              href="/create"
-              className="w-full sm:w-auto px-8 py-4 bg-gray-900 hover:bg-black text-white text-sm font-bold rounded-2xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"
-            >
-              <span>지금 무료로 시안 만들기</span>
-              <span>➔</span>
-            </Link>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
 

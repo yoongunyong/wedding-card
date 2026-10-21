@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import ScrollReveal from '../ScrollReveal';
 
 const CATEGORIES = [
   { id: 'all', label: '전체' },
@@ -77,8 +78,8 @@ const FEATURES = [
     category: 'share',
     icon: '🗺️',
     title: '원터치 내비게이션 길안내',
-    desc: '카카오 지도 내장은 물론 카카오내비, 티맵, 네이버지도 앱으로 즉시 길안내를 시작합니다.',
-    tags: ['네이버/티맵/카카오', '주차 안내'],
+    desc: '카카오 지도 내장은 물론 카카오내비, 네이버지도 앱으로 즉시 길안내를 시작합니다.',
+    tags: ['네이버/카카오', '주차 안내'],
   },
   {
     category: 'share',
@@ -105,65 +106,69 @@ export default function FeatureTabs() {
       : FEATURES.filter((f) => f.category === activeTab);
 
   return (
-    <section className="py-20 sm:py-24 px-4 bg-white border-t border-gray-100">
+    <section className="py-14 sm:py-20 px-4 bg-white border-t border-gray-100">
       <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8 sm:mb-10">
-          <p className="text-xs font-semibold tracking-widest text-gray-400 uppercase mb-2">
-            ALL FEATURES
-          </p>
-          <h2 className="font-editorial-title text-2xl sm:text-4xl text-gray-900 font-bold tracking-tight">
-            모바일 청첩장에 필요한<br />
-            모든 기능을 담았습니다
-          </h2>
-        </div>
+        <ScrollReveal duration={800}>
+          <div className="text-center mb-8 sm:mb-10">
+            <p className="text-xs font-semibold tracking-widest text-gray-400 uppercase mb-2">
+              ALL FEATURES
+            </p>
+            <h2 className="font-editorial-title text-2xl sm:text-4xl text-gray-900 font-bold tracking-tight">
+              모바일 청첩장에 필요한<br />
+              모든 기능을 담았습니다
+            </h2>
+          </div>
 
-        {/* 4단 탭 버튼 (데어무드 스타일) */}
-        <div className="flex items-center justify-center gap-1.5 p-1 bg-gray-100 rounded-2xl max-w-sm mx-auto mb-8">
-          {CATEGORIES.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-2 text-xs font-medium rounded-xl transition-all ${
-                activeTab === tab.id
-                  ? 'bg-white text-gray-900 font-bold shadow-xs'
-                  : 'text-gray-500 hover:text-gray-800'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+          {/* 4단 탭 버튼 (데어무드 스타일) */}
+          <div className="flex items-center justify-center gap-1.5 p-1 bg-gray-100 rounded-2xl max-w-sm mx-auto mb-8">
+            {CATEGORIES.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 py-2 text-xs font-medium rounded-xl transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-white text-gray-900 font-bold shadow-xs'
+                    : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </ScrollReveal>
 
-        {/* 기능 그리드 카드 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredFeatures.map((item, idx) => (
-            <div
-              key={idx}
-              className="p-5 rounded-2xl bg-[#F8F9FA] border border-gray-200/70 hover:border-gray-300 transition-all flex flex-col justify-between"
-            >
-              <div>
-                <div className="text-2xl mb-3">{item.icon}</div>
-                <h3 className="text-sm font-bold text-gray-900 mb-1">
-                  {item.title}
-                </h3>
-                <p className="text-xs text-gray-500 font-light leading-relaxed">
-                  {item.desc}
-                </p>
+        {/* 기능 그리드 카드 (스크롤 리빌) */}
+        <ScrollReveal delay={150} duration={800}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredFeatures.map((item, idx) => (
+              <div
+                key={idx}
+                className="p-5 rounded-2xl bg-[#F8F9FA] border border-gray-200/70 hover:border-gray-300 transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="text-2xl mb-3">{item.icon}</div>
+                  <h3 className="text-sm font-bold text-gray-900 mb-1">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs text-gray-500 font-light leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-gray-200/50 flex flex-wrap gap-1.5">
+                  {item.tags.map((tag, tIdx) => (
+                    <span
+                      key={tIdx}
+                      className="text-[10px] px-2 py-0.5 bg-white text-gray-600 rounded-md border border-gray-200 font-mono"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
               </div>
-
-              <div className="mt-4 pt-3 border-t border-gray-200/50 flex flex-wrap gap-1.5">
-                {item.tags.map((tag, tIdx) => (
-                  <span
-                    key={tIdx}
-                    className="text-[10px] px-2 py-0.5 bg-white text-gray-600 rounded-md border border-gray-200 font-mono"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </ScrollReveal>
       </div>
     </section>
   );

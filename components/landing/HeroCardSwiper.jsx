@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import SamplePreviewModal from './SamplePreviewModal';
+import ScrollReveal from '../ScrollReveal';
 
 const HERO_TEMPLATES = [
   {
@@ -170,54 +171,59 @@ export default function HeroCardSwiper() {
 
   return (
     <>
-      <section id="hero-section" className="relative pt-8 sm:pt-14 pb-16 px-4 bg-white overflow-hidden">
-        {/* 상단 감성 카피라이팅 */}
-        <div className="max-w-2xl mx-auto text-center mb-6 sm:mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full text-[11px] font-mono tracking-widest text-gray-600 uppercase mb-3">
-            <span>5 STYLES OF ATELIER</span>
-            <span className="text-gray-300">|</span>
-            <span className="font-sans font-medium text-gray-900">시안 5종 컬렉션</span>
+      <section id="hero-section" className="relative pt-12 sm:pt-20 lg:pt-24 pb-16 sm:pb-20 px-4 bg-white overflow-hidden">
+        {/* 상단 감성 카피라이팅 (간격 여유화 및 부드러운 스크롤 리빌) */}
+        <ScrollReveal duration={800}>
+          <div className="max-w-2xl mx-auto text-center mb-8 sm:mb-10">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-stone-100 rounded-full text-[11px] font-mono tracking-widest text-stone-600 uppercase mb-4 sm:mb-5 shadow-2xs">
+              <span>5 STYLES OF ATELIER</span>
+              <span className="text-stone-300">|</span>
+              <span className="font-sans font-medium text-stone-900">시안 5종 컬렉션</span>
+            </div>
+            <h1 className="font-editorial-title text-3xl sm:text-5xl text-gray-900 font-bold tracking-tight leading-[1.25] sm:leading-[1.2] mb-3 sm:mb-4">
+              신랑·신부가 선택한 이유,<br />
+              <span className="font-normal text-stone-700">완성도가 다르니까.</span>
+            </h1>
+            <p className="text-xs sm:text-sm text-stone-500 font-light max-w-md mx-auto leading-relaxed">
+              카드를 터치하면 실제 모바일 청첩장이 전체화면으로 즉시 열립니다.
+            </p>
           </div>
-          <h1 className="font-editorial-title text-3xl sm:text-5xl text-gray-900 font-bold tracking-tight leading-tight">
-            신랑·신부가 선택한 이유,<br />
-            <span className="font-normal text-gray-800">완성도가 다르니까.</span>
-          </h1>
-          <p className="mt-2.5 text-xs sm:text-sm text-gray-500 font-light max-w-md mx-auto">
-            카드를 터치하면 실제 모바일 청첩장이 전체화면으로 즉시 열립니다.
-          </p>
-        </div>
+        </ScrollReveal>
 
-        {/* 템플릿 퀵 셀렉터 탭 (넘기지 않고도 즉시 탭해서 바꿀 수 있도록 지원) */}
-        <div
-          ref={tabsContainerRef}
-          className="flex items-center justify-start sm:justify-center gap-1.5 max-w-lg mx-auto mb-6 px-4 overflow-x-auto no-scrollbar scroll-smooth"
-        >
-          {HERO_TEMPLATES.map((tpl, idx) => (
-            <button
-              key={tpl.id}
-              ref={currentIndex === idx ? activeTabRef : null}
-              onClick={() => {
-                isSwipedRef.current = false;
-                setCurrentIndex(idx);
-              }}
-              className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs transition-all whitespace-nowrap font-medium ${
-                currentIndex === idx
-                  ? 'bg-gray-900 text-white font-bold shadow-xs scale-105'
-                  : 'bg-gray-100 text-gray-500 hover:text-gray-900'
-              }`}
-            >
-              {tpl.title}
-            </button>
-          ))}
-        </div>
+        {/* 템플릿 퀵 셀렉터 탭 (넉넉한 간격 & 정돈된 버튼 디자인) */}
+        <ScrollReveal delay={100} duration={800}>
+          <div
+            ref={tabsContainerRef}
+            className="flex items-center justify-start sm:justify-center gap-2 max-w-xl mx-auto mb-8 sm:mb-10 px-4 overflow-x-auto no-scrollbar scroll-smooth"
+          >
+            {HERO_TEMPLATES.map((tpl, idx) => (
+              <button
+                key={tpl.id}
+                ref={currentIndex === idx ? activeTabRef : null}
+                onClick={() => {
+                  isSwipedRef.current = false;
+                  setCurrentIndex(idx);
+                }}
+                className={`shrink-0 px-4 py-2 rounded-full text-xs sm:text-sm transition-all whitespace-nowrap font-medium cursor-pointer ${
+                  currentIndex === idx
+                    ? 'bg-gray-900 text-white font-semibold shadow-sm scale-102'
+                    : 'bg-stone-100 text-stone-600 hover:text-stone-900 hover:bg-stone-200/80'
+                }`}
+              >
+                {tpl.title}
+              </button>
+            ))}
+          </div>
+        </ScrollReveal>
 
         {/* 인터랙티브 카드 스와이퍼 영역 */}
-        <div
-          className="relative max-w-sm mx-auto"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
+        <ScrollReveal delay={200} duration={800}>
+          <div
+            className="relative max-w-sm mx-auto"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
           {/* 이전/다음 데스크톱 버튼 */}
           <button
             onClick={handlePrev}
@@ -611,6 +617,7 @@ export default function HeroCardSwiper() {
             </button>
           </div>
         </div>
+        </ScrollReveal>
       </section>
 
       {/* 실시간 모달 뷰어 */}

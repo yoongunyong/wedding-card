@@ -6,7 +6,7 @@ import ScrollReveal from '../ScrollReveal';
 const SHOWCASE_TABS = [
   { id: 'rsvp', label: '📊 스마트 RSVP', badge: '참석 집계 & 엑셀' },
   { id: 'today', label: '🚗 당일 안내데스크', badge: '내비게이션 & D-Day' },
-  { id: 'bgm', label: '🎵 감성 BGM', badge: '바이닐 & 피아노 음원' },
+  { id: 'bgm', label: '🎵 감성 BGM', badge: '피아노 음원 & 플레이어' },
 ];
 
 export default function SignatureShowcase() {
@@ -235,7 +235,7 @@ export default function SignatureShowcase() {
                       감성 배경음악
                     </span>
                     <span className="px-2.5 py-1 bg-amber-100 text-amber-900 rounded-md text-[11px] font-semibold">
-                      BGM & 바이닐
+                      실시간 플레이어
                     </span>
                   </div>
 
@@ -245,7 +245,7 @@ export default function SignatureShowcase() {
                   </h3>
 
                   <p className="text-xs sm:text-sm text-gray-600 font-light leading-relaxed">
-                    화면 상단에서 잔잔하게 회전하는 LP 바이닐과 함께, 엄선된 피아노 멜로디가 흘러나옵니다. 하객들이 부담 없이 들을 수 있도록 자동 재생 및 볼륨 조절을 완벽하게 지원합니다.
+                    화면 우측 상단의 감각적인 사운드 이퀄라이저와 시안 03 전용 미니멀 뮤직 플레이어로, 엄선된 피아노 멜로디가 부드럽게 흘러나옵니다. 하객들이 부담 없이 들을 수 있도록 자동 재생 및 볼륨 On/Off를 완벽하게 지원합니다.
                   </p>
 
                   <ul className="space-y-2 pt-1 text-xs text-gray-600">
@@ -255,49 +255,101 @@ export default function SignatureShowcase() {
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="text-amber-500 font-bold">✓</span>
-                      <span>두 사람만의 특별한 추억이 담긴 커스텀 MP3 음원 지원</span>
+                      <span>두 사람만의 특별한 추억이 담긴 커스텀 MP3 음원 등록</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="text-amber-500 font-bold">✓</span>
-                      <span>아날로그 바이닐 LP 턴테이블 회전 모션 탑재</span>
+                      <span>우측 상단 실시간 사운드 이퀄라이저 파동 버튼 탑재</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-amber-500 font-bold">✓</span>
+                      <span>시안 03(감성 플레이리스트) 전용 미니멀 뮤직 플레이어 연동</span>
                     </li>
                   </ul>
                 </div>
 
-                {/* 바이닐 LP 플레이어 그래픽 */}
+                {/* 실제 청첩장 1:1 일치 실물 뮤직 플레이어 카드 & 사운드 이퀄라이저 그래픽 */}
                 <div className="w-full sm:w-[300px] shrink-0">
-                  <div className="bg-white rounded-2xl p-5 shadow-lg border border-gray-200 text-center space-y-3.5">
-                    <div className="relative w-32 h-32 mx-auto">
-                      <div className="w-full h-full rounded-full bg-stone-900 border-4 border-stone-800 shadow-xl flex items-center justify-center animate-[spin_8s_linear_infinite]">
-                        <div className="w-24 h-24 rounded-full border border-stone-700 flex items-center justify-center">
-                          <div className="w-16 h-16 rounded-full border border-stone-600 flex items-center justify-center">
-                            <div className="w-10 h-10 rounded-full bg-amber-200 border-2 border-stone-900 flex items-center justify-center text-[7px] font-mono font-bold text-stone-900">
-                              MUKIRU
-                            </div>
-                          </div>
+                  <div className="bg-[#FAF8F5] rounded-3xl p-4 shadow-xl border border-stone-200/90 text-left space-y-3">
+                    {/* 상단: 실시간 사운드 이퀄라이저 파동 칩 */}
+                    <div className="flex items-center justify-between border-b border-stone-200/60 pb-2 px-1">
+                      <span className="text-[10px] font-mono font-bold text-stone-400 tracking-wider">
+                        BGM PLAYER
+                      </span>
+                      {/* 실제 청첩장 우측 상단 이퀄라이저 버튼 재현 */}
+                      <div className="flex items-center gap-1.5 px-2 py-1 bg-black text-white rounded-full shadow-xs">
+                        <div className="flex items-center gap-[2px] h-3">
+                          <span className="w-[1.5px] h-2 bg-white rounded-full animate-pulse" />
+                          <span className="w-[1.5px] h-3 bg-white rounded-full animate-pulse delay-75" />
+                          <span className="w-[1.5px] h-1.5 bg-white rounded-full animate-pulse delay-150" />
+                          <span className="w-[1.5px] h-2.5 bg-white rounded-full animate-pulse delay-100" />
                         </div>
+                        <span className="text-[9px] font-mono tracking-wider">PLAYING</span>
                       </div>
-                      <div className="absolute top-0 right-0 w-6 h-14 border-r-2 border-stone-400 rotate-12" />
                     </div>
 
-                    <div>
-                      <span className="text-[9px] font-mono text-gray-400 uppercase tracking-widest block">
-                        NOW PLAYING
-                      </span>
-                      <h4 className="text-xs sm:text-sm font-semibold text-gray-900">
+                    {/* 앨범 커버 사진 (시안 03 규격 1:1) */}
+                    <div className="relative w-full aspect-[537/460] rounded-2xl overflow-hidden bg-stone-200 shadow-2xs">
+                      <img
+                        src="/playlist-couple.png"
+                        alt="웨딩 앨범 커버"
+                        className="w-full h-full object-cover grayscale contrast-105"
+                      />
+                    </div>
+
+                    {/* 곡 정보 */}
+                    <div className="px-1 pt-0.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-stone-800">
+                          강민우 💗 서유진
+                        </span>
+                        <span className="text-xs text-stone-400">♡</span>
+                      </div>
+                      <p className="text-[11px] font-serif italic text-stone-500 mt-0.5">
                         A Thousand Years (Piano Ver.)
-                      </h4>
-                      <p className="text-[10px] text-gray-500 font-light mt-0.5">
-                        ATELIER DE MUKIRU SOUNDTRACK
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-center gap-4 text-gray-700 text-sm pt-0.5">
-                      <span className="text-xs">⏮</span>
-                      <div className="w-7 h-7 rounded-full bg-gray-900 text-white flex items-center justify-center text-[10px] shadow-xs">
-                        ⏸
+                    {/* 프로그레스 바 */}
+                    <div className="px-1 pt-1">
+                      <div className="w-full h-[2.5px] bg-stone-200 rounded-full flex items-center">
+                        <div className="w-[38%] h-full bg-[#1C1C1E] rounded-full relative flex items-center justify-end">
+                          <div className="w-2 h-2 rounded-full bg-[#1C1C1E] shadow-xs -mr-1" />
+                        </div>
                       </div>
-                      <span className="text-xs">⏭</span>
+                      <div className="flex justify-between text-[9px] font-mono text-stone-400 mt-1">
+                        <span>1:24</span>
+                        <span>- 2:02</span>
+                      </div>
+                    </div>
+
+                    {/* 5대 컨트롤러 (셔플, 이전곡, 재생, 다음곡, 반복) */}
+                    <div className="flex items-center justify-between px-1 pt-1 text-[#1C1C1E]">
+                      {/* 셔플 */}
+                      <svg className="w-3.5 h-3.5 fill-none stroke-current" strokeWidth="2.2" viewBox="0 0 24 24">
+                        <path d="M16 3h5v5" /><path d="M4 20L21 3" /><path d="M21 16v5h-5" /><path d="M15 15l6 6" /><path d="M4 4l5 5" />
+                      </svg>
+                      {/* 이전 곡 */}
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <rect x="4" y="4" width="3" height="16" rx="1" />
+                        <path d="M20 5.2v13.6a1 1 0 0 1-1.6.8L9.2 12.8a1 1 0 0 1 0-1.6L18.4 4.4a1 1 0 0 1 1.6.8z" />
+                      </svg>
+                      {/* 중앙 일시정지 버튼 */}
+                      <div className="w-8 h-8 rounded-full bg-[#1C1C1E] text-white flex items-center justify-center shadow-xs">
+                        <svg className="w-3 h-3.5 fill-white" viewBox="0 0 20 24">
+                          <rect x="2.5" y="3" width="5" height="18" rx="1.5" />
+                          <rect x="12.5" y="3" width="5" height="18" rx="1.5" />
+                        </svg>
+                      </div>
+                      {/* 다음 곡 */}
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M4 5.2v13.6a1 1 0 0 0 1.6.8L14.8 12.8a1 1 0 0 0 0-1.6L5.6 4.4a1 1 0 0 0-1.6.8z" />
+                        <rect x="17" y="4" width="3" height="16" rx="1" />
+                      </svg>
+                      {/* 반복 */}
+                      <svg className="w-3.5 h-3.5 fill-none stroke-current" strokeWidth="2.2" viewBox="0 0 24 24">
+                        <path d="M17 2l4 4-4 4" /><path d="M3 11v-1a4 4 0 0 1 4-4h14" /><path d="M7 22l-4-4 4-4" /><path d="M21 13v1a4 4 0 0 1-4 4H3" />
+                      </svg>
                     </div>
                   </div>
                 </div>

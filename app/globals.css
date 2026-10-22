@@ -71,4 +71,13 @@ body {
   scrollbar-width: none;
 }
 
-
+/* Vercel Toolbar & Live Feedback 위젯 강제 숨김 */
+vercel-toolbar,
+vercel-live-feedback,
+#vercel-live-feedback,
+[data-vercel-toolbar] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}

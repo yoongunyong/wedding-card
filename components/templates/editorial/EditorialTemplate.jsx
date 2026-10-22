@@ -342,7 +342,9 @@ export default function EditorialTemplate({ invitation }) {
       `}</style>
 
       {/* 예식 당일 안내 데스크 (당일 자동 전환) */}
-      <TodayConciergeCard invitation={invitation} />
+      {(!showIntro || !showIntroSection) && (
+        <TodayConciergeCard invitation={invitation} />
+      )}
 
       {/* 0. 에디토리얼 매거진 룩북 인트로 커버 */}
       {showIntro && showIntroSection && (

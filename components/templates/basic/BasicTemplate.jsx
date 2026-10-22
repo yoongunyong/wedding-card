@@ -497,7 +497,9 @@ export default function BasicTemplate({ invitation }) {
 
 
       {/* 예식 당일 안내 데스크 (당일 자동 전환) */}
-      <TodayConciergeCard invitation={invitation} />
+      {(!showIntro || !showIntroSection) && (
+        <TodayConciergeCard invitation={invitation} />
+      )}
 
       {/* 0. 인트로 편지 봉투 커버 화면 */}
       {showIntro && showIntroSection && (

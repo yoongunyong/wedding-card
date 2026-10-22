@@ -8,7 +8,7 @@ import ScrollReveal from '@/components/ScrollReveal';
 
 export const metadata = {
   title: '아틀리에 드 무키루 (ATELIER DE MUKIRU) — 프리미엄 모바일 청첩장',
-  description: '단 하나의 소중한 순간을 완성하는 감성 모바일 청첩장 아틀리에. 모던 클래식, 에디토리얼 룩북, 플레이리스트 바이닐, 시네마틱 모노리스, 모던 씬 5종 시안을 실시간으로 체험해 보세요.',
+  description: '단 하나의 소중한 순간을 완성하는 감성 모바일 청첩장 아틀리에. 모던 클래식, 에디토리얼 룩북, 감성 플레이리스트, 시네마틱 모노리스, 모던 씬 5종 시안을 실시간으로 체험해 보세요.',
 };
 
 export default function HomePage() {

@@ -117,19 +117,16 @@ export default async function WeddingCardPage({ params }) {
     return notFound();
   }
 
-  // 공식 샘플 slug인 경우 이미지/갤러리가 누락되어 있으면 기본 고화질 AI 샘플 이미지 보강
+  // 공식 샘플 slug인 경우 SAMPLE_INVITATIONS의 최신 큐레이션 이미지/갤러리 최우선 적용
   if (isSampleSlug && SAMPLE_INVITATIONS[slug]) {
     const sampleRef = SAMPLE_INVITATIONS[slug];
     invitation = {
-      ...sampleRef,
       ...invitation,
+      ...sampleRef,
       images: {
         ...sampleRef.images,
-        ...(invitation.images || {}),
       },
-      gallery_images: (Array.isArray(invitation.gallery_images) && invitation.gallery_images.length > 0)
-        ? invitation.gallery_images
-        : sampleRef.gallery_images,
+      gallery_images: sampleRef.gallery_images,
     };
   }
 

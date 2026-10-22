@@ -67,8 +67,8 @@ export default function CinematicTemplate({ invitation }) {
 
   const defaultWeddingPhotoImages = useMemo(() => isSample ? [
     '/samples/editorial-cover.jpg',
-    '/samples/bride-solo.jpg',
-    '/samples/groom-solo.jpg',
+    '/samples/photo-01-walk.jpg',
+    '/samples/photo-11-rose-hug.jpg',
     '/samples/cinematic-cover.jpg',
     '/samples/garden-couple.jpg',
   ] : [], [isSample]);

@@ -59,9 +59,9 @@ export default function CinematicTemplate({ invitation }) {
 
   const defaultOurStoryImages = useMemo(() => isSample ? [
     '/samples/cinematic-cover.jpg',
-    '/samples/veil-kiss-bw.jpg',
+    '/samples/ending-02-stairs.jpg',
     '/samples/garden-couple.jpg',
-    '/samples/ring-detail.jpg',
+    '/samples/photo-13-ring-laugh.jpg',
     '/samples/scene-cover.jpg',
   ] : [], [isSample]);
 
@@ -95,7 +95,7 @@ export default function CinematicTemplate({ invitation }) {
   const celebrationPhoto = images.couple_profile || images.couple || extra.couple_profile_image || (isSample ? '/samples/garden-couple.jpg' : images.main || '');
   const bridePhoto = images.bride_profile || extra.bride_profile_image || invitation?.bride_photo || (isSample ? '/samples/bride-solo.jpg' : '');
   const groomPhoto = images.groom_profile || extra.groom_profile_image || invitation?.groom_photo || (isSample ? '/samples/groom-solo.jpg' : '');
-  const datePhoto = images.ending || (userGallery && userGallery.length > 1 ? userGallery[1] : null) || (isSample ? '/samples/veil-kiss-bw.jpg' : '');
+  const datePhoto = images.ending || (userGallery && userGallery.length > 1 ? userGallery[1] : null) || (isSample ? '/samples/ending-04-classic.jpg' : '');
 
   // 성함 데이터 (하드코딩 더미 성함 제거)
   const groomName = invitation?.groom_name || (isSample ? '데이' : '');
@@ -210,7 +210,7 @@ export default function CinematicTemplate({ invitation }) {
           title: 'Dining Experience',
           subtitle: 'Dining Experience',
           content: '정성껏 준비한 다양한 메뉴를 맛보시며 편안한 식사 시간을 가지세요.\n맛있는 음식과 함께 즐거운 대화를 나누실 수 있습니다.',
-          image: '/samples/ring-detail.jpg',
+          image: '/samples/photo-10-orchid-night.jpg',
         },
         {
           title: 'Reception Party',

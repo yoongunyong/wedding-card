@@ -14,27 +14,27 @@ export default function StickyBottomBar() {
 
   return (
     <>
-      {/* 모바일 화면 하단 고정 바 (데어무드 스타일) */}
+      {/* 모바일 화면 하단 고정 퀵 액션 바 */}
       <aside 
         aria-label="빠른 청첩장 제작 및 샘플 이동"
-        className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-200/90 px-4 py-2.5 shadow-[0_-8px_30px_rgba(0,0,0,0.06)]"
+        className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-4 py-2.5 shadow-[0_-8px_30px_rgba(0,0,0,0.06)]"
       >
         <div className="max-w-md mx-auto flex items-center justify-between gap-3">
-          {/* 좌측: 디자인 샘플보기 */}
+          {/* 좌측: 시그니처 시안 보기 */}
           <button
             onClick={scrollToHero}
             type="button"
-            className="flex-1 py-3 px-3 bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-semibold rounded-xl transition-all text-center"
+            className="flex-1 py-3 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-xl transition-all text-center cursor-pointer"
           >
-            디자인 샘플보기
+            시그니처 시안 보기
           </button>
 
-          {/* 우측: 무료로 시안 제작 */}
+          {/* 우측: 내 청첩장 만들기 */}
           <Link
             href="/create"
-            className="flex-[1.4] py-3 px-4 bg-[#FEE500] hover:bg-[#FADA0A] text-gray-950 text-xs font-bold rounded-xl transition-all text-center shadow-xs active:scale-[0.98] flex items-center justify-center gap-1.5"
+            className="flex-[1.4] py-3 px-4 bg-[#1e293b] hover:bg-[#0f172a] text-white text-xs font-bold rounded-xl transition-all text-center shadow-xs active:scale-[0.98] flex items-center justify-center gap-1.5 cursor-pointer"
           >
-            <span>무료로 시안 제작</span>
+            <span>내 청첩장 만들기</span>
             <span className="text-sm font-bold">➔</span>
           </Link>
         </div>

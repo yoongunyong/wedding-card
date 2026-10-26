@@ -26,7 +26,7 @@ export default function SamplePreviewModal({ isOpen, template, onClose }) {
 
       {/* 모달 윈도우 */}
       <div className="relative w-full sm:max-w-[430px] h-full sm:h-[90vh] sm:max-h-[880px] bg-white sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col z-10 border border-stone-200/50">
-        {/* 상단 헤더 바 (데어무드 스타일) */}
+        {/* 상단 헤더 바 */}
         <div className="h-14 px-4 bg-stone-900 text-white flex items-center justify-between shrink-0 border-b border-stone-800">
           <button
             onClick={onClose}

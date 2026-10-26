@@ -173,13 +173,19 @@ export default async function WeddingCardPage({ params }) {
   const isActive = invitation.is_active ?? invitation.template_config?.is_active ?? true;
 
   const isCinematic = invitation.template_type === 'cinematic';
+  const templateType = invitation.template_type || 'basic';
+
+  // 시안 1, 2만 별도 오프닝 커버 화면(수락/OPEN 버튼)이 있고, 시안 3, 4, 5는 바로 본문 시작
+  // 오프닝 커버가 있는 경우: '수락' 버튼 클릭 시 BGM 시작
+  // 오프닝 커버가 없는 경우(시안 3,4,5): 하객의 첫 화면 터치(click/touchstart) 시 BGM 자동 시작
+  const hasActualIntro = ['basic', 'editorial'].includes(templateType) && invitation?.template_config?.show_intro !== false;
 
   return (
     <main className={`min-h-screen ${isCinematic ? 'bg-neutral-100' : 'bg-stone-100'} sm:py-8 flex justify-center p-0 m-0 relative`}>
       {!isActive && <SampleWatermark />}
       <BgmPlayer 
         bgmUrl={invitation.bgm_url} 
-        hasIntro={invitation?.template_config?.show_intro !== false} 
+        hasIntro={hasActualIntro} 
         template={invitation.template_type}
       />
       <CurrentTemplate invitation={{ ...invitation, manage_token: undefined, order_code: undefined }} />

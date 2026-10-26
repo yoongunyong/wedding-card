@@ -512,7 +512,7 @@ export default function HeroCardSwiper() {
                     <span className="text-[10px] font-mono text-amber-300 tracking-wider uppercase block mb-1">
                       {card.category} · {card.subTitle}
                     </span>
-                    <h3 className="font-editorial-title text-base sm:text-lg font-bold text-white tracking-tight drop-shadow-xs">
+                    <h3 className="font-sans text-base sm:text-lg font-bold text-white tracking-tight drop-shadow-xs">
                       {card.title}
                     </h3>
 

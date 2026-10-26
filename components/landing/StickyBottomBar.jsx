@@ -14,10 +14,10 @@ export default function StickyBottomBar() {
 
   return (
     <>
-      {/* 모바일 화면 하단 고정 퀵 액션 바 */}
+      {/* 모바일 화면 하단 고정 퀵 액션 바 (모바일 전용 sm:hidden) */}
       <aside 
         aria-label="빠른 청첩장 제작 및 샘플 이동"
-        className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-4 py-2.5 shadow-[0_-8px_30px_rgba(0,0,0,0.06)]"
+        className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-4 py-2.5 shadow-[0_-8px_30px_rgba(0,0,0,0.06)]"
       >
         <div className="max-w-md mx-auto flex items-center justify-between gap-3">
           {/* 좌측: 시그니처 시안 보기 */}
@@ -40,12 +40,12 @@ export default function StickyBottomBar() {
         </div>
       </aside>
 
-      {/* 카카오톡 1:1 상담 플로팅 버튼 (하단 바 바로 위에 예쁘게 배치) */}
+      {/* 카카오톡 1:1 상담 플로팅 버튼 (모바일: bottom-20, 데스크톱: bottom-6 우측 안착) */}
       <a
         href="http://pf.kakao.com/_RJamX/chat"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-20 right-4 z-40 bg-[#FEE500] hover:bg-[#FADA0A] text-[#191919] px-3.5 py-2.5 rounded-full shadow-lg font-medium text-xs flex items-center gap-2 transition-transform hover:scale-105 active:scale-95 border border-black/5"
+        className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 bg-[#FEE500] hover:bg-[#FADA0A] text-[#191919] px-3.5 py-2.5 rounded-full shadow-lg font-medium text-xs flex items-center gap-2 transition-transform hover:scale-105 active:scale-95 border border-black/5"
         title="카카오톡 1:1 문의"
       >
         <svg className="w-4 h-4 fill-[#191919]" viewBox="0 0 24 24">

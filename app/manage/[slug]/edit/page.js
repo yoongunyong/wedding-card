@@ -1096,6 +1096,7 @@ export default function EditInvitationPage({ params }) {
           show_rsvp_bus: Boolean(formData.show_rsvp_bus),
           show_guestbook: formData.show_guestbook,
         show_guest_photos: formData.show_guest_photos,
+          manage_password: (formData.manage_password || '').trim(),
           show_quote_section: formData.show_quote_section,
           groom_relation: formData.groom_relation,
           bride_relation: formData.bride_relation,
@@ -1119,6 +1120,9 @@ export default function EditInvitationPage({ params }) {
 
       setSubmitting(false);
       setUploadStatus('');
+      if (typeof window !== 'undefined' && formData.manage_password) {
+        sessionStorage.setItem(`manage_auth_${slug}`, token);
+      }
       alert('청첩장 정보가 성공적으로 수정되었습니다! 🎉\n하객용 청첩장 링크에 즉시 변경사항이 반영되었습니다.');
       router.push(`/manage/${slug}?token=${token}`);
     } catch (err) {
@@ -2660,19 +2664,21 @@ export default function EditInvitationPage({ params }) {
               <label className="block text-xs font-semibold text-stone-700 mb-1.5">
                 4자리 숫자 비밀번호
               </label>
-              <input
-                type="password"
-                inputMode="numeric"
-                name="manage_password"
-                maxLength={4}
-                value={formData.manage_password || ''}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/\D/g, '').slice(0, 4);
-                  setFormData((prev) => ({ ...prev, manage_password: val }));
-                }}
-                placeholder="예: 2504"
-                className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-center text-lg font-mono tracking-widest text-stone-900 focus:outline-none focus:border-stone-900 focus:bg-white transition-colors"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  name="manage_password"
+                  maxLength={4}
+                  value={formData.manage_password || ''}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                    setFormData((prev) => ({ ...prev, manage_password: val }));
+                  }}
+                  placeholder="예: 2504"
+                  className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-center text-lg font-mono tracking-widest text-stone-900 focus:outline-none focus:border-stone-900 focus:bg-white transition-colors"
+                />
+              </div>
               <p className="text-[11px] text-stone-400 mt-1.5 leading-relaxed">
                 * 지인이 추측하기 쉬운 번호(핸드폰 뒷자리 등) 대신 둘만의 기념일 등으로 설정해 주세요.
               </p>

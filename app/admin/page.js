@@ -660,7 +660,7 @@ ATELIER DE MUKIRU 드림`;
               </div>
             ) : (
               <div className="overflow-x-auto -mx-2 sm:mx-0">
-                <table className="w-full min-w-[1140px] text-left text-xs text-stone-700 border-collapse">
+                <table className="w-full min-w-[1280px] text-left text-xs text-stone-700 border-collapse">
                   <thead className="bg-[#FAFAF9] text-stone-500 uppercase font-mono text-[11px] border-b border-stone-200/80">
                     <tr>
                       <th className="py-3.5 px-4 whitespace-nowrap font-medium">신랑 & 신부</th>
@@ -668,6 +668,7 @@ ATELIER DE MUKIRU 드림`;
                       <th className="py-3.5 px-4 whitespace-nowrap font-medium">예식 일시</th>
                       <th className="py-3.5 px-4 whitespace-nowrap font-medium">서비스 만료일</th>
                       <th className="py-3.5 px-4 whitespace-nowrap font-medium">영문 주소 (URL)</th>
+                      <th className="py-3.5 px-4 whitespace-nowrap font-medium">2차 보안 PIN</th>
                       <th className="py-3.5 px-4 whitespace-nowrap font-medium">정식 활성화 상태</th>
                       <th className="py-3.5 px-4 text-center whitespace-nowrap font-medium">청첩장 관리 & 안내문</th>
                     </tr>

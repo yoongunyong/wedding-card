@@ -710,7 +710,15 @@ ATELIER DE MUKIRU 드림`;
                           {/* 2. 시안 */}
                           <td className="py-4 px-4 whitespace-nowrap">
                             <span className="text-[11px] font-mono px-2.5 py-1 rounded-full bg-stone-100 text-stone-700 font-medium border border-stone-200/60 inline-block">
-                              {inv.template_type === 'cinematic' ? '시안 4 (시네마틱)' : inv.template_type === 'playlist' ? '시안 3 (플레이리스트)' : inv.template_type === 'editorial' ? '시안 2 (에디토리얼)' : '시안 1 (모던)'}
+                              {inv.template_type === 'scene'
+                                ? '시안 5 (모던 씬)'
+                                : inv.template_type === 'cinematic'
+                                ? '시안 4 (시네마틱)'
+                                : inv.template_type === 'playlist'
+                                ? '시안 3 (플레이리스트)'
+                                : inv.template_type === 'editorial'
+                                ? '시안 2 (에디토리얼)'
+                                : '시안 1 (모던 클래식)'}
                             </span>
                           </td>
 

@@ -151,6 +151,7 @@ export default function EditInvitationPage({ params }) {
     show_rsvp_bus: false,
     show_guestbook: true,
     show_guest_photos: true,
+    manage_password: '',
   });
 
   // 2. 다중 계좌 상태
@@ -252,6 +253,15 @@ export default function EditInvitationPage({ params }) {
 
       const config = card.template_config || {};
 
+      // 2차 보안 세션 검증
+      const sessionKey = `manage_auth_${slug}`;
+      const savedAuthToken = typeof window !== 'undefined' ? sessionStorage.getItem(sessionKey) : null;
+      if (config.manage_password && savedAuthToken !== token) {
+        alert('보안을 위해 2차 인증(4자리 비밀번호)이 필요합니다.');
+        router.replace(`/manage/${slug}?token=${token}`);
+        return;
+      }
+
       // 기본 폼 상태 초기화
       setFormData({
         template_type: card.template_type || 'basic',
@@ -307,6 +317,7 @@ export default function EditInvitationPage({ params }) {
         show_rsvp_bus: Boolean(config.show_rsvp_bus),
         show_guestbook: config.show_guestbook !== false,
         show_guest_photos: config.show_guest_photos !== false,
+        manage_password: config.manage_password || '',
       });
 
       // 계좌 분리
@@ -817,6 +828,7 @@ export default function EditInvitationPage({ params }) {
         show_rsvp_bus: Boolean(formData.show_rsvp_bus),
         show_guestbook: formData.show_guestbook,
         show_guest_photos: formData.show_guest_photos,
+          manage_password: formData.manage_password || originalCard?.template_config?.manage_password || '',
         show_quote_section: formData.show_quote_section,
         groom_relation: formData.groom_relation,
         bride_relation: formData.bride_relation,
@@ -2622,6 +2634,48 @@ export default function EditInvitationPage({ params }) {
                   <span className="text-stone-700 font-medium">{opt.label}</span>
                 </label>
               ))}
+            </div>
+          </div>
+
+          {/* 신랑·신부 관리자 2차 보안 비밀번호 설정 카드 */}
+          <div className="mt-8 bg-white rounded-3xl p-6 sm:p-8 border border-stone-200/80 shadow-xs">
+            <div className="flex items-center justify-between pb-4 border-b border-stone-100 mb-6">
+              <div className="flex items-center gap-2.5">
+                <span className="text-xl">🛡️</span>
+                <div>
+                  <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
+                    신랑·신부 관리자 2차 보안 비밀번호 (숫자 4자리)
+                  </h2>
+                  <p className="text-xs text-stone-500 mt-0.5">
+                    관리 페이지 진입 시 개인정보(하객 연락처, 방명록, 사진)를 안전하게 보호하는 둘만의 4자리 PIN입니다.
+                  </p>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase hidden sm:inline">
+                2FA PIN
+              </span>
+            </div>
+
+            <div className="max-w-xs">
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                4자리 숫자 비밀번호
+              </label>
+              <input
+                type="password"
+                inputMode="numeric"
+                name="manage_password"
+                maxLength={4}
+                value={formData.manage_password || ''}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                  setFormData((prev) => ({ ...prev, manage_password: val }));
+                }}
+                placeholder="예: 2504"
+                className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-center text-lg font-mono tracking-widest text-stone-900 focus:outline-none focus:border-stone-900 focus:bg-white transition-colors"
+              />
+              <p className="text-[11px] text-stone-400 mt-1.5 leading-relaxed">
+                * 지인이 추측하기 쉬운 번호(핸드폰 뒷자리 등) 대신 둘만의 기념일 등으로 설정해 주세요.
+              </p>
             </div>
           </div>
 

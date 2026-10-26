@@ -78,10 +78,12 @@ export default function GuestPhotoManager({ invitation }) {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // iOS Safari 비동기 다운로드 호환성을 위해 revoke를 1분 지연
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
     } catch (err) {
       console.error(err);
-      alert('다운로드 중 오류가 발생했습니다.');
+      // 모바일 웹뷰 등에서 blob fetch 차단 시 새 창으로 직접 열기 fallback
+      window.open(photo.photo_url, '_blank');
     }
   };
 
@@ -115,7 +117,10 @@ export default function GuestPhotoManager({ invitation }) {
         }
       }
 
-      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const zipBlob = await zip.generateAsync({ 
+        type: 'blob',
+        mimeType: 'application/zip'
+      });
       const url = URL.createObjectURL(zipBlob);
       const a = document.createElement('a');
       a.href = url;
@@ -126,7 +131,8 @@ export default function GuestPhotoManager({ invitation }) {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // iOS Safari 비동기 다운로드 호환성을 위해 revoke를 2분 지연
+      setTimeout(() => URL.revokeObjectURL(url), 120000);
     } catch (err) {
       console.error('ZIP generation error:', err);
       alert('ZIP 파일 생성 중 오류가 발생했습니다.');
@@ -194,11 +200,19 @@ export default function GuestPhotoManager({ invitation }) {
           </div>
         </div>
 
-        {/* 30일 보관 정책 안내 */}
-        <div className="p-3 bg-amber-50/70 rounded-xl border border-amber-200/60 text-[11px] text-amber-950 font-light leading-relaxed flex items-start gap-2">
-          <span className="text-amber-700 font-bold shrink-0">📌</span>
-          <div>
-            <strong>안내:</strong> 하객 사진은 예식일로부터 <strong>30일간 안전하게 보관</strong>됩니다. 소중한 추억을 평생 소장하실 수 있도록 <strong>[전체 사진 ZIP 다운로드]</strong> 버튼을 눌러 개인 PC나 스마트폰에 미리 저장해 두세요.
+        {/* 모바일 저장 위치 & 30일 보관 정책 안내 */}
+        <div className="p-3 bg-amber-50/70 rounded-xl border border-amber-200/60 text-[11px] text-amber-950 font-light leading-relaxed space-y-1.5">
+          <div className="flex items-start gap-2">
+            <span className="text-amber-700 font-bold shrink-0">📁</span>
+            <div>
+              <strong>스마트폰 저장 위치:</strong> 다운로드하신 파일은 사진첩이 아닌 <strong>[아이폰: 파일 앱 ➔ 다운로드]</strong> 또는 <strong>[갤럭시: 내 파일 앱 ➔ 다운로드]</strong> 폴더로 이동합니다. (ZIP 파일을 터치하면 압축이 풀리며 사진첩으로 복사하실 수 있습니다)
+            </div>
+          </div>
+          <div className="flex items-start gap-2 pt-1 border-t border-amber-200/50 text-[10.5px] text-amber-900/90">
+            <span className="text-amber-700 font-bold shrink-0">📌</span>
+            <div>
+              하객 사진은 예식일로부터 <strong>30일간 안전하게 보관</strong>됩니다. [전체 사진 ZIP 다운로드]를 통해 PC나 스마트폰에 미리 평생 소장해 두세요.
+            </div>
           </div>
         </div>
       </div>
@@ -319,21 +333,26 @@ export default function GuestPhotoManager({ invitation }) {
                 &ldquo;{selectedPhoto.message}&rdquo;
               </div>
             )}
-            <div className="p-3 bg-stone-900 flex justify-end gap-2 border-t border-stone-800">
-              <button
-                type="button"
-                onClick={() => handleDownloadSingle(selectedPhoto)}
-                className="py-1.5 px-3 bg-white text-black rounded-lg text-xs font-semibold hover:bg-stone-200"
-              >
-                사진 저장하기
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDeletePhoto(selectedPhoto.id)}
-                className="py-1.5 px-3 bg-stone-800 text-red-400 rounded-lg text-xs hover:bg-red-900/40"
-              >
-                삭제
-              </button>
+            <div className="p-3 bg-stone-900 flex items-center justify-between gap-2 border-t border-stone-800">
+              <span className="text-[10px] text-stone-400 font-light hidden sm:inline">
+                💡 모바일에서는 사진을 길게 꾹 누르면 바로 사진첩에 저장하실 수 있습니다.
+              </span>
+              <div className="flex items-center gap-2 ml-auto">
+                <button
+                  type="button"
+                  onClick={() => handleDownloadSingle(selectedPhoto)}
+                  className="py-1.5 px-3 bg-white text-black rounded-lg text-xs font-semibold hover:bg-stone-200"
+                >
+                  다운로드 ⬇
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDeletePhoto(selectedPhoto.id)}
+                  className="py-1.5 px-3 bg-stone-800 text-red-400 rounded-lg text-xs hover:bg-red-900/40"
+                >
+                  삭제
+                </button>
+              </div>
             </div>
           </div>
         </div>

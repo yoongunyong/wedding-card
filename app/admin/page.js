@@ -764,7 +764,19 @@ ATELIER DE MUKIRU 드림`;
                             </span>
                           </td>
 
-                          {/* 6. 정식 활성화 상태 (슬림 & 세련된 스위치 버튼) */}
+                          {/* 6. 2차 보안 PIN */}
+                          <td className="py-4 px-4 whitespace-nowrap font-mono">
+                            {inv.template_config?.manage_password ? (
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 bg-stone-100 text-stone-800 rounded border border-stone-200">
+                                <span>🔒</span>
+                                <span>{inv.template_config.manage_password}</span>
+                              </span>
+                            ) : (
+                              <span className="text-[11px] text-stone-400">미설정</span>
+                            )}
+                          </td>
+
+                          {/* 7. 정식 활성화 상태 (슬림 & 세련된 스위치 버튼) */}
                           <td className="py-4 px-4 whitespace-nowrap">
                             <button
                               onClick={() => handleToggleActive(inv)}

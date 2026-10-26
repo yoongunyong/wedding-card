@@ -203,6 +203,7 @@ function CreateInvitationContent() {
     show_rsvp_bus: false,
     show_guestbook: true,
     show_guest_photos: true,
+    manage_password: '',
     order_code: '',
     };
   });
@@ -908,6 +909,7 @@ function CreateInvitationContent() {
         show_rsvp_bus: Boolean(formData.show_rsvp_bus),
         show_guestbook: formData.show_guestbook,
         show_guest_photos: formData.show_guest_photos,
+          manage_password: (formData.manage_password || '').trim(),
         show_quote_section: formData.show_quote_section,
         groom_relation: formData.groom_relation || PREVIEW_FALLBACK.groom_relation,
         bride_relation: formData.bride_relation || PREVIEW_FALLBACK.bride_relation,
@@ -1233,6 +1235,7 @@ function CreateInvitationContent() {
         template_type: formData.template_type || 'editorial',
         is_active: willBeActive,
         order_code: inputCode || null,
+        manage_password: formData.manage_password || null,
         service_expired_at: (() => {
           try {
             const wDate = new Date(`${formData.wedding_date}T${formData.wedding_time}:00`);
@@ -1431,6 +1434,12 @@ function CreateInvitationContent() {
             <p className="text-xs text-stone-600 leading-relaxed font-light mb-3">
               종이 청첩장을 만드실 때 인쇄소에 전달할 수 있는 깨짐 없는 고해상도 QR코드 이미지 파일(PNG)을 다운로드하실 수 있습니다.
             </p>
+            {createdResult.manage_password && (
+              <div className="mt-2 p-2.5 bg-stone-50 rounded-xl border border-stone-200/80 flex items-center justify-between text-xs">
+                <span className="text-stone-600 font-medium">🔒 2차 관리자 비밀번호</span>
+                <span className="font-mono font-bold text-stone-900 tracking-widest">{createdResult.manage_password}</span>
+              </div>
+            )}
             <button
               type="button"
               onClick={() => setShowQrModal(true)}
@@ -3662,7 +3671,49 @@ function CreateInvitationContent() {
             </div>
           </div>
 
-          {/* 10. 스마트스토어 주문 인증코드 (선택) */}
+          {/* 10. 신랑·신부 관리자 2차 보안 비밀번호 설정 섹션 */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200/80 shadow-xs">
+            <div className="flex items-center justify-between pb-4 border-b border-stone-100 mb-6">
+              <div className="flex items-center gap-2.5">
+                <span className="text-xl">🛡️</span>
+                <div>
+                  <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
+                    신랑·신부 관리자 2차 보안 비밀번호 <span className="text-xs font-sans text-stone-400 font-normal">(숫자 4자리)</span>
+                  </h2>
+                  <p className="text-xs text-stone-500 mt-0.5">
+                    관리 페이지 진입 시 개인정보(하객 연락처, 방명록, 사진)를 안전하게 보호하는 둘만의 4자리 PIN입니다.
+                  </p>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase hidden sm:inline">
+                2FA PIN
+              </span>
+            </div>
+
+            <div className="max-w-xs space-y-2">
+              <label className="block text-xs font-semibold text-stone-700">
+                4자리 비밀번호 (숫자)
+              </label>
+              <input
+                type="password"
+                inputMode="numeric"
+                name="manage_password"
+                maxLength={4}
+                value={formData.manage_password || ''}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                  setFormData((prev) => ({ ...prev, manage_password: val }));
+                }}
+                placeholder="예: 2504 (둘만의 기념일 등)"
+                className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-center text-lg font-mono tracking-widest text-stone-900 focus:outline-none focus:border-stone-900 focus:bg-white transition-colors"
+              />
+              <p className="text-[11px] text-stone-400 leading-relaxed font-light">
+                * 비워두실 경우, 관리자 링크 첫 접속 시 둘만의 4자리 비밀번호를 등록하실 수 있습니다.
+              </p>
+            </div>
+          </div>
+
+          {/* 11. 스마트스토어 주문 인증코드 (선택) */}
           <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
               <div className="flex items-baseline gap-2.5">

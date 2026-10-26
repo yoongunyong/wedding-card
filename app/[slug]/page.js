@@ -50,7 +50,7 @@ export async function generateMetadata({ params }) {
   }
 
   // 공유 썸네일: images.cover 최우선
-  const ogImage = invitation.images?.cover || invitation.images?.main || '/cover.jpg';
+  const ogImage = invitation.images?.cover || invitation.images?.main || (SAMPLE_INVITATIONS[slug]?.images?.cover || '');
   const coupleText = [invitation.groom_name, invitation.bride_name].filter(Boolean).join(' ♥ ');
   const title = coupleText ? `${coupleText} 결혼합니다` : '모바일 청첩장';
   const fullVenue = [invitation.venue_name, invitation.venue_hall].filter(Boolean).join(' ');

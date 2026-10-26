@@ -97,26 +97,26 @@ export default function CinematicTemplate({ invitation }) {
   const groomPhoto = images.groom_profile || extra.groom_profile_image || invitation?.groom_photo || (isSample ? '/samples/groom-solo.jpg' : '');
   const datePhoto = images.ending || (userGallery && userGallery.length > 1 ? userGallery[1] : null) || (isSample ? '/samples/ending-04-classic.jpg' : '');
 
-  // 성함 데이터 (하드코딩 더미 성함 제거)
-  const groomName = invitation?.groom_name || (isSample ? '데이' : '');
-  const brideName = invitation?.bride_name || (isSample ? '이브' : '');
-  const groomFirstEn = invitation?.groom_first_name_en || (invitation?.groom_name_en || '').split(' ')[0] || (isSample ? 'Day' : '');
-  const brideFirstEn = invitation?.bride_first_name_en || (invitation?.bride_name_en || '').split(' ')[0] || (isSample ? 'Eve' : '');
-  const displayNamesEn = invitation?.main_names_en || (groomFirstEn && brideFirstEn ? `${groomFirstEn} & ${brideFirstEn}` : (isSample ? 'Day & Eve' : ''));
+  // 성함 데이터 (하드코딩 더미 성함 완전 제거)
+  const groomName = invitation?.groom_name || '';
+  const brideName = invitation?.bride_name || '';
+  const groomFirstEn = invitation?.groom_first_name_en || (invitation?.groom_name_en || '').split(' ')[0] || '';
+  const brideFirstEn = invitation?.bride_first_name_en || (invitation?.bride_name_en || '').split(' ')[0] || '';
+  const displayNamesEn = invitation?.main_names_en || (groomFirstEn && brideFirstEn ? `${groomFirstEn} & ${brideFirstEn}` : '');
 
-  // 부모님 성함 (하드코딩 더미 제거)
+  // 부모님 성함 (하드코딩 더미 완전 제거)
   const groomParents = [
     invitation?.groom_father && `${invitation.groom_father}${config.groom_father_deceased ? ' (故)' : ''}`,
     invitation?.groom_mother && `${invitation.groom_mother}${config.groom_mother_deceased ? ' (故)' : ''}`,
-  ].filter(Boolean).join(' · ') || (isSample ? '루카스 · 소피아' : '');
+  ].filter(Boolean).join(' · ');
 
   const brideParents = [
     invitation?.bride_father && `${invitation.bride_father}${config.bride_father_deceased ? ' (故)' : ''}`,
     invitation?.bride_mother && `${invitation.bride_mother}${config.bride_mother_deceased ? ' (故)' : ''}`,
-  ].filter(Boolean).join(' · ') || (isSample ? '에이든 · 미엘라' : '');
+  ].filter(Boolean).join(' · ');
 
-  const groomRelation = config.groom_relation || invitation?.groom_relation || (isSample ? '아들' : '');
-  const brideRelation = config.bride_relation || invitation?.bride_relation || (isSample ? '딸' : '');
+  const groomRelation = config.groom_relation || invitation?.groom_relation || '';
+  const brideRelation = config.bride_relation || invitation?.bride_relation || '';
 
   // 날짜 계산 (샘플 모드일 때만 기본 데모 일시 사용, 실제 고객은 미입력 시 공백 처리)
   const weddingDateStr = invitation?.wedding_date || (isSample ? '2026-12-24 15:00:00' : '');
@@ -183,9 +183,9 @@ export default function CinematicTemplate({ invitation }) {
     };
   }, [targetDate]);
 
-  // 예식장 정보 (하드코딩 더채플앳청담 제거 -> 미입력 시 공백 처리)
-  const venueFullName = [invitation?.venue_name, config?.venue_hall || invitation?.venue_hall].filter(Boolean).join(' ') || (isSample ? '더채플앳청담 커티지홀' : '');
-  const venueAddress = invitation?.venue_address || (isSample ? '서울특별시 강남구 선릉로 757' : '');
+  // 예식장 정보 (하드코딩 더미 완전 제거 -> 미입력 시 공백 처리)
+  const venueFullName = [invitation?.venue_name, config?.venue_hall || invitation?.venue_hall].filter(Boolean).join(' ');
+  const venueAddress = invitation?.venue_address || '';
 
   // 안내 카드 리스트 (미등록 시 실제 고객 청첩장에서는 미노출)
   const infoCards = useMemo(() => {

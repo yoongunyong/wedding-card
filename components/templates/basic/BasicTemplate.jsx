@@ -36,6 +36,7 @@ export default function BasicTemplate({ invitation }) {
 
   const images = invitation?.images || {};
   const config = invitation?.template_config || {};
+  const isSample = Boolean(invitation?.is_sample_preview || invitation?.slug === 'basic');
 
   // 고객 커스텀 타이틀 색상 (template_config.title_color 우선, 하위호환 extra.title_color)
   const titleColor = config.title_color || extra.title_color || '#E5A866';
@@ -436,7 +437,7 @@ export default function BasicTemplate({ invitation }) {
             shareImg = `${window.location.origin}${shareImg.startsWith('/') ? '' : '/'}${shareImg}`;
           }
           // localhost 환경이거나 이미지가 없을 경우 카카오 스크랩 검증용 고화질 웨딩 이미지 대체
-          if (!shareImg || (typeof window !== 'undefined' && window.location.hostname === 'localhost')) {
+          if (!shareImg && isSample) {
             shareImg = '/samples/garden-couple.jpg';
           }
 

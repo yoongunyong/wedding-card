@@ -120,8 +120,8 @@ export default function SceneTemplate({ invitation }) {
   const isSample = Boolean(invitation?.is_sample_preview || invitation?.slug === 'scene');
 
   // 기본 정보 (실제 고객 정보 우선, 샘플 모드일 때만 기본값)
-  const groomName = invitation?.groom_name || (isSample ? '남세희' : '');
-  const brideName = invitation?.bride_name || (isSample ? '윤지호' : '');
+  const groomName = invitation?.groom_name || '';
+  const brideName = invitation?.bride_name || '';
   const coupleTitle = [groomName, brideName].filter(Boolean).join(' & ');
 
   // 부모님 정보
@@ -140,8 +140,8 @@ export default function SceneTemplate({ invitation }) {
     invitation?.bride_mother_deceased ? `故 ${brideMother}` : brideMother,
   ].filter(Boolean).join(' · ');
 
-  const groomRelation = config.groom_relation || invitation?.groom_relation || (isSample ? '의 아들' : '');
-  const brideRelation = config.bride_relation || invitation?.bride_relation || (isSample ? '의 딸' : '');
+  const groomRelation = config.groom_relation || invitation?.groom_relation || '';
+  const brideRelation = config.bride_relation || invitation?.bride_relation || '';
 
   // 이름만 추출: 한국 표준 3글자 성명(/^[가-힣]{3}$/)일 때만 성(첫 글자)을 떼어내고,
   // 외자, 영문 이름(Alex, David), 4글자 이상 성명 등은 고객이 입력한 이름 원본을 훼손 없이 그대로 유지
@@ -476,7 +476,7 @@ export default function SceneTemplate({ invitation }) {
         content: {
           title: shareTitle,
           description: shareDesc,
-          imageUrl: mainImage || '/samples/scene-cover.jpg',
+          imageUrl: mainImage || (isSample ? '/samples/scene-cover.jpg' : ''),
           link: {
             mobileWebUrl: currentUrl,
             webUrl: currentUrl,
@@ -667,7 +667,7 @@ export default function SceneTemplate({ invitation }) {
 
           {/* 모시는 글 본문 */}
           <div className="text-xs sm:text-[13px] leading-[2.5] text-stone-600 font-light max-w-[310px] mx-auto mb-12 whitespace-pre-line break-keep">
-            {invitation?.message || (isSample ? `매일이 비슷해 보여도,\n결국은 다시 돌아올 수 없는 하루들 속에서\n우리, 서로의 계절이 되어 함께 살아가려 합니다.\n\n서로의 하루를 채워갈,\n평범하고도 눈부신 날들을\n귀한 걸음으로 참석하여 축하해주세요.` : '')}
+            {invitation?.message || ''}
           </div>
 
           {/* 신랑 & 신부 2단 정사각 인물 스냅 사진 (개별 독사진이 등록되었을 때만 노출) */}
@@ -855,10 +855,10 @@ export default function SceneTemplate({ invitation }) {
             {(invitation?.venue_address || invitation?.venue_name || isSample) && (
               <div className="space-y-1.5 text-center">
                 <p className="text-xs sm:text-[13px] text-stone-600 font-light tracking-tight">
-                  {invitation?.venue_address || (isSample ? '서울특별시 강남구 선릉로 757' : '')}
+                  {invitation?.venue_address || ''}
                 </p>
                 <p className="text-base sm:text-[18px] text-stone-900 font-medium tracking-tight">
-                  {[invitation?.venue_name, invitation?.venue_hall].filter(Boolean).join(' ') || (isSample ? '더 채플앳 청담 6F 채플홀' : '')}
+                  {[invitation?.venue_name, invitation?.venue_hall].filter(Boolean).join(' ')}
                 </p>
               </div>
             )}
@@ -999,8 +999,8 @@ export default function SceneTemplate({ invitation }) {
           {(invitation?.venue_address || isSample) && (
             <div className="w-full overflow-hidden border-y border-stone-200 mb-6 shadow-2xs">
               <KakaoMap
-                address={invitation?.venue_address || (isSample ? '서울특별시 강남구 선릉로 757' : '')}
-                venueName={invitation?.venue_name || (isSample ? '더채플앳 청담' : '')}
+                address={invitation?.venue_address || ''}
+                venueName={invitation?.venue_name || ''}
               />
             </div>
           )}

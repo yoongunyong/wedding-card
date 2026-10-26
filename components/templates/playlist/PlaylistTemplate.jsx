@@ -42,6 +42,7 @@ export default function PlaylistTemplate({ invitation }) {
   const [selectedGalleryIdx, setSelectedGalleryIdx] = useState(0);
 
   // 8. 데이터 언패킹 & fallback
+  const isSample = Boolean(invitation?.is_sample_preview || invitation?.slug === 'playlist');
   const config = invitation?.template_config || {};
   const images = invitation?.images || {};
   const extra = invitation?.extra_data || {};
@@ -243,16 +244,23 @@ export default function PlaylistTemplate({ invitation }) {
           
           {/* 1. 상단 둥근 웨딩 화보 사진 (기준 이미지 aspect-[537/525] 1:1 완벽 일치) */}
           <div className="relative w-full aspect-[537/525] rounded-[32px] overflow-hidden bg-stone-200 shadow-xs">
-            <img
-              src={mainImage || '/playlist-couple.png'}
-              alt="Wedding Album Cover"
-              className="w-full h-full object-cover grayscale contrast-105"
-              onError={(e) => {
-                if (e.currentTarget.src !== '/playlist-couple.png') {
-                  e.currentTarget.src = '/playlist-couple.png';
-                }
-              }}
-            />
+            {mainImage ? (
+              <img
+                src={mainImage}
+                alt="Wedding Album Cover"
+                className="w-full h-full object-cover grayscale contrast-105"
+              />
+            ) : isSample ? (
+              <img
+                src="/playlist-couple.png"
+                alt="Wedding Album Cover"
+                className="w-full h-full object-cover grayscale contrast-105"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-stone-100 text-stone-400 font-serif text-sm">
+                ATELIER DE MUKIRU
+              </div>
+            )}
           </div>
 
           {/* 2. 트랙 정보: 날짜, 이름(정통 Noto Serif KR 명조체), 1줄 고정 카피, 라인 하트 */}
@@ -268,9 +276,9 @@ export default function PlaylistTemplate({ invitation }) {
                 style={{ fontFamily: "'Noto Serif KR', 'Nanum Myeongjo', serif" }}
                 className="text-[23.5px] sm:text-[25.5px] font-normal text-[#1C1C1E] tracking-tight flex items-center gap-1.5"
               >
-                <span>{groomName || '강민우'}</span>
+                <span>{groomName}</span>
                 <span className="text-[17px] inline-block align-middle mx-0.5">💗</span>
-                <span>{brideName || '서유진'}</span>
+                <span>{brideName}</span>
               </h1>
 
               {/* 좋아요 하트 버튼 (기준 이미지 원본 얇은 미니멀 라인 하트 ♡ 1:1 일치) */}

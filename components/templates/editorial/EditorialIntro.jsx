@@ -8,6 +8,8 @@ export default function EditorialIntro({ invitation, onOpen }) {
   const [isShaking, setIsShaking] = useState(false);
   const [declineMsg, setDeclineMsg] = useState('');
 
+  const isSample = Boolean(invitation?.is_sample_preview || invitation?.slug === 'editorial');
+
   // 화보 커버 이미지 우선순위
   const coverImage =
     invitation?.images?.cover ||
@@ -15,7 +17,7 @@ export default function EditorialIntro({ invitation, onOpen }) {
     invitation?.cover_image ||
     invitation?.extra_data?.cover_image ||
     invitation?.extra_data?.main_image ||
-    '/cover.jpg';
+    (isSample ? '/samples/editorial-cover.jpg' : '');
 
   // 영문/한글 이름 및 정보 (하드코딩 완전 배제)
   const groomName = invitation?.groom_name || '';
@@ -180,8 +182,8 @@ export default function EditorialIntro({ invitation, onOpen }) {
               alt="Editorial Lookbook Cover"
               className="w-full h-full object-cover select-none transition-transform duration-700 group-hover:scale-102"
               onError={(e) => {
-                if (e.currentTarget.src !== '/cover.jpg') {
-                  e.currentTarget.src = '/cover.jpg';
+                if (isSample && e.currentTarget.src !== '/samples/editorial-cover.jpg') {
+                  e.currentTarget.src = '/samples/editorial-cover.jpg';
                 }
               }}
             />

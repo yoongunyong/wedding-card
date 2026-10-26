@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import Script from 'next/script';
 import ScrollReveal from '@/components/ScrollReveal';
 import TodayConciergeCard from '@/components/TodayConciergeCard';
+import GuestPhotoSnapSection from '@/components/GuestPhotoSnapSection';
 import EditorialContactModal from './EditorialContactModal';
 import EditorialRsvpModal from './EditorialRsvpModal';
 import EditorialGuestbookModal from './EditorialGuestbookModal';
@@ -1110,6 +1111,9 @@ export default function EditorialTemplate({ invitation }) {
           </ScrollReveal>
         </section>
       )}
+
+      {/* 09-2. 하객 현장 사진 선물 섹션 */}
+      <GuestPhotoSnapSection invitation={invitation} />
 
       {/* 10. 축하 메시지 (Guestbook - 에디토리얼 독자 기고란 스타일) */}
       {showGuestbookSection && (

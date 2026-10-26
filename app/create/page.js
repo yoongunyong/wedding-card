@@ -202,6 +202,7 @@ function CreateInvitationContent() {
     show_rsvp: true,
     show_rsvp_bus: false,
     show_guestbook: true,
+    show_guest_photos: true,
     order_code: '',
     };
   });
@@ -906,6 +907,7 @@ function CreateInvitationContent() {
         show_rsvp: formData.show_rsvp,
         show_rsvp_bus: Boolean(formData.show_rsvp_bus),
         show_guestbook: formData.show_guestbook,
+        show_guest_photos: formData.show_guest_photos,
         show_quote_section: formData.show_quote_section,
         groom_relation: formData.groom_relation || PREVIEW_FALLBACK.groom_relation,
         bride_relation: formData.bride_relation || PREVIEW_FALLBACK.bride_relation,
@@ -1254,6 +1256,7 @@ function CreateInvitationContent() {
           show_rsvp: formData.show_rsvp,
           show_rsvp_bus: Boolean(formData.show_rsvp_bus),
           show_guestbook: formData.show_guestbook,
+          show_guest_photos: formData.show_guest_photos,
           show_quote_section: formData.show_quote_section,
           groom_relation: formData.groom_relation,
           bride_relation: formData.bride_relation,
@@ -3639,6 +3642,20 @@ function CreateInvitationContent() {
                       className="rounded border-stone-300 text-stone-900 accent-stone-900"
                     />
                     <span>축하 방명록</span>
+                  </label>
+
+                  <label className="flex items-center gap-2.5 cursor-pointer p-3 bg-[#FAFAF9] hover:bg-stone-100/70 border border-stone-200/60 rounded-xl transition-colors select-none">
+                    <input
+                      type="checkbox"
+                      name="show_guest_photos"
+                      checked={formData.show_guest_photos !== false}
+                      onChange={handleChange}
+                      className="rounded border-stone-300 text-stone-900 accent-stone-900"
+                    />
+                    <div>
+                      <span className="text-xs font-medium text-stone-800">📷 하객 현장 사진 수집함 (비공개)</span>
+                      <span className="text-[10px] text-stone-400 block font-light">하객이 청첩장으로 올린 사진을 신랑·신부 관리자함에서 소장</span>
+                    </div>
                   </label>
                 </div>
               </div>

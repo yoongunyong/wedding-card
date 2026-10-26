@@ -223,6 +223,19 @@ export default function TodayConciergeCard({ invitation, forceShow = false }) {
             <span className="px-2 py-0.5 bg-stone-100 rounded-md text-[10px] text-stone-700 font-medium">
               🅿️ {parkingInfo}
             </span>
+            {invitation?.template_config?.show_guest_photos !== false && (
+              <button
+                type="button"
+                onClick={() => {
+                  const el = document.getElementById('guest-photo-snap');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="px-2 py-0.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/70 rounded-md text-[10px] font-semibold transition-colors flex items-center gap-1 cursor-pointer shrink-0"
+              >
+                <span>📷</span>
+                <span>사진 선물</span>
+              </button>
+            )}
           </div>
           <button
             type="button"

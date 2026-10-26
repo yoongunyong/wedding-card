@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import Script from 'next/script';
 import ScrollReveal from '@/components/ScrollReveal';
 import TodayConciergeCard from '@/components/TodayConciergeCard';
+import GuestPhotoSnapSection from '@/components/GuestPhotoSnapSection';
 import EditorialContactModal from '../editorial/EditorialContactModal';
 import EditorialRsvpModal from '../editorial/EditorialRsvpModal';
 import EditorialGuestbookModal from '../editorial/EditorialGuestbookModal';
@@ -831,6 +832,9 @@ export default function PlaylistTemplate({ invitation }) {
       {/* ========================================================
           07. RSVP & GUESTBOOK (참석 여부 & 방명록)
           ======================================================== */}
+      {/* 06-2. 하객 현장 사진 선물 섹션 */}
+      <GuestPhotoSnapSection invitation={invitation} />
+
       {(showRsvpSection || showGuestbookSection) && (
         <section className="py-16 px-6 bg-[#FAF9F6] border-t border-stone-200/60 text-center">
           <ScrollReveal>

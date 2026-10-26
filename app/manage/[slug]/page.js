@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, use } from 'react';
@@ -5,6 +6,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useSearchParams } from 'next/navigation';
 import QrCodeModal from '@/components/QrCodeModal';
+import GuestPhotoManager from '@/components/manage/GuestPhotoManager';
 
 export default function ManageRsvpPage({ params }) {
   const resolvedParams = use(params);
@@ -18,6 +20,7 @@ export default function ManageRsvpPage({ params }) {
   const [rsvpList, setRsvpList] = useState([]);
   const [guestbookList, setGuestbookList] = useState([]);
   const [showQrModal, setShowQrModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('rsvp');
 
   useEffect(() => {
     async function loadData() {
@@ -274,7 +277,58 @@ export default function ManageRsvpPage({ params }) {
           </div>
         </div>
 
-        {/* 요약 대시보드 카드 */}
+        
+
+        {/* 탭 네비게이션 (참석자 명단 / 방명록 / 하객 포토 스냅) */}
+        <div className="flex items-center gap-1.5 p-1 bg-stone-100 rounded-2xl my-6 border border-stone-200/70">
+          <button
+            type="button"
+            onClick={() => setActiveTab('rsvp')}
+            className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+              activeTab === 'rsvp'
+                ? 'bg-white text-stone-900 shadow-xs'
+                : 'text-stone-500 hover:text-stone-800'
+            }`}
+          >
+            <span>참석자 명단</span>
+            <span className="font-mono text-[11px] px-1.5 py-0.2 rounded-full bg-stone-200/70 text-stone-700">
+              {rsvpList.length}
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('guestbook')}
+            className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+              activeTab === 'guestbook'
+                ? 'bg-white text-stone-900 shadow-xs'
+                : 'text-stone-500 hover:text-stone-800'
+            }`}
+          >
+            <span>방명록 메시지</span>
+            <span className="font-mono text-[11px] px-1.5 py-0.2 rounded-full bg-stone-200/70 text-stone-700">
+              {guestbookList.length}
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('photos')}
+            className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+              activeTab === 'photos'
+                ? 'bg-white text-stone-900 shadow-xs'
+                : 'text-stone-500 hover:text-stone-800'
+            }`}
+          >
+            <span>📷 하객 포토 스냅</span>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800">
+              NEW
+            </span>
+          </button>
+        </div>
+
+        {/* 1. 참석자 명단 탭 */}
+        {activeTab === 'rsvp' && (
+          <div>
+            {/* 요약 대시보드 카드 */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 my-6">
           <div className="p-4 bg-stone-50 rounded-xl text-center border border-stone-100">
             <span className="text-xs text-stone-500">총 응답 수</span>
@@ -367,8 +421,13 @@ export default function ManageRsvpPage({ params }) {
             </table>
           </div>
         )}
+          </div>
+        )}
 
-        {/* 방명록 관리 섹션 */}
+        {/* 2. 방명록 메시지 탭 */}
+        {activeTab === 'guestbook' && (
+          <div>
+            {/* 방명록 관리 섹션 */}
         <div className="pt-8 mt-8 border-t border-stone-200">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -433,6 +492,15 @@ export default function ManageRsvpPage({ params }) {
             </div>
           )}
         </div>
+          </div>
+        )}
+
+        {/* 3. 하객 포토 스냅 탭 */}
+        {activeTab === 'photos' && (
+          <div>
+            <GuestPhotoManager invitation={invitation} />
+          </div>
+        )}
 
         {/* 종이 청첩장용 QR코드 모달 */}
         {invitation && (
@@ -449,3 +517,4 @@ export default function ManageRsvpPage({ params }) {
     </div>
   );
 }
+  

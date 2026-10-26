@@ -11,6 +11,7 @@ import BasicGuestbookModal from './BasicGuestbookModal';
 import BasicGuestbookDeleteModal from './BasicGuestbookDeleteModal';
 import ScrollReveal from '@/components/ScrollReveal';
 import TodayConciergeCard from '@/components/TodayConciergeCard';
+import GuestPhotoSnapSection from '@/components/GuestPhotoSnapSection';
 
 export default function BasicTemplate({ invitation }) {
   const extra = { ...(invitation?.template_config || {}), ...(invitation?.extra_data || {}) };
@@ -1278,6 +1279,9 @@ export default function BasicTemplate({ invitation }) {
           </ScrollReveal>
         </section>
       )}
+
+      {/* 09-2. 하객 현장 사진 선물 섹션 */}
+      <GuestPhotoSnapSection invitation={invitation} />
 
       {/* 10. 축하 메시지 (Image 10) */}
       {showGuestbookSection && (

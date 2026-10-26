@@ -5,6 +5,7 @@ import Script from 'next/script';
 import KakaoMap from '@/components/KakaoMap';
 import ScrollReveal from '@/components/ScrollReveal';
 import TodayConciergeCard from '@/components/TodayConciergeCard';
+import GuestPhotoSnapSection from '@/components/GuestPhotoSnapSection';
 import SceneInterviewModal from './SceneInterviewModal';
 import SceneGalleryModal from './SceneGalleryModal';
 import SceneGuestbookDeleteModal from './SceneGuestbookDeleteModal';
@@ -1487,6 +1488,9 @@ export default function SceneTemplate({ invitation }) {
       {/* ========================================================
           10. GUESTBOOK (축하 방명록 - 영상 frame_038, frame_040 1:1 일치)
           ======================================================== */}
+      {/* 07-2. 하객 현장 사진 선물 섹션 */}
+      <GuestPhotoSnapSection invitation={invitation} />
+
       {config.show_guestbook !== false && (
         <section className="py-20 px-6 bg-white border-t border-stone-100">
           <ScrollReveal>

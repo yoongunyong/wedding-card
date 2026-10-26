@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import Script from 'next/script';
 import ScrollReveal from '@/components/ScrollReveal';
 import TodayConciergeCard from '@/components/TodayConciergeCard';
+import GuestPhotoSnapSection from '@/components/GuestPhotoSnapSection';
 import KakaoMap from '@/components/KakaoMap';
 import EditorialRsvpModal from '../editorial/EditorialRsvpModal';
 import EditorialGuestbookModal from '../editorial/EditorialGuestbookModal';
@@ -1020,6 +1021,9 @@ export default function CinematicTemplate({ invitation }) {
           </ScrollReveal>
         </section>
       )}
+
+      {/* 08-2. 하객 현장 사진 선물 섹션 */}
+      <GuestPhotoSnapSection invitation={invitation} isNightMode={isNightMode} />
 
       {/* ========================================================
           09. RSVP & 푸터

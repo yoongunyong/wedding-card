@@ -150,6 +150,7 @@ export default function EditInvitationPage({ params }) {
     show_rsvp: true,
     show_rsvp_bus: false,
     show_guestbook: true,
+    show_guest_photos: true,
   });
 
   // 2. 다중 계좌 상태
@@ -305,6 +306,7 @@ export default function EditInvitationPage({ params }) {
         show_rsvp: config.show_rsvp !== false,
         show_rsvp_bus: Boolean(config.show_rsvp_bus),
         show_guestbook: config.show_guestbook !== false,
+        show_guest_photos: config.show_guest_photos !== false,
       });
 
       // 계좌 분리
@@ -814,6 +816,7 @@ export default function EditInvitationPage({ params }) {
         show_rsvp: formData.show_rsvp,
         show_rsvp_bus: Boolean(formData.show_rsvp_bus),
         show_guestbook: formData.show_guestbook,
+        show_guest_photos: formData.show_guest_photos,
         show_quote_section: formData.show_quote_section,
         groom_relation: formData.groom_relation,
         bride_relation: formData.bride_relation,
@@ -1080,6 +1083,7 @@ export default function EditInvitationPage({ params }) {
           show_rsvp: formData.show_rsvp,
           show_rsvp_bus: Boolean(formData.show_rsvp_bus),
           show_guestbook: formData.show_guestbook,
+        show_guest_photos: formData.show_guest_photos,
           show_quote_section: formData.show_quote_section,
           groom_relation: formData.groom_relation,
           bride_relation: formData.bride_relation,
@@ -2605,6 +2609,7 @@ export default function EditInvitationPage({ params }) {
                 { name: 'show_rsvp', label: '참석 의사(RSVP)' },
                 { name: 'show_rsvp_bus', label: '전세버스 탑승 조사' },
                 { name: 'show_guestbook', label: '축하 방명록' },
+                { name: 'show_guest_photos', label: '📷 하객 사진 수집함 (비공개)' },
               ].map((opt) => (
                 <label key={opt.name} className="flex items-center gap-2 p-3 bg-[#FAFAF9] rounded-xl border border-stone-200/60 cursor-pointer">
                   <input

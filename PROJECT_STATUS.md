@@ -187,9 +187,11 @@
    - **`GuestPhotoSnapSection.jsx`**: 2단계 시점별 안내 카드 (예식 전 사전 인지 안내 ➔ 당일 이후 원터치 업로드 버튼 활성화, 전 시안 5종 공통 적용).
    - **`TodayConciergeCard.jsx`**: 예식 당일 안내데스크 툴바에 `[📷 사진 선물]` 바로가기 버튼 추가.
    - **`GuestPhotoManager.jsx`**: 신랑·신부 전용 보관함 (게이지 바, 라이트박스 뷰어, 개별 다운로드 및 삭제, `JSZip` 기반 **[전체 사진 ZIP 다운로드]** 완비).
-   - **`app/manage/[slug]/page.js`**: 3단 세그먼트 탭 컨트롤러 개편 (`[참석자 명단]` | `[방명록]` | `[📷 하객 포토 스냅]`).
+   - **`app/manage/[slug]/page.js`**: 3단 세그먼트 탭 컨트롤러 개편 (`[참석자]` | `[방명록]` | `[📷 사진스냅]`, 모바일 텍스트 줄바꿈 방지 `whitespace-nowrap` 적용).
    - **`app/create/page.js` & `app/manage/[slug]/edit/page.js`**: `show_guest_photos` (기본값 ON) 설정 토글 탑재.
    - **`scripts/setup-guest-photos.sql`**: 전용 테이블 생성 및 INSERT/SELECT/DELETE RLS 정책 SQL 완비.
+   - **`components/landing/SignatureShowcase.jsx`**: 메인 랜딩에 **FEATURE 05 (하객 현장 스냅 아카이브)** 신설 (100% 비공개 수집, 실시간 게이지, 4분할 감성 스냅 목업, ZIP 다운로드 안내).
+   - **`components/landing/FeatureTabs.jsx`**: 전체 기능 13종 둘러보기에 '하객 현장 스냅 수집함' 카드 신설.
 2. **[히어로 섹션] `HeroCardSwiper.jsx` 무한 루프 파노라마 개편**:
    - 5대 공식 시안 무한 루프 와이드 파노라마 구축, 중앙 활성 카드 리프트업, 퀵뷰 모달 연동.
 3. **[피처 스토리텔링] `SignatureShowcase.jsx` 4대 피처 팩트 매칭 & 세로 여백 최적화**:

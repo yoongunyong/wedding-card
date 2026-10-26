@@ -997,6 +997,167 @@ export default function SignatureShowcase() {
           </div>
         </ScrollReveal>
 
+        
+        {/* ========================================================
+            FEATURE 05. 하객 현장 스냅 아카이브 (Guest Snap Dropbox)
+            - 신랑신부 전용 100% 비공개 수집함
+            - 1회 최대 10장, 브라우저 97% 초경량 자동 압축
+            - 실시간 게이지 & 원클릭 전체 사진 ZIP 압축 다운로드
+           ======================================================== */}
+        <ScrollReveal duration={800}>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center bg-white rounded-3xl p-6 sm:p-9 border border-slate-200/80 shadow-xs">
+            {/* 좌측: 설명 */}
+            <div className="lg:col-span-6 text-left space-y-5">
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 bg-amber-50 text-amber-900 border border-amber-200/80 rounded-full text-xs font-bold shadow-2xs">
+                  NEW 시그니처
+                </span>
+                <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-semibold">
+                  하객 포토 스냅
+                </span>
+              </div>
+
+              <h3 
+                className="text-2xl sm:text-3xl text-slate-900 font-extrabold tracking-[-0.03em] font-sans"
+                style={{ lineHeight: 1.4 }}
+              >
+                본식 스냅 3달 기다리지 마세요.<br />
+                <span className="text-slate-400 font-normal">하객들의 1인칭 시선, 당일 밤 한곳에.</span>
+              </h3>
+
+              <p 
+                className="text-xs sm:text-sm text-slate-600 font-normal leading-relaxed break-keep"
+                style={{ lineHeight: 1.7 }}
+              >
+                결혼식이 끝나고 신혼여행 비행기 안에서 가장 먼저 보고 싶은 건 하객들이 정성껏 찍어준 현장 사진입니다. 카카오톡으로 흩어져 만료되지 않도록, 청첩장 링크 하나로 안전하게 모아 평생 소장하세요.
+              </p>
+
+              {/* 3대 핵심 팩트 칩 */}
+              <div className="space-y-2.5 pt-1">
+                <div className="flex items-start gap-2.5 text-xs text-slate-700">
+                  <span className="text-amber-700 font-bold shrink-0 mt-0.5">🔒</span>
+                  <span>
+                    <strong className="text-slate-900 font-semibold">100% 비공개 안심 수집:</strong> 타 하객에게 일체 공개되지 않으며, 오직 신랑·신부 전용 보관함으로만 안전하게 전달됩니다.
+                  </span>
+                </div>
+                <div className="flex items-start gap-2.5 text-xs text-slate-700">
+                  <span className="text-amber-700 font-bold shrink-0 mt-0.5">⚡</span>
+                  <span>
+                    <strong className="text-slate-900 font-semibold">초경량 자동 압축:</strong> 1회 최대 10장, 모바일 브라우저에서 97% 압축 전송하여 하객 데이터 부담이 전혀 없습니다.
+                  </span>
+                </div>
+                <div className="flex items-start gap-2.5 text-xs text-slate-700">
+                  <span className="text-amber-700 font-bold shrink-0 mt-0.5">📦</span>
+                  <span>
+                    <strong className="text-slate-900 font-semibold">원클릭 ZIP 전체 다운로드:</strong> 신랑·신부 관리 페이지에서 타일 그리드 감상 후, 버튼 한 번으로 압축파일(ZIP) 평생 소장.
+                  </span>
+                </div>
+              </div>
+
+              {/* 하단 안심 뱃지 */}
+              <div className="pt-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-100 rounded-xl text-[11px] text-stone-600 font-medium">
+                  <span>✨</span>
+                  <span>예식 전에는 감성 안내 카드로 노출되어 하객들이 미리 사진을 준비합니다</span>
+                </span>
+              </div>
+            </div>
+
+            {/* 우측: 실제 관리자함 및 하객 스냅 보관함 모바일 카드 목업 */}
+            <div className="lg:col-span-6 flex justify-center">
+              <div className="w-full max-w-sm bg-[#FAF9F6] rounded-3xl border border-stone-200/90 p-5 shadow-lg select-none text-left space-y-4">
+                {/* 상단 보관함 현황 툴바 */}
+                <div className="flex items-center justify-between pb-3 border-b border-stone-200/70">
+                  <div>
+                    <span className="font-mono text-[9.5px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60 uppercase">
+                      GUEST SNAP BOX
+                    </span>
+                    <h4 className="text-xs font-bold text-stone-900 mt-1">
+                      하객 현장 사진 보관함
+                    </h4>
+                  </div>
+                  <div className="px-2.5 py-1.5 bg-stone-900 text-white rounded-xl text-[10px] font-bold flex items-center gap-1 shadow-2xs">
+                    <span>📦</span>
+                    <span>ZIP 다운로드 (42장)</span>
+                  </div>
+                </div>
+
+                {/* 게이지 바 */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-[11px] text-stone-600 font-medium">
+                    <span>보관함 채움 상태</span>
+                    <span className="font-mono font-bold text-stone-900">42 / 100장 (42%)</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-stone-200 rounded-full overflow-hidden">
+                    <div className="h-full bg-stone-900 rounded-full" style={{ width: '42%' }} />
+                  </div>
+                </div>
+
+                {/* 4분할 하객 스냅 실물 타일 그리드 */}
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <div className="bg-white rounded-xl border border-stone-200/80 overflow-hidden shadow-2xs group">
+                    <div className="relative aspect-square overflow-hidden bg-stone-100">
+                      <img src="/samples/main-01-basic.jpg" alt="Guest Snap" className="w-full h-full object-cover" />
+                      <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-black/60 backdrop-blur-xs text-white text-[9px] rounded-md font-medium">
+                        From. 지은 🤍
+                      </span>
+                    </div>
+                    <p className="p-2 text-[10px] text-stone-600 line-clamp-1 font-light bg-white">
+                      &ldquo;입장할 때 세상에서 제일 예뻤어!&rdquo;
+                    </p>
+                  </div>
+
+                  <div className="bg-white rounded-xl border border-stone-200/80 overflow-hidden shadow-2xs group">
+                    <div className="relative aspect-square overflow-hidden bg-stone-100">
+                      <img src="/samples/main-04-cinematic.jpg" alt="Guest Snap" className="w-full h-full object-cover" />
+                      <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-black/60 backdrop-blur-xs text-white text-[9px] rounded-md font-medium">
+                        From. 민우 ✨
+                      </span>
+                    </div>
+                    <p className="p-2 text-[10px] text-stone-600 line-clamp-1 font-light bg-white">
+                      &ldquo;플라워샤워 순간 인생샷 건짐!&rdquo;
+                    </p>
+                  </div>
+
+                  <div className="bg-white rounded-xl border border-stone-200/80 overflow-hidden shadow-2xs group">
+                    <div className="relative aspect-square overflow-hidden bg-stone-100">
+                      <img src="/samples/main-beach.jpg" alt="Guest Snap" className="w-full h-full object-cover" />
+                      <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-black/60 backdrop-blur-xs text-white text-[9px] rounded-md font-medium">
+                        From. 지영 📷
+                      </span>
+                    </div>
+                    <p className="p-2 text-[10px] text-stone-600 line-clamp-1 font-light bg-white">
+                      &ldquo;두 사람 환한 미소 최고야&rdquo;
+                    </p>
+                  </div>
+
+                  <div className="bg-white rounded-xl border border-stone-200/80 overflow-hidden shadow-2xs group">
+                    <div className="relative aspect-square overflow-hidden bg-stone-100">
+                      <img src="/samples/main-02-editorial.jpg" alt="Guest Snap" className="w-full h-full object-cover" />
+                      <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-black/60 backdrop-blur-xs text-white text-[9px] rounded-md font-medium">
+                        From. 준혁 👏
+                      </span>
+                    </div>
+                    <p className="p-2 text-[10px] text-stone-600 line-clamp-1 font-light bg-white">
+                      &ldquo;오늘 식장 분위기 진짜 최고였어요&rdquo;
+                    </p>
+                  </div>
+                </div>
+
+                {/* 하객 시점 안심 전송 칩 */}
+                <div className="p-2.5 bg-white rounded-xl border border-stone-200/70 text-[10.5px] text-stone-600 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-amber-700 font-bold">🔒</span>
+                    <span className="font-medium text-stone-800">하객 청첩장 화면</span>
+                  </div>
+                  <span className="text-[10px] text-stone-400 font-light">1회 최대 10장 선물 (완전 비공개)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ScrollReveal>
+
+
         {/* 실제 배경음악 재생용 오디오 태그 */}
         <audio
           ref={bgmAudioRef}

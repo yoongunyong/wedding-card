@@ -13,6 +13,13 @@ const CATEGORIES = [
 const FEATURES = [
   {
     category: 'convenience',
+    icon: '📷',
+    title: '하객 현장 스냅 수집함 (비공개)',
+    desc: '하객들이 본식 당일 청첩장 링크로 폰 사진을 선물하면, 신랑·신부 전용 보관함에 모여 원클릭 ZIP 파일로 평생 소장할 수 있습니다.',
+    tags: ['100% 비공개 보관', 'ZIP 압축 일괄다운'],
+  },
+  {
+    category: 'convenience',
     icon: '📋',
     title: '스마트 RSVP (참석 여부)',
     desc: '신랑·신부측 구분, 참석 여부, 동행 인원, 식사, 대절버스를 실시간 자동 집계하고 웨딩홀 제출용 엑셀(CSV)로 다운로드합니다.',

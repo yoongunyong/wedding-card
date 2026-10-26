@@ -280,46 +280,49 @@ export default function ManageRsvpPage({ params }) {
         
 
         {/* 탭 네비게이션 (참석자 명단 / 방명록 / 하객 포토 스냅) */}
-        <div className="flex items-center gap-1.5 p-1 bg-stone-100 rounded-2xl my-6 border border-stone-200/70">
+        <div className="flex items-center gap-1 p-1 bg-stone-100 rounded-2xl my-6 border border-stone-200/70">
           <button
             type="button"
             onClick={() => setActiveTab('rsvp')}
-            className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-2 sm:py-2.5 px-1.5 sm:px-3 rounded-xl text-[11px] sm:text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap ${
               activeTab === 'rsvp'
                 ? 'bg-white text-stone-900 shadow-xs'
                 : 'text-stone-500 hover:text-stone-800'
             }`}
           >
-            <span>참석자 명단</span>
-            <span className="font-mono text-[11px] px-1.5 py-0.2 rounded-full bg-stone-200/70 text-stone-700">
+            <span className="sm:hidden">참석자</span>
+            <span className="hidden sm:inline">참석자 명단</span>
+            <span className="font-mono text-[10px] sm:text-[11px] px-1.5 py-0.5 rounded-full bg-stone-200/70 text-stone-700 font-bold">
               {rsvpList.length}
             </span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('guestbook')}
-            className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-2 sm:py-2.5 px-1.5 sm:px-3 rounded-xl text-[11px] sm:text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap ${
               activeTab === 'guestbook'
                 ? 'bg-white text-stone-900 shadow-xs'
                 : 'text-stone-500 hover:text-stone-800'
             }`}
           >
-            <span>방명록 메시지</span>
-            <span className="font-mono text-[11px] px-1.5 py-0.2 rounded-full bg-stone-200/70 text-stone-700">
+            <span className="sm:hidden">방명록</span>
+            <span className="hidden sm:inline">방명록 메시지</span>
+            <span className="font-mono text-[10px] sm:text-[11px] px-1.5 py-0.5 rounded-full bg-stone-200/70 text-stone-700 font-bold">
               {guestbookList.length}
             </span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('photos')}
-            className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-2 sm:py-2.5 px-1.5 sm:px-3 rounded-xl text-[11px] sm:text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap ${
               activeTab === 'photos'
                 ? 'bg-white text-stone-900 shadow-xs'
                 : 'text-stone-500 hover:text-stone-800'
             }`}
           >
-            <span>📷 하객 포토 스냅</span>
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800">
+            <span className="sm:hidden">📷 사진스냅</span>
+            <span className="hidden sm:inline">📷 하객 포토 스냅</span>
+            <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 leading-none">
               NEW
             </span>
           </button>

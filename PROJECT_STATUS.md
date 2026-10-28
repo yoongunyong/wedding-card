@@ -183,7 +183,129 @@
 
 ---
 
-## 3. 데이터베이스 (Supabase PostgreSQL) 스키마 구조
+## 3. [인수인계 체크리스트] 시안 수정 및 신규 시안 추가 시 전수 반영 체크포인트 (10대 포인트)
+
+> **💡 핵심 안내**: 시안을 수정하거나 새로운 시안(시안 6, 7 등)을 추가할 때 시스템 내 데이터 흐름, 신청/수정 폼, 실시간 미리보기, 하객 화면, 메인 랜딩 쇼케이스, 관리자 화면까지 **총 7개 영역, 10개 핵심 파일**에 누락 없이 동기화되어야 완벽하게 작동합니다.
+
+---
+
+### [1단계] 템플릿 본체 컴포넌트 (`components/templates/[name]/...`)
+- **수정/생성 파일**: `components/templates/[name]/[Name]Template.jsx`
+- **필수 체크 항목**:
+  1. **공통 4대 모듈 필수 탑재**:
+     - `TodayConciergeCard`: 예식 당일 안내데스크 자동 전환
+     - `GuestPhotoSnapSection`: 하객 현장 스냅 사진 비공개 수집함 (전 시안 공통)
+     - `KakaoMap`: 지도 및 네이버/카카오 2대 내비게이션 길안내
+     - `BgmPlayer`: 화면 우측 상단 4-Bar 사운드웨이브 플로팅 버튼 연동
+  2. **하객 화면 가짜/샘플 데이터 노출 원천 금지**:
+     - `const isSample = Boolean(invitation?.is_sample_preview || invitation?.slug === '[name]');` 분기를 두어, 공식 데모 페이지일 때만 고품질 플레이스홀더를 보여주고 **실제 고객 청첩장에서는 고객이 입력하지 않은 항목을 완전히 숨김(빈 공간/더미 노출 금지)** 처리.
+
+---
+
+### [2단계] 하객 열람용 메인 라우터 (`app/[slug]/page.js`)
+- **수정 파일**: `app/[slug]/page.js`
+- **필수 체크 항목**:
+  1. 새 템플릿 import 및 `TEMPLATE_COMPONENTS` 맵에 등록 (`[name]: NewTemplate`).
+  2. **BGM 오프닝 구조 분기**:
+     - 독립 커버형 (오프닝 버튼 클릭 시 재생) vs 본문 즉시 시작형 (하객 첫 터치 시 자동 재생) 여부 분기.
+  3. **공식 데모 슬러그 등록**: `DEMO_SLUGS` 배열에 추가 (DB에 해당 데이터가 없어도 `/샘플슬러그`로 접속 시 데모 목업 데이터로 100% 정상 작동).
+
+---
+
+### [3단계] 공식 샘플 데모 목업 데이터 (`lib/sampleInvitations.js`)
+- **수정 파일**: `lib/sampleInvitations.js`
+- **필수 체크 항목**:
+  1. `SAMPLE_INVITATIONS` 객체에 새 시안 데모 객체 등록:
+     - `slug: '[name]'`, `template_type: '[name]'`
+     - 실제 고화질 대표 화보(`main`, `cover`), 갤러리 이미지 배열, 예식 일시, 예식장, 감성 초대글, 계좌 등 완비.
+  2. ❌ 임의로 가짜 문구나 맞지 않는 날짜를 넣지 말고, 해당 시안의 실제 디자인 텍스트와 100% 팩트 일치하도록 작성.
+
+---
+
+### [4단계] 청첩장 제작 신청 페이지 (`app/create/page.js`)
+- **수정 파일**: `app/create/page.js`
+- **필수 체크 항목**:
+  1. 템플릿 컴포넌트 import.
+  2. `VALID_TEMPLATES` 배열에 시안 키 추가 (URL `?template=[name]` 파라미터 감지 지원).
+  3. **[필수 보안/안정성] `RESERVED_SLUGS` 예약어 등록**:
+     - 일반 고객이 청첩장 영문 주소(URL)를 새 시안 슬러그(예: `/film`, `/magazine`)로 생성하여 공식 데모 페이지를 덮어쓰는 일이 없도록 시스템 예약어 목록에 필수 등록.
+  3. 시안 선택 라디오 카드 목록에 새 옵션 카드 추가 (옵션 번호, 뱃지, 썸네일, 1줄 감성 설명).
+  4. **시안별 특화 업로드 필드 조건부 렌더링**:
+     - 시안 4, 5처럼 신랑/신부 2단 정사각 독사진, Q&A 인터뷰 문답, 16:9 와이드 화보 등 해당 시안에만 필요한 특화 입력란 분기 추가.
+  5. **우측(또는 하단) 실시간 미리보기 렌더링 분기**:
+     - `previewInvitation?.template_type === '[name]' ? <NewTemplate invitation={previewInvitation} /> : ...`
+
+---
+
+### [5단계] 청첩장 내용/사진 수정 페이지 (`app/manage/[slug]/edit/page.js`)
+- **수정 파일**: `app/manage/[slug]/edit/page.js`
+- **필수 체크 항목**:
+  1. 템플릿 컴포넌트 import.
+  2. `app/create/page.js`와 동일하게 시안 변경 라디오 카드 및 시안 특화 업로드 필드 분기 추가.
+  3. 실시간 미리보기 모달 렌더링 분기 추가.
+  4. **DB 저장 객체(`handleSubmit`) 동기화**: 해당 시안 특화 데이터가 DB `template_config` 또는 컬럼에 누락 없이 UPDATE되도록 보장.
+
+---
+
+### [6단계] 메인 랜딩 히어로 와이드 스와이퍼 (`components/landing/HeroCardSwiper.jsx`)
+- **수정 파일**: `components/landing/HeroCardSwiper.jsx`
+- **필수 체크 항목**:
+  1. `OFFICIAL_TEMPLATES` 배열에 카드 데이터 등록:
+     - `id`, `templateId`, `category`, `title`, `subTitle`
+     - `badge`: **단어가 2줄로 쪼개지지 않도록 5자 이내 간결 명칭** 사용 (예: `뮤직 앨범형`, `영화 포스터 룩`)
+     - `image`: **실제 해당 시안의 고화질 대표 화보 파일 경로** 사용 (`/samples/...`)
+     - `dateText`, `names`, `venue`: 실제 샘플 데이터와 1:1 일치
+  2. **카드 중앙 시그니처 비주얼 블록 구현 (100% 팩트 매칭)**:
+     - `{card.type === '[name]' && (...)}`
+     - ❌ 가짜 가상 플레이어 바나 임의의 목업 창을 절대 얹지 말 것.
+     - 실제 해당 시안의 오프닝/첫 화면의 실물 위젯(크림 카드, 타이포, 실제 컨트롤러 등)을 1:1 축소형으로 정밀 매핑.
+  3. 상단 뱃지 렌더링 태그에 `whitespace-nowrap` 필수 적용.
+
+---
+
+### [7-1] 메인 랜딩 페이지 내 시안 수량 카피 동기화
+- **수정 파일들**:
+  1. `components/landing/HeroCardSwiper.jsx`: `5가지 시그니처 컬렉션` ➔ `N가지 시그니처 컬렉션`
+  2. `components/landing/FeatureTabs.jsx`: `5가지 독창적인 템플릿` 및 태그 `5대 공식 시안` ➔ `N가지/N대...`
+  3. `components/landing/EightReasons.jsx`: `5가지 테마로...` ➔ `N가지 테마로...`
+
+---
+
+### [7단계] 메인 랜딩 시그니처 4대 쇼케이스 (`components/landing/SignatureShowcase.jsx`)
+- **수정 파일**: `components/landing/SignatureShowcase.jsx`
+- **필수 체크 항목**:
+  1. `FEATURE 01 (시안별 오프닝 쇼케이스)` 탭 목록에 새 시안 버튼 추가.
+  2. 스마트폰 프레임 내부 실물 렌더링:
+     - `{activeOpeningId === '[name]' && (...)}`
+     - 실제 템플릿의 첫 화면을 모바일 목업 안에 1:1 픽셀 매칭으로 구현.
+
+---
+
+### [8단계] 전체화면 실시간 샘플 뷰어 모달 (`components/landing/SamplePreviewModal.jsx`)
+- **수정 파일**: `components/landing/SamplePreviewModal.jsx`
+- **필수 체크 항목**:
+  1. 랜딩 페이지 카드 터치 시 열리는 풀스크린 샘플 모달에 템플릿 컴포넌트 import 및 매핑.
+
+---
+
+### [9단계] 대표자 총괄 관리자 페이지 (`app/admin/page.js`)
+- **수정 파일**: `app/admin/page.js`
+- **필수 체크 항목**:
+  1. 청첩장 관리 테이블의 `시안` 컬럼 뱃지 레이블 분기 추가:
+     - `inv.template_type === '[name]' ? '시안 X (시안명)' : ...`
+
+---
+
+### [10단계] 프로젝트 인수인계 문서 (`PROJECT_STATUS.md`) 동기화
+- **수정 파일**: `PROJECT_STATUS.md`
+- **필수 체크 항목**:
+  1. `2. 시안별 상세 명세 및 핵심 차이점` 표에 새 시안 열 추가.
+  2. `5. 주요 파일 경로 모음`에 새 템플릿 컴포넌트 경로 기록.
+  3. 빌드 검증: `npm run build` 실행하여 0 error 통과 확인.
+
+---
+
+## 4. 데이터베이스 (Supabase PostgreSQL) 스키마 구조
 
 1. **`invitations` 테이블 (47개 컬럼)**:
    - 인적사항, 영문 타이포, 가족/호칭 정보
@@ -202,7 +324,7 @@
 
 ---
 
-## 4. 최근 완료된 핵심 작업 내역
+## 5. 최근 완료된 핵심 작업 내역
 
 0. **[랜딩 팩트 매칭 & UI 버그 수정] 히어로 시안 03(감성 플레이리스트) 실물 100% 매칭 & 뱃지 줄바꿈 해결 (2026-10-28)**:
    - **문제점**: 히어로 스와이퍼(`HeroCardSwiper.jsx`)의 3번째 카드가 실제 시안 3(`PlaylistTemplate.jsx`)의 감성 크림톤 앨범 자켓과 전혀 다른 임의의 어두운 바(`Track 01. Two of Us 02:45`)로 노출되어 실제 시안과 불일치했고, 상단 뱃지가 `OPTION 03 · 음악 & 플레이 / 어`로 2줄 쪼개지는 현상 발생.
@@ -238,7 +360,7 @@
 
 ---
 
-## 5. 주요 파일 경로 모음
+## 6. 주요 파일 경로 모음
 
 - **하객 현장 스냅 사진 (신규)**:
   - `components/GuestPhotoSnapSection.jsx` (하객 안내 및 모달 트리거 카드)

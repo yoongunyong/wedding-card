@@ -42,11 +42,11 @@ const OFFICIAL_TEMPLATES = [
     category: 'OPTION 03',
     title: '감성 플레이리스트',
     subTitle: 'Wedding Playlist',
-    badge: '음악 & 플레이어',
-    dateText: '2026. 04. 26 SUN',
+    badge: '뮤직 앨범형',
+    dateText: '2027. 05. 23 SUN',
     names: '강민우 · 서유진',
     venue: '빌라드지디 청담',
-    image: '/playlist-couple.png',
+    image: '/samples/main-03-playlist.jpg',
     concept: '미니멀 뮤직 플레이어 카드 & 실시간 BGM',
     accentColor: 'from-stone-950/90 via-stone-900/40 to-transparent',
     type: 'playlist',
@@ -403,7 +403,7 @@ export default function HeroCardSwiper() {
                   <img
                     src={card.image}
                     alt={card.title}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    className={`absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${card.type === 'playlist' ? 'grayscale contrast-105' : ''}`}
                     loading="lazy"
                   />
 
@@ -417,7 +417,7 @@ export default function HeroCardSwiper() {
                   {/* 카드 상단 헤더: 옵션 넘버 & 날짜 & 우측 '눈(Eye)' 퀵뷰 버튼 */}
                   <div className="relative z-10 p-4 sm:p-5 flex items-start justify-between">
                     <div>
-                      <span className="inline-block px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[10px] sm:text-[11px] font-mono tracking-widest text-white uppercase shadow-xs">
+                      <span className="inline-block px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[10px] sm:text-[11px] font-mono tracking-widest text-white uppercase shadow-xs whitespace-nowrap">
                         {card.category} · {card.badge}
                       </span>
                       <p className="font-mono text-[10px] text-white/80 tracking-wider mt-1.5">
@@ -471,14 +471,87 @@ export default function HeroCardSwiper() {
                   )}
 
                   {card.type === 'playlist' && (
-                    <div className="absolute inset-x-4 bottom-24 z-10 pointer-events-none">
-                      <div className="bg-black/40 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10">
-                        <div className="flex items-center justify-between text-[9px] font-mono text-white/80 mb-1">
-                          <span>Track 01. Two of Us</span>
-                          <span>02:45</span>
+                    <div className="absolute inset-x-3.5 sm:inset-x-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
+                      <div className="bg-[#FAF8F5]/95 backdrop-blur-md p-4 sm:p-4.5 rounded-[26px] shadow-xl border border-stone-200/80 text-left select-none">
+                        {/* 1. 영문 날짜 */}
+                        <span className="text-[10px] font-sans tracking-[0.24em] text-[#8E8E93] font-normal uppercase block mb-1">
+                          MAY 23, 2027
+                        </span>
+
+                        {/* 2. 신랑 💗 신부 (정통 본명조 Noto Serif KR) & 우측 라인 하트 (시안 3 원본 100% 일치) */}
+                        <div className="flex items-center justify-between">
+                          <h4 
+                            style={{ fontFamily: "'Noto Serif KR', 'Nanum Myeongjo', serif" }}
+                            className="text-[17px] sm:text-[18px] font-normal text-[#1C1C1E] tracking-tight flex items-center gap-1"
+                          >
+                            <span>강민우</span>
+                            <span className="text-[13px] mx-0.5">💗</span>
+                            <span>서유진</span>
+                          </h4>
+
+                          {/* 시안 3 원본 얇은 미니멀 라인 하트 SVG */}
+                          <svg
+                            className="w-4 h-4 text-[#1C1C1E]"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth="1.3"
+                            fill="none"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                          </svg>
                         </div>
-                        <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden">
-                          <div className="w-2/3 h-full bg-amber-400 rounded-full" />
+
+                        {/* 3. 실제 시안 3 원본 1줄 서브카피: '저희  결혼합니다.' (자간 0.18em Noto Serif KR) */}
+                        <p 
+                          style={{ fontFamily: "'Noto Serif KR', 'Nanum Myeongjo', serif" }}
+                          className="text-[11.5px] text-[#8E8E93] tracking-[0.18em] font-normal mt-1"
+                        >
+                          저희  결혼합니다.
+                        </p>
+
+                        {/* 4. 프로그레스 바 (트랙 높이 3px, 정밀 핸들 점, 시간 3:19 / - 4:26) */}
+                        <div className="mt-3.5">
+                          <div className="relative w-full h-[3px] bg-[#E5E5EA] rounded-full flex items-center">
+                            <div 
+                              className="h-full bg-[#1C1C1E] rounded-full relative flex items-center justify-end"
+                              style={{ width: '38%' }}
+                            >
+                              <div className="w-2 h-2 rounded-full bg-[#1C1C1E] shadow-xs shrink-0 -mr-1" />
+                            </div>
+                          </div>
+
+                          <div className="mt-1.5 flex items-center justify-between text-[9px] font-mono text-[#8E8E93]">
+                            <span>3:19</span>
+                            <span>- 4:26</span>
+                          </div>
+                        </div>
+
+                        {/* 5. 실제 시안 3 원본 미디어 컨트롤러 (셔플, 이전곡, 재생 원형 버튼, 다음곡, 반복) 1:1 일치 */}
+                        <div className="mt-3 flex items-center justify-between px-1 text-[#1C1C1E]">
+                          {/* 셔플 */}
+                          <svg className="w-3.5 h-3.5 stroke-current fill-none" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                            <path d="M16 3h5v5" /><path d="M4 20L21 3" /><path d="M21 16v5h-5" /><path d="M15 15l6 6" /><path d="M4 4l5 5" />
+                          </svg>
+                          {/* 이전곡 */}
+                          <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                            <rect x="4" y="4" width="3" height="16" rx="1.2" />
+                            <path d="M20 5.2v13.6a1 1 0 0 1-1.6.8L9.2 12.8a1 1 0 0 1 0-1.6L18.4 4.4a1 1 0 0 1 1.6.8z" />
+                          </svg>
+                          {/* 중앙 재생 원형 버튼 */}
+                          <div className="w-7 h-7 rounded-full bg-[#1C1C1E] text-white flex items-center justify-center shadow-xs">
+                            <svg className="w-3 h-3 fill-current ml-0.5" viewBox="0 0 24 24">
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
+                          </div>
+                          {/* 다음곡 */}
+                          <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                            <rect x="17" y="4" width="3" height="16" rx="1.2" />
+                            <path d="M4 5.2v13.6a1 1 0 0 0 1.6.8L14.8 12.8a1 1 0 0 0 0-1.6L5.6 4.4A1 1 0 0 0 4 5.2z" />
+                          </svg>
+                          {/* 반복 */}
+                          <svg className="w-3.5 h-3.5 stroke-current fill-none" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                            <path d="M17 1l4 4-4 4" /><path d="M3 11V9a4 4 0 0 1 4-4h14" /><path d="M7 23l-4-4 4-4" /><path d="M21 13v2a4 4 0 0 1-4 4H3" />
+                          </svg>
                         </div>
                       </div>
                     </div>

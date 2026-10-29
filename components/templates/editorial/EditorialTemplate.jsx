@@ -385,8 +385,8 @@ export default function EditorialTemplate({ invitation }) {
       {/* 1. 에디토리얼 본문 첫 화면 (화이트 프레임 화보 세로 확장 & 상단 밀착 & Bodoni 72 타원 버튼) */}
       <section className="relative w-full flex flex-col items-center justify-start bg-white px-6 sm:px-8 pt-4 sm:pt-5 pb-0 select-none overflow-hidden">
         
-        {/* 상단: 대표 화보 사진 (상단 밀착 & 세로 길이 확장 aspect-[3/3.95] max-h-[55vh]) */}
-        <div className="w-full max-w-[340px] sm:max-w-[365px] aspect-[3/3.95] max-h-[55vh] sm:max-h-[58vh] bg-stone-100 overflow-hidden shadow-2xs shrink-0">
+        {/* 상단: 대표 화보 사진 (세로 길이 시원하게 확장: aspect-[3/4.35] max-h-[61vh]) */}
+        <div className="w-full max-w-[340px] sm:max-w-[365px] aspect-[3/4.35] max-h-[61vh] sm:max-h-[64vh] bg-stone-100 overflow-hidden shadow-2xs shrink-0">
           <img
             src={mainImage}
             alt="Wedding Editorial"
@@ -437,12 +437,7 @@ export default function EditorialTemplate({ invitation }) {
             className="w-[138px] sm:w-[145px] h-[30px] sm:h-[32px] border border-stone-300 bg-white hover:bg-stone-50 active:bg-stone-100 transition-colors cursor-pointer group shadow-2xs flex items-center justify-center"
             style={{ borderRadius: '50% / 50%' }}
           >
-            <span
-              className="font-sans text-[8px] sm:text-[8.5px] tracking-[0.24em] text-stone-800 uppercase font-medium leading-none"
-              style={{
-                fontFamily: "'Bodoni 72', 'Bodoni 72 Oldstyle', 'Bodoni 72 Smallcaps', 'Bodoni MT', 'Bodoni Moda', 'Playfair Display', serif",
-              }}
-            >
+            <span className="font-sans text-[8.5px] sm:text-[9px] tracking-[0.24em] text-stone-800 uppercase font-medium leading-none">
               SCROLL TO OPEN ↓
             </span>
           </button>
@@ -452,8 +447,8 @@ export default function EditorialTemplate({ invitation }) {
         <div className="w-full max-w-[340px] sm:max-w-[365px] mx-auto border-t border-[#e3e3e3] mt-[43px] shrink-0" />
       </section>
 
-      {/* 2. 에디토리얼 프로필 스프레드: 신부 & 신랑 단독 프로필 카드 & 혼주 정보 (구분선 아래 정확히 132px 여백) */}
-      <section id="editorial-story-section" className="pt-[115px] sm:pt-[132px] pb-16 sm:pb-20 px-6 bg-white border-b border-stone-200/80">
+      {/* 2. 에디토리얼 프로필 스프레드: 신부 & 신랑 단독 프로필 카드 & 혼주 정보 (커플사진과의 하단 간격 대폭 확대 pb-[140px] sm:pb-[160px]) */}
+      <section id="editorial-story-section" className="pt-[115px] sm:pt-[132px] pb-[210px] sm:pb-[240px] px-6 bg-white">
         <ScrollReveal>
           {/* 영문 필기체 헤더 (1번째 레퍼런스 시안 1:1 정밀 매칭: 은은한 차콜 그레이 & 정갈한 크기) */}
           <div className="text-center mb-9 sm:mb-10 select-none">
@@ -528,8 +523,8 @@ export default function EditorialTemplate({ invitation }) {
             </div>
           </div>
 
-          {/* 혼주 정보 (서체: Noto Serif KR - 1번째 이미지 1:1 완벽한 화면 정중앙 가운데 정렬) */}
-          <div className="mt-10 sm:mt-11 w-[260px] mx-auto font-serif text-[13.5px] sm:text-[14px]">
+          {/* 혼주 정보 (서체: Noto Serif KR - 상단 액자 카드와의 여백 20% 확대 mt-12 sm:mt-14) */}
+          <div className="mt-16 sm:mt-18 w-[260px] mx-auto font-serif text-[13.5px] sm:text-[14px]">
             <div className="space-y-3">
               {/* 1행: 신랑측 부모님 & 아들 & 신랑 */}
               <div className="flex items-center justify-between text-stone-800">

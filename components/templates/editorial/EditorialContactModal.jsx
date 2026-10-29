@@ -67,13 +67,13 @@ export default function EditorialContactModal({ invitation, onClose }) {
 
         {/* 에디토리얼 헤더 */}
         <div className="text-center pb-6 border-b border-stone-200">
-          <span className="font-editorial-serif text-[11px] tracking-[0.3em] uppercase text-stone-400 block mb-1 font-semibold">
+          <span className="font-sans text-[10px] sm:text-[10.5px] tracking-[0.28em] uppercase text-stone-400 block mb-1 font-medium">
             CONTACT DIRECTORY
           </span>
-          <h3 className="font-editorial-title text-[26px] text-stone-900 leading-tight">
+          <h3 className="font-sans text-[22px] sm:text-[24px] text-stone-900 leading-tight font-normal">
             Contact & Blessing
           </h3>
-          <p className="font-korean-serif text-[12.5px] text-stone-500 mt-1">
+          <p className="font-serif text-[12.5px] sm:text-[13px] text-stone-500 mt-1 font-normal tracking-tight">
             축하의 마음을 직접 전하실 수 있습니다.
           </p>
         </div>
@@ -83,20 +83,20 @@ export default function EditorialContactModal({ invitation, onClose }) {
           {/* 신랑측 */}
           <div>
             <div className="flex items-center gap-2 mb-3.5">
-              <span className="font-editorial-serif text-[11px] tracking-widest uppercase text-stone-400 font-semibold">
+              <span className="font-sans text-[10px] tracking-widest uppercase text-stone-400 font-semibold">
                 GROOM SIDE
               </span>
               <div className="flex-1 h-px bg-stone-200" />
             </div>
 
-            <div className="space-y-3 font-sans">
+            <div className="space-y-3 font-serif">
               {groomSide.map((person, idx) => (
                 <div key={idx} className="flex items-center justify-between py-1">
                   <div>
-                    <span className="text-[11px] font-sans text-stone-400 block">
+                    <span className="text-[11px] font-serif text-stone-400 block tracking-tight">
                       {person.role}
                     </span>
-                    <span className="font-korean-serif text-[15px] font-medium text-stone-900">
+                    <span className="font-serif text-[14.5px] font-medium text-stone-900 tracking-tight">
                       {person.name}
                     </span>
                   </div>
@@ -133,20 +133,20 @@ export default function EditorialContactModal({ invitation, onClose }) {
           {/* 신부측 */}
           <div>
             <div className="flex items-center gap-2 mb-3.5">
-              <span className="font-editorial-serif text-[11px] tracking-widest uppercase text-stone-400 font-semibold">
+              <span className="font-sans text-[10px] tracking-widest uppercase text-stone-400 font-semibold">
                 BRIDE SIDE
               </span>
               <div className="flex-1 h-px bg-stone-200" />
             </div>
 
-            <div className="space-y-3 font-sans">
+            <div className="space-y-3 font-serif">
               {brideSide.map((person, idx) => (
                 <div key={idx} className="flex items-center justify-between py-1">
                   <div>
-                    <span className="text-[11px] font-sans text-stone-400 block">
+                    <span className="text-[11px] font-serif text-stone-400 block tracking-tight">
                       {person.role}
                     </span>
-                    <span className="font-korean-serif text-[15px] font-medium text-stone-900">
+                    <span className="font-serif text-[14.5px] font-medium text-stone-900 tracking-tight">
                       {person.name}
                     </span>
                   </div>

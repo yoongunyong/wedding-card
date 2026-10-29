@@ -891,8 +891,8 @@ function CreateInvitationContent() {
         cover: effectiveCoverImage,
         couple_profile: effectiveCoupleImage,
         ending: effectiveEndingImage,
-        bride_profile: bridePhotoPreview || (['cinematic', 'scene'].includes(formData.template_type) ? PREVIEW_FALLBACK.images.bride_profile : ''),
-        groom_profile: groomPhotoPreview || (['cinematic', 'scene'].includes(formData.template_type) ? PREVIEW_FALLBACK.images.groom_profile : ''),
+        bride_profile: bridePhotoPreview || (['editorial', 'cinematic', 'scene'].includes(formData.template_type) ? PREVIEW_FALLBACK.images.bride_profile : ''),
+        groom_profile: groomPhotoPreview || (['editorial', 'cinematic', 'scene'].includes(formData.template_type) ? PREVIEW_FALLBACK.images.groom_profile : ''),
       },
       gallery_images: effectiveGalleryImages,
       accounts: allAccounts,
@@ -2660,19 +2660,21 @@ function CreateInvitationContent() {
                 )}
               </div>
 
-              {/* 시안 4 (시네마틱) & 시안 5 (모던 씬) 전용: 신랑 & 신부 단독 인물 스냅 사진 */}
-              {['cinematic', 'scene'].includes(formData.template_type) && (
+              {/* 시안 2 (에디토리얼) & 시안 4 (시네마틱) & 시안 5 (모던 씬) 전용: 신랑 & 신부 단독 인물 스냅 사진 */}
+              {['editorial', 'cinematic', 'scene'].includes(formData.template_type) && (
                 <div className="p-5 bg-stone-50/80 rounded-2xl border-2 border-stone-900/40">
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-xs font-bold text-stone-900">
                       신랑 & 신부 개별 인물 스냅 사진 (선택)
                     </label>
                     <span className="text-[10px] font-mono bg-stone-900 text-white px-2 py-0.5 rounded-full font-semibold">
-                      OPTION 04, 05 전용
+                      {formData.template_type === 'editorial' ? 'OPTION 02 전용' : 'OPTION 04, 05 전용'}
                     </span>
                   </div>
                   <p className="text-[11px] text-stone-500 mb-4 font-light">
-                    시안 4 및 시안 5의 2열 인물 스냅(Bride & Groom)에 들어가는 개별 단독 사진입니다. (미등록 시 사진 없이 성함 텍스트만 깔끔하게 노출됩니다)
+                    {formData.template_type === 'editorial'
+                      ? '시안 2 에디토리얼 프로필 스프레드에 들어갈 신부 & 신랑 단독 액자 사진입니다. 미등록 시 화보 샘플로 자동 채워집니다.'
+                      : '시안 4 및 시안 5의 2열 인물 스냅(Bride & Groom)에 들어가는 개별 단독 사진입니다. (미등록 시 사진 없이 성함 텍스트만 깔끔하게 노출됩니다)'}
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* 신부 단독 사진 */}

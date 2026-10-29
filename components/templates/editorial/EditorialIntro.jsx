@@ -113,7 +113,7 @@ export default function EditorialIntro({ invitation, onOpen }) {
     <>
       {/* 1. 에디토리얼 인트로 전체 컨테이너 (스크롤 가능 및 높이 반응형 핏) */}
       <div
-        className={`fixed inset-0 z-50 flex flex-col justify-between items-center px-4 py-5 sm:py-8 select-none overflow-y-auto transition-opacity duration-300 ${
+        className={`fixed inset-0 z-50 flex flex-col justify-center items-center px-4 py-4 select-none overflow-y-auto transition-opacity duration-300 ${
           transitionStep === 'revealing' 
             ? 'hidden pointer-events-none' 
             : transitionStep === 'darkening'
@@ -133,75 +133,79 @@ export default function EditorialIntro({ invitation, onOpen }) {
           <div className="absolute inset-0 bg-[#142334]/40" />
         </div>
 
-        {/* 1-2. 상단: Bickham Script Pro 필기체 문구 */}
-        <div className="relative z-10 w-full text-center pt-1 sm:pt-2 mb-3 sm:mb-5 shrink-0">
-          <h1
-            className="text-white text-[26px] sm:text-[32px] font-normal tracking-normal italic drop-shadow-md select-none leading-tight"
-            style={{
-              fontFamily: "'Bickham Script Pro', 'Bickham Script Pro 3', 'Great Vibes', 'Alex Brush', cursive",
-            }}
-          >
-            We are getting married
-          </h1>
-        </div>
+        {/* 1-2. 중앙 클러스터: 상단 필기체 문구 + 중앙 화이트 카드 + 하단 날짜 (간격 살짝 좁힘 최적화) */}
+        <div className="relative z-10 w-full max-w-[310px] sm:max-w-[330px] flex flex-col items-center my-auto py-1">
+          
+          {/* 상단: Bickham Script Pro 필기체 문구 (카드와의 여백 적정 밸런스: 22px) */}
+          <div className="w-full text-center mb-5 sm:mb-6 shrink-0">
+            <h1
+              className="text-white text-[25px] sm:text-[30px] font-normal tracking-normal italic drop-shadow-md select-none leading-tight"
+              style={{
+                fontFamily: "'Bickham Script Pro', 'Bickham Script Pro 3', 'Great Vibes', 'Alex Brush', cursive",
+              }}
+            >
+              We are getting married
+            </h1>
+          </div>
 
-        {/* 1-3. 중앙: 화이트 프레임 카드 (단정하게 중앙 배치, 뷰포트 높이 초과 방지) */}
-        <div className="relative z-10 w-full max-w-[305px] sm:max-w-[325px] my-auto animate-in fade-in zoom-in-98 duration-500 shrink-0">
-          <div className="w-full bg-white shadow-[0_20px_50px_rgba(0,0,0,0.35)] p-3 sm:p-3.5 flex flex-col items-center">
-            
-            {/* 상단 화보 사진 (Cover Spread - 반응형 최대 높이 제한) */}
-            <div className="relative w-full aspect-[4/4.5] max-h-[44vh] sm:max-h-[48vh] bg-stone-100 overflow-hidden">
-              <img
-                src={coverImage}
-                alt="Editorial Lookbook Cover"
-                className="w-full h-full object-cover select-none"
-                onError={(e) => {
-                  if (e.currentTarget.src !== '/samples/main-02-editorial.jpg') {
-                    e.currentTarget.src = '/samples/main-02-editorial.jpg';
-                  }
-                }}
-              />
-              {/* COVER SPREAD 뱃지 */}
-              <div className="absolute top-2 left-2 bg-black/55 backdrop-blur-xs text-white text-[8px] sm:text-[8.5px] font-serif tracking-[0.22em] uppercase px-2 py-0.5 select-none">
-                COVER SPREAD
+          {/* 중앙: 화이트 프레임 카드 */}
+          <div className="w-full animate-in fade-in zoom-in-98 duration-500 shrink-0">
+            <div className="w-full bg-white shadow-[0_20px_50px_rgba(0,0,0,0.35)] p-3 sm:p-3.5 flex flex-col items-center">
+              
+              {/* 상단 화보 사진 (Cover Spread) */}
+              <div className="relative w-full aspect-[4/4.5] max-h-[44vh] sm:max-h-[48vh] bg-stone-100 overflow-hidden">
+                <img
+                  src={coverImage}
+                  alt="Editorial Lookbook Cover"
+                  className="w-full h-full object-cover select-none"
+                  onError={(e) => {
+                    if (e.currentTarget.src !== '/samples/main-02-editorial.jpg') {
+                      e.currentTarget.src = '/samples/main-02-editorial.jpg';
+                    }
+                  }}
+                />
+                {/* COVER SPREAD 뱃지 */}
+                <div className="absolute top-2 left-2 bg-black/55 backdrop-blur-xs text-white text-[8px] sm:text-[8.5px] font-serif tracking-[0.22em] uppercase px-2 py-0.5 select-none">
+                  COVER SPREAD
+                </div>
+              </div>
+
+              {/* 하단 성함, 웨딩홀, 버튼 */}
+              <div className="w-full text-center pt-3 pb-2 sm:pb-2.5 px-1 flex flex-col items-center">
+                {coupleKo && (
+                  <p className="font-serif text-[15px] sm:text-[16px] text-stone-900 font-medium tracking-tight">
+                    {coupleKo}
+                  </p>
+                )}
+
+                {venueName && (
+                  <p className="font-serif text-[11px] sm:text-[11.5px] text-stone-400 font-normal tracking-tight mt-0.5 mb-2.5 sm:mb-3">
+                    {venueName}
+                  </p>
+                )}
+
+                {/* 연하늘색 알약형 OPEN THE LOOKBOOK 버튼 */}
+                <button
+                  type="button"
+                  onClick={handleOpen}
+                  className="inline-flex items-center justify-center gap-1.5 px-5 sm:px-6 py-1.5 sm:py-2 rounded-full bg-[#DDE8F4] hover:bg-[#CFE0F0] active:bg-[#C2D6E8] border border-[#BED4E8] text-stone-800 text-[10px] sm:text-[10.5px] font-serif tracking-[0.16em] uppercase font-medium shadow-2xs transition-all duration-200 cursor-pointer group"
+                >
+                  <span>OPEN THE LOOKBOOK</span>
+                  <span className="text-[11px] transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+                </button>
               </div>
             </div>
+          </div>
 
-            {/* 하단 성함, 웨딩홀, 버튼 */}
-            <div className="w-full text-center pt-3 pb-2 sm:pb-2.5 px-1 flex flex-col items-center">
-              {coupleKo && (
-                <p className="font-serif text-[15px] sm:text-[16px] text-stone-900 font-medium tracking-tight">
-                  {coupleKo}
-                </p>
-              )}
-
-              {venueName && (
-                <p className="font-serif text-[11px] sm:text-[11.5px] text-stone-400 font-normal tracking-tight mt-0.5 mb-2.5 sm:mb-3">
-                  {venueName}
-                </p>
-              )}
-
-              {/* 연하늘색 알약형 OPEN THE LOOKBOOK 버튼 */}
-              <button
-                type="button"
-                onClick={handleOpen}
-                className="inline-flex items-center justify-center gap-1.5 px-5 sm:px-6 py-1.5 sm:py-2 rounded-full bg-[#DDE8F4] hover:bg-[#CFE0F0] active:bg-[#C2D6E8] border border-[#BED4E8] text-stone-800 text-[10px] sm:text-[10.5px] font-serif tracking-[0.16em] uppercase font-medium shadow-2xs transition-all duration-200 cursor-pointer group"
-              >
-                <span>OPEN THE LOOKBOOK</span>
-                <span className="text-[11px] transition-transform duration-200 group-hover:translate-x-0.5">→</span>
-              </button>
+          {/* 하단: 화이트 세리프 날짜 (카드와의 여백 적정 밸런스: 20px) */}
+          {dateFormatted && (
+            <div className="w-full text-center mt-5 sm:mt-6 shrink-0">
+              <p className="font-serif text-white/85 text-[12px] sm:text-[12.5px] tracking-[0.08em] select-none drop-shadow-sm">
+                {dateFormatted}
+              </p>
             </div>
-          </div>
+          )}
         </div>
-
-        {/* 1-4. 하단: 화이트 세리프 날짜 (안정적인 하단 배치) */}
-        {dateFormatted && (
-          <div className="relative z-10 w-full text-center mt-3 sm:mt-5 pb-2 sm:pb-4 shrink-0">
-            <p className="font-serif text-white/85 text-[12px] sm:text-[12.5px] tracking-[0.08em] select-none drop-shadow-sm">
-              {dateFormatted}
-            </p>
-          </div>
-        )}
       </div>
 
       {/* 2. 시네마틱 껌뻑(Blink / Fade to black) 암전 오버레이 */}

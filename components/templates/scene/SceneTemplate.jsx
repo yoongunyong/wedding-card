@@ -56,9 +56,9 @@ export default function SceneTemplate({ invitation }) {
   // 2. 갤러리 더보기 상태 (기본 9장 노출 ➔ 더보기 시 전체 노출)
   const [galleryExpanded, setGalleryExpanded] = useState(false);
 
-  // 3. 계좌 아코디언 토글 (영상 00:56 ~ 00:57과 같이 기본은 닫힘 상태)
-  const [openGroomAccount, setOpenGroomAccount] = useState(false);
-  const [openBrideAccount, setOpenBrideAccount] = useState(false);
+  // 3. 계좌 아코디언 토글 (기본 펼쳐진 상태)
+  const [openGroomAccount, setOpenGroomAccount] = useState(true);
+  const [openBrideAccount, setOpenBrideAccount] = useState(true);
 
   // 4. 정보 카드 캐러셀 인덱스
   const [infoCardIndex, setInfoCardIndex] = useState(0);

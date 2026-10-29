@@ -1,6 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Bickham Script Pro';
+  src: url('/fonts/BickhamScriptPro-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Bickham Script Pro';
+  src: url('/fonts/BickhamScriptPro-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
 :root {
   --background: #FCFBF7;
   --foreground: #171717;
@@ -47,6 +63,10 @@ body {
 
 .font-korean-serif {
   font-family: 'Noto Serif KR', var(--font-serif-kr), serif !important;
+}
+
+.font-bodoni {
+  font-family: "Bodoni 72", "Bodoni 72 Oldstyle", "Bodoni 72 Smallcaps", "Bodoni MT", "Bodoni Moda", "Playfair Display", serif !important;
 }
 
 .font-bickham {

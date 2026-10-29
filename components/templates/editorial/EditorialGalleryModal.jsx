@@ -66,7 +66,7 @@ export default function EditorialGalleryModal({ images = [], initialIndex = 0, o
       >
         {/* 상단 헤더: 에디토리얼 카운터 & 닫기 */}
         <div className="w-full flex items-center justify-between pb-3 px-1 text-white">
-          <span className="font-editorial-serif text-[13px] tracking-[0.25em] text-white/70 font-light">
+          <span className="font-sans text-[12px] tracking-[0.25em] text-white/70 font-light">
             PAGE {String(currentIndex + 1).padStart(2, '0')} / {String(images.length).padStart(2, '0')}
           </span>
           <button

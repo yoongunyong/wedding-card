@@ -50,9 +50,17 @@ export default function EditorialTemplate({ invitation }) {
   const showGuestbookSection = config.show_guestbook !== false;
   const showQuoteSection = config.show_quote_section !== false;
 
+  const isSample = Boolean(invitation?.is_sample_preview || invitation?.slug === 'editorial');
+
+  const groomName = invitation?.groom_name || '';
+  const brideName = invitation?.bride_name || '';
+  const coupleKo = [groomName, brideName].filter(Boolean).join(' · ');
+
   // 대표 이미지 매핑
-  const mainImage = images.main || images.cover || invitation?.main_image || '';
-  const couplePhoto = images.couple_profile || images.couple || extra.couple_profile_image || mainImage;
+  const mainImage = images.main || images.cover || invitation?.main_image || '/samples/main-02-editorial.jpg';
+  const bridePhoto = images.bride_profile || images.bride || extra.bride_profile_image || invitation?.bride_photo || '/samples/bride-solo.jpg';
+  const groomPhoto = images.groom_profile || images.groom || extra.groom_profile_image || invitation?.groom_photo || '/samples/groom-solo.jpg';
+  const couplePhoto = images.couple_profile || images.couple || extra.couple_profile_image || '/samples/couple-profile-01.jpg';
   const endingImage = images.ending || extra.ending_image || invitation?.ending_image || mainImage;
 
   // 갤러리 이미지 안전 파싱
@@ -331,6 +339,20 @@ export default function EditorialTemplate({ invitation }) {
       {/* 클래식 에디토리얼 전용 폰트 로드 */}
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,600&family=Italiana&family=Alex+Brush&family=Noto+Serif+KR:wght@300;400;500;600&display=swap');
+        @font-face {
+          font-family: 'Bickham Script Pro';
+          src: url('/fonts/BickhamScriptPro-Regular.woff') format('woff');
+          font-weight: 400;
+          font-style: normal;
+          font-display: swap;
+        }
+        @font-face {
+          font-family: 'Bickham Script Pro';
+          src: url('/fonts/BickhamScriptPro-Regular.woff') format('woff');
+          font-weight: 400;
+          font-style: italic;
+          font-display: swap;
+        }
         .font-editorial-serif {
           font-family: 'Cormorant Garamond', serif !important;
         }
@@ -339,6 +361,9 @@ export default function EditorialTemplate({ invitation }) {
         }
         .font-korean-serif {
           font-family: 'Noto Serif KR', serif !important;
+        }
+        .font-bickham {
+          font-family: 'Bickham Script Pro', cursive !important;
         }
       `}</style>
 
@@ -357,263 +382,273 @@ export default function EditorialTemplate({ invitation }) {
         />
       )}
 
-      {/* 1. 에디토리얼 매거진 커버 (Editorial Cover - Image 1/3 무드) */}
-      <section className="relative w-full h-[100lvh] min-h-[100vh] flex flex-col justify-between overflow-hidden bg-stone-900 select-none">
-        {/* 커버 배경 사진 */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-100"
-          style={{ backgroundImage: `url(${mainImage})` }}
-        />
-        {/* 에디토리얼 시네마틱 틴트 오버레이 */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/75 pointer-events-none" />
-
-        {/* 커버 상단: SAVE THE DATE 헤어라인 바 */}
-        <div className="relative z-10 w-full pt-8 px-6 flex items-center justify-between text-white/90">
-          <span className="font-editorial-serif text-[13px] sm:text-[14px] tracking-[0.25em] font-light">
-            SAVE THE DATE
-          </span>
-          {formattedDates.headerDate && (
-            <span className="font-editorial-serif text-[13px] sm:text-[14px] tracking-[0.18em] font-light text-white/80">
-              {formattedDates.headerDate}
-            </span>
-          )}
+      {/* 1. 에디토리얼 본문 첫 화면 (화이트 프레임 화보 세로 확장 & 상단 밀착 & Bodoni 72 타원 버튼) */}
+      <section className="relative w-full flex flex-col items-center justify-start bg-white px-6 sm:px-8 pt-4 sm:pt-5 pb-0 select-none overflow-hidden">
+        
+        {/* 상단: 대표 화보 사진 (상단 밀착 & 세로 길이 확장 aspect-[3/3.95] max-h-[55vh]) */}
+        <div className="w-full max-w-[340px] sm:max-w-[365px] aspect-[3/3.95] max-h-[55vh] sm:max-h-[58vh] bg-stone-100 overflow-hidden shadow-2xs shrink-0">
+          <img
+            src={mainImage}
+            alt="Wedding Editorial"
+            className="w-full h-full object-cover select-none"
+            onError={(e) => {
+              if (isSample && e.currentTarget.src !== '/samples/main-02-editorial.jpg') {
+                e.currentTarget.src = '/samples/main-02-editorial.jpg';
+              }
+            }}
+          />
         </div>
 
-        {/* 커버 하단: 세리프 타이포그래피 & 일시 */}
-        <div className="relative z-10 w-full pb-14 px-7 text-left text-white">
-          <ScrollReveal>
-            <p className="font-editorial-serif italic text-white/80 text-[16px] sm:text-[18px] tracking-[0.15em] mb-1 font-light">
-              The Wedding of
-            </p>
-            <h1 className="font-editorial-title text-[40px] sm:text-[46px] leading-[1.08] tracking-normal text-white drop-shadow-md">
-              {displayNamesEn}
-            </h1>
-            
-            {/* 얇은 라인 */}
-            <div className="w-12 h-px bg-white/60 my-5" />
+        {/* 중앙: 한글 성함, 가로선, 일시/장소 (사진 하단과 밀착 mt-4 sm:mt-5) */}
+        <div className="w-full max-w-[340px] sm:max-w-[365px] flex flex-col items-center text-center mt-4 sm:mt-5 shrink-0">
+          {/* 강민준 · 박지민 저희 결혼합니다. */}
+          <h1 className="font-serif text-[16px] sm:text-[17.5px] text-stone-900 font-normal tracking-tight">
+            {[groomName, brideName].filter(Boolean).join(' · ')} 저희 결혼합니다.
+          </h1>
 
-            <div className="space-y-1 font-sans text-white/90">
-              <p className="text-[13.5px] sm:text-[14px] font-light tracking-wide">
+          {/* 은은한 가로 구분선 */}
+          <div className="w-[68%] max-w-[220px] mx-auto border-t border-stone-200/90 mt-2.5 sm:mt-3 mb-2.5 sm:mb-3" />
+
+          {/* 예식 일시 & 예식 장소 */}
+          <div className="space-y-1 font-serif">
+            {formattedDates.fullKo && (
+              <p className="text-[12.5px] sm:text-[13px] text-stone-700 font-normal tracking-tight">
                 {formattedDates.fullKo}
               </p>
-              {venueFullName && (
-                <p className="text-[12.5px] sm:text-[13px] text-white/75 font-light tracking-tight">
-                  {venueFullName}
-                </p>
-              )}
-            </div>
-
-            {/* 스크롤 유도 인디케이터 */}
-            <div className="mt-8 flex items-center gap-2 text-white/60 text-[11px] tracking-[0.2em] uppercase font-editorial-serif">
-              <div className="w-4 h-px bg-white/40" />
-              <span>Scroll to open</span>
-            </div>
-          </ScrollReveal>
+            )}
+            {venueFullName && (
+              <p className="text-[11.5px] sm:text-[12px] text-stone-500 font-normal tracking-tight">
+                {venueFullName}
+              </p>
+            )}
+          </div>
         </div>
+
+        {/* 하단: SCROLL TO OPEN ↓ (주소와 시원한 여백 확보 mt-10 sm:mt-12) */}
+        <div className="mt-10 sm:mt-12 shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              const nextEl = document.getElementById('editorial-story-section');
+              if (nextEl) {
+                nextEl.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
+            className="w-[138px] sm:w-[145px] h-[30px] sm:h-[32px] border border-stone-300 bg-white hover:bg-stone-50 active:bg-stone-100 transition-colors cursor-pointer group shadow-2xs flex items-center justify-center"
+            style={{ borderRadius: '50% / 50%' }}
+          >
+            <span
+              className="font-sans text-[8px] sm:text-[8.5px] tracking-[0.24em] text-stone-800 uppercase font-medium leading-none"
+              style={{
+                fontFamily: "'Bodoni 72', 'Bodoni 72 Oldstyle', 'Bodoni 72 Smallcaps', 'Bodoni MT', 'Bodoni Moda', 'Playfair Display', serif",
+              }}
+            >
+              SCROLL TO OPEN ↓
+            </span>
+          </button>
+        </div>
+
+        {/* 가로 구분선 (사용자 전달 시안 1:1 매칭: 버튼 아래 정확히 43px, 1px #e3e3e3) */}
+        <div className="w-full max-w-[340px] sm:max-w-[365px] mx-auto border-t border-[#e3e3e3] mt-[43px] shrink-0" />
       </section>
 
-      {/* 2. 에디토리얼 오프닝 스프레드 (⭐️ 레퍼런스 2번 폰 화면의 핵심 감성) */}
-      <section className="pt-16 sm:pt-20 pb-20 sm:pb-24 px-6 bg-[#FFFFFF] border-b border-stone-200/80">
+      {/* 2. 에디토리얼 프로필 스프레드: 신부 & 신랑 단독 프로필 카드 & 혼주 정보 (구분선 아래 정확히 132px 여백) */}
+      <section id="editorial-story-section" className="pt-[115px] sm:pt-[132px] pb-16 sm:pb-20 px-6 bg-white border-b border-stone-200/80">
         <ScrollReveal>
-          {/* 상단 라벨 (Save the date & 날짜) */}
-          <div className="flex items-center justify-between pb-5 border-b border-stone-200 text-stone-400 font-editorial-serif text-[12.5px] tracking-[0.18em]">
-            <span className="italic font-light">Save the date</span>
-            <span className="font-light">{formattedDates.headerDate || ''}</span>
+          {/* 영문 필기체 헤더 (1번째 레퍼런스 시안 1:1 정밀 매칭: 은은한 차콜 그레이 & 정갈한 크기) */}
+          <div className="text-center mb-9 sm:mb-10 select-none">
+            <p
+              className="font-bickham text-[24px] sm:text-[26px] text-[#555555] tracking-wide leading-tight select-none"
+              style={{ fontFamily: "'Bickham Script Pro', cursive" }}
+            >
+              Welcome to
+            </p>
+            <p
+              className="font-bickham text-[22px] sm:text-[24px] text-[#555555] tracking-wide leading-tight mt-1 sm:mt-1.5 select-none"
+              style={{ fontFamily: "'Bickham Script Pro', cursive" }}
+            >
+              {displayNamesEn || 'Jang Min-ki & Kwon Ki-deuk'}
+            </p>
           </div>
 
-          {/* 비대칭 2단 분할 레이아웃: 좌측 세로 한글 이름 vs 우측 감성 액자 화보 */}
-          <div className="grid grid-cols-[auto_1fr] gap-6 sm:gap-8 items-center pt-10 sm:pt-12 pb-8">
-            {/* 좌측: 세로형 한글 성함 타이포그래피 (신랑 / 그리고 / 신부) */}
-            {(groomShort || brideShort) ? (
-              <div className="flex flex-col items-center justify-center pl-2 sm:pl-3 pr-1 select-none">
-                {/* 신랑 이름 */}
-                {groomShort && (
-                  <div className="flex flex-col items-center space-y-2">
-                    {groomShort.split('').map((char, i) => (
-                      <span key={i} className="font-korean-serif text-[26px] sm:text-[28px] font-normal text-stone-900 leading-none">
-                        {char}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {/* 중앙 연결 문구: 그리고 (둘 다 있을 때만 노출) */}
-                {groomShort && brideShort && (
-                  <div className="my-3.5 sm:my-4.5 flex flex-col items-center space-y-1 select-none">
-                    {'그리고'.split('').map((char, i) => (
-                      <span key={i} className="font-korean-serif text-[10px] sm:text-[10.5px] text-stone-400 font-light leading-none">
-                        {char}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {/* 신부 이름 */}
-                {brideShort && (
-                  <div className="flex flex-col items-center space-y-2">
-                    {brideShort.split('').map((char, i) => (
-                      <span key={i} className="font-korean-serif text-[26px] sm:text-[28px] font-normal text-stone-900 leading-none">
-                        {char}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : <div />}
-
-            {/* 우측: 정갈한 잡지 화보 액자 사진 프레임 */}
-            <div className="w-full">
-              <div className="w-full aspect-[3/4] overflow-hidden bg-white p-1.5 shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-stone-200/80">
+          {/* 신부 & 신랑 2단 액자 카드 그리드 (좌측: 신부, 우측: 신랑) */}
+          <div className="grid grid-cols-2 gap-3.5 sm:gap-4 max-w-[350px] sm:max-w-[375px] mx-auto">
+            {/* 좌측: 신부 카드 (테두리선 없이 소프트 그림자) */}
+            <div className="bg-white p-2.5 sm:p-3 pb-3 sm:pb-3.5 shadow-[0_4px_22px_rgba(0,0,0,0.07)] rounded-xs">
+              <div className="w-full aspect-[3/3.85] overflow-hidden bg-stone-100">
                 <img
-                  src={couplePhoto}
-                  alt="Couple lookbook"
-                  className="w-full h-full object-cover object-center grayscale-[10%] hover:grayscale-0 transition-all duration-700"
+                  src={bridePhoto}
+                  alt={brideName || 'Bride'}
+                  className="w-full h-full object-cover object-center"
                   onError={(e) => {
-                    if (e.currentTarget.src !== mainImage) {
-                      e.currentTarget.src = mainImage;
+                    if (e.currentTarget.src !== '/samples/bride-solo.jpg') {
+                      e.currentTarget.src = '/samples/bride-solo.jpg';
                     }
                   }}
                 />
               </div>
+              <div className="pt-3 sm:pt-3.5 pb-0.5 text-center flex items-center justify-center gap-3 sm:gap-3.5 select-none">
+                <span
+                  className="font-bickham text-[18px] sm:text-[19px] text-stone-400 leading-none select-none"
+                  style={{ fontFamily: "'Bickham Script Pro', cursive" }}
+                >
+                  Bride.
+                </span>
+                <span className="font-serif text-[14px] sm:text-[14.5px] text-stone-900 font-normal tracking-tight">
+                  {brideName || '박지민'}
+                </span>
+              </div>
+            </div>
+
+            {/* 우측: 신랑 카드 (테두리선 없이 소프트 그림자) */}
+            <div className="bg-white p-2.5 sm:p-3 pb-3 sm:pb-3.5 shadow-[0_4px_22px_rgba(0,0,0,0.07)] rounded-xs">
+              <div className="w-full aspect-[3/3.85] overflow-hidden bg-stone-100">
+                <img
+                  src={groomPhoto}
+                  alt={groomName || 'Groom'}
+                  className="w-full h-full object-cover object-center"
+                  onError={(e) => {
+                    if (e.currentTarget.src !== '/samples/groom-solo.jpg') {
+                      e.currentTarget.src = '/samples/groom-solo.jpg';
+                    }
+                  }}
+                />
+              </div>
+              <div className="pt-3 sm:pt-3.5 pb-0.5 text-center flex items-center justify-center gap-3 sm:gap-3.5 select-none">
+                <span
+                  className="font-bickham text-[18px] sm:text-[19px] text-stone-400 leading-none select-none"
+                  style={{ fontFamily: "'Bickham Script Pro', cursive" }}
+                >
+                  Groom.
+                </span>
+                <span className="font-serif text-[14px] sm:text-[14.5px] text-stone-900 font-normal tracking-tight">
+                  {groomName || '강민준'}
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* 얇은 라인 구분선 */}
-          <div className="w-full h-px bg-stone-200 my-8" />
-
-          {/* 하단: 대형 날짜 타이포그래피 & 시적인 초대글 */}
-          <div className="text-left space-y-7">
-            {/* 대형 날짜 (05.14) & 요일 시간 */}
-            {formattedDates.dateDot && (
-              <div>
-                <p className="font-editorial-serif text-[56px] sm:text-[62px] font-normal tracking-tight text-stone-900 leading-none">
-                  {formattedDates.dateDot}
-                </p>
-                <p className="font-editorial-serif text-[12.5px] sm:text-[13px] tracking-[0.22em] text-stone-500 mt-2.5 uppercase font-medium">
-                  {formattedDates.dowEn} · {formattedDates.timeStrEn}
-                </p>
+          {/* 혼주 정보 (서체: Noto Serif KR - 1번째 이미지 1:1 완벽한 화면 정중앙 가운데 정렬) */}
+          <div className="mt-10 sm:mt-11 w-[260px] mx-auto font-serif text-[13.5px] sm:text-[14px]">
+            <div className="space-y-3">
+              {/* 1행: 신랑측 부모님 & 아들 & 신랑 */}
+              <div className="flex items-center justify-between text-stone-800">
+                <span className="w-[116px] text-left tracking-tight font-normal shrink-0">
+                  {groomParents || '강오진 · 류창희'}
+                </span>
+                <span className="w-[44px] text-center text-stone-500 text-[12.5px] tracking-tight font-normal shrink-0">
+                  {groomRelation || '아들'}
+                </span>
+                <span className="w-[54px] text-left text-stone-900 tracking-tight font-normal shrink-0">
+                  {groomName || '강민준'}
+                </span>
               </div>
-            )}
 
-            {/* 초대 문구 (동적 데이터만 노출) */}
-            {invitation?.message && (
-              <div className="font-korean-serif text-[14.5px] sm:text-[15px] text-stone-700 leading-[2.4] font-normal whitespace-pre-line break-keep pt-1">
-                {invitation.message}
+              {/* 2행: 신부측 부모님 & 딸 & 신부 */}
+              <div className="flex items-center justify-between text-stone-800">
+                <span className="w-[116px] text-left tracking-tight font-normal shrink-0">
+                  {brideParents || '장철규 · 이정자'}
+                </span>
+                <span className="w-[44px] text-center text-stone-500 text-[12.5px] tracking-tight font-normal shrink-0">
+                  {brideRelation || '딸'}
+                </span>
+                <span className="w-[54px] text-left text-stone-900 tracking-tight font-normal shrink-0">
+                  {brideName || '박지민'}
+                </span>
               </div>
-            )}
-
-            {/* 장소 요약 */}
-            {venueFullName && (
-              <div className="pt-4 border-t border-stone-200/60 flex items-center justify-between text-stone-600 text-[12.5px] font-sans">
-                <span>{venueFullName}</span>
-                <span className="font-editorial-serif tracking-widest text-stone-400 text-xs">CEREMONY</span>
-              </div>
-            )}
+            </div>
           </div>
         </ScrollReveal>
       </section>
 
-      {/* 3. 에디토리얼 인터뷰 칼럼 (Our Column & Parents) */}
-      <section className="pt-24 sm:pt-32 pb-24 sm:pb-32 px-6 bg-white text-center border-b border-stone-200/80">
+      {/* 3. 에디토리얼 커플 화보 & 초대합니다 (이미지 2 매칭) */}
+      <section className="bg-white border-b border-stone-200/80">
         <ScrollReveal>
-          {/* 섹션 챕터 헤더 */}
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <span className="w-5 h-px bg-stone-300" />
-            <span className="font-editorial-serif text-[11px] tracking-[0.3em] uppercase text-stone-400 font-medium">
-              CHAPTER 02 · COLUMN
-            </span>
-            <span className="w-5 h-px bg-stone-300" />
+          {/* 상단: 가로 와이드 커플 사진 */}
+          <div className="w-full aspect-[4/2.85] overflow-hidden bg-stone-100">
+            <img
+              src={couplePhoto}
+              alt="Couple Wedding"
+              className="w-full h-full object-cover object-center"
+              onError={(e) => {
+                if (e.currentTarget.src !== '/samples/couple-profile-01.jpg') {
+                  e.currentTarget.src = '/samples/couple-profile-01.jpg';
+                }
+              }}
+            />
           </div>
-          <h2 className="font-editorial-title text-[32px] sm:text-[36px] text-stone-900 leading-tight tracking-normal mb-8">
-            Two Become One
-          </h2>
 
-          {/* 감성 인용구 (Quote - 매거진 북마크 스타일) */}
-          {showQuoteSection && invitation?.quote_content && (
-            <div className="max-w-[330px] mx-auto mb-14 p-6 sm:p-7 bg-stone-50/70 border border-stone-200/90 relative text-center">
-              <span className="font-editorial-serif italic text-4xl text-stone-300 block leading-none mb-2">
-                “
-              </span>
-              <p className="font-korean-serif text-[13.5px] sm:text-[14px] text-stone-700 leading-[2.3] font-normal whitespace-pre-line break-keep">
-                {invitation.quote_content}
-              </p>
-              {invitation.quote_source && (
-                <div className="mt-4 pt-3 border-t border-stone-200/50 flex items-center justify-center gap-2">
-                  <span className="w-3 h-px bg-stone-300" />
-                  <p className="font-editorial-serif italic text-[12px] text-stone-400 tracking-wider">
-                    {invitation.quote_source}
+          {/* 하단: 초대 문구 (서체: Noto Serif KR) */}
+          <div className="pt-12 sm:pt-14 pb-16 sm:pb-20 px-6 sm:px-8 text-center font-serif">
+            {/* 제목: 초대합니다 */}
+            <h2 className="text-[17px] sm:text-[18.5px] text-stone-900 font-normal tracking-tight mb-8 sm:mb-9">
+              초대합니다
+            </h2>
+
+            {/* 본문 초대글 (Noto Serif KR) */}
+            <div className="text-[13.5px] sm:text-[14px] text-stone-600 font-normal leading-[2.1] sm:leading-[2.2] tracking-tight break-keep whitespace-pre-line max-w-[340px] mx-auto">
+              {invitation?.message ? (
+                invitation.message
+              ) : (
+                <>
+                  <p className="mb-5 sm:mb-6">
+                    서로를 만나 평범했던 하루가<br />
+                    조금 더 따뜻하고 특별해졌습니다.<br />
+                    이제 두 사람이 한마음으로<br />
+                    새로운 계절을 시작하려 합니다.
                   </p>
-                  <span className="w-3 h-px bg-stone-300" />
-                </div>
+                  <p>
+                    소중한 분들과 함께<br />
+                    그 순간을 나누고 싶습니다.<br />
+                    저희의 첫걸음에 따뜻한 축복을 보내주세요.
+                  </p>
+                </>
               )}
             </div>
-          )}
 
-          {/* 혼주 & 신랑 신부 소개 (에디토리얼 패밀리 카드) */}
-          <div className="bg-stone-50/70 p-7 sm:p-8 max-w-[370px] mx-auto border border-stone-200/90 mb-10 text-left relative">
-            <div className="flex items-center justify-between pb-4 border-b border-stone-200/70 mb-5">
-              <span className="font-editorial-serif text-[11px] tracking-[0.25em] uppercase text-stone-400 font-semibold">
-                FAMILY & COUPLE
-              </span>
-              <span className="text-[10px] font-editorial-serif text-stone-400 tracking-widest uppercase">
-                HONORED PARENTS
-              </span>
-            </div>
-
-            <div className="space-y-4 font-korean-serif text-[14.5px] sm:text-[15px]">
-              {/* 신랑측 */}
-              <div className="grid grid-cols-[54px_1fr_36px_auto] items-center gap-x-2 pb-3.5 border-b border-stone-200/50">
-                <span className="text-stone-400 text-xs font-editorial-serif tracking-wider uppercase">GROOM</span>
-                <span className="text-stone-800 font-light truncate">{groomParents || ''}</span>
-                <span className="text-stone-400 text-xs font-sans font-light text-right">{groomRelation || ''}</span>
-                <span className="text-stone-900 font-medium tracking-wide text-right pl-1 min-w-[52px]">{invitation?.groom_name || ''}</span>
+            {/* 감성 인용구 (Quote - 설정 및 입력된 경우 노출) */}
+            {showQuoteSection && invitation?.quote_content && (
+              <div className="mt-10 pt-8 border-t border-stone-100 max-w-[310px] mx-auto text-center">
+                <span className="font-editorial-serif italic text-2xl text-stone-300 block leading-none mb-2">
+                  “
+                </span>
+                <p className="text-[12.5px] sm:text-[13px] text-stone-500 leading-[2.1] font-normal whitespace-pre-line break-keep italic">
+                  {invitation.quote_content}
+                </p>
+                {invitation.quote_source && (
+                  <p className="font-editorial-serif text-[11px] text-stone-400 tracking-wider mt-2">
+                    — {invitation.quote_source}
+                  </p>
+                )}
               </div>
-
-              {/* 신부측 */}
-              <div className="grid grid-cols-[54px_1fr_36px_auto] items-center gap-x-2">
-                <span className="text-stone-400 text-xs font-editorial-serif tracking-wider uppercase">BRIDE</span>
-                <span className="text-stone-800 font-light truncate">{brideParents || ''}</span>
-                <span className="text-stone-400 text-xs font-sans font-light text-right">{brideRelation || ''}</span>
-                <span className="text-stone-900 font-medium tracking-wide text-right pl-1 min-w-[52px]">{invitation?.bride_name || ''}</span>
-              </div>
-            </div>
+            )}
           </div>
-
-          {/* 축하 연락처 모달 버튼 */}
-          <button
-            type="button"
-            onClick={() => setShowContactModal(true)}
-            className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-stone-900 hover:bg-stone-800 text-white text-[13px] tracking-[0.2em] uppercase font-editorial-serif transition-colors cursor-pointer shadow-sm"
-          >
-            <span>Contact & Blessing</span>
-            <span className="text-xs">→</span>
-          </button>
         </ScrollReveal>
       </section>
 
       {/* 4. 에디토리얼 룩북 캘린더 (Lookbook Calendar & Countdown) */}
       {hasWeddingDate && calendarData && (
-        <section className="pt-24 sm:pt-32 pb-24 sm:pb-32 px-6 bg-white text-center border-b border-stone-200/80">
+        <section className="pt-16 sm:pt-20 pb-18 sm:pb-22 px-6 bg-white text-center border-b border-stone-200/80">
           <ScrollReveal>
             {/* 섹션 챕터 헤더 */}
             <div className="flex items-center justify-center gap-2 mb-3">
               <span className="w-5 h-px bg-stone-300" />
-              <span className="font-editorial-serif text-[11px] tracking-[0.3em] uppercase text-stone-400 font-medium">
+              <span className="font-sans text-[10px] sm:text-[10.5px] tracking-[0.28em] uppercase text-stone-400 font-medium">
                 CHAPTER 03 · THE DATE
               </span>
               <span className="w-5 h-px bg-stone-300" />
             </div>
-            <h2 className="font-editorial-title text-[32px] sm:text-[36px] text-stone-900 leading-tight tracking-normal mb-2">
+            <h2 className="font-sans text-[26px] sm:text-[28px] text-stone-900 leading-tight tracking-[0.04em] mb-1.5 font-normal">
               {formattedDates.monthName} {formattedDates.yearNumber}
             </h2>
-            <p className="font-editorial-serif text-[13px] tracking-[0.2em] text-stone-500 mb-10">
+            <p className="font-sans text-[11.5px] sm:text-[12px] tracking-[0.2em] text-stone-500 mb-8 uppercase font-medium">
               {formattedDates.dowEn} · {formattedDates.timeStrEn}
             </p>
 
             {/* 미니멀 에디토리얼 달력 그리드 */}
-            <div className="max-w-[330px] mx-auto mb-10 border-t border-b border-stone-200 py-6">
+            <div className="max-w-[330px] mx-auto mb-9 border-t border-b border-stone-200 py-6">
               {/* 요일 헤더 */}
-              <div className="grid grid-cols-7 text-center font-editorial-serif text-[11px] tracking-wider text-stone-400 uppercase mb-4">
+              <div className="grid grid-cols-7 text-center font-sans text-[10.5px] sm:text-[11px] tracking-wider text-stone-400 uppercase mb-4">
                 <span className="text-[#A24444]">SUN</span>
                 <span>MON</span>
                 <span>TUE</span>
@@ -624,7 +659,7 @@ export default function EditorialTemplate({ invitation }) {
               </div>
 
               {/* 날짜 그리드 */}
-              <div className="grid grid-cols-7 gap-y-2 text-center font-editorial-serif text-[14px] sm:text-[15px] tabular-nums">
+              <div className="grid grid-cols-7 gap-y-2 text-center font-sans text-[13.5px] sm:text-[14px] tabular-nums">
                 {Array.from({ length: calendarData.firstDayIndex }).map((_, i) => (
                   <div key={`empty-${i}`} className="h-8" />
                 ))}
@@ -653,10 +688,10 @@ export default function EditorialTemplate({ invitation }) {
               </div>
             </div>
 
-            {/* D-Day 카운트다운 타이머 (에디토리얼 4분할 바 & D-Day 뱃지) */}
+            {/* D-Day 카운트다운 타이머 */}
             {showCountdownSection && (
               <div className="max-w-[330px] mx-auto">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-stone-100 text-stone-800 text-[11px] font-editorial-serif tracking-widest uppercase mb-4 font-semibold">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-stone-100 text-stone-800 text-[10px] sm:text-[10.5px] font-sans tracking-[0.2em] uppercase mb-4 font-medium rounded-full">
                   <span>
                     {timeLeft.isToday
                       ? 'D - DAY'
@@ -675,35 +710,35 @@ export default function EditorialTemplate({ invitation }) {
                 </div>
 
                 {!timeLeft.isPast ? (
-                  <div className="grid grid-cols-4 gap-2 font-editorial-serif text-center mb-5">
+                  <div className="grid grid-cols-4 gap-2 font-sans text-center mb-5">
                     {[
                       { label: 'DAYS', val: timeLeft.days },
                       { label: 'HOURS', val: timeLeft.hours },
                       { label: 'MINUTES', val: timeLeft.minutes },
                       { label: 'SECONDS', val: timeLeft.seconds },
                     ].map((item, idx) => (
-                      <div key={idx} className="bg-stone-50 py-3 px-1 border border-stone-200/90">
-                        <span className="text-[10px] tracking-widest text-stone-400 block mb-0.5 font-semibold">
+                      <div key={idx} className="bg-stone-50 py-3 px-1 border border-stone-200/90 rounded-xs">
+                        <span className="text-[9.5px] tracking-[0.2em] text-stone-400 block mb-0.5 font-semibold">
                           {item.label}
                         </span>
-                        <span className="text-[20px] sm:text-[22px] font-normal text-stone-900 tabular-nums">
+                        <span className="text-[19px] sm:text-[21px] font-normal text-stone-900 tabular-nums">
                           {item.val}
                         </span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="bg-stone-50/80 py-4 px-4 border border-stone-200/90 mb-5 text-center">
-                    <p className="font-editorial-serif text-[11px] tracking-[0.2em] text-stone-400 uppercase mb-1">
+                  <div className="bg-stone-50/80 py-4 px-4 border border-stone-200/90 mb-5 text-center rounded-xs">
+                    <p className="font-sans text-[10.5px] tracking-[0.2em] text-stone-400 uppercase mb-1">
                       Our New Chapter Has Begun
                     </p>
-                    <p className="font-editorial-serif text-[16px] text-stone-900">
+                    <p className="font-serif text-[15px] sm:text-[16px] text-stone-900 tracking-tight">
                       결혼한 지 <span className="font-semibold">{timeLeft.totalDays}일</span>째 되는 날입니다
                     </p>
                   </div>
                 )}
 
-                <p className="font-korean-serif text-[13.5px] text-stone-600">
+                <p className="font-serif text-[13px] sm:text-[13.5px] text-stone-600 font-normal tracking-tight">
                   {timeLeft.isToday ? (
                     <>오늘 두 사람의 축복된 예식이 시작됩니다.</>
                   ) : timeLeft.isPast ? (
@@ -720,17 +755,17 @@ export default function EditorialTemplate({ invitation }) {
 
       {/* 5. 에디토리얼 화보 갤러리 (Magazine Lookbook Spread) */}
       {showGallerySection && galleryImages.length > 0 && (
-        <section className="pt-24 sm:pt-32 pb-24 sm:pb-32 px-5 bg-white text-center border-b border-stone-200/80">
+        <section className="pt-16 sm:pt-20 pb-18 sm:pb-22 px-5 bg-white text-center border-b border-stone-200/80">
           <ScrollReveal>
             {/* 섹션 챕터 헤더 */}
             <div className="flex items-center justify-center gap-2 mb-3">
               <span className="w-5 h-px bg-stone-300" />
-              <span className="font-editorial-serif text-[11px] tracking-[0.3em] uppercase text-stone-400 font-medium">
+              <span className="font-sans text-[10px] sm:text-[10.5px] tracking-[0.28em] uppercase text-stone-400 font-medium">
                 CHAPTER 04 · VISUAL ARCHIVE
               </span>
               <span className="w-5 h-px bg-stone-300" />
             </div>
-            <h2 className="font-editorial-title text-[32px] sm:text-[36px] text-stone-900 leading-tight tracking-normal mb-10">
+            <h2 className="font-sans text-[24px] sm:text-[26px] text-stone-900 leading-tight tracking-[0.04em] mb-8 font-normal">
               Gallery & Memories
             </h2>
 
@@ -741,7 +776,7 @@ export default function EditorialTemplate({ invitation }) {
                   setGalleryModalIndex(activeGalleryIndex);
                   setGalleryModalOpen(true);
                 }}
-                className="relative w-full aspect-[4/5] bg-white p-2 border border-stone-200/90 shadow-[0_8px_30px_rgba(0,0,0,0.06)] overflow-hidden cursor-pointer group"
+                className="relative w-full aspect-[4/5] bg-white p-2 border border-stone-200/90 shadow-[0_8px_30px_rgba(0,0,0,0.06)] overflow-hidden cursor-pointer group rounded-xs"
               >
                 <img
                   src={galleryImages[activeGalleryIndex] || galleryImages[0]}
@@ -750,33 +785,33 @@ export default function EditorialTemplate({ invitation }) {
                 />
                 
                 {/* 상단 좌측: 룩북 태그 */}
-                <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-xs text-white text-[10px] font-editorial-serif tracking-widest uppercase px-2.5 py-1">
+                <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-xs text-white text-[9.5px] font-sans tracking-widest uppercase px-2.5 py-1">
                   ARCHIVE NO. {String(activeGalleryIndex + 1).padStart(2, '0')}
                 </div>
 
                 {/* 하단 오버레이 줌인 안내 */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors flex items-center justify-center">
-                  <span className="opacity-0 group-hover:opacity-100 bg-white/95 text-stone-900 text-xs px-3.5 py-2 uppercase tracking-widest font-editorial-serif transition-opacity duration-300 shadow-md">
+                  <span className="opacity-0 group-hover:opacity-100 bg-white/95 text-stone-900 text-[10px] sm:text-[10.5px] px-3.5 py-2 uppercase tracking-widest font-sans transition-opacity duration-300 shadow-md rounded-full">
                     Enlarge Spread ↗
                   </span>
                 </div>
               </div>
 
               {/* 매거진 룩북 하단 캡션 */}
-              <div className="pt-3 px-1 flex items-center justify-between text-stone-400 font-editorial-serif text-[11.5px] tracking-wider">
+              <div className="pt-3 px-1 flex items-center justify-between text-stone-400 font-sans text-[11px] sm:text-[11.5px] tracking-wider">
                 <span className="italic font-light">Fig. {String(activeGalleryIndex + 1).padStart(2, '0')}{displayNamesEn ? ` / ${displayNamesEn}` : ''}</span>
                 <span>{activeGalleryIndex + 1} OF {galleryImages.length}</span>
               </div>
             </div>
 
-            {/* 썸네일 그리드 (에디토리얼 번호 뱃지 포함) */}
+            {/* 썸네일 그리드 */}
             <div className="grid grid-cols-4 gap-2 max-w-[380px] mx-auto">
               {galleryImages.map((src, idx) => (
                 <button
                   key={idx}
                   type="button"
                   onClick={() => setActiveGalleryIndex(idx)}
-                  className={`aspect-square overflow-hidden bg-white p-0.5 border cursor-pointer transition-all relative ${
+                  className={`aspect-square overflow-hidden bg-white p-0.5 border cursor-pointer transition-all relative rounded-xs ${
                     idx === activeGalleryIndex
                       ? 'border-stone-900 ring-1 ring-stone-900 opacity-100'
                       : 'border-stone-200 opacity-60 hover:opacity-100'
@@ -799,7 +834,7 @@ export default function EditorialTemplate({ invitation }) {
                   setGalleryModalIndex(0);
                   setGalleryModalOpen(true);
                 }}
-                className="py-2.5 px-6 border border-stone-300 hover:border-stone-900 text-stone-800 text-[11px] font-editorial-serif uppercase tracking-[0.2em] transition-colors cursor-pointer"
+                className="py-2.5 px-6 border border-stone-300 hover:border-stone-900 text-stone-800 text-[10px] sm:text-[10.5px] font-sans uppercase tracking-[0.22em] rounded-full hover:bg-stone-50 transition-colors cursor-pointer shadow-2xs"
               >
                 View Full Lookbook ({galleryImages.length})
               </button>
@@ -810,25 +845,25 @@ export default function EditorialTemplate({ invitation }) {
 
       {/* 6. 식장 위치 및 인포그래픽 길안내 (Location & Directions) */}
       {(invitation?.venue_name || invitation?.venue_address) && (
-        <section className="pt-24 sm:pt-32 pb-24 sm:pb-32 px-6 bg-white text-center border-b border-stone-200/80">
+        <section className="pt-16 sm:pt-20 pb-18 sm:pb-22 px-6 bg-white text-center border-b border-stone-200/80">
           <ScrollReveal>
             {/* 섹션 챕터 헤더 */}
             <div className="flex items-center justify-center gap-2 mb-3">
               <span className="w-5 h-px bg-stone-300" />
-              <span className="font-editorial-serif text-[11px] tracking-[0.3em] uppercase text-stone-400 font-medium">
+              <span className="font-sans text-[10px] sm:text-[10.5px] tracking-[0.28em] uppercase text-stone-400 font-medium">
                 CHAPTER 05 · VENUE GUIDE
               </span>
               <span className="w-5 h-px bg-stone-300" />
             </div>
-            <h2 className="font-editorial-title text-[32px] sm:text-[36px] text-stone-900 leading-tight tracking-normal mb-2">
+            <h2 className="font-serif text-[19px] sm:text-[21px] text-stone-900 font-normal tracking-tight mb-2">
               {invitation?.venue_name}
             </h2>
             {invitation?.venue_hall && (
-              <p className="font-korean-serif text-[14.5px] text-stone-600 mb-2 font-medium">
+              <p className="font-serif text-[13.5px] sm:text-[14px] text-stone-700 mb-1.5 font-normal tracking-tight">
                 {invitation.venue_hall}
               </p>
             )}
-            <p className="font-sans text-[13px] text-stone-500 mb-8 font-light">
+            <p className="font-serif text-[12.5px] sm:text-[13px] text-stone-500 mb-7 font-normal tracking-tight">
               {invitation?.venue_address}
             </p>
 
@@ -842,14 +877,14 @@ export default function EditorialTemplate({ invitation }) {
             </div>
 
             {/* 네이비/네이버지도 버튼 */}
-            <div className="grid grid-cols-2 gap-2.5 max-w-[340px] mx-auto mb-12 font-sans text-xs">
+            <div className="grid grid-cols-2 gap-2.5 max-w-[340px] mx-auto mb-11 font-serif text-[12px] sm:text-[12.5px]">
               <button
                 type="button"
                 onClick={() => {
                   const query = invitation?.venue_name || invitation?.venue_address;
                   window.open(`https://map.naver.com/p/search/${encodeURIComponent(query)}`, '_blank');
                 }}
-                className="py-3 px-3 border border-stone-300 hover:border-stone-900 text-stone-800 transition-colors flex items-center justify-center gap-1.5 cursor-pointer font-medium"
+                className="py-2.5 px-3 border border-stone-300 hover:border-stone-900 text-stone-800 rounded-full hover:bg-stone-50 transition-colors flex items-center justify-center gap-1.5 cursor-pointer font-normal shadow-2xs"
               >
                 <span>네이버 지도</span>
                 <span className="text-[10px] text-stone-400">↗</span>
@@ -860,7 +895,7 @@ export default function EditorialTemplate({ invitation }) {
                   const query = invitation?.venue_name || invitation?.venue_address;
                   window.open(`https://map.kakao.com/link/search/${encodeURIComponent(query)}`, '_blank');
                 }}
-                className="py-3 px-3 border border-stone-300 hover:border-stone-900 text-stone-800 transition-colors flex items-center justify-center gap-1.5 cursor-pointer font-medium"
+                className="py-2.5 px-3 border border-stone-300 hover:border-stone-900 text-stone-800 rounded-full hover:bg-stone-50 transition-colors flex items-center justify-center gap-1.5 cursor-pointer font-normal shadow-2xs"
               >
                 <span>카카오 맵</span>
                 <span className="text-[10px] text-stone-400">↗</span>
@@ -869,23 +904,23 @@ export default function EditorialTemplate({ invitation }) {
 
             {/* 교통편 안내 (에디토리얼 인포그래픽 타임라인 리스트) */}
             {transportationList.length > 0 && (
-              <div className="text-left space-y-4 max-w-[380px] mx-auto pt-8 border-t border-stone-200">
-                <span className="font-editorial-serif text-[11px] tracking-[0.25em] uppercase text-stone-400 block mb-5 font-semibold text-center">
+              <div className="text-left space-y-4 max-w-[380px] mx-auto pt-7 border-t border-stone-200">
+                <span className="font-sans text-[10px] sm:text-[10.5px] tracking-[0.25em] uppercase text-stone-400 block mb-5 font-semibold text-center">
                   DIRECTIONS & TRANSIT
                 </span>
 
                 <div className="space-y-3.5">
                   {transportationList.map((item, idx) => (
-                    <div key={idx} className="p-5 bg-stone-50/70 border border-stone-200/90 relative">
+                    <div key={idx} className="p-5 bg-stone-50/70 border border-stone-200/90 relative rounded-xs">
                       <div className="flex items-baseline justify-between mb-2">
-                        <span className="font-editorial-serif text-[11px] tracking-widest uppercase text-stone-400 font-semibold">
+                        <span className="font-sans text-[9.5px] sm:text-[10px] tracking-widest uppercase text-stone-400 font-semibold">
                           0{idx + 1} · {item.type?.toUpperCase() || 'TRANSIT'}
                         </span>
                       </div>
-                      <h3 className="font-korean-serif text-[15.5px] font-medium text-stone-900 mb-2">
+                      <h3 className="font-serif text-[14.5px] sm:text-[15px] font-medium text-stone-900 mb-1.5 tracking-tight">
                         {item.title}
                       </h3>
-                      <p className="font-sans text-[12.5px] text-stone-600 leading-relaxed whitespace-pre-line">
+                      <p className="font-serif text-[12.5px] sm:text-[13px] text-stone-600 leading-[1.85] whitespace-pre-line font-normal tracking-tight">
                         {item.content}
                       </p>
                     </div>
@@ -899,53 +934,53 @@ export default function EditorialTemplate({ invitation }) {
 
       {/* 7. 마음 전하실 곳 (Heart to Heart - Accounts) */}
       {showAccountsSection && (groomAccounts.length > 0 || brideAccounts.length > 0) && (
-        <section className="pt-24 sm:pt-32 pb-24 sm:pb-32 px-6 bg-white text-center border-b border-stone-200/80">
+        <section className="pt-16 sm:pt-20 pb-18 sm:pb-22 px-6 bg-white text-center border-b border-stone-200/80">
           <ScrollReveal>
             {/* 섹션 챕터 헤더 */}
             <div className="flex items-center justify-center gap-2 mb-3">
               <span className="w-5 h-px bg-stone-300" />
-              <span className="font-editorial-serif text-[11px] tracking-[0.3em] uppercase text-stone-400 font-medium">
+              <span className="font-sans text-[10px] sm:text-[10.5px] tracking-[0.28em] uppercase text-stone-400 font-medium">
                 CHAPTER 06 · REGISTRY
               </span>
               <span className="w-5 h-px bg-stone-300" />
             </div>
-            <h2 className="font-editorial-title text-[32px] sm:text-[36px] text-stone-900 leading-tight tracking-normal mb-3">
+            <h2 className="font-serif text-[19px] sm:text-[21px] text-stone-900 font-normal tracking-tight mb-2">
               마음 전하실 곳
             </h2>
-            <p className="font-korean-serif text-[13.5px] text-stone-600 mb-10">
+            <p className="font-serif text-[13px] sm:text-[13.5px] text-stone-500 mb-8 font-normal tracking-tight">
               축복의 마음을 담아 축의금을 전달하실 수 있습니다.
             </p>
 
             <div className="max-w-[370px] mx-auto space-y-4 text-left">
               {/* 신랑측 계좌 (기본 펼쳐짐) */}
               {groomAccounts.length > 0 && (
-                <div className="border border-stone-200 bg-stone-50/70 p-5 relative">
+                <div className="border border-stone-200 bg-stone-50/70 p-5 relative rounded-xs">
                   <div className="flex items-center justify-between pb-3 border-b border-stone-200 mb-4">
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 bg-stone-900" />
-                      <span className="font-editorial-serif text-xs tracking-widest uppercase font-semibold text-stone-900">
+                      <span className="w-1.5 h-1.5 bg-stone-900 rounded-full" />
+                      <span className="font-serif text-[12px] sm:text-[12.5px] tracking-wide uppercase font-medium text-stone-900">
                         GROOM&apos;S REGISTRY · 신랑측 계좌
                       </span>
                     </div>
                     <button
                       type="button"
                       onClick={() => setOpenGroomAccount(!openGroomAccount)}
-                      className="text-xs font-mono text-stone-400 hover:text-stone-900 cursor-pointer"
+                      className="text-[9.5px] font-sans tracking-widest text-stone-400 hover:text-stone-900 cursor-pointer"
                     >
                       {openGroomAccount ? 'HIDE —' : 'SHOW +'}
                     </button>
                   </div>
 
                   {openGroomAccount && (
-                    <div className="space-y-3 font-sans">
+                    <div className="space-y-3 font-serif">
                       {groomAccounts.map((acc, idx) => (
-                        <div key={idx} className="p-3 bg-white border border-stone-200/80 flex items-center justify-between shadow-2xs">
+                        <div key={idx} className="p-3 bg-white border border-stone-200/80 flex items-center justify-between shadow-2xs rounded-xs">
                           <div>
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-[10px] font-sans font-medium text-stone-600 bg-stone-100 px-1.5 py-0.5">
+                              <span className="text-[10.5px] font-normal text-stone-600 bg-stone-100 px-2 py-0.5 rounded-xs">
                                 {acc.bank}
                               </span>
-                              <span className="text-[13.5px] text-stone-900 font-medium font-korean-serif">
+                              <span className="text-[13.5px] text-stone-900 font-medium tracking-tight">
                                 {acc.name || `${acc.title || ''} ${acc.holder || ''}`.trim() || ''}
                               </span>
                             </div>
@@ -956,7 +991,7 @@ export default function EditorialTemplate({ invitation }) {
                           <button
                             type="button"
                             onClick={() => handleCopyAccount(acc.number || acc.account_number, acc.name || acc.holder || '계좌번호가')}
-                            className="px-3 py-1.5 bg-stone-900 hover:bg-stone-800 text-white text-[11px] font-editorial-serif tracking-wider uppercase transition-colors cursor-pointer"
+                            className="px-3 py-1.5 bg-stone-900 hover:bg-stone-800 text-white text-[9.5px] sm:text-[10px] font-sans tracking-[0.18em] uppercase rounded-full transition-colors cursor-pointer shadow-2xs"
                           >
                             Copy
                           </button>
@@ -969,33 +1004,33 @@ export default function EditorialTemplate({ invitation }) {
 
               {/* 신부측 계좌 (기본 펼쳐짐) */}
               {brideAccounts.length > 0 && (
-                <div className="border border-stone-200 bg-stone-50/70 p-5 relative">
+                <div className="border border-stone-200 bg-stone-50/70 p-5 relative rounded-xs">
                   <div className="flex items-center justify-between pb-3 border-b border-stone-200 mb-4">
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 bg-stone-900" />
-                      <span className="font-editorial-serif text-xs tracking-widest uppercase font-semibold text-stone-900">
+                      <span className="w-1.5 h-1.5 bg-stone-900 rounded-full" />
+                      <span className="font-serif text-[12px] sm:text-[12.5px] tracking-wide uppercase font-medium text-stone-900">
                         BRIDE&apos;S REGISTRY · 신부측 계좌
                       </span>
                     </div>
                     <button
                       type="button"
                       onClick={() => setOpenBrideAccount(!openBrideAccount)}
-                      className="text-xs font-mono text-stone-400 hover:text-stone-900 cursor-pointer"
+                      className="text-[9.5px] font-sans tracking-widest text-stone-400 hover:text-stone-900 cursor-pointer"
                     >
                       {openBrideAccount ? 'HIDE —' : 'SHOW +'}
                     </button>
                   </div>
 
                   {openBrideAccount && (
-                    <div className="space-y-3 font-sans">
+                    <div className="space-y-3 font-serif">
                       {brideAccounts.map((acc, idx) => (
-                        <div key={idx} className="p-3 bg-white border border-stone-200/80 flex items-center justify-between shadow-2xs">
+                        <div key={idx} className="p-3 bg-white border border-stone-200/80 flex items-center justify-between shadow-2xs rounded-xs">
                           <div>
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-[10px] font-sans font-medium text-stone-600 bg-stone-100 px-1.5 py-0.5">
+                              <span className="text-[10.5px] font-normal text-stone-600 bg-stone-100 px-2 py-0.5 rounded-xs">
                                 {acc.bank}
                               </span>
-                              <span className="text-[13.5px] text-stone-900 font-medium font-korean-serif">
+                              <span className="text-[13.5px] text-stone-900 font-medium tracking-tight">
                                 {acc.name || `${acc.title || ''} ${acc.holder || ''}`.trim() || ''}
                               </span>
                             </div>
@@ -1006,7 +1041,7 @@ export default function EditorialTemplate({ invitation }) {
                           <button
                             type="button"
                             onClick={() => handleCopyAccount(acc.number || acc.account_number, acc.name || acc.holder || '계좌번호가')}
-                            className="px-3 py-1.5 bg-stone-900 hover:bg-stone-800 text-white text-[11px] font-editorial-serif tracking-wider uppercase transition-colors cursor-pointer"
+                            className="px-3 py-1.5 bg-stone-900 hover:bg-stone-800 text-white text-[9.5px] sm:text-[10px] font-sans tracking-[0.18em] uppercase rounded-full transition-colors cursor-pointer shadow-2xs"
                           >
                             Copy
                           </button>
@@ -1023,47 +1058,47 @@ export default function EditorialTemplate({ invitation }) {
 
       {/* 8. 정보 카드 안내 (Information - 식사, 화환 등) */}
       {infoCards.length > 0 && (
-        <section className="pt-24 sm:pt-32 pb-24 sm:pb-32 px-6 bg-white text-center border-b border-stone-200/80">
+        <section className="pt-16 sm:pt-20 pb-18 sm:pb-22 px-6 bg-white text-center border-b border-stone-200/80">
           <ScrollReveal>
             {/* 섹션 챕터 헤더 */}
             <div className="flex items-center justify-center gap-2 mb-3">
               <span className="w-5 h-px bg-stone-300" />
-              <span className="font-editorial-serif text-[11px] tracking-[0.3em] uppercase text-stone-400 font-medium">
+              <span className="font-sans text-[10px] sm:text-[10.5px] tracking-[0.28em] uppercase text-stone-400 font-medium">
                 CHAPTER 07 · NOTICE
               </span>
               <span className="w-5 h-px bg-stone-300" />
             </div>
-            <h2 className="font-editorial-title text-[32px] sm:text-[36px] text-stone-900 leading-tight tracking-normal mb-10">
+            <h2 className="font-serif text-[19px] sm:text-[21px] text-stone-900 font-normal tracking-tight mb-8">
               안내 사항
             </h2>
 
             <div className="max-w-[370px] mx-auto space-y-4 text-left">
               {infoCards.map((card, idx) => (
-                <div key={idx} className="p-6 sm:p-7 bg-stone-50/70 border border-stone-200/90 relative">
+                <div key={idx} className="p-6 sm:p-7 bg-stone-50/70 border border-stone-200/90 relative rounded-xs">
                   {/* 상단 라벨 헤더 */}
                   <div className="flex items-baseline justify-between mb-4 pb-2.5 border-b border-stone-200/60">
-                    <span className="font-editorial-serif text-xs text-stone-400 tracking-widest font-semibold">
+                    <span className="font-sans text-[10px] text-stone-400 tracking-widest font-semibold">
                       NOTICE NO. 0{idx + 1}
                     </span>
                     <span className="text-[10px] font-mono text-stone-400">GUIDE</span>
                   </div>
 
                   {/* 제목 */}
-                  <h3 className="font-korean-serif text-[17px] sm:text-[18px] font-medium text-stone-900 mb-3 tracking-tight">
+                  <h3 className="font-serif text-[15px] sm:text-[16px] font-medium text-stone-900 mb-2.5 tracking-tight">
                     {card.title}
                   </h3>
 
-                  {/* 부제목 (있을 경우 뱃지 스타일로 구분) */}
+                  {/* 부제목 */}
                   {card.subtitle && (
-                    <div className="mb-3.5">
-                      <span className="inline-block px-2.5 py-1 bg-stone-200/70 text-stone-700 text-[11.5px] font-sans font-medium tracking-tight">
+                    <div className="mb-3">
+                      <span className="inline-block px-2.5 py-0.5 bg-stone-200/70 text-stone-700 text-[11px] sm:text-[11.5px] font-serif font-normal tracking-tight rounded-xs">
                         {card.subtitle}
                       </span>
                     </div>
                   )}
 
                   {/* 본문 설명 */}
-                  <p className="font-korean-serif text-[13.5px] sm:text-[14px] text-stone-600 leading-[2.1] whitespace-pre-line font-normal">
+                  <p className="font-serif text-[13px] sm:text-[13.5px] text-stone-600 leading-[1.9] whitespace-pre-line font-normal tracking-tight">
                     {card.content}
                   </p>
                 </div>
@@ -1075,35 +1110,35 @@ export default function EditorialTemplate({ invitation }) {
 
       {/* 9. 참석 의사 (RSVP - 에디토리얼 엽서 스타일) */}
       {showRsvpSection && (
-        <section className="pt-24 sm:pt-32 pb-24 sm:pb-32 px-6 bg-white text-center border-b border-stone-200/80">
+        <section className="pt-16 sm:pt-20 pb-18 sm:pb-22 px-6 bg-white text-center border-b border-stone-200/80">
           <ScrollReveal>
             {/* 섹션 챕터 헤더 */}
             <div className="flex items-center justify-center gap-2 mb-3">
               <span className="w-5 h-px bg-stone-300" />
-              <span className="font-editorial-serif text-[11px] tracking-[0.3em] uppercase text-stone-400 font-medium">
+              <span className="font-sans text-[10px] sm:text-[10.5px] tracking-[0.28em] uppercase text-stone-400 font-medium">
                 CHAPTER 08 · R. S. V. P.
               </span>
               <span className="w-5 h-px bg-stone-300" />
             </div>
 
             {/* 엽서 프레임 박스 */}
-            <div className="max-w-[370px] mx-auto p-7 sm:p-8 bg-stone-50/70 border border-stone-200/90 relative shadow-2xs">
+            <div className="max-w-[370px] mx-auto p-7 sm:p-8 bg-stone-50/70 border border-stone-200/90 relative shadow-2xs rounded-xs">
               {/* 우측 상단 스탬프 장식 */}
-              <div className="absolute top-4 right-4 w-9 h-11 border border-dashed border-stone-300 flex items-center justify-center text-[9px] font-editorial-serif tracking-widest text-stone-400 uppercase rotate-6">
+              <div className="absolute top-4 right-4 w-9 h-11 border border-dashed border-stone-300 flex items-center justify-center text-[9px] font-sans tracking-widest text-stone-400 uppercase rotate-6">
                 POST
               </div>
 
-              <h2 className="font-editorial-title text-[30px] sm:text-[34px] text-stone-900 leading-tight tracking-normal mb-2">
+              <h2 className="font-sans text-[22px] sm:text-[24px] text-stone-900 leading-tight tracking-[0.04em] mb-2 font-normal">
                 Attendance Card
               </h2>
-              <p className="font-korean-serif text-[13px] text-stone-600 mb-8 leading-relaxed break-keep">
+              <p className="font-serif text-[12.5px] sm:text-[13px] text-stone-600 mb-7 leading-[1.8] font-normal tracking-tight break-keep">
                 귀한 발걸음으로 두 사람의 첫 시작을 함께해 주실 분들을 정성껏 모시고자 하오니, 참석 여부를 알려주세요.
               </p>
 
               <button
                 type="button"
                 onClick={() => setShowRsvpModal(true)}
-                className="w-full py-4 bg-stone-900 hover:bg-stone-800 text-white text-[12.5px] uppercase tracking-[0.2em] font-editorial-serif transition-colors cursor-pointer shadow-sm"
+                className="w-full py-3.5 px-6 rounded-full bg-stone-900 hover:bg-stone-800 text-white text-[10.5px] sm:text-[11px] uppercase tracking-[0.22em] font-sans font-medium transition-colors cursor-pointer shadow-sm"
               >
                 Respond to Invitation ✉
               </button>
@@ -1117,34 +1152,34 @@ export default function EditorialTemplate({ invitation }) {
 
       {/* 10. 축하 메시지 (Guestbook - 에디토리얼 독자 기고란 스타일) */}
       {showGuestbookSection && (
-        <section className="pt-24 sm:pt-32 pb-24 sm:pb-32 px-6 bg-white text-center border-b border-stone-200/80">
+        <section className="pt-16 sm:pt-20 pb-18 sm:pb-22 px-6 bg-white text-center border-b border-stone-200/80">
           <ScrollReveal>
             {/* 섹션 챕터 헤더 */}
             <div className="flex items-center justify-center gap-2 mb-3">
               <span className="w-5 h-px bg-stone-300" />
-              <span className="font-editorial-serif text-[11px] tracking-[0.3em] uppercase text-stone-400 font-medium">
+              <span className="font-sans text-[10px] sm:text-[10.5px] tracking-[0.28em] uppercase text-stone-400 font-medium">
                 CHAPTER 09 · GUESTBOOK
               </span>
               <span className="w-5 h-px bg-stone-300" />
             </div>
-            <h2 className="font-editorial-title text-[32px] sm:text-[36px] text-stone-900 leading-tight tracking-normal mb-2">
+            <h2 className="font-sans text-[24px] sm:text-[26px] text-stone-900 leading-tight tracking-[0.04em] mb-2 font-normal">
               Warm Wishes
             </h2>
-            <p className="font-korean-serif text-[13.5px] text-stone-600 mb-10">
+            <p className="font-serif text-[13px] sm:text-[13.5px] text-stone-500 mb-8 font-normal tracking-tight">
               두 사람의 앞날을 축복하는 마음을 남겨주세요.
             </p>
 
-            {/* 방명록 메시지 카드 (매거진 독자 카드 스타일) */}
+            {/* 방명록 메시지 카드 */}
             {guestbookList.length > 0 ? (
-              <div className="max-w-[360px] mx-auto mb-8 p-6 sm:p-7 bg-stone-50/70 border border-stone-200/90 min-h-[140px] flex flex-col justify-between relative text-left">
-                <span className="font-editorial-serif italic text-3xl text-stone-300 block leading-none mb-2">
+              <div className="max-w-[360px] mx-auto mb-8 p-6 sm:p-7 bg-stone-50/70 border border-stone-200/90 min-h-[140px] flex flex-col justify-between relative text-left rounded-xs">
+                <span className="font-sans italic text-3xl text-stone-300 block leading-none mb-2">
                   “
                 </span>
-                <p className="font-korean-serif text-[14.5px] text-stone-800 leading-relaxed whitespace-pre-line mb-4 font-normal">
+                <p className="font-serif text-[13.5px] sm:text-[14px] text-stone-800 leading-[1.9] whitespace-pre-line mb-4 font-normal tracking-tight">
                   {guestbookList[guestbookIndex]?.content}
                 </p>
-                <div className="flex items-center justify-between text-xs text-stone-400 font-sans border-t border-stone-200/60 pt-3">
-                  <span className="font-editorial-serif italic tracking-wide text-stone-600">
+                <div className="flex items-center justify-between text-xs text-stone-400 font-serif border-t border-stone-200/60 pt-3">
+                  <span className="font-serif italic tracking-wide text-stone-600 text-[12px]">
                     — From. {guestbookList[guestbookIndex]?.author}
                   </span>
                   <div className="flex items-center gap-3">
@@ -1154,7 +1189,7 @@ export default function EditorialTemplate({ invitation }) {
                     <button
                       type="button"
                       onClick={() => setDeleteTargetMsg(guestbookList[guestbookIndex])}
-                      className="hover:text-stone-700 cursor-pointer text-[11px] underline underline-offset-2"
+                      className="hover:text-stone-700 cursor-pointer text-[11px] underline underline-offset-2 font-serif"
                     >
                       삭제
                     </button>
@@ -1162,7 +1197,7 @@ export default function EditorialTemplate({ invitation }) {
                 </div>
               </div>
             ) : (
-              <p className="font-korean-serif text-stone-400 text-sm mb-8">
+              <p className="font-serif text-stone-400 text-[13px] mb-8 tracking-tight font-normal">
                 첫 번째 축하 메시지의 주인공이 되어주세요.
               </p>
             )}
@@ -1170,7 +1205,7 @@ export default function EditorialTemplate({ invitation }) {
             <button
               type="button"
               onClick={() => setShowGuestbookModal(true)}
-              className="py-3 px-8 border border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white transition-colors text-xs uppercase tracking-widest font-editorial-serif cursor-pointer"
+              className="py-3 px-8 rounded-full border border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white transition-colors text-[10.5px] sm:text-[11px] uppercase tracking-[0.2em] font-sans font-medium cursor-pointer shadow-2xs"
             >
               Write Message · 글 남기기
             </button>
@@ -1179,11 +1214,11 @@ export default function EditorialTemplate({ invitation }) {
       )}
 
       {/* 11. 엔딩 사진 & 매거진 백커버 (Back Cover & Colophon) */}
-      <section className="pt-24 sm:pt-32 pb-24 sm:pb-32 px-6 bg-white text-center">
+      <section className="pt-16 sm:pt-20 pb-20 sm:pb-24 px-6 bg-white text-center">
         <ScrollReveal duration={1000}>
           {/* 매거진 백커버 사진 액자 */}
           {endingImage && (
-            <div className="max-w-[340px] mx-auto mb-10 overflow-hidden bg-white p-2 border border-stone-200 shadow-sm">
+            <div className="max-w-[340px] mx-auto mb-9 overflow-hidden bg-white p-2 border border-stone-200 shadow-sm rounded-xs">
               <img
                 src={endingImage}
                 alt="Wedding ending"
@@ -1197,19 +1232,19 @@ export default function EditorialTemplate({ invitation }) {
             </div>
           )}
 
-          <h2 className="font-editorial-title italic text-[44px] sm:text-[48px] text-stone-900 leading-none mb-3">
+          <h2 className="font-wedding-script italic text-[38px] sm:text-[42px] text-stone-900 leading-tight mb-2.5 select-none">
             Thank you
           </h2>
-          <p className="font-korean-serif text-[14px] text-stone-600 mb-2">
+          <p className="font-serif text-[13px] sm:text-[13.5px] text-stone-600 mb-2 tracking-tight font-normal">
             소중한 발걸음으로 축복해 주셔서 진심으로 감사합니다.
           </p>
 
           {/* 에디토리얼 매거진 백커버 판권지 (Colophon & Barcode) */}
-          <div className="max-w-[300px] mx-auto mt-12 pt-8 border-t border-stone-200 text-stone-400 font-editorial-serif">
-            <p className="text-[11px] tracking-[0.25em] uppercase text-stone-500 font-semibold mb-1">
+          <div className="max-w-[300px] mx-auto mt-11 pt-8 border-t border-stone-200 text-stone-400">
+            <p className="font-sans text-[10.5px] sm:text-[11px] tracking-[0.25em] uppercase text-stone-500 font-semibold mb-1">
               THE WEDDING OF {displayNamesEn}
             </p>
-            <p className="text-[10px] tracking-widest text-stone-400 mb-6 font-mono">
+            <p className="font-serif text-[11px] tracking-tight text-stone-400 mb-6 font-normal">
               {formattedDates.fullKo}
             </p>
 
@@ -1223,7 +1258,7 @@ export default function EditorialTemplate({ invitation }) {
               <span className="font-mono text-[9px] tracking-[0.3em] text-stone-400">
                 {calendarData ? `ISSUE · ${calendarData.year}${String(calendarData.month).padStart(2, '0')}${String(calendarData.weddingDay).padStart(2, '0')} · FOREVER` : 'WEDDING LOOKBOOK · FOREVER'}
               </span>
-              <p className="font-mono text-[9px] tracking-widest text-stone-400 uppercase mt-4 select-none">
+              <p className="font-sans text-[9px] sm:text-[9.5px] tracking-[0.24em] text-stone-400 uppercase mt-4 select-none">
                 Designed by ATELIER DE MUKIRU
               </p>
             </div>
@@ -1236,7 +1271,7 @@ export default function EditorialTemplate({ invitation }) {
         <button
           type="button"
           onClick={handleKakaoShare}
-          className="flex-1 py-3 px-4 bg-[#FEE500] hover:bg-[#FADA0A] text-[#191919] text-xs font-medium rounded-none flex items-center justify-center gap-2 transition-colors cursor-pointer"
+          className="flex-1 py-3 px-4 bg-[#FEE500] hover:bg-[#FADA0A] text-[#191919] text-[12px] font-serif font-medium rounded-full flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-2xs"
         >
           <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
             <path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.557 1.708 4.8 4.27 6.054-.187.698-.675 2.528-.773 2.915-.121.482.177.476.372.346.154-.102 2.45-1.666 3.442-2.344.56.082 1.127.129 1.689.129 4.97 0 9-3.185 9-7.115S16.97 3 12 3z" />
@@ -1246,7 +1281,7 @@ export default function EditorialTemplate({ invitation }) {
         <button
           type="button"
           onClick={handleCopyLink}
-          className="py-3 px-5 border border-stone-300 hover:border-stone-900 text-stone-800 text-xs font-medium rounded-none transition-colors cursor-pointer"
+          className="py-3 px-5 border border-stone-300 hover:border-stone-900 text-stone-800 text-[12px] font-serif font-medium rounded-full hover:bg-stone-50 transition-colors cursor-pointer shadow-2xs"
         >
           링크 복사
         </button>

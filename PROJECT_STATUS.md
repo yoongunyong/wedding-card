@@ -176,7 +176,7 @@
 | **오프닝 구조** | **독립 커버 (수락 클릭 시 진입)** | **독립 커버 (OPEN THE LOOKBOOK 클릭 시 진입)** | **커버 없음 (본문 첫 화면 즉시 시작)** | **커버 없음 (본문 첫 화면 즉시 시작)** | **커버 없음 (본문 첫 화면 인라인 애니메이션)** |
 | **BGM 시작 시점** | `수락` 버튼 클릭 시 재생 | `OPEN THE LOOKBOOK` 버튼 클릭 시 재생 | 하객 첫 화면 터치 또는 플레이어 `▶` | 하객 첫 화면 터치 시 자동 시작 | 하객 첫 화면 터치 시 자동 시작 |
 | **하객 사진 수집** | **O (전 시안 공통 탑재)** | **O (전 시안 공통 탑재)** | **O (전 시안 공통 탑재)** | **O (전 시안 공통 탑재)** | **O (전 시안 공통 탑재)** |
-| **프로필 사진** | 커플 사진 1장 (`couple_profile`) | 커플 사진 1장 (`couple_profile`) | 폴라로이드 커플 사진 1장 | 와이드 커플 사진 + 신랑/신부 독사진 | 신랑 & 신부 2단 정사각 독사진 (`groom/bride`) |
+| **프로필 사진** | 커플 사진 1장 (`couple_profile`) | **신랑 & 신부 개별 카드 2장 + 와이드 커플 화보 1장** | 폴라로이드 커플 사진 1장 | 와이드 커플 사진 + 신랑/신부 독사진 | 신랑 & 신부 2단 정사각 독사진 (`groom/bride`) |
 | **인터뷰 (Q&A)** | X | X | X | X | **O (`interviews` 모달 문답 스토리)** |
 | **참석 여부 (RSVP)** | 모달 (신랑측/신부측, 참석/식사/버스) | 모달 (신랑측/신부측, 참석/식사/버스) | 모달 (신랑측/신부측, 참석/식사/버스) | 모달 (신랑측/신부측, 참석/식사/버스) | **인페이지 RSVP (식사 3옵션 + 전세버스 2옵션)** |
 | **갤러리 구조** | 단일 슬라이드 뷰어 | 단일 그리드 모달 | 단일 뷰어 | **[OUR STORY] + [PHOTO] 2탭 분리 (원본 컬러 보존)** | 와이드 2장 + 하단 no-gap 매거진 타일 |
@@ -359,6 +359,20 @@
    - 데스크톱 푸터 가림 해소 (`sm:hidden`).
 8. **[BGM 자동재생 로직] `app/[slug]/page.js` 2+3 구조 분기 완료**:
    - 시안 1, 2(수락/OPEN) vs 시안 3, 4, 5(첫 화면 터치).
+9. **[시안 2 리뉴얼] `EditorialTemplate.jsx` 본문 첫 화면 화이트 세리프 리디자인**:
+   - 오프닝 커버(`EditorialIntro.jsx`) 통과 후 본문 첫 화면(섹션 1)을 기존 풀스크린 다크 오버레이에서 화이트 프레임 화보 액자 구조로 전면 교체.
+   - 서체 규격: 본문 텍스트 `Noto Serif KR` (`font-serif`), 타원형 아웃라인 버튼 `Bodoni 72` (`font-bodoni`, `SCROLL TO OPEN ↓`).
+   - 반응형 화면 높이: `min-h-[100dvh] h-[100dvh]` 및 세로 비율 최적화로 모바일 전 기종에서 사진-문구-버튼이 1화면에 온전히 조화롭게 표시되도록 여백 정돈.
+   - 버튼 클릭 시 하단 스토리 섹션(`editorial-story-section`)으로 부드러운 스크롤 이동 연동.
+10. **[시안 2 프로필 & 커플 화보 전면 연동] 신랑·신부 개별 프로필 + 와이드 커플 화보 전수 반영**:
+    - **본문 2섹션**: 상단 가로선 + 영문 필기체 `Welcome to` & 커플 영문명 + 좌우 2단 액자 카드(신부 `Bride. 박지민`, 신랑 `Groom. 강민준`) + 정갈한 2행 혼주 정보 (`부모님 - 아들/딸 - 성함`). 서체 100% `Noto Serif KR` 적용.
+    - **본문 3섹션**: 가로 와이드 커플 화보(`couplePhoto`) + `초대합니다` 헤드라인 + 감성 2단락 초대글 (`Noto Serif KR`).
+    - **제작/수정 폼 연동**: `app/create/page.js` 및 `app/manage/[slug]/edit/page.js`에서 시안 2 선택 시 신랑/신부 단독 사진 업로드 필드가 활성화되도록 동기화 완료.
+    - **샘플 데이터 연동**: `lib/sampleInvitations.js`의 `editorial` 샘플에 신부/신랑 고화질 독사진 및 커플 화보 1:1 매칭 완료.
+11. **[시안 2 전 섹션 타이포그래피 조화 및 패밀리룩 완성]**:
+    - **한글 타이포그래피**: 캘린더, 식장 안내(지도/교통편), 계좌번호, 안내사항, 방명록, 엔딩 백커버 및 전용 모달 4종의 한글 헤드라인/본문/설명문을 **`Noto Serif KR` (`font-serif`)**로 100% 일원화.
+    - **영문 타이포그래피**: 챕터 라벨(CHAPTER 03~09), 영문 섹션 타이틀, 버튼 텍스트(`View Full Lookbook`, `Respond to Invitation`, `Write Message`, `Copy` 등)를 **`Bodoni 72` (`font-bodoni`)** 타원형 알약(Pill) 아웃라인 스타일로 통일하여 본문 첫 화면과의 패밀리룩 구축.
+    - **여백 균형 최적화**: 섹션 상하 여백을 `pt-16 sm:pt-20 pb-18 sm:pb-22`로 단정하게 조율하여 과하게 벙벙하지 않고 지루하지 않은 에디토리얼 화보 리듬감 완성.
 
 ---
 
@@ -378,11 +392,11 @@
   - `components/landing/StickyBottomBar.jsx` (모바일 하단 고정 바 & 카카오 플로팅)
   - `components/landing/SamplePreviewModal.jsx` (전체화면 실시간 샘플 뷰어 모달)
 - **청첩장 5대 템플릿 컴포넌트**:
-  - `components/templates/basic/BasicTemplate.jsx` (시안 1 · 에어드랍 클래식)
-  - `components/templates/editorial/EditorialTemplate.jsx` (시안 2 · 클래식 에디토리얼)
-  - `components/templates/playlist/PlaylistTemplate.jsx` (시안 3 · 감성 플레이리스트)
-  - `components/templates/cinematic/CinematicTemplate.jsx` (시안 4 · 시네마틱 모노리스)
-  - `components/templates/scene/SceneTemplate.jsx` (시안 5 · 모던 씬)
+  - `components/templates/basic/BasicTemplate.jsx` (시안 1 · 에어드랍 클래식: 계좌 아코디언 기본 펼침)
+  - `components/templates/editorial/EditorialTemplate.jsx` (시안 2 · 클래식 에디토리얼: Noto Serif KR & Bickham Script Pro, 타원형 `SCROLL TO OPEN ↓` 버튼, 하단 1px `#E3E3E3` 가로 구분선, 132px `Welcome to` 여백, 혼주 260px 중앙 정렬, 계좌 아코디언 기본 펼침, 섹션 영문 헤더/소제목/모달 Bodoni ➔ 고딕체(Pretendard) 전면 교체 완비)
+  - `components/templates/playlist/PlaylistTemplate.jsx` (시안 3 · 감성 플레이리스트: 계좌 아코디언 기본 펼침)
+  - `components/templates/cinematic/CinematicTemplate.jsx` (시안 4 · 시네마틱 모노리스: 신랑/신부 탭 전환 방식 유지)
+  - `components/templates/scene/SceneTemplate.jsx` (시안 5 · 모던 씬: 계좌 아코디언 기본 펼침으로 전환 완비)
 - **오프닝 & BGM 핵심**:
   - `components/EnvelopeIntro.jsx` (시안 1 AirDrop 모달 오프닝)
   - `components/templates/editorial/EditorialIntro.jsx` (시안 2 매거진 룩북 오프닝)

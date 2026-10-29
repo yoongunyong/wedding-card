@@ -110,13 +110,13 @@ export default function EditorialRsvpModal({ invitationId, onClose }) {
 
         {/* 헤더 */}
         <div className="text-center pb-6 border-b border-stone-200 mb-6">
-          <span className="font-editorial-serif text-[11px] tracking-[0.3em] uppercase text-stone-400 block mb-1 font-semibold">
+          <span className="font-sans text-[10px] sm:text-[10.5px] tracking-[0.28em] uppercase text-stone-400 block mb-1 font-medium">
             R . S . V . P
           </span>
-          <h3 className="font-editorial-title text-[28px] text-stone-900 leading-tight">
+          <h3 className="font-sans text-[22px] sm:text-[24px] text-stone-900 leading-tight font-normal">
             Attendance Card
           </h3>
-          <p className="font-korean-serif text-[12.5px] text-stone-600 mt-1.5 leading-relaxed break-keep">
+          <p className="font-serif text-[12.5px] sm:text-[13px] text-stone-600 mt-1.5 leading-relaxed break-keep font-normal tracking-tight">
             귀한 발걸음으로 축복해 주실 분들을<br />소중히 맞이하고자 하오니 참석 여부를 알려주세요.
           </p>
         </div>
@@ -240,7 +240,7 @@ export default function EditorialRsvpModal({ invitationId, onClose }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-stone-900 hover:bg-stone-800 disabled:bg-stone-400 text-white text-xs uppercase tracking-[0.2em] font-editorial-serif transition-colors cursor-pointer"
+              className="w-full py-3.5 bg-stone-900 hover:bg-stone-800 disabled:bg-stone-400 text-white text-[11px] uppercase tracking-[0.22em] font-sans font-medium rounded-full transition-colors cursor-pointer shadow-sm"
             >
               {loading ? 'Submitting...' : 'Submit RSVP · 참석 의사 전달'}
             </button>

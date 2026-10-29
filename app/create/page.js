@@ -200,6 +200,7 @@ function CreateInvitationContent() {
     show_gallery: true,
     show_accounts: true,
     show_rsvp: true,
+    show_rsvp_meal: true,
     show_rsvp_bus: false,
     show_guestbook: true,
     show_guest_photos: true,
@@ -1257,6 +1258,7 @@ function CreateInvitationContent() {
           show_gallery: formData.show_gallery,
           show_accounts: formData.show_accounts,
           show_rsvp: formData.show_rsvp,
+          show_rsvp_meal: formData.show_rsvp_meal !== false,
           show_rsvp_bus: Boolean(formData.show_rsvp_bus),
           show_guestbook: formData.show_guestbook,
           show_guest_photos: formData.show_guest_photos,
@@ -3631,17 +3633,32 @@ function CreateInvitationContent() {
                     />
                     <span>참석의사 조사 (RSVP)</span>
                   </label>
-                  <label className="flex items-center gap-2.5 cursor-pointer p-3 bg-[#FAFAF9] hover:bg-stone-100/70 border border-stone-200/60 rounded-xl transition-colors select-none">
+                  <label className={`flex items-center gap-2.5 p-3 bg-[#FAFAF9] hover:bg-stone-100/70 border border-stone-200/60 rounded-xl transition-colors select-none ${!formData.show_rsvp ? 'opacity-40 pointer-events-none' : 'cursor-pointer'}`}>
                     <input
                       type="checkbox"
-                      name="show_rsvp_bus"
-                      checked={formData.show_rsvp_bus}
+                      name="show_rsvp_meal"
+                      disabled={!formData.show_rsvp}
+                      checked={formData.show_rsvp && formData.show_rsvp_meal !== false}
                       onChange={handleChange}
                       className="rounded border-stone-300 text-stone-900 accent-stone-900"
                     />
                     <div>
-                      <span>전세버스 탑승 조사</span>
-                      <span className="text-[10px] text-stone-400 block font-light">시안 5 RSVP 버스 탑승 여부 질문</span>
+                      <span>식사 여부 조사 (RSVP)</span>
+                      <span className="text-[10px] text-stone-400 block font-light">전 시안 적용: 식사 가능/불가/미정 질문</span>
+                    </div>
+                  </label>
+                  <label className={`flex items-center gap-2.5 p-3 bg-[#FAFAF9] hover:bg-stone-100/70 border border-stone-200/60 rounded-xl transition-colors select-none ${!formData.show_rsvp ? 'opacity-40 pointer-events-none' : 'cursor-pointer'}`}>
+                    <input
+                      type="checkbox"
+                      name="show_rsvp_bus"
+                      disabled={!formData.show_rsvp}
+                      checked={formData.show_rsvp && Boolean(formData.show_rsvp_bus)}
+                      onChange={handleChange}
+                      className="rounded border-stone-300 text-stone-900 accent-stone-900"
+                    />
+                    <div>
+                      <span>전세버스 탑승 조사 (RSVP)</span>
+                      <span className="text-[10px] text-stone-400 block font-light">전 시안 적용: 전세버스 탑승/미탑승 질문</span>
                     </div>
                   </label>
                   <label className="flex items-center gap-2.5 cursor-pointer p-3 bg-[#FAFAF9] hover:bg-stone-100/70 border border-stone-200/60 rounded-xl transition-colors select-none">

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
-export default function BasicRsvpModal({ invitationId, onClose }) {
+export default function BasicRsvpModal({ invitation, invitationId, onClose }) {
   const [side, setSide] = useState('groom'); // 'groom' | 'bride'
   const [attend, setAttend] = useState(true); // true | false
   const [name, setName] = useState('');

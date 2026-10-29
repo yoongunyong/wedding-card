@@ -961,6 +961,7 @@ export default function PlaylistTemplate({ invitation }) {
       )}
       {showRsvpModal && (
         <EditorialRsvpModal
+          invitation={invitation}
           onClose={() => setShowRsvpModal(false)}
           invitationId={invitation?.id}
         />

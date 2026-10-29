@@ -392,11 +392,15 @@
   - `components/landing/StickyBottomBar.jsx` (모바일 하단 고정 바 & 카카오 플로팅)
   - `components/landing/SamplePreviewModal.jsx` (전체화면 실시간 샘플 뷰어 모달)
 - **청첩장 5대 템플릿 컴포넌트**:
-  - `components/templates/basic/BasicTemplate.jsx` (시안 1 · 에어드랍 클래식: 계좌 아코디언 기본 펼침)
-  - `components/templates/editorial/EditorialTemplate.jsx` (시안 2 · 클래식 에디토리얼: 첫 화보 세로 10% 정밀 확장 `aspect-[3/4.35] max-h-[61vh]`, 하단 1px `#E3E3E3` 가로 구분선, SCROLL TO OPEN 버튼 포함 영문 헤더/소제목/모달 고딕체(font-sans) 전면 교체 완비, 132px `Welcome to` 여백, 혼주 260px 정중앙 정렬, 혼주 ↔ 아래 커플 사진 하단 여백 대폭 확장 `pb-[210px] sm:pb-[240px]` 및 불필요한 중간 경계선 제거, 혼주 상단 여백 `mt-16 sm:mt-18` 확장, 계좌 아코디언 기본 펼침 완비)
-  - `components/templates/playlist/PlaylistTemplate.jsx` (시안 3 · 감성 플레이리스트: 계좌 아코디언 기본 펼침)
-  - `components/templates/cinematic/CinematicTemplate.jsx` (시안 4 · 시네마틱 모노리스: 신랑/신부 탭 전환 방식 유지)
-  - `components/templates/scene/SceneTemplate.jsx` (시안 5 · 모던 씬: 계좌 아코디언 기본 펼침으로 전환 완비)
+  - `components/templates/basic/BasicTemplate.jsx` (시안 1 · 에어드랍 클래식: 계좌 아코디언 기본 펼침, RSVP 모달 식사·전세버스 수집 연동)
+  - `components/templates/editorial/EditorialTemplate.jsx` (시안 2 · 클래식 에디토리얼: 첫 화보 세로 10% 정밀 확장 `aspect-[3/4.35] max-h-[61vh]`, 하단 1px `#E3E3E3` 가로 구분선, SCROLL TO OPEN 버튼 포함 영문 헤더/소제목/모달 고딕체(font-sans) 전면 교체 완비, 132px `Welcome to` 여백, 혼주 260px 정중앙 정렬, 혼주 ↔ 아래 커플 사진 하단 여백 대폭 확장 `pb-[210px] sm:pb-[240px]` 및 불필요한 중간 경계선 제거, 혼주 상단 여백 `mt-16 sm:mt-18` 확장, 계좌 아코디언 기본 펼침 완비, RSVP 모달 식사·전세버스 수집 연동)
+  - `components/templates/playlist/PlaylistTemplate.jsx` (시안 3 · 감성 플레이리스트: 계좌 아코디언 기본 펼침, RSVP 모달 식사·전세버스 수집 연동)
+  - `components/templates/cinematic/CinematicTemplate.jsx` (시안 4 · 시네마틱 모노리스: 신랑/신부 탭 전환 방식 유지, RSVP 모달 식사·전세버스 수집 연동)
+  - `components/templates/scene/SceneTemplate.jsx` (시안 5 · 모던 씬: 계좌 아코디언 기본 펼침으로 전환 완비, 인페이지 RSVP 식사·전세버스 on/off 연동)
+- **RSVP 참석의사 조사 (전 시안 공통 표준화)**:
+  - `components/templates/basic/BasicRsvpModal.jsx` (시안 1 전용: 신랑/신부측, 참석여부, 성함, 동행인원, 식사여부(식사가능/불가/미정), 전세버스(탑승/미탑승) 연동)
+  - `components/templates/editorial/EditorialRsvpModal.jsx` (시안 2, 3, 4 공통: 에디토리얼 모던 고딕 규격 식사·전세버스 조사 완비)
+  - 제작(`/create`) 및 수정(`/edit`) 옵션 체크박스: `식사 여부 조사(show_rsvp_meal)`, `전세버스 탑승 조사(show_rsvp_bus)` 독립 ON/OFF 완비
 - **오프닝 & BGM 핵심**:
   - `components/EnvelopeIntro.jsx` (시안 1 AirDrop 모달 오프닝)
   - `components/templates/editorial/EditorialIntro.jsx` (시안 2 매거진 룩북 오프닝)

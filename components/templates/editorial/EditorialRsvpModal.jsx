@@ -3,13 +3,30 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
-export default function EditorialRsvpModal({ invitationId, onClose }) {
+export default function EditorialRsvpModal({ invitation, invitationId, onClose }) {
   const [side, setSide] = useState('groom'); // 'groom' | 'bride'
   const [attend, setAttend] = useState(true); // true | false
   const [name, setName] = useState('');
   const [companionCount, setCompanionCount] = useState('');
   const [phone, setPhone] = useState('');
+  const [meal, setMeal] = useState('식사 가능'); // '식사 가능' | '식사 불가' | '미정'
+  const [bus, setBus] = useState('미탑승'); // '탑승' | '미탑승'
   const [loading, setLoading] = useState(false);
+
+  const config = invitation?.template_config || {};
+  const extra = invitation?.extra_data || {};
+  const isSample = Boolean(invitation?.is_sample_preview || invitation?.slug === 'editorial');
+
+  // 전세버스 탑승 조사 노출 여부 (제작/수정 시 체크박스 on/off 연동)
+  const showBusOption = Boolean(
+    config.show_rsvp_bus === true ||
+    extra.has_bus ||
+    extra.show_bus ||
+    (isSample && config.show_rsvp_bus !== false)
+  );
+
+  // 식사 여부 조사 노출 여부 (기본 true, config.show_rsvp_meal === false일 때만 비활성화)
+  const showMealOption = config.show_rsvp_meal !== false;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -54,7 +71,8 @@ export default function EditorialRsvpModal({ invitationId, onClose }) {
       name: cleanName,
       companion_count: attend ? (parseInt(companionCount, 10) || 0) : 0,
       phone: cleanPhone,
-      meal: null,
+      meal: attend && showMealOption ? meal : null,
+      bus: attend && showBusOption ? bus : null,
     };
 
     let error = null;
@@ -214,6 +232,56 @@ export default function EditorialRsvpModal({ invitationId, onClose }) {
                 placeholder="본인 제외 동행 인원 수 (예: 1)"
                 className="w-full px-3.5 py-2.5 bg-white border border-stone-300 text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 text-xs font-sans transition-colors"
               />
+            </div>
+          )}
+
+          {/* 4-1. 식사 여부 (참석 시 활성) */}
+          {attend && showMealOption && (
+            <div>
+              <span className="font-editorial-serif text-[11px] tracking-widest uppercase text-stone-400 block mb-2 font-semibold">
+                05 · MEAL PREFERENCE
+              </span>
+              <div className="grid grid-cols-3 gap-2">
+                {['식사 가능', '식사 불가', '미정'].map((opt) => (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => setMeal(opt)}
+                    className={`py-2.5 text-xs tracking-wider transition-all cursor-pointer ${
+                      meal === opt
+                        ? 'bg-stone-900 text-white font-medium'
+                        : 'bg-white border border-stone-300 text-stone-600 hover:border-stone-900'
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 4-2. 전세버스 탑승 여부 (참석 시 & 버스 옵션 활성화 시) */}
+          {attend && showBusOption && (
+            <div>
+              <span className="font-editorial-serif text-[11px] tracking-widest uppercase text-stone-400 block mb-2 font-semibold">
+                06 · CHARTER BUS
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                {['탑승', '미탑승'].map((opt) => (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => setBus(opt)}
+                    className={`py-2.5 text-xs tracking-wider transition-all cursor-pointer ${
+                      bus === opt
+                        ? 'bg-stone-900 text-white font-medium'
+                        : 'bg-white border border-stone-300 text-stone-600 hover:border-stone-900'
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 

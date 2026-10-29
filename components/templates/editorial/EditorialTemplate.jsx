@@ -1310,7 +1310,7 @@ export default function EditorialTemplate({ invitation }) {
         <EditorialContactModal invitation={invitation} onClose={() => setShowContactModal(false)} />
       )}
       {showRsvpModal && (
-        <EditorialRsvpModal invitationId={invitation?.id} onClose={() => setShowRsvpModal(false)} />
+        <EditorialRsvpModal invitation={invitation} invitationId={invitation?.id} onClose={() => setShowRsvpModal(false)} />
       )}
       {showGuestbookModal && (
         <EditorialGuestbookModal

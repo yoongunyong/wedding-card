@@ -305,6 +305,8 @@ export default function SceneTemplate({ invitation }) {
     return hasBusInNotice;
   }, [config.show_rsvp_bus, extra.has_bus, isSample, infoNotices]);
 
+  const showMealOption = config.show_rsvp_meal !== false;
+
   // 계좌 목록
   const groomAccounts = (invitation?.accounts || []).filter((a) => a.group === '신랑측' || a.side === 'groom');
   const brideAccounts = (invitation?.accounts || []).filter((a) => a.group === '신부측' || a.side === 'bride');
@@ -405,7 +407,7 @@ export default function SceneTemplate({ invitation }) {
       side: rsvpSide,
       attend: rsvpAttend,
       companion_count: rsvpAttend ? Math.max(0, rsvpCount - 1) : 0,
-      meal: rsvpAttend ? rsvpMeal : null,
+      meal: (rsvpAttend && showMealOption) ? rsvpMeal : null,
       bus: (rsvpAttend && showBusOption) ? rsvpBus : null,
       phone: cleanPhone,
     };

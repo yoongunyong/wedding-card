@@ -1100,7 +1100,7 @@ export default function CinematicTemplate({ invitation }) {
 
       {/* 모달 연동 레이어 */}
       {showRsvpModal && (
-        <EditorialRsvpModal invitationId={invitation?.id} onClose={() => setShowRsvpModal(false)} />
+        <EditorialRsvpModal invitation={invitation} invitationId={invitation?.id} onClose={() => setShowRsvpModal(false)} />
       )}
       {showGuestbookModal && (
         <EditorialGuestbookModal

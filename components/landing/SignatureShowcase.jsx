@@ -1112,7 +1112,16 @@ export default function SignatureShowcase() {
                 <div className="grid grid-cols-2 gap-2 pt-1">
                   <div className="bg-white rounded-xl border border-stone-200/80 overflow-hidden shadow-2xs group">
                     <div className="relative aspect-square overflow-hidden bg-stone-100">
-                      <img src="/samples/main-01-basic.jpg" alt="Guest Snap" className="w-full h-full object-cover" />
+                      <img
+                        src="/samples/main-01-garden.jpg"
+                        alt="Guest Snap"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          if (e.currentTarget.src !== '/samples/garden-couple.jpg') {
+                            e.currentTarget.src = '/samples/garden-couple.jpg';
+                          }
+                        }}
+                      />
                       <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-black/60 backdrop-blur-xs text-white text-[9px] rounded-md font-medium">
                         From. 지은 🤍
                       </span>
@@ -1124,7 +1133,16 @@ export default function SignatureShowcase() {
 
                   <div className="bg-white rounded-xl border border-stone-200/80 overflow-hidden shadow-2xs group">
                     <div className="relative aspect-square overflow-hidden bg-stone-100">
-                      <img src="/samples/main-04-cinematic.jpg" alt="Guest Snap" className="w-full h-full object-cover" />
+                      <img
+                        src="/samples/main-04-cinematic.jpg"
+                        alt="Guest Snap"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          if (e.currentTarget.src !== '/samples/garden-couple.jpg') {
+                            e.currentTarget.src = '/samples/garden-couple.jpg';
+                          }
+                        }}
+                      />
                       <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-black/60 backdrop-blur-xs text-white text-[9px] rounded-md font-medium">
                         From. 민우 ✨
                       </span>
@@ -1136,7 +1154,16 @@ export default function SignatureShowcase() {
 
                   <div className="bg-white rounded-xl border border-stone-200/80 overflow-hidden shadow-2xs group">
                     <div className="relative aspect-square overflow-hidden bg-stone-100">
-                      <img src="/samples/main-beach.jpg" alt="Guest Snap" className="w-full h-full object-cover" />
+                      <img
+                        src="/samples/main-beach.jpg"
+                        alt="Guest Snap"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          if (e.currentTarget.src !== '/samples/garden-couple.jpg') {
+                            e.currentTarget.src = '/samples/garden-couple.jpg';
+                          }
+                        }}
+                      />
                       <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-black/60 backdrop-blur-xs text-white text-[9px] rounded-md font-medium">
                         From. 지영 📷
                       </span>
@@ -1148,7 +1175,16 @@ export default function SignatureShowcase() {
 
                   <div className="bg-white rounded-xl border border-stone-200/80 overflow-hidden shadow-2xs group">
                     <div className="relative aspect-square overflow-hidden bg-stone-100">
-                      <img src="/samples/main-02-editorial.jpg" alt="Guest Snap" className="w-full h-full object-cover" />
+                      <img
+                        src="/samples/main-02-editorial.jpg"
+                        alt="Guest Snap"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          if (e.currentTarget.src !== '/samples/garden-couple.jpg') {
+                            e.currentTarget.src = '/samples/garden-couple.jpg';
+                          }
+                        }}
+                      />
                       <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-black/60 backdrop-blur-xs text-white text-[9px] rounded-md font-medium">
                         From. 준혁 👏
                       </span>

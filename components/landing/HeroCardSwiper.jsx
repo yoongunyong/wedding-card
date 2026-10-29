@@ -27,12 +27,12 @@ const OFFICIAL_TEMPLATES = [
     category: 'OPTION 02',
     title: '클래식 에디토리얼',
     subTitle: 'Editorial Lookbook',
-    badge: '매거진 화보형',
+    badge: '매거진 룩북형',
     dateText: '2027. 05. 15 SUN',
     names: '강민준 · 박지민',
-    venue: '반얀트리 클럽 앤 스파',
-    image: '/samples/editorial-cover.jpg',
-    concept: 'Vogue 스타일 매거진 표지 & 흑백 화보',
+    venue: '반얀트리 클럽 앤 스파 서울',
+    image: '/samples/main-02-editorial.jpg',
+    concept: '우아한 캘리그래피 & 화이트 룩북 오프닝',
     accentColor: 'from-black/90 via-black/40 to-black/20',
     type: 'editorial',
   },
@@ -459,14 +459,21 @@ export default function HeroCardSwiper() {
                     </div>
                   )}
 
+                  {/* [시안 02: 클래식 에디토리얼 실제 오프닝 1:1 팩트 매칭] */}
                   {card.type === 'editorial' && (
-                    <div className="absolute inset-x-4 top-20 z-10 pointer-events-none text-center">
-                      <p className="font-editorial-serif text-2xl sm:text-3xl tracking-[0.25em] text-white/90 font-light drop-shadow-sm uppercase">
-                        VOGUE
+                    <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none text-center flex flex-col items-center">
+                      <p
+                        className="text-white text-2xl sm:text-[26px] font-normal italic drop-shadow-md select-none mb-2"
+                        style={{
+                          fontFamily: "'Bickham Script Pro', 'Bickham Script Pro 3', 'Great Vibes', 'Alex Brush', cursive",
+                        }}
+                      >
+                        We are getting married
                       </p>
-                      <p className="text-[8px] font-mono tracking-widest text-white/70 uppercase -mt-1">
-                        WEDDING SPECIAL ISSUE
-                      </p>
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#DDE8F4]/95 backdrop-blur-xs border border-[#BED4E8] text-stone-800 text-[8.5px] font-serif tracking-[0.16em] uppercase font-medium shadow-md">
+                        <span>OPEN THE LOOKBOOK</span>
+                        <span className="text-[9px]">→</span>
+                      </div>
                     </div>
                   )}
 

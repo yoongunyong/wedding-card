@@ -49,6 +49,10 @@ body {
   font-family: 'Noto Serif KR', var(--font-serif-kr), serif !important;
 }
 
+.font-bickham {
+  font-family: 'Bickham Script Pro', 'Bickham Script Pro 3', 'Bickham Script Pro Regular', 'Great Vibes', 'Alex Brush', 'Pinyon Script', cursive !important;
+}
+
 .font-script,
 .font-wedding-script {
   font-family: 'Great Vibes', 'Pinyon Script', 'Alex Brush', cursive, var(--font-serif-kr), serif !important;

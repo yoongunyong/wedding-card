@@ -1,12 +1,10 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function EditorialIntro({ invitation, onOpen }) {
   // 'idle' | 'darkening' | 'revealing'
   const [transitionStep, setTransitionStep] = useState('idle');
-  const [isShaking, setIsShaking] = useState(false);
-  const [declineMsg, setDeclineMsg] = useState('');
 
   const isSample = Boolean(invitation?.is_sample_preview || invitation?.slug === 'editorial');
 
@@ -17,29 +15,28 @@ export default function EditorialIntro({ invitation, onOpen }) {
     invitation?.cover_image ||
     invitation?.extra_data?.cover_image ||
     invitation?.extra_data?.main_image ||
-    (isSample ? '/samples/editorial-cover.jpg' : '');
+    (isSample ? '/samples/main-02-editorial.jpg' : '/samples/main-02-editorial.jpg');
 
-  // 영문/한글 이름 및 정보 (하드코딩 완전 배제)
+  // 신랑·신부 한글 성함
   const groomName = invitation?.groom_name || '';
   const brideName = invitation?.bride_name || '';
-  const groomEn = invitation?.groom_first_name_en || invitation?.groom_name_en?.split(' ')[0] || '';
-  const brideEn = invitation?.bride_first_name_en || invitation?.bride_name_en?.split(' ')[0] || '';
-  const coupleEn = invitation?.main_names_en || (groomEn && brideEn ? `${groomEn} & ${brideEn}` : (groomEn || brideEn || ''));
-  
-  const venueName = invitation?.venue_name || '';
+  const coupleKo = [groomName, brideName].filter(Boolean).join(' · ') || (isSample ? '강민준 · 박지민' : '');
 
-  // 날짜 포맷 (예: MAY 14, 2026)
+  // 웨딩홀
+  const venueName = invitation?.venue_name || (isSample ? '반얀트리 클럽 앤 스파 서울' : '');
+
+  // 날짜 포맷 (예: May 15. 2027)
   const weddingDateStr = invitation?.wedding_date;
   const dateFormatted = (() => {
-    if (!weddingDateStr) return '';
+    if (!weddingDateStr) return isSample ? 'May 15. 2027' : '';
     const normalized = typeof weddingDateStr === 'string' 
       ? weddingDateStr.replace(' ', 'T') 
       : weddingDateStr;
     const d = new Date(normalized);
-    if (isNaN(d.getTime())) return '';
+    if (isNaN(d.getTime())) return isSample ? 'May 15. 2027' : '';
     
-    const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
-    return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${months[d.getMonth()]} ${d.getDate()}. ${d.getFullYear()}`;
   })();
 
   useEffect(() => {
@@ -64,16 +61,7 @@ export default function EditorialIntro({ invitation, onOpen }) {
     };
   }, []);
 
-  // 거절(Decline) 클릭 시 에디토리얼 위트 토스트
-  const handleDecline = (e) => {
-    e.stopPropagation();
-    setIsShaking(true);
-    setDeclineMsg('저희의 첫 페이지를 꼭 함께 열어주세요 🕊️');
-    setTimeout(() => setIsShaking(false), 500);
-    setTimeout(() => setDeclineMsg(''), 2500);
-  };
-
-  // 매거진 오픈 (Open The Lookbook) 클릭 시 시네마틱 페이드 & BGM 재생
+  // 매거진 오픈 (OPEN THE LOOKBOOK) 클릭 시 시네마틱 페이드 & BGM 재생
   const handleOpen = (e) => {
     e.stopPropagation();
     if (transitionStep !== 'idle') return;
@@ -103,14 +91,13 @@ export default function EditorialIntro({ invitation, onOpen }) {
       }
       setTransitionStep('revealing');
 
-      // 3단계: 어둠이 안개처럼 걷힌 후 인트로 언마운트 (항상 청첩장 최상단 보장)
+      // 3단계: 어둠이 안개처럼 걷힌 후 인트로 언마운트
       setTimeout(() => {
         if (typeof window !== 'undefined') {
           document.body.style.overflow = '';
           document.documentElement.style.overflow = '';
           window.scrollTo(0, 0);
         }
-        // 부모 모달 컨테이너 스크롤도 최상단 리셋
         if (typeof document !== 'undefined') {
           const previewContainer = document.getElementById('preview-scroll-container');
           if (previewContainer) {
@@ -124,9 +111,9 @@ export default function EditorialIntro({ invitation, onOpen }) {
 
   return (
     <>
-      {/* 1. 에디토리얼 룩북 커버 프레임 레이어 */}
+      {/* 1. 에디토리얼 인트로 전체 컨테이너 */}
       <div
-        className={`fixed inset-0 z-50 flex items-center justify-center p-4 select-none bg-stone-900/70 backdrop-blur-md transition-opacity duration-300 ${
+        className={`fixed inset-0 z-50 flex flex-col justify-between items-center px-4 py-8 sm:py-12 select-none overflow-hidden transition-opacity duration-300 ${
           transitionStep === 'revealing' 
             ? 'hidden pointer-events-none' 
             : transitionStep === 'darkening'
@@ -134,118 +121,86 @@ export default function EditorialIntro({ invitation, onOpen }) {
             : 'opacity-100'
         }`}
       >
-        <style jsx>{`
-          @keyframes editorialShake {
-            0%, 100% { transform: translateX(0); }
-            20% { transform: translateX(-4px); }
-            40% { transform: translateX(4px); }
-            60% { transform: translateX(-3px); }
-            80% { transform: translateX(3px); }
-          }
-          .editorial-shake {
-            animation: editorialShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-          }
-        `}</style>
+        {/* 1-1. 백그라운드 이미지 (블러 처리) & 은은한 톤다운 오버레이 */}
+        <div className="absolute inset-0 pointer-events-none select-none overflow-hidden">
+          <img
+            src="/samples/editorial_intro_background.png"
+            alt="Editorial Background"
+            className="w-full h-full object-cover object-center scale-110 filter blur-[9px]"
+          />
+          {/* 부드러운 딥 틴트 오버레이 (블러된 배경 실루엣을 확실히 살리면서 화이트 텍스트 가독성 확보) */}
+          <div className="absolute inset-0 bg-[#142334]/40" />
+        </div>
 
-        {/* 매거진 룩북 슬리브 카드 (화보집 표지 형태) */}
-        <div
-          className={`relative w-full max-w-[340px] bg-white border border-stone-200/90 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.35)] p-5 sm:p-6 flex flex-col transition-all duration-300 ${
-            isShaking ? 'editorial-shake' : ''
-          }`}
-        >
-          {/* 상단 매거진 마스트헤드 (Volume & Issue 헤더) */}
-          <div className="flex items-center justify-between text-[9.5px] tracking-[0.25em] text-stone-400 font-editorial-serif uppercase pb-2.5 border-b border-stone-200">
-            <span>VOL. 01 · SPECIAL ISSUE</span>
-            <span>WEDDING LOOKBOOK</span>
-          </div>
+        {/* 1-2. 상단: Bickham Script Pro 필기체 문구 (카드와의 시원한 간격 확보) */}
+        <div className="relative z-10 w-full text-center pt-2 sm:pt-4 mb-6 sm:mb-8">
+          <h1
+            className="text-white text-[29px] sm:text-[35px] font-normal tracking-normal italic drop-shadow-md select-none"
+            style={{
+              fontFamily: "'Bickham Script Pro', 'Bickham Script Pro 3', 'Great Vibes', 'Alex Brush', cursive",
+            }}
+          >
+            We are getting married
+          </h1>
+        </div>
 
-          {/* 메인 타이틀 (클래식 세리프) */}
-          {(coupleEn || dateFormatted) && (
-            <div className="text-center pt-3 pb-3">
-              {coupleEn && (
-                <h1 className="font-editorial-title text-[26px] sm:text-[28px] text-stone-900 tracking-normal leading-tight">
-                  {coupleEn}
-                </h1>
-              )}
-              {dateFormatted && (
-                <p className="font-editorial-serif text-[10.5px] tracking-[0.22em] text-stone-500 uppercase mt-1">
-                  {dateFormatted}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* 중앙 화보 사진 프레임 (매거진 룩북 Spread) */}
-          <div className="relative w-full aspect-[4/5] bg-stone-100 overflow-hidden border border-stone-200/80 mb-3.5 group">
-            <img
-              src={coverImage}
-              alt="Editorial Lookbook Cover"
-              className="w-full h-full object-cover select-none transition-transform duration-700 group-hover:scale-102"
-              onError={(e) => {
-                if (isSample && e.currentTarget.src !== '/samples/editorial-cover.jpg') {
-                  e.currentTarget.src = '/samples/editorial-cover.jpg';
-                }
-              }}
-            />
-
-            {/* 화보 뱃지 태그 */}
-            <div className="absolute top-2.5 left-2.5 bg-black/60 backdrop-blur-xs text-white text-[9px] font-editorial-serif tracking-widest uppercase px-2 py-0.5">
-              COVER SPREAD
-            </div>
-
-            {/* 거절 시 나타나는 감성 세리프 토스트 */}
-            {declineMsg && (
-              <div className="absolute inset-x-2 bottom-3 z-20 flex justify-center animate-in fade-in zoom-in-95 duration-200">
-                <div className="bg-stone-900/95 backdrop-blur-md text-white text-[11px] font-editorial-serif tracking-wide py-2 px-3.5 shadow-xl text-center border border-white/10">
-                  {declineMsg}
-                </div>
+        {/* 1-3. 중앙: 화이트 프레임 카드 (단정하게 정중앙 위치) */}
+        <div className="relative z-10 w-full max-w-[320px] sm:max-w-[335px] my-auto mt-2 sm:mt-4 animate-in fade-in zoom-in-98 duration-500">
+          <div className="w-full bg-white shadow-[0_20px_50px_rgba(0,0,0,0.35)] p-3.5 sm:p-4 flex flex-col items-center">
+            
+            {/* 상단 화보 사진 (Cover Spread) */}
+            <div className="relative w-full aspect-[4/4.8] bg-stone-100 overflow-hidden">
+              <img
+                src={coverImage}
+                alt="Editorial Lookbook Cover"
+                className="w-full h-full object-cover select-none"
+                onError={(e) => {
+                  if (e.currentTarget.src !== '/samples/main-02-editorial.jpg') {
+                    e.currentTarget.src = '/samples/main-02-editorial.jpg';
+                  }
+                }}
+              />
+              {/* COVER SPREAD 뱃지 */}
+              <div className="absolute top-2 left-2 bg-black/55 backdrop-blur-xs text-white text-[8px] sm:text-[8.5px] font-serif tracking-[0.22em] uppercase px-2 py-0.5 select-none">
+                COVER SPREAD
               </div>
-            )}
-          </div>
+            </div>
 
-          {/* 신랑 신부 안내 텍스트 (입력된 정보만 노출) */}
-          {(groomName || brideName || venueName) && (
-            <div className="text-center mb-4">
-              {(groomName || brideName) && (
-                <p className="font-editorial-serif text-[12.5px] text-stone-700 tracking-wider">
-                  {[groomName, brideName].filter(Boolean).join(' · ')}
+            {/* 하단 성함, 웨딩홀, 버튼 */}
+            <div className="w-full text-center pt-4 pb-3.5 sm:pb-4 px-1 flex flex-col items-center">
+              {coupleKo && (
+                <p className="font-serif text-[15px] sm:text-[16px] text-stone-900 font-medium tracking-tight">
+                  {coupleKo}
                 </p>
               )}
+
               {venueName && (
-                <p className="font-editorial-serif text-[11px] text-stone-400 tracking-wide mt-0.5">
+                <p className="font-serif text-[11px] sm:text-[11.5px] text-stone-400 font-normal tracking-tight mt-1 mb-3.5">
                   {venueName}
                 </p>
               )}
+
+              {/* 연하늘색 알약형 OPEN THE LOOKBOOK 버튼 */}
+              <button
+                type="button"
+                onClick={handleOpen}
+                className="inline-flex items-center justify-center gap-1.5 px-6 py-2 rounded-full bg-[#DDE8F4] hover:bg-[#CFE0F0] active:bg-[#C2D6E8] border border-[#BED4E8] text-stone-800 text-[10px] sm:text-[10.5px] font-serif tracking-[0.16em] uppercase font-medium shadow-2xs transition-all duration-200 cursor-pointer group"
+              >
+                <span>OPEN THE LOOKBOOK</span>
+                <span className="text-[11px] transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+              </button>
             </div>
-          )}
-
-          {/* 하단 메인 액션 버튼: OPEN THE LOOKBOOK */}
-          <button
-            type="button"
-            onClick={handleOpen}
-            className="w-full py-3 bg-stone-900 hover:bg-black active:bg-stone-950 text-white text-[11.5px] font-editorial-serif tracking-[0.22em] uppercase transition-colors duration-200 flex items-center justify-center gap-2 shadow-sm cursor-pointer group mb-2"
-          >
-            <span>Open The Lookbook</span>
-            <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
-          </button>
-
-          {/* 서브 Decline 위트 링크 */}
-          <div className="text-center pb-2">
-            <button
-              type="button"
-              onClick={handleDecline}
-              className="text-[10px] font-editorial-serif tracking-wider text-stone-400 hover:text-stone-600 transition-colors uppercase underline underline-offset-3 cursor-pointer"
-            >
-              Regretfully Decline
-            </button>
-          </div>
-
-          {/* 최하단 바코드 & 에디토리얼 아카이브 메타 */}
-          <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-[8.5px] font-mono text-stone-400 tracking-wider">
-            <span>EDITION NO. WEDDING ISSUE</span>
-            <span>ALL RIGHTS RESERVED ©</span>
           </div>
         </div>
+
+        {/* 1-4. 하단: 화이트 세리프 날짜 (카드와의 시원한 간격 확보) */}
+        {dateFormatted && (
+          <div className="relative z-10 w-full text-center mt-6 sm:mt-8 pb-3 sm:pb-6">
+            <p className="font-serif text-white/85 text-[12.5px] sm:text-[13px] tracking-[0.08em] select-none drop-shadow-sm">
+              {dateFormatted}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* 2. 시네마틱 껌뻑(Blink / Fade to black) 암전 오버레이 */}

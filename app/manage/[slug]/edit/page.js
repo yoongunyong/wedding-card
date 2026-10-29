@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useRef, useMemo, use } from 'react';
 import { supabase } from '@/lib/supabase';
@@ -244,7 +244,8 @@ export default function EditInvitationPage({ params }) {
       let wDate = '';
       let wTime = '14:00';
       if (card.wedding_date) {
-        const parts = card.wedding_date.split('T');
+        const normalized = typeof card.wedding_date === 'string' ? card.wedding_date.replace(' ', 'T') : String(card.wedding_date);
+        const parts = normalized.split('T');
         wDate = parts[0] || '';
         if (parts[1]) {
           wTime = parts[1].slice(0, 5);

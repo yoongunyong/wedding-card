@@ -411,3 +411,4 @@
 - **공통 유틸**:
   - `lib/supabase.js` (Supabase 클라이언트)
   - `lib/imageCompressor.js` (WebP 초경량 압축 유틸)
+  - `lib/kakaoShare.js` (카카오톡 공유 및 SNS Open Graph 영구 공개 CDN 절대 URL 안전 변환기: feed 피드 800x1000 고화질 화보 규격 완비)

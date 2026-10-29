@@ -104,7 +104,7 @@ export default function EditorialContactModal({ invitation, onClose }) {
                   {person.phone && (
                     <div className="flex items-center gap-2">
                       <a
-                        href={`tel:${person.phone}`}
+                        href={`tel:${(person.phone || '').replace(/[^0-9+]/g, '')}`}
                         aria-label={`${person.name} 전화걸기`}
                         className="w-8 h-8 border border-stone-300 hover:border-stone-900 hover:bg-stone-900 hover:text-white text-stone-700 flex items-center justify-center transition-all cursor-pointer"
                         title="전화 걸기"
@@ -114,7 +114,7 @@ export default function EditorialContactModal({ invitation, onClose }) {
                         </svg>
                       </a>
                       <a
-                        href={`sms:${person.phone}`}
+                        href={`sms:${(person.phone || '').replace(/[^0-9+]/g, '')}`}
                         aria-label={`${person.name} 문자보내기`}
                         className="w-8 h-8 border border-stone-300 hover:border-stone-900 hover:bg-stone-900 hover:text-white text-stone-700 flex items-center justify-center transition-all cursor-pointer"
                         title="문자 보내기"
@@ -154,7 +154,7 @@ export default function EditorialContactModal({ invitation, onClose }) {
                   {person.phone && (
                     <div className="flex items-center gap-2">
                       <a
-                        href={`tel:${person.phone}`}
+                        href={`tel:${(person.phone || '').replace(/[^0-9+]/g, '')}`}
                         aria-label={`${person.name} 전화걸기`}
                         className="w-8 h-8 border border-stone-300 hover:border-stone-900 hover:bg-stone-900 hover:text-white text-stone-700 flex items-center justify-center transition-all cursor-pointer"
                         title="전화 걸기"
@@ -164,7 +164,7 @@ export default function EditorialContactModal({ invitation, onClose }) {
                         </svg>
                       </a>
                       <a
-                        href={`sms:${person.phone}`}
+                        href={`sms:${(person.phone || '').replace(/[^0-9+]/g, '')}`}
                         aria-label={`${person.name} 문자보내기`}
                         className="w-8 h-8 border border-stone-300 hover:border-stone-900 hover:bg-stone-900 hover:text-white text-stone-700 flex items-center justify-center transition-all cursor-pointer"
                         title="문자 보내기"

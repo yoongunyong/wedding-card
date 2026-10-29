@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Script from 'next/script';
 import { supabase } from '@/lib/supabase';
+import { getSafeKakaoShareImageUrl } from '@/lib/kakaoShare';
 import KakaoMap from '@/components/KakaoMap';
 import EnvelopeIntro from '@/components/EnvelopeIntro';
 import BasicContactModal from './BasicContactModal';
@@ -432,15 +433,11 @@ export default function BasicTemplate({ invitation }) {
           const venueQuery = encodeURIComponent(invitation?.venue_name || invitation?.venue_address || '');
           const mapLink = `https://map.kakao.com/link/search/${venueQuery}`;
 
-          // 절대 URL 이미지 경로 처리
-          let shareImg = extra.share_image || images.cover || images.main || mainImage;
-          if (shareImg && typeof shareImg === 'string' && !shareImg.startsWith('http')) {
-            shareImg = `${window.location.origin}${shareImg.startsWith('/') ? '' : '/'}${shareImg}`;
-          }
-          // localhost 환경이거나 이미지가 없을 경우 카카오 스크랩 검증용 고화질 웨딩 이미지 대체
-          if (!shareImg && isSample) {
-            shareImg = '/samples/garden-couple.jpg';
-          }
+          // 카카오톡 스크랩 봇 호환 영구 공개 절대 URL 처리
+          const shareImg = getSafeKakaoShareImageUrl(
+            extra.share_image || images.cover || images.main || mainImage,
+            'basic'
+          );
 
           window.Kakao.Share.sendDefault({
             objectType: 'feed',
@@ -448,10 +445,12 @@ export default function BasicTemplate({ invitation }) {
               title: shareTitle,
               description: shareDesc,
               imageUrl: shareImg,
+              imageWidth: 800,
+              imageHeight: 1000,
               link: { mobileWebUrl: currentUrl, webUrl: currentUrl },
             },
             buttons: [
-              { title: '청첩장 보기', link: { mobileWebUrl: currentUrl, webUrl: currentUrl } },
+              { title: '모바일 청첩장 보기', link: { mobileWebUrl: currentUrl, webUrl: currentUrl } },
               { title: '오시는 길', link: { mobileWebUrl: mapLink, webUrl: mapLink } },
             ],
           });

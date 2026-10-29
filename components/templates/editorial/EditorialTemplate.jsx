@@ -13,6 +13,7 @@ import EditorialGalleryModal from './EditorialGalleryModal';
 import KakaoMap from '@/components/KakaoMap';
 import EditorialIntro from './EditorialIntro';
 import { supabase } from '@/lib/supabase';
+import { getSafeKakaoShareImageUrl } from '@/lib/kakaoShare';
 
 export default function EditorialTemplate({ invitation }) {
   // 1. 모달 상태
@@ -285,24 +286,32 @@ export default function EditorialTemplate({ invitation }) {
     const shareTitle = coupleText ? `${coupleText} 결혼식에 초대합니다` : '소중한 결혼식에 초대합니다';
     const shareDesc = [formattedDates.fullKo, venueFullName].filter(Boolean).join(' | ');
 
+    const shareImageUrl = getSafeKakaoShareImageUrl(
+      mainImage || invitation?.images?.cover || invitation?.images?.main,
+      'editorial'
+    );
+    const currentUrl = window.location.href;
+
     try {
       window.Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
           title: shareTitle,
           description: shareDesc,
-          imageUrl: mainImage,
+          imageUrl: shareImageUrl,
+          imageWidth: 800,
+          imageHeight: 1000,
           link: {
-            mobileWebUrl: window.location.href,
-            webUrl: window.location.href,
+            mobileWebUrl: currentUrl,
+            webUrl: currentUrl,
           },
         },
         buttons: [
           {
             title: '모바일 청첩장 보기',
             link: {
-              mobileWebUrl: window.location.href,
-              webUrl: window.location.href,
+              mobileWebUrl: currentUrl,
+              webUrl: currentUrl,
             },
           },
         ],
@@ -777,6 +786,11 @@ export default function EditorialTemplate({ invitation }) {
                   src={galleryImages[activeGalleryIndex] || galleryImages[0]}
                   alt="Selected wedding photo"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                  onError={(e) => {
+                    if (e.currentTarget.src !== '/samples/main-02-editorial.jpg') {
+                      e.currentTarget.src = '/samples/main-02-editorial.jpg';
+                    }
+                  }}
                 />
                 
                 {/* 상단 좌측: 룩북 태그 */}
@@ -813,7 +827,16 @@ export default function EditorialTemplate({ invitation }) {
                   }`}
                   aria-label={`갤러리 사진 ${idx + 1}번 보기`}
                 >
-                  <img src={src} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                  <img
+                    src={src}
+                    alt={`Thumbnail ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      if (e.currentTarget.src !== '/samples/main-02-editorial.jpg') {
+                        e.currentTarget.src = '/samples/main-02-editorial.jpg';
+                      }
+                    }}
+                  />
                   <span className="absolute bottom-0.5 right-1 text-[9px] font-mono text-white/90 drop-shadow-sm">
                     {String(idx + 1).padStart(2, '0')}
                   </span>

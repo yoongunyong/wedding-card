@@ -18,6 +18,9 @@ export const viewport = {
 };
 
 export const metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || 'https://wedding-card.vercel.app'
+  ),
   title: 'ATELIER DE MUKIRU (아틀리에 드 무키루) — 감성 프리미엄 모바일 청첩장',
   description: '단 하나의 소중한 순간을 완성하는 부티크 모바일 청첩장 아틀리에, 무키루(MUKIRU)',
   openGraph: {
@@ -26,6 +29,20 @@ export const metadata = {
     siteName: 'ATELIER DE MUKIRU',
     locale: 'ko_KR',
     type: 'website',
+    images: [
+      {
+        url: 'https://muveizejbvjiqkbtebmm.supabase.co/storage/v1/object/public/wedding-images/samples/main-02-editorial.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'ATELIER DE MUKIRU',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ATELIER DE MUKIRU — 감성 프리미엄 모바일 청첩장',
+    description: '단 하나의 소중한 순간을 완성하는 부티크 모바일 청첩장 아틀리에, 무키루(MUKIRU)',
+    images: ['https://muveizejbvjiqkbtebmm.supabase.co/storage/v1/object/public/wedding-images/samples/main-02-editorial.jpg'],
   },
   appleWebApp: {
     capable: true,

@@ -22,12 +22,27 @@ export default function MapNavigation({ venueName, venueAddress }) {
 
   // 주소 복사하기 기능
   const handleCopyAddress = async () => {
-    try {
-      await navigator.clipboard.writeText(venueAddress);
-      alert('식장 주소가 복사되었습니다.');
-    } catch {
-      alert('주소 복사에 실패했습니다.');
+    let ok = false;
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(venueAddress);
+        ok = true;
+      } catch {}
     }
+    if (!ok && typeof document !== 'undefined') {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = venueAddress;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+      } catch {}
+    }
+    alert(ok ? '식장 주소가 복사되었습니다.' : '주소 복사에 실패했습니다.');
   };
 
   return (

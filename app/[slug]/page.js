@@ -9,6 +9,7 @@ import PlaylistTemplate from '@/components/templates/playlist/PlaylistTemplate';
 import CinematicTemplate from '@/components/templates/cinematic/CinematicTemplate';
 import SceneTemplate from '@/components/templates/scene/SceneTemplate';
 import { SAMPLE_INVITATIONS } from '@/lib/sampleInvitations';
+import { getSafeKakaoShareImageUrl } from '@/lib/kakaoShare';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -50,7 +51,8 @@ export async function generateMetadata({ params }) {
   }
 
   // 공유 썸네일: images.cover 최우선
-  const ogImage = invitation.images?.cover || invitation.images?.main || (SAMPLE_INVITATIONS[slug]?.images?.cover || '');
+  const rawOg = invitation.images?.cover || invitation.images?.main || (SAMPLE_INVITATIONS[slug]?.images?.cover || '');
+  const ogImage = getSafeKakaoShareImageUrl(rawOg, invitation.template_type || slug);
   const coupleText = [invitation.groom_name, invitation.bride_name].filter(Boolean).join(' ♥ ');
   const title = coupleText ? `${coupleText} 결혼합니다` : '모바일 청첩장';
   const fullVenue = [invitation.venue_name, invitation.venue_hall].filter(Boolean).join(' ');

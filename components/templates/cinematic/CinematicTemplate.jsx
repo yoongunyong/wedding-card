@@ -10,6 +10,7 @@ import EditorialRsvpModal from '../editorial/EditorialRsvpModal';
 import EditorialGuestbookModal from '../editorial/EditorialGuestbookModal';
 import EditorialGalleryModal from '../editorial/EditorialGalleryModal';
 import { supabase } from '@/lib/supabase';
+import { getSafeKakaoShareImageUrl } from '@/lib/kakaoShare';
 
 export default function CinematicTemplate({ invitation }) {
   // 1. ☀️ Brightly (Day) ↔ 🌙 Midnight (Night) 듀얼 테마 스위처
@@ -285,7 +286,10 @@ export default function CinematicTemplate({ invitation }) {
     const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
     const shareTitle = `${displayNamesEn || `${groomName} ♥ ${brideName}`} 결혼식에 초대합니다`;
     const shareDesc = [formattedDates.fullDateDot, venueFullName].filter(Boolean).join(' | ');
-    const shareImg = images.cover || mainImage || '';
+    const shareImg = getSafeKakaoShareImageUrl(
+      images.cover || mainImage,
+      'cinematic'
+    );
 
     if (typeof window !== 'undefined' && window.Kakao && window.Kakao.isInitialized()) {
       try {
@@ -295,10 +299,12 @@ export default function CinematicTemplate({ invitation }) {
             title: shareTitle,
             description: shareDesc,
             imageUrl: shareImg,
+            imageWidth: 800,
+            imageHeight: 1000,
             link: { mobileWebUrl: currentUrl, webUrl: currentUrl },
           },
           buttons: [
-            { title: '청첩장 보기', link: { mobileWebUrl: currentUrl, webUrl: currentUrl } },
+            { title: '모바일 청첩장 보기', link: { mobileWebUrl: currentUrl, webUrl: currentUrl } },
           ],
         });
         return;

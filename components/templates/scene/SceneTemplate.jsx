@@ -10,6 +10,7 @@ import SceneInterviewModal from './SceneInterviewModal';
 import SceneGalleryModal from './SceneGalleryModal';
 import SceneGuestbookDeleteModal from './SceneGuestbookDeleteModal';
 import { supabase } from '@/lib/supabase';
+import { getSafeKakaoShareImageUrl } from '@/lib/kakaoShare';
 
 export default function SceneTemplate({ invitation }) {
   const config = invitation?.template_config || {};
@@ -472,12 +473,18 @@ export default function SceneTemplate({ invitation }) {
     ].filter(Boolean).join(' | ');
 
     if (window.Kakao && window.Kakao.isInitialized()) {
+      const shareImageUrl = getSafeKakaoShareImageUrl(
+        mainImage || images?.cover,
+        'scene'
+      );
       window.Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
           title: shareTitle,
           description: shareDesc,
-          imageUrl: mainImage || (isSample ? '/samples/scene-cover.jpg' : ''),
+          imageUrl: shareImageUrl,
+          imageWidth: 800,
+          imageHeight: 1000,
           link: {
             mobileWebUrl: currentUrl,
             webUrl: currentUrl,
@@ -485,7 +492,7 @@ export default function SceneTemplate({ invitation }) {
         },
         buttons: [
           {
-            title: '청첩장 보기',
+            title: '모바일 청첩장 보기',
             link: {
               mobileWebUrl: currentUrl,
               webUrl: currentUrl,

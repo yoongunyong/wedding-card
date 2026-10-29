@@ -108,15 +108,16 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
 
   return (
     <>
-      {/* 1. iOS 정통 AirDrop 오프닝 인트로 레이어 */}
+      {/* 1. iOS 정통 AirDrop 오프닝 인트로 레이어 (스크롤 가능 및 반응형 핏) */}
       <div
-        className={`fixed inset-0 z-50 flex items-center justify-center p-4 select-none overflow-hidden ${
+        className={`fixed inset-0 z-50 flex items-center justify-center p-4 select-none overflow-y-auto ${
           transitionStep === 'revealing'
             ? 'hidden pointer-events-none'
             : transitionStep === 'darkening'
             ? 'opacity-100 pointer-events-none'
             : 'opacity-100'
         }`}
+        style={{ WebkitOverflowScrolling: 'touch' }}
       >
         <style jsx>{`
           @keyframes shakeAnim {
@@ -131,8 +132,8 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
           }
         `}</style>
 
-        {/* 원본 스크린샷 기반 시그니처 웜 브라운 아치 햇살 배경 (옵션 B) */}
-        <div className="absolute inset-0 -z-10 bg-[#2D2018] overflow-hidden">
+        {/* 원본 스크린샷 기반 시그니처 웜 브라운 아치 햇살 배경 (고정 레이어) */}
+        <div className="fixed inset-0 -z-10 bg-[#2D2018] overflow-hidden pointer-events-none">
           <img
             src={bgImage}
             alt="Wedding Signature Background"

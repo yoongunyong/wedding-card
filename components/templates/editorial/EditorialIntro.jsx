@@ -111,31 +111,32 @@ export default function EditorialIntro({ invitation, onOpen }) {
 
   return (
     <>
-      {/* 1. 에디토리얼 인트로 전체 컨테이너 */}
+      {/* 1. 에디토리얼 인트로 전체 컨테이너 (스크롤 가능 및 높이 반응형 핏) */}
       <div
-        className={`fixed inset-0 z-50 flex flex-col justify-between items-center px-4 py-8 sm:py-12 select-none overflow-hidden transition-opacity duration-300 ${
+        className={`fixed inset-0 z-50 flex flex-col justify-between items-center px-4 py-5 sm:py-8 select-none overflow-y-auto transition-opacity duration-300 ${
           transitionStep === 'revealing' 
             ? 'hidden pointer-events-none' 
             : transitionStep === 'darkening'
             ? 'opacity-100 pointer-events-none'
             : 'opacity-100'
         }`}
+        style={{ WebkitOverflowScrolling: 'touch' }}
       >
-        {/* 1-1. 백그라운드 이미지 (블러 처리) & 은은한 톤다운 오버레이 */}
-        <div className="absolute inset-0 pointer-events-none select-none overflow-hidden">
+        {/* 1-1. 백그라운드 이미지 (블러 처리 & 고정 레이어) */}
+        <div className="fixed inset-0 pointer-events-none select-none overflow-hidden -z-10">
           <img
             src="/samples/editorial_intro_background.png"
             alt="Editorial Background"
             className="w-full h-full object-cover object-center scale-110 filter blur-[9px]"
           />
-          {/* 부드러운 딥 틴트 오버레이 (블러된 배경 실루엣을 확실히 살리면서 화이트 텍스트 가독성 확보) */}
+          {/* 부드러운 딥 틴트 오버레이 */}
           <div className="absolute inset-0 bg-[#142334]/40" />
         </div>
 
-        {/* 1-2. 상단: Bickham Script Pro 필기체 문구 (카드와의 시원한 간격 확보) */}
-        <div className="relative z-10 w-full text-center pt-2 sm:pt-4 mb-6 sm:mb-8">
+        {/* 1-2. 상단: Bickham Script Pro 필기체 문구 */}
+        <div className="relative z-10 w-full text-center pt-1 sm:pt-2 mb-3 sm:mb-5 shrink-0">
           <h1
-            className="text-white text-[29px] sm:text-[35px] font-normal tracking-normal italic drop-shadow-md select-none"
+            className="text-white text-[26px] sm:text-[32px] font-normal tracking-normal italic drop-shadow-md select-none leading-tight"
             style={{
               fontFamily: "'Bickham Script Pro', 'Bickham Script Pro 3', 'Great Vibes', 'Alex Brush', cursive",
             }}
@@ -144,12 +145,12 @@ export default function EditorialIntro({ invitation, onOpen }) {
           </h1>
         </div>
 
-        {/* 1-3. 중앙: 화이트 프레임 카드 (단정하게 정중앙 위치) */}
-        <div className="relative z-10 w-full max-w-[320px] sm:max-w-[335px] my-auto mt-2 sm:mt-4 animate-in fade-in zoom-in-98 duration-500">
-          <div className="w-full bg-white shadow-[0_20px_50px_rgba(0,0,0,0.35)] p-3.5 sm:p-4 flex flex-col items-center">
+        {/* 1-3. 중앙: 화이트 프레임 카드 (단정하게 중앙 배치, 뷰포트 높이 초과 방지) */}
+        <div className="relative z-10 w-full max-w-[305px] sm:max-w-[325px] my-auto animate-in fade-in zoom-in-98 duration-500 shrink-0">
+          <div className="w-full bg-white shadow-[0_20px_50px_rgba(0,0,0,0.35)] p-3 sm:p-3.5 flex flex-col items-center">
             
-            {/* 상단 화보 사진 (Cover Spread) */}
-            <div className="relative w-full aspect-[4/4.8] bg-stone-100 overflow-hidden">
+            {/* 상단 화보 사진 (Cover Spread - 반응형 최대 높이 제한) */}
+            <div className="relative w-full aspect-[4/4.5] max-h-[44vh] sm:max-h-[48vh] bg-stone-100 overflow-hidden">
               <img
                 src={coverImage}
                 alt="Editorial Lookbook Cover"
@@ -167,7 +168,7 @@ export default function EditorialIntro({ invitation, onOpen }) {
             </div>
 
             {/* 하단 성함, 웨딩홀, 버튼 */}
-            <div className="w-full text-center pt-4 pb-3.5 sm:pb-4 px-1 flex flex-col items-center">
+            <div className="w-full text-center pt-3 pb-2 sm:pb-2.5 px-1 flex flex-col items-center">
               {coupleKo && (
                 <p className="font-serif text-[15px] sm:text-[16px] text-stone-900 font-medium tracking-tight">
                   {coupleKo}
@@ -175,7 +176,7 @@ export default function EditorialIntro({ invitation, onOpen }) {
               )}
 
               {venueName && (
-                <p className="font-serif text-[11px] sm:text-[11.5px] text-stone-400 font-normal tracking-tight mt-1 mb-3.5">
+                <p className="font-serif text-[11px] sm:text-[11.5px] text-stone-400 font-normal tracking-tight mt-0.5 mb-2.5 sm:mb-3">
                   {venueName}
                 </p>
               )}
@@ -184,7 +185,7 @@ export default function EditorialIntro({ invitation, onOpen }) {
               <button
                 type="button"
                 onClick={handleOpen}
-                className="inline-flex items-center justify-center gap-1.5 px-6 py-2 rounded-full bg-[#DDE8F4] hover:bg-[#CFE0F0] active:bg-[#C2D6E8] border border-[#BED4E8] text-stone-800 text-[10px] sm:text-[10.5px] font-serif tracking-[0.16em] uppercase font-medium shadow-2xs transition-all duration-200 cursor-pointer group"
+                className="inline-flex items-center justify-center gap-1.5 px-5 sm:px-6 py-1.5 sm:py-2 rounded-full bg-[#DDE8F4] hover:bg-[#CFE0F0] active:bg-[#C2D6E8] border border-[#BED4E8] text-stone-800 text-[10px] sm:text-[10.5px] font-serif tracking-[0.16em] uppercase font-medium shadow-2xs transition-all duration-200 cursor-pointer group"
               >
                 <span>OPEN THE LOOKBOOK</span>
                 <span className="text-[11px] transition-transform duration-200 group-hover:translate-x-0.5">→</span>
@@ -193,10 +194,10 @@ export default function EditorialIntro({ invitation, onOpen }) {
           </div>
         </div>
 
-        {/* 1-4. 하단: 화이트 세리프 날짜 (카드와의 시원한 간격 확보) */}
+        {/* 1-4. 하단: 화이트 세리프 날짜 (안정적인 하단 배치) */}
         {dateFormatted && (
-          <div className="relative z-10 w-full text-center mt-6 sm:mt-8 pb-3 sm:pb-6">
-            <p className="font-serif text-white/85 text-[12.5px] sm:text-[13px] tracking-[0.08em] select-none drop-shadow-sm">
+          <div className="relative z-10 w-full text-center mt-3 sm:mt-5 pb-2 sm:pb-4 shrink-0">
+            <p className="font-serif text-white/85 text-[12px] sm:text-[12.5px] tracking-[0.08em] select-none drop-shadow-sm">
               {dateFormatted}
             </p>
           </div>

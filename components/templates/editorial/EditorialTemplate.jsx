@@ -57,11 +57,11 @@ export default function EditorialTemplate({ invitation }) {
   const brideName = invitation?.bride_name || '';
   const coupleKo = [groomName, brideName].filter(Boolean).join(' · ');
 
-  // 대표 이미지 매핑
-  const mainImage = images.main || images.cover || invitation?.main_image || '/samples/main-02-editorial.jpg';
-  const bridePhoto = images.bride_profile || images.bride || extra.bride_profile_image || invitation?.bride_photo || '/samples/bride-solo.jpg';
-  const groomPhoto = images.groom_profile || images.groom || extra.groom_profile_image || invitation?.groom_photo || '/samples/groom-solo.jpg';
-  const couplePhoto = images.couple_profile || images.couple || extra.couple_profile_image || '/samples/couple-profile-01.jpg';
+  // 대표 이미지 매핑 (실제 고객 청첩장에서는 미등록 사진이 타인의 샘플 사진으로 대체되지 않도록 철저히 차단)
+  const mainImage = images.main || images.cover || invitation?.main_image || (isSample ? '/samples/main-02-editorial.jpg' : '');
+  const bridePhoto = images.bride_profile || images.bride || extra.bride_profile_image || invitation?.bride_photo || (isSample ? '/samples/bride-solo.jpg' : '');
+  const groomPhoto = images.groom_profile || images.groom || extra.groom_profile_image || invitation?.groom_photo || (isSample ? '/samples/groom-solo.jpg' : '');
+  const couplePhoto = images.couple_profile || images.couple || extra.couple_profile_image || (isSample ? '/samples/couple-profile-01.jpg' : (mainImage || ''));
   const endingImage = images.ending || extra.ending_image || invitation?.ending_image || mainImage;
 
   // 갤러리 이미지 안전 파싱
@@ -224,6 +224,17 @@ export default function EditorialTemplate({ invitation }) {
   const brideMotherText = formatParentName(invitation?.bride_mother, isBrideMotherDeceased);
   const brideParents = [brideFatherText, brideMotherText].filter(Boolean).join(' · ');
   const brideRelation = invitation?.bride_relation || config.bride_relation || '';
+
+  // 안전한 혼주 및 성함 표시 (실제 고객 미입력 시 가짜 샘플 노출 차단)
+  const displayGroomParents = groomParents || (isSample ? '강오진 · 류창희' : '');
+  const displayGroomRelation = groomRelation || (isSample ? '아들' : (groomParents ? '장남' : ''));
+  const displayGroomName = groomName || (isSample ? '강민준' : '');
+  const hasGroomFamily = Boolean(displayGroomParents || displayGroomName);
+
+  const displayBrideParents = brideParents || (isSample ? '장철규 · 이정자' : '');
+  const displayBrideRelation = brideRelation || (isSample ? '딸' : (brideParents ? '장녀' : ''));
+  const displayBrideName = brideName || (isSample ? '박지민' : '');
+  const hasBrideFamily = Boolean(displayBrideParents || displayBrideName);
 
   // 세로 타이포그래피용 성함 (3글자면 성 제외한 이름, 그 외는 전체)
   const groomShort = invitation?.groom_name && invitation.groom_name.length === 3 ? invitation.groom_name.slice(1) : (invitation?.groom_name || '');
@@ -410,9 +421,9 @@ export default function EditorialTemplate({ invitation }) {
 
         {/* 중앙: 한글 성함, 가로선, 일시/장소 (사진 하단과 밀착 mt-4 sm:mt-5) */}
         <div className="w-full max-w-[340px] sm:max-w-[365px] flex flex-col items-center text-center mt-4 sm:mt-5 shrink-0">
-          {/* 강민준 · 박지민 저희 결혼합니다. */}
+          {/* 신랑 · 신부 성함 및 결혼 안내 */}
           <h1 className="font-serif text-[16px] sm:text-[17.5px] text-stone-900 font-normal tracking-tight">
-            {[groomName, brideName].filter(Boolean).join(' · ')} 저희 결혼합니다.
+            {coupleKo ? `${coupleKo} 저희 결혼합니다.` : (isSample ? '강민준 · 박지민 저희 결혼합니다.' : '저희 결혼합니다.')}
           </h1>
 
           {/* 은은한 가로 구분선 */}
@@ -471,7 +482,7 @@ export default function EditorialTemplate({ invitation }) {
               className="font-bickham text-[22px] sm:text-[24px] text-[#555555] tracking-wide leading-tight mt-1 sm:mt-1.5 select-none"
               style={{ fontFamily: "'Bickham Script Pro', cursive" }}
             >
-              {displayNamesEn || 'Jang Min-ki & Kwon Ki-deuk'}
+              {displayNamesEn || (isSample ? 'Jang Min-ki & Kwon Ki-deuk' : (coupleKo || 'Our Wedding'))}
             </p>
           </div>
 
@@ -479,17 +490,24 @@ export default function EditorialTemplate({ invitation }) {
           <div className="grid grid-cols-2 gap-3.5 sm:gap-4 max-w-[350px] sm:max-w-[375px] mx-auto">
             {/* 좌측: 신부 카드 (테두리선 없이 소프트 그림자) */}
             <div className="bg-white p-2.5 sm:p-3 pb-3 sm:pb-3.5 shadow-[0_4px_22px_rgba(0,0,0,0.07)] rounded-xs">
-              <div className="w-full aspect-[3/3.85] overflow-hidden bg-stone-100">
-                <img
-                  src={bridePhoto}
-                  alt={brideName || 'Bride'}
-                  className="w-full h-full object-cover object-center"
-                  onError={(e) => {
-                    if (e.currentTarget.src !== '/samples/bride-solo.jpg') {
-                      e.currentTarget.src = '/samples/bride-solo.jpg';
-                    }
-                  }}
-                />
+              <div className="w-full aspect-[3/3.85] overflow-hidden bg-stone-100 flex items-center justify-center">
+                {bridePhoto ? (
+                  <img
+                    src={bridePhoto}
+                    alt={brideName || 'Bride'}
+                    className="w-full h-full object-cover object-center"
+                    onError={(e) => {
+                      if (isSample && e.currentTarget.src !== '/samples/bride-solo.jpg') {
+                        e.currentTarget.src = '/samples/bride-solo.jpg';
+                      }
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-stone-300 font-serif">
+                    <span className="text-2xl mb-1">👰</span>
+                    <span className="text-[11px] font-sans tracking-widest uppercase">Bride</span>
+                  </div>
+                )}
               </div>
               <div className="pt-3 sm:pt-3.5 pb-0.5 text-center flex items-center justify-center gap-3 sm:gap-3.5 select-none">
                 <span
@@ -499,24 +517,31 @@ export default function EditorialTemplate({ invitation }) {
                   Bride.
                 </span>
                 <span className="font-serif text-[14px] sm:text-[14.5px] text-stone-900 font-normal tracking-tight">
-                  {brideName || '박지민'}
+                  {brideName || (isSample ? '박지민' : '')}
                 </span>
               </div>
             </div>
 
             {/* 우측: 신랑 카드 (테두리선 없이 소프트 그림자) */}
             <div className="bg-white p-2.5 sm:p-3 pb-3 sm:pb-3.5 shadow-[0_4px_22px_rgba(0,0,0,0.07)] rounded-xs">
-              <div className="w-full aspect-[3/3.85] overflow-hidden bg-stone-100">
-                <img
-                  src={groomPhoto}
-                  alt={groomName || 'Groom'}
-                  className="w-full h-full object-cover object-center"
-                  onError={(e) => {
-                    if (e.currentTarget.src !== '/samples/groom-solo.jpg') {
-                      e.currentTarget.src = '/samples/groom-solo.jpg';
-                    }
-                  }}
-                />
+              <div className="w-full aspect-[3/3.85] overflow-hidden bg-stone-100 flex items-center justify-center">
+                {groomPhoto ? (
+                  <img
+                    src={groomPhoto}
+                    alt={groomName || 'Groom'}
+                    className="w-full h-full object-cover object-center"
+                    onError={(e) => {
+                      if (isSample && e.currentTarget.src !== '/samples/groom-solo.jpg') {
+                        e.currentTarget.src = '/samples/groom-solo.jpg';
+                      }
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-stone-300 font-serif">
+                    <span className="text-2xl mb-1">🤵</span>
+                    <span className="text-[11px] font-sans tracking-widest uppercase">Groom</span>
+                  </div>
+                )}
               </div>
               <div className="pt-3 sm:pt-3.5 pb-0.5 text-center flex items-center justify-center gap-3 sm:gap-3.5 select-none">
                 <span
@@ -526,42 +551,48 @@ export default function EditorialTemplate({ invitation }) {
                   Groom.
                 </span>
                 <span className="font-serif text-[14px] sm:text-[14.5px] text-stone-900 font-normal tracking-tight">
-                  {groomName || '강민준'}
+                  {groomName || (isSample ? '강민준' : '')}
                 </span>
               </div>
             </div>
           </div>
 
           {/* 혼주 정보 (서체: Noto Serif KR - 상단 액자 카드와의 여백 20% 확대 mt-12 sm:mt-14) */}
-          <div className="mt-16 sm:mt-18 w-[260px] mx-auto font-serif text-[13.5px] sm:text-[14px]">
-            <div className="space-y-3">
-              {/* 1행: 신랑측 부모님 & 아들 & 신랑 */}
-              <div className="flex items-center justify-between text-stone-800">
-                <span className="w-[116px] text-left tracking-tight font-normal shrink-0">
-                  {groomParents || '강오진 · 류창희'}
-                </span>
-                <span className="w-[44px] text-center text-stone-500 text-[12.5px] tracking-tight font-normal shrink-0">
-                  {groomRelation || '아들'}
-                </span>
-                <span className="w-[54px] text-left text-stone-900 tracking-tight font-normal shrink-0">
-                  {groomName || '강민준'}
-                </span>
-              </div>
+          {(hasGroomFamily || hasBrideFamily) && (
+            <div className="mt-16 sm:mt-18 w-[260px] mx-auto font-serif text-[13.5px] sm:text-[14px]">
+              <div className="space-y-3">
+                {/* 1행: 신랑측 부모님 & 아들 & 신랑 */}
+                {hasGroomFamily && (
+                  <div className="flex items-center justify-between text-stone-800">
+                    <span className="w-[116px] text-left tracking-tight font-normal shrink-0">
+                      {displayGroomParents}
+                    </span>
+                    <span className="w-[44px] text-center text-stone-500 text-[12.5px] tracking-tight font-normal shrink-0">
+                      {displayGroomRelation}
+                    </span>
+                    <span className="w-[54px] text-left text-stone-900 tracking-tight font-normal shrink-0">
+                      {displayGroomName}
+                    </span>
+                  </div>
+                )}
 
-              {/* 2행: 신부측 부모님 & 딸 & 신부 */}
-              <div className="flex items-center justify-between text-stone-800">
-                <span className="w-[116px] text-left tracking-tight font-normal shrink-0">
-                  {brideParents || '장철규 · 이정자'}
-                </span>
-                <span className="w-[44px] text-center text-stone-500 text-[12.5px] tracking-tight font-normal shrink-0">
-                  {brideRelation || '딸'}
-                </span>
-                <span className="w-[54px] text-left text-stone-900 tracking-tight font-normal shrink-0">
-                  {brideName || '박지민'}
-                </span>
+                {/* 2행: 신부측 부모님 & 딸 & 신부 */}
+                {hasBrideFamily && (
+                  <div className="flex items-center justify-between text-stone-800">
+                    <span className="w-[116px] text-left tracking-tight font-normal shrink-0">
+                      {displayBrideParents}
+                    </span>
+                    <span className="w-[44px] text-center text-stone-500 text-[12.5px] tracking-tight font-normal shrink-0">
+                      {displayBrideRelation}
+                    </span>
+                    <span className="w-[54px] text-left text-stone-900 tracking-tight font-normal shrink-0">
+                      {displayBrideName}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
+          )}
         </ScrollReveal>
       </section>
 
@@ -569,18 +600,20 @@ export default function EditorialTemplate({ invitation }) {
       <section className="bg-white border-b border-stone-200/80">
         <ScrollReveal>
           {/* 상단: 가로 와이드 커플 사진 */}
-          <div className="w-full aspect-[4/2.85] overflow-hidden bg-stone-100">
-            <img
-              src={couplePhoto}
-              alt="Couple Wedding"
-              className="w-full h-full object-cover object-center"
-              onError={(e) => {
-                if (e.currentTarget.src !== '/samples/couple-profile-01.jpg') {
-                  e.currentTarget.src = '/samples/couple-profile-01.jpg';
-                }
-              }}
-            />
-          </div>
+          {couplePhoto && (
+            <div className="w-full aspect-[4/2.85] overflow-hidden bg-stone-100">
+              <img
+                src={couplePhoto}
+                alt="Couple Wedding"
+                className="w-full h-full object-cover object-center"
+                onError={(e) => {
+                  if (isSample && e.currentTarget.src !== '/samples/couple-profile-01.jpg') {
+                    e.currentTarget.src = '/samples/couple-profile-01.jpg';
+                  }
+                }}
+              />
+            </div>
+          )}
 
           {/* 하단: 초대 문구 (서체: Noto Serif KR) */}
           <div className="pt-12 sm:pt-14 pb-16 sm:pb-20 px-6 sm:px-8 text-center font-serif">
@@ -1260,7 +1293,7 @@ export default function EditorialTemplate({ invitation }) {
           {/* 에디토리얼 매거진 백커버 판권지 (Colophon & Barcode) */}
           <div className="max-w-[300px] mx-auto mt-11 pt-8 border-t border-stone-200 text-stone-400">
             <p className="font-sans text-[10.5px] sm:text-[11px] tracking-[0.25em] uppercase text-stone-500 font-semibold mb-1">
-              THE WEDDING OF {displayNamesEn}
+              THE WEDDING OF {displayNamesEn || coupleKo || (isSample ? 'MINJUN & JIMIN' : '')}
             </p>
             <p className="font-serif text-[11px] tracking-tight text-stone-400 mb-6 font-normal">
               {formattedDates.fullKo}

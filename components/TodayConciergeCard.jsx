@@ -69,7 +69,7 @@ export default function TodayConciergeCard({ invitation, forceShow = false }) {
   // 예식 시작까지 남은 시간 계산
   const timeStatus = useMemo(() => {
     if (!targetDateTime) {
-      return { status: 'before', hours: 1, minutes: 24, text: '1시간 24분 전' };
+      return { status: 'before', hours: 0, minutes: 0, text: '' };
     }
 
     const diffMs = targetDateTime.getTime() - now.getTime();
@@ -106,8 +106,8 @@ export default function TodayConciergeCard({ invitation, forceShow = false }) {
     return '주차 무료 안내';
   }, [invitation?.transportation]);
 
-  // 당일이 아니면 렌더링하지 않음
-  if (!isToday) return null;
+  // 당일이 아니거나 예식 일시가 설정되지 않았으면 렌더링하지 않음
+  if (!isToday || !targetDateTime) return null;
 
   // [접힌 상태]: 화면 우측 하단 또는 상단 미니 플로팅 알약 버튼
   if (isCollapsed) {

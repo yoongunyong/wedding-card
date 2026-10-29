@@ -80,14 +80,19 @@ export default function PlaylistTemplate({ invitation }) {
   const brideFirstEn = invitation?.bride_first_name_en || (invitation?.bride_name_en || '').split(' ')[0] || '';
   const coupleNamesEn = invitation?.main_names_en || [groomFirstEn, brideFirstEn].filter(Boolean).join(' & ');
 
-  // 날짜 파싱
-  const weddingDateStr = invitation?.wedding_date ? invitation.wedding_date.replace(' ', 'T') : '';
-  const dateObj = weddingDateStr ? new Date(weddingDateStr) : new Date();
-  const year = isNaN(dateObj.getFullYear()) ? 2026 : dateObj.getFullYear();
-  const month = isNaN(dateObj.getMonth()) ? 10 : dateObj.getMonth() + 1;
-  const date = isNaN(dateObj.getDate()) ? 24 : dateObj.getDate();
-  const hours = isNaN(dateObj.getHours()) ? 12 : dateObj.getHours();
-  const minutes = isNaN(dateObj.getMinutes()) ? 0 : dateObj.getMinutes();
+  // 날짜 파싱 (실제 고객 청첩장에서는 미입력 시 날짜 섹션 미노출, 샘플 모드일 때만 예시 날짜 제공)
+  const weddingDateStr = invitation?.wedding_date 
+    ? invitation.wedding_date.replace(' ', 'T') 
+    : (isSample ? '2026-10-24T12:00:00' : '');
+  const hasWeddingDate = Boolean(weddingDateStr);
+  const dateObj = hasWeddingDate ? new Date(weddingDateStr) : null;
+  const isValidDate = Boolean(dateObj && !isNaN(dateObj.getTime()));
+
+  const year = isValidDate ? dateObj.getFullYear() : '';
+  const month = isValidDate ? dateObj.getMonth() + 1 : '';
+  const date = isValidDate ? dateObj.getDate() : '';
+  const hours = isValidDate ? dateObj.getHours() : 12;
+  const minutes = isValidDate ? dateObj.getMinutes() : 0;
   const ampm = hours >= 12 ? '오후' : '오전';
   const displayHours = hours % 12 === 0 ? 12 : hours % 12;
   const displayMinutes = String(minutes).padStart(2, '0');
@@ -95,9 +100,9 @@ export default function PlaylistTemplate({ invitation }) {
   const DAYS_KO = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
   const DAYS_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const MONTHS_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  const dayKo = DAYS_KO[dateObj.getDay()] || '토요일';
-  const dayEn = DAYS_EN[dateObj.getDay()] || 'Saturday';
-  const monthEn = MONTHS_EN[month - 1] || 'October';
+  const dayKo = isValidDate ? (DAYS_KO[dateObj.getDay()] || '') : '';
+  const dayEn = isValidDate ? (DAYS_EN[dateObj.getDay()] || '') : '';
+  const monthEn = isValidDate ? (MONTHS_EN[month - 1] || '') : '';
 
   // D-Day 계산
   const [dDay, setDDay] = useState(0);
@@ -643,7 +648,7 @@ export default function PlaylistTemplate({ invitation }) {
       {/* ========================================================
           04. WEDDING SCHEDULE & COUNTDOWN (예식 일시 & D-Day)
           ======================================================== */}
-      {showCountdownSection && (
+      {showCountdownSection && isValidDate && (
         <section className="py-14 px-6 bg-white border-t border-stone-200/60 text-center">
           <ScrollReveal>
             <span className="font-mono text-[11px] tracking-[0.25em] text-emerald-700 uppercase block mb-2 font-semibold">

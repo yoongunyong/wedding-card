@@ -8,14 +8,14 @@ export default function EditorialIntro({ invitation, onOpen }) {
 
   const isSample = Boolean(invitation?.is_sample_preview || invitation?.slug === 'editorial');
 
-  // 화보 커버 이미지 우선순위
+  // 화보 커버 이미지 우선순위 (실제 고객 미등록 시 모델 샘플 사진 노출 차단)
   const coverImage =
     invitation?.images?.cover ||
     invitation?.images?.main ||
     invitation?.cover_image ||
     invitation?.extra_data?.cover_image ||
     invitation?.extra_data?.main_image ||
-    (isSample ? '/samples/main-02-editorial.jpg' : '/samples/main-02-editorial.jpg');
+    (isSample ? '/samples/main-02-editorial.jpg' : '');
 
   // 신랑·신부 한글 성함
   const groomName = invitation?.groom_name || '';
@@ -152,18 +152,25 @@ export default function EditorialIntro({ invitation, onOpen }) {
           <div className="w-full animate-in fade-in zoom-in-98 duration-500 shrink-0">
             <div className="w-full bg-white shadow-[0_20px_50px_rgba(0,0,0,0.35)] p-3 sm:p-3.5 flex flex-col items-center">
               
-              {/* 상단 화보 사진 (Cover Spread) */}
-              <div className="relative w-full aspect-[4/4.5] max-h-[44vh] sm:max-h-[48vh] bg-stone-100 overflow-hidden">
-                <img
-                  src={coverImage}
-                  alt="Editorial Lookbook Cover"
-                  className="w-full h-full object-cover select-none"
-                  onError={(e) => {
-                    if (e.currentTarget.src !== '/samples/main-02-editorial.jpg') {
-                      e.currentTarget.src = '/samples/main-02-editorial.jpg';
-                    }
-                  }}
-                />
+              {/* 상단 화보 사진 (Cover Spread - 등록된 경우에만 이미지 노출, 미등록 시 우아한 인장 엠블럼) */}
+              <div className="relative w-full aspect-[4/4.5] max-h-[44vh] sm:max-h-[48vh] bg-stone-100 overflow-hidden flex items-center justify-center">
+                {coverImage ? (
+                  <img
+                    src={coverImage}
+                    alt="Editorial Lookbook Cover"
+                    className="w-full h-full object-cover select-none"
+                    onError={(e) => {
+                      if (isSample && e.currentTarget.src !== '/samples/main-02-editorial.jpg') {
+                        e.currentTarget.src = '/samples/main-02-editorial.jpg';
+                      }
+                    }}
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-stone-400 select-none">
+                    <span className="font-bickham text-4xl mb-1 text-stone-500" style={{ fontFamily: "'Bickham Script Pro', cursive" }}>M</span>
+                    <span className="font-serif text-[10px] tracking-[0.24em] uppercase text-stone-400">LOOKBOOK</span>
+                  </div>
+                )}
                 {/* COVER SPREAD 뱃지 */}
                 <div className="absolute top-2 left-2 bg-black/55 backdrop-blur-xs text-white text-[8px] sm:text-[8.5px] font-serif tracking-[0.22em] uppercase px-2 py-0.5 select-none">
                   COVER SPREAD

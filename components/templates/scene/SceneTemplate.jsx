@@ -173,15 +173,19 @@ export default function SceneTemplate({ invitation }) {
   const gridPhotos = galleryImages.slice(2);
   const visibleGridPhotos = galleryExpanded ? gridPhotos : gridPhotos.slice(0, 9);
 
-  // 날짜 계산 (3열 캘린더용: 전날, 당일, 다음날)
-  const weddingDateStr = invitation?.wedding_date ? invitation.wedding_date.replace(' ', 'T') : '';
+  // 날짜 계산 (실제 고객 미입력 시 캘린더 미노출, 샘플 모드일 때만 예시 날짜 제공)
+  const weddingDateStr = invitation?.wedding_date 
+    ? invitation.wedding_date.replace(' ', 'T') 
+    : (isSample ? '2035-10-20T12:00:00' : '');
+  const hasWeddingDate = Boolean(weddingDateStr);
   const targetDate = useMemo(() => {
-    if (!weddingDateStr) return new Date();
+    if (!weddingDateStr) return null;
     const d = new Date(weddingDateStr);
-    return isNaN(d.getTime()) ? new Date() : d;
+    return isNaN(d.getTime()) ? null : d;
   }, [weddingDateStr]);
 
   const dateDetails = useMemo(() => {
+    if (!targetDate) return null;
     const y = targetDate.getFullYear();
     const m = targetDate.getMonth() + 1;
     const d = targetDate.getDate();
@@ -760,6 +764,7 @@ export default function SceneTemplate({ invitation }) {
           - 사용자 전달 캡처 이미지 및 영상 1:1 일치
           - 둥근 흰색 카드 제거 -> 투명 그리드 테이블로 전면 변경
           ======================================================== */}
+      {dateDetails && (
       <section 
         ref={calendarRef}
         className="relative py-20 px-4 sm:px-6 text-center overflow-hidden border-t border-stone-200/60"
@@ -875,6 +880,7 @@ export default function SceneTemplate({ invitation }) {
           </ScrollReveal>
         </div>
       </section>
+      )}
 
       {/* ========================================================
           04. INTERVIEW (신랑·신부 인터뷰 - 우리의 이야기)

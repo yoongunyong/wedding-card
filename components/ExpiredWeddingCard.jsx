@@ -21,7 +21,7 @@ export default function ExpiredWeddingCard({ invitation }) {
     invitation?.images?.cover || 
     invitation?.images?.main || 
     invitation?.images?.ending || 
-    '/samples/garden-couple.jpg';
+    '';
 
   return (
     <div 

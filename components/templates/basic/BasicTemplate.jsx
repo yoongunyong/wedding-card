@@ -1156,8 +1156,6 @@ export default function BasicTemplate({ invitation }) {
       {/* 8. 정보 (식사/화환/셔틀 등 동적 안내 카드) (Image 8) */}
       {infoCards.length > 0 && (
         <section className="py-20 sm:py-24 px-4 sm:px-6 bg-[#FCFBF7] text-center border-t border-stone-200/70">
-          {/* 섹션 상단 구분선 */}
-          <div className="w-full max-w-[390px] mx-auto h-px bg-stone-200 mb-20 sm:mb-24" />
 
           <ScrollReveal>
             <h2 className="font-cormorant font-normal text-[30px] sm:text-[34px] tracking-normal text-stone-900 leading-none">
@@ -1233,8 +1231,6 @@ export default function BasicTemplate({ invitation }) {
       {/* 9. 참석 의사 (RSVP) (Image 9) */}
       {showRsvpSection && (
         <section className="py-20 sm:py-24 px-6 bg-[#FCFBF7] text-center border-t border-stone-200/70">
-          {/* 섹션 상단 구분선 */}
-          <div className="w-full max-w-[390px] mx-auto h-px bg-stone-200 mb-20 sm:mb-24" />
 
           <ScrollReveal>
             <h2 className="font-cormorant font-normal text-[30px] sm:text-[34px] tracking-normal text-stone-900 leading-none">
@@ -1288,8 +1284,6 @@ export default function BasicTemplate({ invitation }) {
       {/* 10. 축하 메시지 (Image 10) */}
       {showGuestbookSection && (
         <section className="py-20 sm:py-24 px-6 bg-[#FCFBF7] text-center border-t border-stone-200/70">
-          {/* 섹션 상단 구분선 */}
-          <div className="w-full max-w-[390px] mx-auto h-px bg-stone-200 mb-20 sm:mb-24" />
 
           <ScrollReveal>
             <h2 className="font-cormorant font-normal text-[30px] sm:text-[34px] tracking-normal text-stone-900 leading-none">

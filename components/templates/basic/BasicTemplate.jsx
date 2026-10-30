@@ -671,42 +671,45 @@ export default function BasicTemplate({ invitation }) {
           </ScrollReveal>
         </section>
       )}
-      {/* 3. 웨딩 캘린더 & 카운트다운 타이머 (Image 3 - 다크 테마) */}
+      {/* 3. 웨딩 캘린더 & 카운트다운 타이머 (사용자 요청 신규 캘린더 시안 1:1 일치) */}
       {hasWeddingDate && calendarData && (
-        <section className="py-16 sm:py-20 px-6 bg-gradient-to-b from-[#151515] to-[#1E1E1E] text-center border-t border-stone-800">
+        <section className="py-16 sm:py-20 px-6 bg-white text-center border-t border-stone-200/70">
           <ScrollReveal>
-            <h2 className="font-cormorant text-2xl sm:text-3xl text-white tracking-wide mb-3">
-              Wedding Day
+            <h2 className="font-cormorant text-[30px] sm:text-[34px] text-[#2C2C2C] tracking-[0.08em] font-normal leading-tight mb-3 select-none">
+              WEDDING DAY
             </h2>
             {formattedKoreanDate && (
-              <p className="text-[13.5px] sm:text-[14px] font-sans text-white/90 font-normal mb-1.5">
+              <p className="text-[13.5px] sm:text-[14px] font-serif text-[#4A4A4A] tracking-tight mb-1">
                 {formattedKoreanDate}
               </p>
             )}
             {formattedEnglishDate && (
-              <p className="text-[12px] sm:text-[12.5px] text-white/70 font-sans tracking-wide mb-6">
+              <p className="text-[12.5px] sm:text-[13px] font-serif text-[#7A7A7A] tracking-tight font-normal mb-6 sm:mb-7">
                 {formattedEnglishDate}
               </p>
             )}
 
+            {/* 섬세한 가로 구분선 */}
+            <div className="w-[84%] max-w-[310px] mx-auto border-t border-[#DCDCDC] mb-6 sm:mb-7" />
+
             {/* 달력 컨테이너 */}
-            <div className="max-w-[290px] sm:max-w-[310px] mx-auto mb-8 sm:mb-9 pt-5 border-t border-white/15">
+            <div className="max-w-[280px] sm:max-w-[300px] mx-auto mb-8 sm:mb-9">
               {/* 요일 헤더 */}
-              <div className="grid grid-cols-7 text-center text-[12px] sm:text-[12.5px] font-sans mb-2">
-                <span className="text-[#E84C4B] font-normal py-0.5">일</span>
-                <span className="text-white/80 font-normal py-0.5">월</span>
-                <span className="text-white/80 font-normal py-0.5">화</span>
-                <span className="text-white/80 font-normal py-0.5">수</span>
-                <span className="text-white/80 font-normal py-0.5">목</span>
-                <span className="text-white/80 font-normal py-0.5">금</span>
-                <span className="text-white/80 font-normal py-0.5">토</span>
+              <div className="grid grid-cols-7 text-center text-[12.5px] sm:text-[13px] font-sans mb-3.5 select-none">
+                <span className="text-[#EB6558] font-normal py-0.5">일</span>
+                <span className="text-[#7A7A7A] font-normal py-0.5">월</span>
+                <span className="text-[#7A7A7A] font-normal py-0.5">화</span>
+                <span className="text-[#7A7A7A] font-normal py-0.5">수</span>
+                <span className="text-[#7A7A7A] font-normal py-0.5">목</span>
+                <span className="text-[#7A7A7A] font-normal py-0.5">금</span>
+                <span className="text-[#7A7A7A] font-normal py-0.5">토</span>
               </div>
 
               {/* 일자 그리드 */}
-              <div className="grid grid-cols-7 gap-y-1 sm:gap-y-1.5 text-center text-[13px] sm:text-[13.5px] font-sans tabular-nums">
+              <div className="grid grid-cols-7 gap-y-2.5 sm:gap-y-3.5 text-center text-[13.5px] sm:text-[14px] font-sans tabular-nums select-none">
                 {/* 시작 요일 빈 칸 */}
                 {Array.from({ length: calendarData.firstDayIndex }).map((_, i) => (
-                  <div key={`empty-${i}`} className="w-full h-7 sm:h-8" />
+                  <div key={`empty-${i}`} className="w-full h-8" />
                 ))}
 
                 {/* 일자 */}
@@ -716,14 +719,14 @@ export default function BasicTemplate({ invitation }) {
                   const isWeddingDay = day === calendarData.weddingDay;
 
                   return (
-                    <div key={day} className="flex items-center justify-center w-full h-7 sm:h-8">
+                    <div key={day} className="flex items-center justify-center w-full h-8">
                       <span
-                        className={`w-7 h-7 sm:w-7.5 sm:h-7.5 flex items-center justify-center rounded-full text-[12.5px] sm:text-[13px] leading-none transition-colors ${
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-[13px] sm:text-[13.5px] leading-none transition-colors ${
                           isWeddingDay
-                            ? 'bg-[#913B3B] text-white font-medium shadow-sm'
+                            ? 'bg-[#3E3E3E] text-white font-normal shadow-2xs'
                             : isSunday
-                            ? 'text-[#E84C4B] font-normal'
-                            : 'text-white font-normal'
+                            ? 'text-[#EB6558] font-normal'
+                            : 'text-[#4A4A4A] font-normal'
                         }`}
                       >
                         {day}
@@ -739,8 +742,8 @@ export default function BasicTemplate({ invitation }) {
             <ScrollReveal delay={150}>
               {!timeLeft.isPast ? (
                 <>
-                  {/* 카운트다운 4분할 카드 */}
-                  <div className="grid grid-cols-4 gap-2 max-w-[290px] sm:max-w-[310px] mx-auto mb-6 sm:mb-7 font-sans">
+                  {/* 카운트다운 4분할 카드 (DAYS, HOURS, MINUTES, SECONDS) */}
+                  <div className="grid grid-cols-4 gap-2.5 max-w-[290px] sm:max-w-[310px] mx-auto mb-7 font-sans">
                     {[
                       { label: 'DAYS', val: timeLeft.days },
                       { label: 'HOURS', val: timeLeft.hours },
@@ -749,28 +752,28 @@ export default function BasicTemplate({ invitation }) {
                     ].map((item, idx) => (
                       <div 
                         key={idx} 
-                        className="bg-[#F8F8F6] rounded-xl py-2.5 px-1 shadow-md border border-white/5 flex flex-col items-center justify-center"
+                        className="bg-[#F7F8F9] rounded-2xl py-3 px-1 shadow-[0_4px_16px_rgba(0,0,0,0.05)] border border-[#EBEBEB] flex flex-col items-center justify-center"
                       >
-                        <span className="text-[9.5px] sm:text-[10px] text-[#999999] tracking-wider font-medium">
+                        <span className="text-[9.5px] text-[#8E8E93] tracking-wider font-medium uppercase font-sans mb-1">
                           {item.label}
                         </span>
-                        <span className="font-serif text-[19px] sm:text-[21px] font-normal text-stone-800 mt-0.5 tabular-nums leading-tight">
+                        <span className="font-serif text-[23px] sm:text-[25px] font-normal text-[#2C2C2C] leading-none tabular-nums">
                           {item.val}
                         </span>
                       </div>
                     ))}
                   </div>
 
-                  {/* D-Day 남은 일수 강조 문구 */}
-                  <p className="text-[13px] sm:text-[13.5px] text-white/90 font-sans flex items-center justify-center">
+                  {/* D-Day 남은 일수 강조 문구 (기득 ♥ 민기님의 결혼식이 120일 남았습니다.) */}
+                  <p className="text-[13.5px] sm:text-[14px] text-[#555555] font-sans flex items-center justify-center">
                     {timeLeft.isToday ? (
                       <>
                         <span>오늘 </span>
                         {groomShort && brideShort ? (
                           <>
-                            <strong className="text-white font-medium mx-1">{groomShort}</strong>
-                            <span className="text-[#E84C4B] mx-0.5">♥</span>
-                            <strong className="text-white font-medium mr-1">{brideShort}</strong>
+                            <strong className="text-[#2C2C2C] font-medium mx-1">{groomShort}</strong>
+                            <span className="text-[#EB6558] mx-0.5">♥</span>
+                            <strong className="text-[#2C2C2C] font-medium mr-1">{brideShort}</strong>
                           </>
                         ) : null}
                         <span>님의 결혼식이 시작됩니다.</span>
@@ -780,13 +783,13 @@ export default function BasicTemplate({ invitation }) {
                         {groomShort && brideShort ? (
                           <>
                             <span>{groomShort}</span>
-                            <span className="text-[#E84C4B] mx-1">♥</span>
+                            <span className="text-[#EB6558] mx-1">♥</span>
                             <span>{brideShort}님의 결혼식이</span>
                           </>
                         ) : (
                           <span>결혼식이</span>
                         )}
-                        <strong className="text-[#E84C4B] font-semibold ml-1.5 mr-0.5">{timeLeft.totalDays}일</strong>
+                        <strong className="text-[#EB6558] font-normal ml-1.5 mr-0.5">{timeLeft.totalDays}일</strong>
                         <span>남았습니다.</span>
                       </>
                     )}
@@ -794,14 +797,14 @@ export default function BasicTemplate({ invitation }) {
                 </>
               ) : (
                 /* 예식일이 지난 경우 안내 */
-                <div className="max-w-[310px] mx-auto bg-white/10 backdrop-blur-xs rounded-2xl py-4 px-5 border border-white/15 text-center">
-                  <p className="text-[12px] tracking-widest uppercase text-white/60 font-sans mb-1">
+                <div className="max-w-[310px] mx-auto bg-[#F7F8F9] rounded-2xl py-4 px-5 border border-[#EBEBEB] text-center shadow-xs">
+                  <p className="text-[11px] font-mono tracking-widest uppercase text-[#8E8E93] mb-1">
                     OUR SPECIAL DAY
                   </p>
-                  <p className="font-serif text-[16px] sm:text-[17px] text-white mb-1.5">
-                    결혼한 지 <strong className="text-[#E84C4B] font-semibold">{timeLeft.totalDays}일</strong>째 되는 날입니다
+                  <p className="font-serif text-[15px] sm:text-[16px] text-[#2C2C2C] mb-1">
+                    결혼한 지 <strong className="text-[#EB6558] font-semibold">{timeLeft.totalDays}일</strong>째 되는 날입니다
                   </p>
-                  <p className="text-[12.5px] text-white/80 font-sans">
+                  <p className="text-[12.5px] text-[#666666] font-sans">
                     축복해 주신 모든 분께 진심으로 감사드립니다.
                   </p>
                 </div>

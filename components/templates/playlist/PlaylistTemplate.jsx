@@ -457,9 +457,9 @@ export default function PlaylistTemplate({ invitation }) {
               </div>
             )}
 
-            {/* 모시는 글 본문 (동적 데이터만 노출, 하드코딩 제거) */}
+            {/* 모시는 글 본문 (가독성 높은 Noto Serif KR & 여유로운 행간) */}
             {invitation?.message && (
-              <p className="text-xs sm:text-[13px] text-stone-600 leading-loose font-light whitespace-pre-line break-keep">
+              <p className="font-serif text-[13.5px] sm:text-[14px] text-stone-700 leading-[2.2] font-normal whitespace-pre-line break-keep max-w-[320px] mx-auto">
                 {invitation.message}
               </p>
             )}

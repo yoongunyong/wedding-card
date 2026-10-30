@@ -562,7 +562,7 @@ export default function BasicTemplate({ invitation }) {
       </section>
 
       {/* 2. 초대합니다 & 혼주 & 연락처 모달 버튼 (Image 2) */}
-      <section className="pt-28 sm:pt-36 pb-28 sm:pb-36 px-6 bg-[#FCFBF7] text-center">
+      <section className="py-20 sm:py-24 px-6 bg-[#FCFBF7] text-center border-t border-stone-200/70">
         <ScrollReveal>
           <h2 className="text-[21px] sm:text-[23px] font-sans font-normal text-stone-800 tracking-[0.04em] mb-10 sm:mb-12">
             초대합니다
@@ -570,7 +570,7 @@ export default function BasicTemplate({ invitation }) {
 
           {/* 초대 문구 */}
           {invitation?.message && (
-            <div className="text-[14px] sm:text-[14.5px] font-sans text-stone-600 leading-[2.3] font-normal max-w-[320px] mx-auto mb-12 sm:mb-14 whitespace-pre-line">
+            <div className="text-[13.5px] sm:text-[14px] font-serif text-stone-600 leading-[2.2] font-normal max-w-[320px] mx-auto mb-10 sm:mb-12 whitespace-pre-line break-keep">
               {invitation.message}
             </div>
           )}
@@ -623,7 +623,7 @@ export default function BasicTemplate({ invitation }) {
 
       {/* 2-1. 커플 사진 및 영화 대사 (Couple Photo & Movie Quote) */}
       {showQuoteSection && (couplePhoto || quoteContent) && (
-        <section className="bg-[#FCFBF7] text-center select-none overflow-hidden">
+        <section className="bg-[#FCFBF7] text-center select-none overflow-hidden border-t border-stone-200/60">
           <ScrollReveal>
             {/* 상단 풀위드 커플 사진 */}
             {couplePhoto && (
@@ -813,7 +813,7 @@ export default function BasicTemplate({ invitation }) {
 
       {/* 4. 웨딩 갤러리 (Image 4) */}
       {showGallerySection && galleryImages.length > 0 && (
-        <section className="pt-28 sm:pt-36 pb-28 sm:pb-36 px-4 bg-[#FCFBF7] text-center">
+        <section className="py-20 sm:py-24 px-4 bg-[#FCFBF7] text-center border-t border-stone-200/70">
           <ScrollReveal>
             <h2 className="font-cormorant font-normal text-[30px] sm:text-[34px] tracking-normal text-stone-900 leading-none">
               GALLERY
@@ -900,7 +900,7 @@ export default function BasicTemplate({ invitation }) {
 
       {/* 5. 식장 위치 & 지도 & 네비게이션 (Image 5) */}
       {(invitation?.venue_name || invitation?.venue_address) && (
-        <section className="pt-28 sm:pt-36 pb-28 sm:pb-36 bg-[#FCFBF7] text-center">
+        <section className="py-20 sm:py-24 px-4 sm:px-6 bg-[#FCFBF7] text-center border-t border-stone-200/70">
           <ScrollReveal>
             <h2 className="font-cormorant font-normal text-[30px] sm:text-[34px] tracking-normal text-stone-900 leading-none">
               LOCATION
@@ -1015,7 +1015,7 @@ export default function BasicTemplate({ invitation }) {
 
       {/* 7. 마음 전하실 곳 (Image 7) */}
       {showAccountsSection && (groomAccounts.length > 0 || brideAccounts.length > 0) && (
-        <section className="pt-28 sm:pt-36 pb-28 sm:pb-36 px-4 sm:px-6 bg-[#FCFBF7] text-center">
+        <section className="py-20 sm:py-24 px-4 sm:px-6 bg-[#FCFBF7] text-center border-t border-stone-200/70">
           <ScrollReveal>
             <h2 className="font-cormorant font-normal text-[30px] sm:text-[34px] tracking-normal text-stone-900 leading-none">
               ACCOUNT
@@ -1152,7 +1152,7 @@ export default function BasicTemplate({ invitation }) {
 
       {/* 8. 정보 (식사/화환/셔틀 등 동적 안내 카드) (Image 8) */}
       {infoCards.length > 0 && (
-        <section className="pt-24 sm:pt-32 pb-24 sm:pb-32 bg-[#FCFBF7] text-center">
+        <section className="py-20 sm:py-24 px-4 sm:px-6 bg-[#FCFBF7] text-center border-t border-stone-200/70">
           {/* 섹션 상단 구분선 */}
           <div className="w-full max-w-[390px] mx-auto h-px bg-stone-200 mb-20 sm:mb-24" />
 
@@ -1229,7 +1229,7 @@ export default function BasicTemplate({ invitation }) {
 
       {/* 9. 참석 의사 (RSVP) (Image 9) */}
       {showRsvpSection && (
-        <section className="pt-24 sm:pt-32 pb-24 sm:pb-32 px-6 bg-[#FCFBF7] text-center">
+        <section className="py-20 sm:py-24 px-6 bg-[#FCFBF7] text-center border-t border-stone-200/70">
           {/* 섹션 상단 구분선 */}
           <div className="w-full max-w-[390px] mx-auto h-px bg-stone-200 mb-20 sm:mb-24" />
 
@@ -1284,7 +1284,7 @@ export default function BasicTemplate({ invitation }) {
 
       {/* 10. 축하 메시지 (Image 10) */}
       {showGuestbookSection && (
-        <section className="pt-24 sm:pt-32 pb-24 sm:pb-32 px-6 bg-[#FCFBF7] text-center">
+        <section className="py-20 sm:py-24 px-6 bg-[#FCFBF7] text-center border-t border-stone-200/70">
           {/* 섹션 상단 구분선 */}
           <div className="w-full max-w-[390px] mx-auto h-px bg-stone-200 mb-20 sm:mb-24" />
 
@@ -1397,7 +1397,7 @@ export default function BasicTemplate({ invitation }) {
       )}
 
       {/* 11. 엔딩 사진 & 감사 인사 (Image 11) */}
-      <section className="pt-24 sm:pt-32 pb-24 sm:pb-32 bg-[#FCFBF7] text-center">
+      <section className="py-20 sm:py-24 px-6 bg-[#FCFBF7] text-center border-t border-stone-200/70">
         <ScrollReveal duration={1000}>
           {/* 엔딩 사진 프레임 */}
           {endingImage && (

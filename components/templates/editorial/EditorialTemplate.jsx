@@ -618,7 +618,14 @@ export default function EditorialTemplate({ invitation }) {
           {/* 하단: 초대 문구 (서체: Noto Serif KR) */}
           <div className="pt-12 sm:pt-14 pb-16 sm:pb-20 px-6 sm:px-8 text-center font-serif">
             {/* 제목: 초대합니다 */}
-            <h2 className="text-[17px] sm:text-[18.5px] text-stone-900 font-normal tracking-tight mb-8 sm:mb-9">
+            <div className="flex items-center justify-center gap-2 mb-2.5">
+              <span className="w-5 h-px bg-stone-300" />
+              <span className="font-sans text-[10px] sm:text-[10.5px] tracking-[0.28em] uppercase text-stone-400 font-medium">
+                CHAPTER 02 · INVITATION
+              </span>
+              <span className="w-5 h-px bg-stone-300" />
+            </div>
+            <h2 className="font-serif text-[21px] sm:text-[23px] text-stone-900 font-normal tracking-tight mb-8 sm:mb-9">
               초대합니다
             </h2>
 
@@ -675,7 +682,7 @@ export default function EditorialTemplate({ invitation }) {
               </span>
               <span className="w-5 h-px bg-stone-300" />
             </div>
-            <h2 className="font-sans text-[26px] sm:text-[28px] text-stone-900 leading-tight tracking-[0.04em] mb-1.5 font-normal">
+            <h2 className="font-serif text-[22px] sm:text-[24px] text-stone-900 leading-tight tracking-[0.03em] mb-1.5 font-normal">
               {formattedDates.monthName} {formattedDates.yearNumber}
             </h2>
             <p className="font-sans text-[11.5px] sm:text-[12px] tracking-[0.2em] text-stone-500 mb-8 uppercase font-medium">
@@ -802,9 +809,12 @@ export default function EditorialTemplate({ invitation }) {
               </span>
               <span className="w-5 h-px bg-stone-300" />
             </div>
-            <h2 className="font-sans text-[24px] sm:text-[26px] text-stone-900 leading-tight tracking-[0.04em] mb-8 font-normal">
+            <h2 className="font-serif text-[22px] sm:text-[24px] text-stone-900 leading-tight tracking-[0.03em] mb-2 font-normal">
               Gallery & Memories
             </h2>
+            <p className="font-serif text-[13px] sm:text-[13.5px] text-stone-500 mb-8 font-normal tracking-tight">
+              두 사람의 소중한 순간들을 기록합니다.
+            </p>
 
             {/* 메인 화보 대형 컷 (매거진 프레임 & 캡션) */}
             <div className="max-w-[380px] mx-auto mb-6">
@@ -1119,9 +1129,12 @@ export default function EditorialTemplate({ invitation }) {
               </span>
               <span className="w-5 h-px bg-stone-300" />
             </div>
-            <h2 className="font-serif text-[19px] sm:text-[21px] text-stone-900 font-normal tracking-tight mb-8">
+            <h2 className="font-serif text-[21px] sm:text-[23px] text-stone-900 font-normal tracking-tight mb-2">
               안내 사항
             </h2>
+            <p className="font-serif text-[13px] sm:text-[13.5px] text-stone-500 mb-8 font-normal tracking-tight">
+              예식 당일 편안한 걸음을 위한 필수 안내입니다.
+            </p>
 
             <div className="max-w-[370px] mx-auto space-y-4 text-left">
               {infoCards.map((card, idx) => (
@@ -1179,7 +1192,7 @@ export default function EditorialTemplate({ invitation }) {
                 POST
               </div>
 
-              <h2 className="font-sans text-[22px] sm:text-[24px] text-stone-900 leading-tight tracking-[0.04em] mb-2 font-normal">
+              <h2 className="font-serif text-[21px] sm:text-[23px] text-stone-900 leading-tight tracking-[0.03em] mb-2 font-normal">
                 Attendance Card
               </h2>
               <p className="font-serif text-[12.5px] sm:text-[13px] text-stone-600 mb-7 leading-[1.8] font-normal tracking-tight break-keep">
@@ -1213,7 +1226,7 @@ export default function EditorialTemplate({ invitation }) {
               </span>
               <span className="w-5 h-px bg-stone-300" />
             </div>
-            <h2 className="font-sans text-[24px] sm:text-[26px] text-stone-900 leading-tight tracking-[0.04em] mb-2 font-normal">
+            <h2 className="font-serif text-[21px] sm:text-[23px] text-stone-900 leading-tight tracking-[0.03em] mb-2 font-normal">
               Warm Wishes
             </h2>
             <p className="font-serif text-[13px] sm:text-[13.5px] text-stone-500 mb-8 font-normal tracking-tight">

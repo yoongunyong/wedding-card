@@ -680,7 +680,7 @@ export default function SceneTemplate({ invitation }) {
           </span>
 
           {/* 모시는 글 본문 */}
-          <div className="text-xs sm:text-[13px] leading-[2.5] text-stone-600 font-light max-w-[310px] mx-auto mb-12 whitespace-pre-line break-keep">
+          <div className="font-serif text-[13.5px] sm:text-[14px] leading-[2.2] text-stone-700 font-normal max-w-[320px] mx-auto mb-12 whitespace-pre-line break-keep">
             {invitation?.message || ''}
           </div>
 

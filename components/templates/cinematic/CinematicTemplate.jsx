@@ -453,7 +453,7 @@ export default function CinematicTemplate({ invitation }) {
       {/* ========================================================
           02. CELEBRATE! & OUR WEDDING PARTY
           ======================================================== */}
-      <section className="py-16 px-5 text-center">
+      <section className="py-18 sm:py-20 px-5 text-center border-t border-stone-200/60 dark:border-white/10">
         <ScrollReveal>
           {/* 상단 별표 심볼 */}
           <div className="text-sm tracking-widest text-stone-400 mb-2">✶</div>
@@ -506,7 +506,7 @@ export default function CinematicTemplate({ invitation }) {
       {/* ========================================================
           03. 모시는 글 & 2분할 흑백 인물 스냅 (Bride / Groom)
           ======================================================== */}
-      <section className="py-16 px-5 text-center">
+      <section className="py-18 sm:py-20 px-5 text-center border-t border-stone-200/60 dark:border-white/10">
         <ScrollReveal>
           {/* 모시는 글 본문 (미입력 시 가짜 더미 텍스트 노출 차단) */}
           {(invitation?.message || isSample) && (
@@ -608,7 +608,7 @@ export default function CinematicTemplate({ invitation }) {
           04. WEDDING GALLERY (시네마틱 룩북 갤러리 - 가로 스와이프 화보)
           ======================================================== */}
       {showGallerySection && activeGalleryImages.length > 0 && (
-        <section className="py-20 text-center">
+        <section className="py-18 sm:py-20 text-center border-t border-stone-200/60 dark:border-white/10">
           <ScrollReveal>
             <h2 
               style={serifItalic}
@@ -673,7 +673,7 @@ export default function CinematicTemplate({ invitation }) {
           05. DATE & CALENDAR (미니멀 캘린더 & D-Day)
           ======================================================== */}
       {showCountdownSection && (
-        <section className="py-20 px-5 text-center">
+        <section className="py-18 sm:py-20 px-5 text-center border-t border-stone-200/60 dark:border-white/10">
           <ScrollReveal>
             <h2 
               style={serifItalic}
@@ -759,7 +759,7 @@ export default function CinematicTemplate({ invitation }) {
           06. INFORMATION (가로 스와이프 안내 카드 캐러셀)
           ======================================================== */}
       {infoCards.length > 0 && (
-        <section className="py-20 px-5 text-center">
+        <section className="py-18 sm:py-20 px-5 text-center border-t border-stone-200/60 dark:border-white/10">
           <ScrollReveal>
             <h2 
               style={serifItalic}
@@ -840,7 +840,7 @@ export default function CinematicTemplate({ invitation }) {
           07. WEDDING LOCATION (식장 위치 & 3대 내비게이션 - 정보가 있을 때만 노출)
           ======================================================== */}
       {(venueFullName || venueAddress) && (
-        <section className="py-20 px-5 text-center">
+        <section className="py-18 sm:py-20 px-5 text-center border-t border-stone-200/60 dark:border-white/10">
           <ScrollReveal>
             <h2 
               style={serifItalic}
@@ -944,7 +944,7 @@ export default function CinematicTemplate({ invitation }) {
           08. WEDDING GIFT (등록된 계좌가 있을 때만 노출)
           ======================================================== */}
       {showAccountsSection && allAccounts.length > 0 && (
-        <section className="py-20 px-5 text-center">
+        <section className="py-18 sm:py-20 px-5 text-center border-t border-stone-200/60 dark:border-white/10">
           <ScrollReveal>
             <h2 
               style={serifItalic}
@@ -1035,7 +1035,7 @@ export default function CinematicTemplate({ invitation }) {
           09. RSVP & 푸터
           ======================================================== */}
       {showRsvpSection && (
-        <section className="py-20 px-5 text-center">
+        <section className="py-18 sm:py-20 px-5 text-center border-t border-stone-200/60 dark:border-white/10">
           <ScrollReveal>
             <h2 
               style={serifItalic}

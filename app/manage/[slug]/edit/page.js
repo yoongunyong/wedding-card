@@ -180,6 +180,9 @@ export default function EditInvitationPage({ params }) {
   const [endingImageFile, setEndingImageFile] = useState(null);
   const [endingImagePreview, setEndingImagePreview] = useState('');
 
+  const [photoSharingImageFile, setPhotoSharingImageFile] = useState(null);
+  const [photoSharingImagePreview, setPhotoSharingImagePreview] = useState('');
+
   const [groomPhotoFile, setGroomPhotoFile] = useState(null);
   const [groomPhotoPreview, setGroomPhotoPreview] = useState('');
 
@@ -196,6 +199,7 @@ export default function EditInvitationPage({ params }) {
   const coverImageInputRef = useRef(null);
   const coupleImageInputRef = useRef(null);
   const endingImageInputRef = useRef(null);
+  const photoSharingImageInputRef = useRef(null);
   const groomPhotoInputRef = useRef(null);
   const bridePhotoInputRef = useRef(null);
   const galleryInputRef = useRef(null);
@@ -391,6 +395,7 @@ export default function EditInvitationPage({ params }) {
       setCoverImagePreview(imgs.cover || '');
       setCoupleImagePreview(imgs.couple_profile || '');
       setEndingImagePreview(imgs.ending || card.ending_image || '');
+      setPhotoSharingImagePreview(imgs.photo_sharing || '');
       setBridePhotoPreview(imgs.bride_profile || card.bride_photo || '');
       setGroomPhotoPreview(imgs.groom_profile || card.groom_photo || '');
 
@@ -811,6 +816,7 @@ export default function EditInvitationPage({ params }) {
         cover: coverImagePreview || mainImagePreview,
         couple_profile: coupleImagePreview || mainImagePreview,
         ending: endingImagePreview || mainImagePreview,
+        photo_sharing: photoSharingImagePreview || '',
         bride_profile: bridePhotoPreview || '',
         groom_profile: groomPhotoPreview || '',
       },
@@ -866,6 +872,7 @@ export default function EditInvitationPage({ params }) {
     coverImagePreview,
     coupleImagePreview,
     endingImagePreview,
+    photoSharingImagePreview,
     groomPhotoPreview,
     bridePhotoPreview,
     existingGalleryUrls,
@@ -935,6 +942,13 @@ export default function EditInvitationPage({ params }) {
         setUploadStatus('엔딩 감사 사진을 업로드하고 있습니다...');
         const u = await uploadFileToStorage(endingImageFile, `${slug}/ending`);
         if (u) finalEndingUrl = u;
+      }
+
+      let finalPhotoSharingUrl = photoSharingImagePreview;
+      if (photoSharingImageFile) {
+        setUploadStatus('사진 공유 대표 사진을 업로드하고 있습니다...');
+        const u = await uploadFileToStorage(photoSharingImageFile, `${slug}/photo_sharing`);
+        if (u) finalPhotoSharingUrl = u;
       }
 
       let finalGroomUrl = groomPhotoPreview;
@@ -1066,6 +1080,7 @@ export default function EditInvitationPage({ params }) {
           cover: finalCoverUrl || finalMainUrl || '',
           couple_profile: finalCoupleUrl || finalMainUrl || '',
           ending: finalEndingUrl || finalMainUrl || '',
+          photo_sharing: finalPhotoSharingUrl || '',
           groom_profile: finalGroomUrl || '',
           bride_profile: finalBrideUrl || '',
         },
@@ -2298,6 +2313,67 @@ export default function EditInvitationPage({ params }) {
                         <button
                           type="button"
                           onClick={() => endingImageInputRef.current?.click()}
+                          className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-200/80 text-xs font-medium rounded-xl cursor-pointer inline-flex items-center gap-1.5"
+                        >
+                          <span>+</span>
+                          <span>사진 선택하기</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 사진 공유 카드 대표 사진 (폴라로이드용) */}
+                <div className="p-4.5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-semibold text-stone-800">
+                      사진 공유 카드 대표 사진 (폴라로이드용)
+                    </label>
+                    <span className="text-[10px] font-mono text-stone-500">선택</span>
+                  </div>
+                  <p className="text-[10px] text-stone-400 mb-3">
+                    청첩장 내 &apos;사진 공유(Photo Sharing)&apos; 폴라로이드 프레임에 들어갈 사진입니다. 미등록 시 감성 스냅 아이콘으로 단정하게 표시됩니다.
+                  </p>
+                  <input
+                    ref={photoSharingImageInputRef}
+                    type="file"
+                    accept="image/*,.heic,.heif"
+                    onChange={(e) => validateAndSetImage(e.target.files?.[0], setPhotoSharingImageFile, setPhotoSharingImagePreview, '사진 공유 대표 사진', photoSharingImageInputRef)}
+                    className="hidden"
+                  />
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-16 h-16 bg-white rounded-xl overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center shadow-xs">
+                      {photoSharingImagePreview ? (
+                        <img src={photoSharingImagePreview} alt="Photo Sharing" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-[9px] text-stone-300 font-mono">SNAP</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      {photoSharingImagePreview ? (
+                        <div className="space-y-1.5">
+                          <span className="text-[11px] text-emerald-600 font-medium block">● 등록됨</span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => photoSharingImageInputRef.current?.click()}
+                              className="px-3 py-1.5 bg-stone-900 text-white text-xs font-medium rounded-xl cursor-pointer"
+                            >
+                              변경
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleClearSingleImage(setPhotoSharingImageFile, setPhotoSharingImagePreview, photoSharingImageInputRef)}
+                              className="px-2.5 py-1.5 bg-rose-50 text-rose-600 border border-rose-200/60 text-xs font-medium rounded-xl cursor-pointer"
+                            >
+                              삭제
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => photoSharingImageInputRef.current?.click()}
                           className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-200/80 text-xs font-medium rounded-xl cursor-pointer inline-flex items-center gap-1.5"
                         >
                           <span>+</span>

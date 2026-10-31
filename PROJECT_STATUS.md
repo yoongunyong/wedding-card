@@ -391,6 +391,23 @@
       - **OPEN THE LOOKBOOK 타원 버튼**: 피그마 원본 `<ellipse id="2784:2146">` 기하학적 타원(166x39.5px, `rounded-[50%]`, `borderRadius: 50%`), 배경 `#D7E3EF` (RGB 215, 227, 239), 테두리 `#9EBCD5`, 서체 `Bodoni 72 Bold` 11px (2x: 22px), 텍스트 `#282828`, 피그마 `Arrow 9` 벡터(너비 13px) 인라인 SVG 화살표 1:1 일치.
       - **하단 날짜**: 피그마 `Noto Serif KR` 13px (2x: 26px), 순백색 `#ffffff`, 카드와의 간격 40.5px (`mt-7 sm:mt-8`).
       - **쇼케이스 동기화**: `SignatureShowcase.jsx`의 시안 2 목업 버튼 및 카드 비율도 피그마 원본 수치와 동일하게 동기화.
+13. **[시안 1 피그마(Figma) 1:1 연동 진행 중] `BasicTemplate.jsx`**:
+    - 피그마 마스터 노드 `2689:2096` ("모바일 청첩장(고딕 계열)") 및 하위 노드 `2832:2498` ("Photo Sharing / 사진 공유"):
+      - **AirDrop 인트로 보존**: 첫 진입 화면인 `EnvelopeIntro.jsx`는 유저 요청에 따라 100% 원본 유지.
+      - **기본 타이틀 색상**: 피그마 원본 기본값 `#ffbe68`로 갱신 (`config.title_color || extra.title_color || '#ffbe68'`).
+      - **1섹션 메인 커버**: Bodoni 72 Book Italic 40px `#ffbe68`, Helvetica Neue 18px 날짜, Helvetica Neue Light 22.5px Welcome/이름, 피그마 원본 그라데이션 오버레이.
+      - **2섹션 초대합니다**: Noto Serif KR Medium 22.5px `#303030`, Pretendard 16px `#575757`, 60px 세로 구분선 `#d3d3d3`, 혼주-관계-성함 3열 정렬, 198×42px 라운드 `#f4f3f1` 버튼.
+      - **09-2섹션 사진 공유 (`2832:2498`)**: 기존 공용 컴포넌트(`GuestPhotoSnapSection`)를 걷어내고 피그마 1:1 전용 레이아웃 완비:
+        - 헤더: `Photo Sharing` (Cormorant 30px sm:34px), `사진 공유` (Noto Serif KR 18px sm:19px), 감성 3줄 안내문 (`저희의 소중한 순간을 함께 담아주세요...`).
+        - 폴라로이드 감성 포토 카드: `159x192.5px` (2x: 318x385) 화이트 프레임 카드 + 정사각형 감성 화보 프레임.
+        - **사진 중복 방지 및 전용 업로더 완비 (방안 B 반영)**:
+          - 제작 신청(`app/create/page.js`) 및 청첩장 수정(`app/manage/[slug]/edit/page.js`) 폼에 **`사진 공유 카드 대표 사진 (폴라로이드용, 선택)`** 파일 업로더 추가.
+          - `images.photo_sharing` JSONB 필드로 영구 저장 및 실시간 미리보기 동기화.
+          - 고객이 별도 사진을 업로드한 경우 해당 사진이 렌더링되며, 미등록 시 상단의 커플 사진이 중복 반복되지 않도록 미니멀 감성 스냅 아이콘(`Photo Snap`)으로 품격 있게 대체됨.
+        - 하단 안내: `예식 당일 부터 업로드 가능합니다.` (Pretendard 13.5px #707070).
+        - 업로드 버튼: `사진 업로드하기` (165×40px 다크 라운드 버튼).
+        - 동작 로직: 당일(D-Day) 전이라도 피그마 디자인 그대로 상시 우아하게 노출되며, 당일/샘플 모드에서는 클릭 시 `GuestPhotoUploadModal`이 즉시 열리고, 당일 전 실제 고객 화면에서는 "예식 당일부터 사진을 등록하실 수 있습니다 🤍" 안내가 표시됨.
+      - **동적 데이터 바인딩 철칙**: 고객 청첩장에 가짜 샘플이 노출되지 않도록 데이터 부재 시 공백 처리 원칙 100% 준수.
 
 ---
 

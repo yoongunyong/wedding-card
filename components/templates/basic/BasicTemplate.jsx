@@ -12,7 +12,7 @@ import BasicGuestbookModal from './BasicGuestbookModal';
 import BasicGuestbookDeleteModal from './BasicGuestbookDeleteModal';
 import ScrollReveal from '@/components/ScrollReveal';
 import TodayConciergeCard from '@/components/TodayConciergeCard';
-import GuestPhotoSnapSection from '@/components/GuestPhotoSnapSection';
+import GuestPhotoUploadModal from '@/components/GuestPhotoUploadModal';
 
 export default function BasicTemplate({ invitation }) {
   const extra = { ...(invitation?.template_config || {}), ...(invitation?.extra_data || {}) };
@@ -24,6 +24,7 @@ export default function BasicTemplate({ invitation }) {
   const [showContactModal, setShowContactModal] = useState(false);
   const [showRsvpModal, setShowRsvpModal] = useState(false);
   const [showGuestbookModal, setShowGuestbookModal] = useState(false);
+  const [showPhotoUploadModal, setShowPhotoUploadModal] = useState(false);
   const [deleteTargetMsg, setDeleteTargetMsg] = useState(null);
 
   // 갤러리 선택 인덱스 및 터치 제어
@@ -40,8 +41,8 @@ export default function BasicTemplate({ invitation }) {
   const config = invitation?.template_config || {};
   const isSample = Boolean(invitation?.is_sample_preview || invitation?.slug === 'basic');
 
-  // 고객 커스텀 타이틀 색상 (template_config.title_color 우선, 하위호환 extra.title_color)
-  const titleColor = config.title_color || extra.title_color || '#E5A866';
+  // 고객 커스텀 타이틀 색상 (template_config.title_color 우선, 하위호환 extra.title_color, Figma 기본값 #ffbe68)
+  const titleColor = config.title_color || extra.title_color || '#ffbe68';
 
   // 섹션별 ON/OFF 제어 (기본값 true, config에서 false 지정 시 해당 섹션 숨김)
   const showIntroSection = config.show_intro !== false;
@@ -49,6 +50,7 @@ export default function BasicTemplate({ invitation }) {
   const showGallerySection = config.show_gallery !== false;
   const showAccountsSection = config.show_accounts !== false;
   const showRsvpSection = config.show_rsvp !== false;
+  const showGuestPhotosSection = config.show_guest_photos !== false;
   const showGuestbookSection = config.show_guestbook !== false;
 
   // 본문 메인 풀스크린 사진 (images.main 최우선)
@@ -69,6 +71,9 @@ export default function BasicTemplate({ invitation }) {
 
   // 엔딩 사진 (images.ending 최우선)
   const endingImage = images.ending || extra.ending_image || invitation?.ending_image || mainImage;
+
+  // 사진 공유 전용 대표 사진 (images.photo_sharing 최우선)
+  const photoSharingImage = images.photo_sharing || images.snap_photo || extra.photo_sharing_image || '';
 
   // 갤러리 이미지 안전 파싱 (배열 및 문자열 대응)
   const parseGalleryImages = (raw) => {
@@ -186,6 +191,19 @@ export default function BasicTemplate({ invitation }) {
     const totalDays = new Date(year, month + 1, 0).getDate();
     return { year, month: month + 1, weddingDay, firstDayIndex, totalDays };
   }, [targetDate]);
+
+  // 하객 사진 업로드 가능 여부 (예식 당일 00시 이후 또는 미리보기 모드)
+  const isDDayOrAfter = useMemo(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('preview_today') === 'true' || params.get('today') === 'true' || params.get('preview_snap') === 'true') {
+        return true;
+      }
+    }
+    if (isSample) return true;
+    if (timeLeft.isToday || timeLeft.isPast) return true;
+    return false;
+  }, [isSample, timeLeft.isToday, timeLeft.isPast]);
 
   // 포맷된 날짜 텍스트
   const formattedKoreanDate = useMemo(() => {
@@ -512,27 +530,27 @@ export default function BasicTemplate({ invitation }) {
         />
       )}
 
-      {/* 1. 메인 풀스크린 커버 사진 (Image 1) */}
+      {/* 1. 메인 풀스크린 커버 사진 (Image 1 - Figma 고딕 계열 390x693 1:1) */}
       <section 
         className="relative w-full h-[100lvh] min-h-[100vh] flex flex-col justify-between bg-cover bg-center select-none"
         style={{ backgroundImage: `url(${mainImage})` }}
       >
-        {/* 상하단 가독성을 위한 은은한 그라데이션 */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-transparent to-black/55 pointer-events-none" />
+        {/* 피그마 2689:2099 원본 그라데이션 오버레이 (from-black/25 via-transparent to-black/35) */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/35 pointer-events-none" />
 
         {!hasBakedInText && (
           <>
-            {/* 상단: We are getting married & 날짜 */}
-            <div className="relative z-10 pt-[calc(env(safe-area-inset-top,0px)+3.8rem)] px-6 text-center">
+            {/* 상단: We are getting married (Bodoni 72 Book Italic 40px) & 날짜 (Helvetica Neue Regular 18px) */}
+            <div className="relative z-10 pt-[calc(env(safe-area-inset-top,0px)+3.8rem)] sm:pt-16 px-6 text-center">
               <h1 
-                className="font-cormorant italic text-[32px] sm:text-[38px] leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)] tracking-wide"
+                className="font-bodoni italic font-normal text-[36px] sm:text-[40px] leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)] tracking-normal"
                 style={{ color: titleColor }}
               >
                 We are getting married
               </h1>
               {mainDateEn && (
                 <p 
-                  className="mt-2.5 sm:mt-3 text-[15px] sm:text-[17px] font-cormorant font-normal tracking-[0.22em] drop-shadow-[0_1px_3px_rgba(0,0,0,0.45)]"
+                  className="mt-3 sm:mt-3.5 text-[16px] sm:text-[18px] font-sans font-normal tracking-[0.05em] drop-shadow-[0_1px_3px_rgba(0,0,0,0.45)]"
                   style={{ color: titleColor }}
                 >
                   {mainDateEn}
@@ -540,17 +558,17 @@ export default function BasicTemplate({ invitation }) {
               )}
             </div>
 
-            {/* 하단: Welcome to & 신랑 신부 영문 이름 */}
-            <div className="relative z-10 pb-[calc(env(safe-area-inset-bottom,0px)+3.8rem)] px-6 text-center">
+            {/* 하단: Welcome to & 신랑 신부 영문 이름 (Figma 2689:2102 Helvetica Neue Light 22.5px) */}
+            <div className="relative z-10 pb-[calc(env(safe-area-inset-bottom,0px)+3.8rem)] sm:pb-16 px-6 text-center">
               <p 
-                className="font-wedding-script text-[30px] sm:text-[36px] font-normal tracking-wide drop-shadow-[0_2px_8px_rgba(0,0,0,0.55)] leading-tight"
+                className="font-sans font-light text-[21px] sm:text-[23px] tracking-normal drop-shadow-[0_2px_8px_rgba(0,0,0,0.55)] leading-tight"
                 style={{ color: titleColor }}
               >
                 Welcome to
               </p>
               {mainNamesEn && (
                 <p 
-                  className="mt-1 sm:mt-1.5 font-wedding-script text-[34px] sm:text-[42px] font-normal tracking-wide leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]"
+                  className="mt-1 sm:mt-1.5 font-sans font-light text-[21px] sm:text-[23px] tracking-normal leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]"
                   style={{ color: titleColor }}
                 >
                   {mainNamesEn}
@@ -561,59 +579,60 @@ export default function BasicTemplate({ invitation }) {
         )}
       </section>
 
-      {/* 2. 초대합니다 & 혼주 & 연락처 모달 버튼 (Image 2) */}
+      {/* 2. 초대합니다 & 혼주 & 연락처 모달 버튼 (Figma 2689:2103 ~ 2116 1:1) */}
       <section className="py-20 sm:py-24 px-6 bg-[#FCFBF7] text-center border-t border-stone-200/70">
         <ScrollReveal>
-          <h2 className="text-[21px] sm:text-[23px] font-sans font-normal text-stone-800 tracking-[0.04em] mb-10 sm:mb-12">
+          {/* 헤드라인: Figma 2689:2103 Noto Serif KR Medium 22.5px #303030 */}
+          <h2 className="text-[22px] sm:text-[23px] font-serif font-medium text-[#303030] tracking-tight mb-8 sm:mb-10">
             초대합니다
           </h2>
 
-          {/* 초대 문구 */}
+          {/* 초대 문구: Figma 2689:2104 Pretendard Regular 16px #575757 leading-[1.8] */}
           {invitation?.message && (
-            <div className="text-[13.5px] sm:text-[14px] font-serif text-stone-600 leading-[2.2] font-normal max-w-[320px] mx-auto mb-10 sm:mb-12 whitespace-pre-line break-keep">
+            <div className="text-[15px] sm:text-[16px] font-sans text-[#575757] leading-[1.8] font-normal max-w-[320px] mx-auto mb-10 sm:mb-12 whitespace-pre-line break-keep">
               {invitation.message}
             </div>
           )}
         </ScrollReveal>
 
         <ScrollReveal delay={120}>
-          {/* 세로 구분선 */}
-          <div className="w-px h-12 bg-stone-300 mx-auto mb-12 sm:mb-14" />
+          {/* 세로 구분선: Figma Line 126 height 60px #d3d3d3 */}
+          <div className="w-px h-[60px] bg-[#d3d3d3] mx-auto mb-10 sm:mb-12" />
 
-          {/* 부모님 & 신랑신부 성함 (3열 정렬 레이아웃) */}
+          {/* 부모님 & 신랑신부 성함 (Figma 2705:2600 Pretendard #303030 & #707070) */}
           {(groomName || brideName || groomParents || brideParents) && (
-            <div className="inline-grid grid-cols-[auto_auto_auto] items-center gap-x-5 gap-y-3.5 text-[14.5px] sm:text-[15px] font-sans mx-auto mb-12 sm:mb-14">
-              <div className="text-right text-stone-700 font-normal">
+            <div className="inline-grid grid-cols-[auto_auto_auto] items-center gap-x-5 gap-y-3.5 text-[15px] sm:text-[15.5px] font-sans mx-auto mb-10 sm:mb-12">
+              <div className="text-right text-[#303030] font-normal">
                 {groomParents}
               </div>
-              <div className="text-center text-stone-400 font-normal text-[13px] px-1">
+              <div className="text-center text-[#707070] font-normal text-[13px] px-1">
                 {groomParents ? groomRelation : ''}
               </div>
-              <div className="text-left text-stone-900 font-medium">
+              <div className="text-left text-[#303030] font-normal">
                 {groomName}
               </div>
 
-              <div className="text-right text-stone-700 font-normal">
+              <div className="text-right text-[#303030] font-normal">
                 {brideParents}
               </div>
-              <div className="text-center text-stone-400 font-normal text-[13px] px-1">
+              <div className="text-center text-[#707070] font-normal text-[13px] px-1">
                 {brideParents ? brideRelation : ''}
               </div>
-              <div className="text-left text-stone-900 font-medium">
+              <div className="text-left text-[#303030] font-normal">
                 {brideName}
               </div>
             </div>
           )}
 
-          {/* 축하 연락하기 버튼 */}
+          {/* 축하 연락하기 버튼 (Figma 2689:2113: 198x42px, bg-[#f4f3f1] border-[#d3d3d3] rounded-[20px]) */}
           <div>
             <button
               type="button"
               onClick={() => setShowContactModal(true)}
-              className="inline-flex items-center justify-center gap-2.5 px-8 py-3.5 bg-[#EEEEEE] hover:bg-[#E4E4E4] text-stone-700 text-[14px] font-medium rounded-2xl font-sans transition-colors shadow-2xs cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 w-[198px] h-[42px] bg-[#f4f3f1] hover:bg-[#e9e8e5] border border-[#d3d3d3] text-[#575757] text-[15px] sm:text-[15.5px] font-sans font-normal rounded-[20px] shadow-[0px_4px_5px_0px_rgba(0,0,0,0.07)] transition-colors cursor-pointer select-none"
             >
               <span>축하 연락하기</span>
-              <svg className="w-3.5 h-3.5 fill-stone-600" viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5 fill-[#575757] shrink-0" viewBox="0 0 24 24">
                 <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
               </svg>
             </button>
@@ -1278,8 +1297,79 @@ export default function BasicTemplate({ invitation }) {
         </section>
       )}
 
-      {/* 09-2. 하객 현장 사진 선물 섹션 */}
-      <GuestPhotoSnapSection invitation={invitation} />
+      {/* 09-2. 하객 현장 사진 공유 (Figma Node 2832:2498 "Photo Sharing / 사진 공유" 1:1) */}
+      {showGuestPhotosSection && (
+        <section className="py-20 sm:py-24 px-6 bg-[#FCFBF7] text-center border-t border-stone-200/70">
+          <ScrollReveal>
+            {/* 영문 헤더: Photo Sharing (Cormorant 30px sm:34px) */}
+            <h2 className="font-cormorant font-normal text-[30px] sm:text-[34px] tracking-normal text-stone-900 leading-none">
+              Photo Sharing
+            </h2>
+
+            {/* 한글 서브헤더: 사진 공유 (Noto Serif KR 18px sm:19px) */}
+            <p className="font-serif text-[18px] sm:text-[19px] text-stone-800 font-normal tracking-normal mt-3.5 sm:mt-4 mb-3.5">
+              사진 공유
+            </p>
+
+            {/* 감성 안내 문구 (Pretendard 13.5px leading-relaxed #707070) */}
+            <p className="text-[13px] sm:text-[14px] text-[#707070] font-sans leading-relaxed mb-8 sm:mb-10 whitespace-pre-line max-w-[340px] mx-auto">
+              저희의 소중한 순간을 함께 담아주세요.
+              {'\n'}
+              여러분의 시선으로 기록된 특별한 순간들을
+              {'\n'}
+              오래도록 간직하고 싶습니다.
+            </p>
+          </ScrollReveal>
+
+          <ScrollReveal delay={120}>
+            {/* 폴라로이드 감성 포토 프레임 (Figma Rectangle 6232: 318x385 / 2x -> 159x192.5px 1x) */}
+            <div className="inline-block bg-white p-3 pb-5 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-[#EBEBEB]">
+              <div className="w-[155px] h-[155px] sm:w-[170px] sm:h-[170px] rounded-lg overflow-hidden bg-[#F5F5F3] flex items-center justify-center">
+                {(() => {
+                  const snapPhoto = photoSharingImage || (isSample ? '/samples/main-01-garden.jpg' : '');
+                  return snapPhoto ? (
+                    <img
+                      src={snapPhoto}
+                      alt="사진 공유 포토 프레임"
+                      className="w-full h-full object-cover select-none"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-stone-400 gap-1.5 p-4">
+                      <svg className="w-8 h-8 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+                      </svg>
+                      <span className="text-[11px] font-sans">Photo Snap</span>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+
+            {/* 예식 당일 안내 문구 (Figma 2832:2508) */}
+            <p className="text-[13px] sm:text-[14px] text-stone-600 font-sans mt-5 sm:mt-6 mb-4 sm:mb-5 font-normal">
+              예식 당일 부터 업로드 가능합니다.
+            </p>
+
+            {/* 사진 업로드하기 버튼 (Figma Rectangle 6233: 329x78 / 2x -> 165x39px) */}
+            <div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (isDDayOrAfter) {
+                    setShowPhotoUploadModal(true);
+                  } else {
+                    alert('예식 당일부터 사진을 등록하실 수 있습니다 🤍');
+                  }
+                }}
+                className="inline-flex items-center justify-center w-[165px] h-[40px] bg-[#333333] hover:bg-[#222222] text-white text-[13.5px] sm:text-[14px] font-sans font-medium rounded-xl transition-colors shadow-xs cursor-pointer select-none"
+              >
+                사진 업로드하기
+              </button>
+            </div>
+          </ScrollReveal>
+        </section>
+      )}
 
       {/* 10. 축하 메시지 (Image 10) */}
       {showGuestbookSection && (
@@ -1487,6 +1577,16 @@ export default function BasicTemplate({ invitation }) {
           onDeleteSuccess={(deletedId) => {
             setGuestbookList((prev) => prev.filter((item) => item.id !== deletedId));
             setGuestbookIndex(0);
+          }}
+        />
+      )}
+
+      {showPhotoUploadModal && (
+        <GuestPhotoUploadModal
+          invitation={invitation}
+          onClose={() => setShowPhotoUploadModal(false)}
+          onSuccess={() => {
+            alert('소중한 사진이 성공적으로 전달되었습니다! 감사합니다 🤍');
           }}
         />
       )}

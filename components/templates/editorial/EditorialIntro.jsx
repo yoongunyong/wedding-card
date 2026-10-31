@@ -17,6 +17,9 @@ export default function EditorialIntro({ invitation, onOpen }) {
     invitation?.extra_data?.main_image ||
     (isSample ? '/samples/main-02-editorial.jpg' : '');
 
+  // 배경 이미지: 고객 화보 우선, 샘플일 때만 샘플 배경, 실제 고객 미등록 시 빈값 처리(하드코딩 노출 원천 차단)
+  const coverBgImage = coverImage || (isSample ? '/samples/editorial_intro_background.png' : '');
+
   // 신랑·신부 한글 성함
   const groomName = invitation?.groom_name || '';
   const brideName = invitation?.bride_name || '';
@@ -111,9 +114,9 @@ export default function EditorialIntro({ invitation, onOpen }) {
 
   return (
     <>
-      {/* 1. 에디토리얼 인트로 전체 컨테이너 (스크롤 가능 및 높이 반응형 핏) */}
+      {/* 1. 에디토리얼 인트로 전체 컨테이너 (스크롤 가능 및 상단 여백 최적화) */}
       <div
-        className={`fixed inset-0 z-50 flex flex-col justify-center items-center px-4 py-4 select-none overflow-y-auto transition-opacity duration-300 ${
+        className={`fixed inset-0 z-50 flex flex-col justify-start items-center px-4 pt-[calc(env(safe-area-inset-top,0px)+2.75rem)] sm:pt-14 pb-8 select-none overflow-y-auto transition-opacity duration-300 ${
           transitionStep === 'revealing' 
             ? 'hidden pointer-events-none' 
             : transitionStep === 'darkening'
@@ -122,38 +125,40 @@ export default function EditorialIntro({ invitation, onOpen }) {
         }`}
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
-        {/* 1-1. 백그라운드 이미지 (블러 처리 & 고정 레이어) */}
-        <div className="fixed inset-0 pointer-events-none select-none overflow-hidden -z-10">
-          <img
-            src="/samples/editorial_intro_background.png"
-            alt="Editorial Background"
-            className="w-full h-full object-cover object-center scale-110 filter blur-[9px]"
-          />
-          {/* 부드러운 딥 틴트 오버레이 */}
-          <div className="absolute inset-0 bg-[#142334]/40" />
+        {/* 1-1. 백그라운드 이미지 (Figma image 735: 블러 없는 선명한 화보 + rgba(0,0,0,0.49) 틴트, 미등록 시 딥 슬레이트 단색 배경) */}
+        <div className="fixed inset-0 pointer-events-none select-none overflow-hidden -z-10 bg-[#142334]">
+          {coverBgImage && (
+            <img
+              src={coverBgImage}
+              alt="Editorial Background"
+              className="w-full h-full object-cover object-center"
+            />
+          )}
+          {/* 피그마 원본 딥 틴트 오버레이 (rgba(0,0,0,0.49)) */}
+          <div className="absolute inset-0 bg-black/[0.49]" />
         </div>
 
-        {/* 1-2. 중앙 클러스터: 상단 필기체 문구 + 중앙 화이트 카드 + 하단 날짜 (간격 살짝 좁힘 최적화) */}
-        <div className="relative z-10 w-full max-w-[310px] sm:max-w-[330px] flex flex-col items-center my-auto py-1">
+        {/* 1-2. 중앙 클러스터: 상단 필기체 문구 + 중앙 화이트 카드 + 하단 날짜 (피그마 390x693 1:1) */}
+        <div className="relative z-10 w-full max-w-[310px] sm:max-w-[325px] flex flex-col items-center py-1">
           
-          {/* 상단: Bickham Script Pro 필기체 문구 (카드와의 여백 적정 밸런스: 22px) */}
-          <div className="w-full text-center mb-5 sm:mb-6 shrink-0">
+          {/* 상단: Bickham Script Pro 필기체 문구 (Figma 80px / 1x 40px & 24px 하단 간격) */}
+          <div className="w-full text-center mb-5 sm:mb-6 shrink-0 px-2">
             <h1
-              className="text-white text-[25px] sm:text-[30px] font-normal tracking-normal italic drop-shadow-md select-none leading-tight"
+              className="text-white text-[38px] sm:text-[42px] font-normal tracking-normal italic drop-shadow-md select-none leading-[1.2] py-0.5"
               style={{
-                fontFamily: "'Bickham Script Pro', 'Bickham Script Pro 3', 'Great Vibes', 'Alex Brush', cursive",
+                fontFamily: "'Bickham Script Pro', 'BickhamScriptPro-Regular', 'Bickham Script Pro 3', cursive",
               }}
             >
               We are getting married
             </h1>
           </div>
 
-          {/* 중앙: 화이트 프레임 카드 */}
+          {/* 중앙: 피그마 화이트 프레임 카드 (Rectangle 6219: 619x998 -> 310x500 1x) */}
           <div className="w-full animate-in fade-in zoom-in-98 duration-500 shrink-0">
-            <div className="w-full bg-white shadow-[0_20px_50px_rgba(0,0,0,0.35)] p-3 sm:p-3.5 flex flex-col items-center">
+            <div className="w-full bg-[#fefefe] shadow-[0_20px_50px_rgba(0,0,0,0.35)] p-2.5 sm:p-3 flex flex-col items-center">
               
-              {/* 상단 화보 사진 (Cover Spread - 등록된 경우에만 이미지 노출, 미등록 시 우아한 인장 엠블럼) */}
-              <div className="relative w-full aspect-[4/4.5] max-h-[44vh] sm:max-h-[48vh] bg-stone-100 overflow-hidden flex items-center justify-center">
+              {/* 상단 화보 사진 (Figma image 736: 578x721 -> 비율 578/721 = 0.8016) */}
+              <div className="relative w-full aspect-[578/721] max-h-[44vh] sm:max-h-[48vh] bg-stone-100 overflow-hidden flex items-center justify-center">
                 {coverImage ? (
                   <img
                     src={coverImage}
@@ -171,43 +176,46 @@ export default function EditorialIntro({ invitation, onOpen }) {
                     <span className="font-serif text-[10px] tracking-[0.24em] uppercase text-stone-400">LOOKBOOK</span>
                   </div>
                 )}
-                {/* COVER SPREAD 뱃지 */}
-                <div className="absolute top-2 left-2 bg-black/55 backdrop-blur-xs text-white text-[8px] sm:text-[8.5px] font-serif tracking-[0.22em] uppercase px-2 py-0.5 select-none">
+                {/* COVER SPREAD 뱃지 (Cormorant Garamond) */}
+                <div className="absolute top-2 left-2 bg-black/55 backdrop-blur-xs text-white text-[8.5px] font-cormorant tracking-[0.24em] uppercase px-2.5 py-0.5 select-none">
                   COVER SPREAD
                 </div>
               </div>
 
-              {/* 하단 성함, 웨딩홀, 버튼 */}
-              <div className="w-full text-center pt-3 pb-2 sm:pb-2.5 px-1 flex flex-col items-center">
+              {/* 하단 성함(Noto Serif KR 30px->15px), 웨딩홀(Noto Serif KR 26px->13px #8a8a8a), 버튼(Bodoni 72 Bold) */}
+              <div className="w-full text-center pt-5 pb-4 sm:pb-4.5 px-2 flex flex-col items-center">
                 {coupleKo && (
-                  <p className="font-serif text-[15px] sm:text-[16px] text-stone-900 font-medium tracking-tight">
+                  <p className="font-serif text-[15px] sm:text-[15.5px] text-black font-normal tracking-tight">
                     {coupleKo}
                   </p>
                 )}
 
                 {venueName && (
-                  <p className="font-serif text-[11px] sm:text-[11.5px] text-stone-400 font-normal tracking-tight mt-0.5 mb-2.5 sm:mb-3">
+                  <p className="font-serif text-[13px] text-[#8a8a8a] font-normal tracking-tight mt-2 mb-3.5 sm:mb-4">
                     {venueName}
                   </p>
                 )}
 
-                {/* 연하늘색 알약형 OPEN THE LOOKBOOK 버튼 */}
+                {/* 파스텔 블루 기하 타원 OPEN THE LOOKBOOK 버튼 (Figma Ellipse 749: 332x79 -> 166x39.5, #D7E3EF, #282828) */}
                 <button
                   type="button"
                   onClick={handleOpen}
-                  className="inline-flex items-center justify-center gap-1.5 px-5 sm:px-6 py-1.5 sm:py-2 rounded-full bg-[#DDE8F4] hover:bg-[#CFE0F0] active:bg-[#C2D6E8] border border-[#BED4E8] text-stone-800 text-[10px] sm:text-[10.5px] font-serif tracking-[0.16em] uppercase font-medium shadow-2xs transition-all duration-200 cursor-pointer group"
+                  className="w-[166px] sm:w-[172px] h-[39px] sm:h-[40px] rounded-[50%] bg-[#D7E3EF] hover:bg-[#CADAE8] active:bg-[#BFD1E2] border border-[#9EBCD5] text-[#282828] text-[11px] font-bodoni font-bold tracking-[0.03em] uppercase shadow-2xs transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 group select-none"
+                  style={{ borderRadius: '50%' }}
                 >
-                  <span>OPEN THE LOOKBOOK</span>
-                  <span className="text-[11px] transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+                  <span className="leading-none pt-0.5">OPEN THE LOOKBOOK</span>
+                  <svg width="13" height="7" viewBox="0 0 13 7" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5">
+                    <path d="M0 3.5H11.5M11.5 3.5L8.5 0.8M11.5 3.5L8.5 6.2" stroke="#282828" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                 </button>
               </div>
             </div>
           </div>
 
-          {/* 하단: 화이트 세리프 날짜 (카드와의 여백 적정 밸런스: 20px) */}
+          {/* 하단: 화이트 세리프 날짜 (Figma Noto Serif KR 26px->13px #ffffff, 간격 81px->40px) */}
           {dateFormatted && (
-            <div className="w-full text-center mt-5 sm:mt-6 shrink-0">
-              <p className="font-serif text-white/85 text-[12px] sm:text-[12.5px] tracking-[0.08em] select-none drop-shadow-sm">
+            <div className="w-full text-center mt-7 sm:mt-8 shrink-0">
+              <p className="font-serif text-white/95 text-[13px] sm:text-[13.5px] tracking-[0.08em] font-normal select-none drop-shadow-sm">
                 {dateFormatted}
               </p>
             </div>

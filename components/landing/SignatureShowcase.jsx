@@ -267,14 +267,14 @@ export default function SignatureShowcase() {
                      ===================================================== */}
                   {activeOpeningId === 'editorial' && (
                     <div className="relative w-full h-full p-2.5 overflow-hidden flex flex-col items-center justify-center select-none">
-                      {/* 배경 이미지 (블러 처리) & 딥 네이비 감성 오버레이 */}
+                      {/* 배경 이미지 (Figma image 735: 블러 없는 선명한 화보 + rgba(0,0,0,0.49) 틴트) */}
                       <div className="absolute inset-0 pointer-events-none overflow-hidden">
                         <img
                           src="/samples/editorial_intro_background.png"
                           alt="Editorial Background"
-                          className="w-full h-full object-cover object-center scale-110 filter blur-[6px]"
+                          className="w-full h-full object-cover object-center"
                         />
-                        <div className="absolute inset-0 bg-[#142334]/40" />
+                        <div className="absolute inset-0 bg-black/[0.49]" />
                       </div>
 
                       {/* 중앙 클러스터 */}
@@ -282,12 +282,12 @@ export default function SignatureShowcase() {
                         className="relative z-10 w-full max-w-[260px] flex flex-col items-center"
                         style={{ animation: 'fadeInScale 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}
                       >
-                        {/* 상단 필기체 문구 (카드와의 시원한 간격 확보) */}
-                        <div className="text-center mb-3.5">
+                        {/* 상단 필기체 문구 (0.5배 확대 및 카드 밀착 밸런스) */}
+                        <div className="text-center mb-2.5">
                           <p
-                            className="text-white text-[19px] font-normal tracking-wide drop-shadow-sm select-none"
+                            className="text-white text-[26px] font-normal tracking-wide drop-shadow-sm select-none leading-tight"
                             style={{
-                              fontFamily: "'Bickham Script Pro', 'Bickham Script Pro 3', 'Great Vibes', 'Alex Brush', cursive",
+                              fontFamily: "'Bickham Script Pro', 'BickhamScriptPro-Regular', 'Bickham Script Pro 3', cursive",
                             }}
                           >
                             We are getting married
@@ -295,37 +295,42 @@ export default function SignatureShowcase() {
                         </div>
 
                         {/* 중앙 화이트 카드 */}
-                        <div className="w-full bg-white shadow-2xl p-2.5 flex flex-col items-center">
-                          {/* 화보 사진 (Cover Spread) */}
-                          <div className="relative w-full aspect-[4/4.8] bg-stone-100 overflow-hidden">
+                        <div className="w-full bg-[#fefefe] shadow-2xl p-2 sm:p-2.5 flex flex-col items-center">
+                          {/* 화보 사진 (Cover Spread - Figma 578/721) */}
+                          <div className="relative w-full aspect-[578/721] bg-stone-100 overflow-hidden">
                             <img
                               src="/samples/main-02-editorial.jpg"
                               alt="Editorial"
                               className="w-full h-full object-cover"
                             />
-                            <div className="absolute top-1 left-1 bg-black/55 backdrop-blur-xs text-white text-[6.5px] font-serif tracking-[0.2em] uppercase px-1.5 py-0.5">
+                            <div className="absolute top-1 left-1 bg-black/55 backdrop-blur-xs text-white text-[6.5px] font-cormorant tracking-[0.2em] uppercase px-1.5 py-0.5">
                               COVER SPREAD
                             </div>
                           </div>
 
-                          {/* 성함, 웨딩홀, 버튼 */}
-                          <div className="w-full text-center pt-2 pb-1.5 flex flex-col items-center">
-                            <p className="font-serif text-[11px] text-stone-900 font-medium tracking-tight">
+                          {/* 성함(Noto Serif KR), 웨딩홀(Noto Serif KR #8a8a8a), 버튼(Bodoni 72 Bold #D7E3EF #282828) */}
+                          <div className="w-full text-center pt-2.5 pb-2 flex flex-col items-center">
+                            <p className="font-serif text-[11px] text-black font-normal tracking-tight">
                               강민준 · 박지민
                             </p>
-                            <p className="font-serif text-[8px] text-stone-400 font-normal tracking-tight mt-0.5 mb-2">
+                            <p className="font-serif text-[8.5px] text-[#8a8a8a] font-normal tracking-tight mt-1 mb-2">
                               반얀트리 클럽 앤 스파 서울
                             </p>
-                            <div className="inline-flex items-center justify-center gap-1 px-3 py-1 rounded-full bg-[#dbe7f3] border border-[#bcd2e6] text-stone-800 text-[7.5px] font-serif tracking-[0.14em] uppercase font-medium shadow-2xs">
-                              <span>OPEN THE LOOKBOOK</span>
-                              <span className="text-[8px]">→</span>
+                            <div
+                              className="w-[122px] h-[28px] rounded-[50%] bg-[#D7E3EF] border border-[#9EBCD5] text-[#282828] text-[7.5px] font-bodoni font-bold tracking-[0.03em] uppercase shadow-2xs flex items-center justify-center gap-1 select-none"
+                              style={{ borderRadius: '50%' }}
+                            >
+                              <span className="leading-none pt-0.5">OPEN THE LOOKBOOK</span>
+                              <svg width="10" height="5" viewBox="0 0 13 7" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+                                <path d="M0 3.5H11.5M11.5 3.5L8.5 0.8M11.5 3.5L8.5 6.2" stroke="#282828" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
                             </div>
                           </div>
                         </div>
 
-                        {/* 하단 화이트 세리프 날짜 (카드와의 시원한 간격 확보) */}
+                        {/* 하단 화이트 날짜 (Noto Serif KR #ffffff) */}
                         <div className="text-center mt-4">
-                          <p className="font-serif text-white/80 text-[9px] tracking-[0.08em] select-none">
+                          <p className="font-serif text-white/95 text-[9.5px] tracking-[0.08em] select-none">
                             May 15. 2027
                           </p>
                         </div>

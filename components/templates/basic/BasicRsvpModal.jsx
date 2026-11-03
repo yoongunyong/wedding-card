@@ -7,9 +7,26 @@ export default function BasicRsvpModal({ invitation, invitationId, onClose }) {
   const [side, setSide] = useState('groom'); // 'groom' | 'bride'
   const [attend, setAttend] = useState(true); // true | false
   const [name, setName] = useState('');
-  const [companionCount, setCompanionCount] = useState('');
+  const [attendeeCount, setAttendeeCount] = useState('1');
   const [phone, setPhone] = useState('');
+  const [meal, setMeal] = useState('식사 가능'); // '식사 가능' | '식사 불가' | '미정'
+  const [bus, setBus] = useState('미탑승'); // '탑승' | '미탑승'
   const [loading, setLoading] = useState(false);
+
+  const config = invitation?.template_config || {};
+  const extra = invitation?.extra_data || {};
+  const isSample = Boolean(invitation?.is_sample_preview || invitation?.slug === 'basic');
+
+  // 전세버스 탑승 조사 노출 여부 (제작/수정 시 체크박스 on/off 연동)
+  const showBusOption = Boolean(
+    config.show_rsvp_bus === true ||
+    extra.has_bus ||
+    extra.show_bus ||
+    (isSample && config.show_rsvp_bus !== false)
+  );
+
+  // 식사 여부 조사 노출 여부 (기본 true, config.show_rsvp_meal === false일 때만 비활성화)
+  const showMealOption = config.show_rsvp_meal !== false;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,14 +64,18 @@ export default function BasicRsvpModal({ invitation, invitationId, onClose }) {
       }
     }
 
+    const totalAttendees = attend ? Math.max(1, parseInt(attendeeCount, 10) || 1) : 0;
+    const companionCountVal = attend ? Math.max(0, totalAttendees - 1) : 0;
+
     const payload = {
       invitation_id: invitationId,
       side,
       attend,
       name: cleanName,
-      companion_count: attend ? (parseInt(companionCount, 10) || 0) : 0,
+      companion_count: companionCountVal,
       phone: cleanPhone,
-      meal: null,
+      meal: attend && showMealOption ? meal : null,
+      bus: attend && showBusOption ? bus : null,
     };
 
     let error = null;
@@ -198,24 +219,79 @@ export default function BasicRsvpModal({ invitation, invitationId, onClose }) {
             />
           </div>
 
-          {/* 4. 동반 인원 (참석 시만 활성) */}
+          {/* 4. 참석 인원 (참석 시만 활성) */}
           {attend && (
             <div>
               <label className="block text-[13px] font-medium text-stone-700 mb-1.5">
-                본인 제외 동반 인원 수를 입력해주세요.
+                참석 인원 (본인 포함)
               </label>
-              <input
-                type="number"
-                min="0"
-                placeholder="0"
-                value={companionCount}
-                onChange={(e) => setCompanionCount(e.target.value)}
-                className="w-full px-3.5 py-3 border border-stone-200 rounded-xl text-stone-800 placeholder-stone-400 text-xs focus:outline-none focus:border-stone-700 transition-colors"
-              />
+              <div className="relative">
+                <input
+                  type="number"
+                  min="1"
+                  placeholder="1"
+                  value={attendeeCount}
+                  onChange={(e) => setAttendeeCount(e.target.value)}
+                  className="w-full px-3.5 py-3 border border-stone-200 rounded-xl text-stone-800 placeholder-stone-400 text-xs focus:outline-none focus:border-stone-700 transition-colors"
+                />
+                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs">
+                  명
+                </span>
+              </div>
             </div>
           )}
 
-          {/* 5. 휴대전화 번호 뒤 4자리 */}
+          {/* 5. 식사 여부 (참석 시 활성 & showMealOption) */}
+          {attend && showMealOption && (
+            <div>
+              <label className="block text-[13px] font-medium text-stone-700 mb-2">
+                식사 여부
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {['식사 가능', '식사 불가', '미정'].map((opt) => (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => setMeal(opt)}
+                    className={`py-3 rounded-xl text-sm font-medium transition-all cursor-pointer ${
+                      meal === opt
+                        ? 'bg-[#333333] text-white shadow-xs'
+                        : 'bg-white border border-stone-200 text-stone-500 hover:border-stone-300'
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 6. 전세버스 탑승 여부 (참석 시 활성 & showBusOption) */}
+          {attend && showBusOption && (
+            <div>
+              <label className="block text-[13px] font-medium text-stone-700 mb-2">
+                전세버스 탑승 여부
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {['탑승', '미탑승'].map((opt) => (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => setBus(opt)}
+                    className={`py-3 rounded-xl text-sm font-medium transition-all cursor-pointer ${
+                      bus === opt
+                        ? 'bg-[#333333] text-white shadow-xs'
+                        : 'bg-white border border-stone-200 text-stone-500 hover:border-stone-300'
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 7. 휴대전화 번호 뒤 4자리 */}
           <div>
             <label className="block text-[13px] font-medium text-stone-700 mb-1.5">
               휴대전화 번호 뒤 4자리

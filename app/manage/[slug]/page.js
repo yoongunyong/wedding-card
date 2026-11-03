@@ -334,13 +334,13 @@ export default function ManageRsvpPage({ params }) {
   const downloadCSV = () => {
     if (rsvpList.length === 0) return alert('다운로드할 참석자 내역이 없습니다.');
 
-    const headers = ['구분', '성함', '연락처', '참석여부', '동행인원', '식사여부', '전세버스', '등록일시'];
+    const headers = ['구분', '성함', '연락처', '참석여부', '참석인원(본인포함)', '식사여부', '전세버스', '등록일시'];
     const rows = rsvpList.map((r) => [
       r.side === 'groom' ? '신랑측' : '신부측',
       r.name,
       r.phone || '-',
       r.attend ? '참석' : '불참',
-      r.attend ? (r.companion_count || 0) : '-',
+      r.attend ? (r.companion_count || 0) + 1 : '-',
       r.attend ? (r.meal || '-') : '-',
       r.attend ? (r.bus || '-') : '-',
       new Date(r.created_at).toLocaleString('ko-KR'),
@@ -776,14 +776,36 @@ export default function ManageRsvpPage({ params }) {
                 <span className="text-xl font-bold text-stone-900 mt-0.5 block">{totalGuests}명</span>
               </div>
               <div className="bg-stone-50/80 p-3.5 rounded-xl border border-stone-200/60 text-center">
-                <span className="text-[11px] text-stone-500 font-medium block">신랑측 (동행포함)</span>
+                <span className="text-[11px] text-stone-500 font-medium block">신랑측 (참석 인원)</span>
                 <span className="text-xl font-bold text-stone-900 mt-0.5 block">{groomGuests}명</span>
               </div>
               <div className="bg-stone-50/80 p-3.5 rounded-xl border border-stone-200/60 text-center">
-                <span className="text-[11px] text-stone-500 font-medium block">신부측 (동행포함)</span>
+                <span className="text-[11px] text-stone-500 font-medium block">신부측 (참석 인원)</span>
                 <span className="text-xl font-bold text-stone-900 mt-0.5 block">{brideGuests}명</span>
               </div>
             </div>
+
+            {/* 식사 및 전세버스 현황 요약 */}
+            {attendingList.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 mb-4 text-xs">
+                <div className="px-3 py-1.5 bg-stone-50 border border-stone-200/70 rounded-lg text-stone-600 flex items-center gap-2">
+                  <span className="font-medium text-stone-700">식사:</span>
+                  <span className="font-semibold text-stone-900">가능 {attendingList.filter((r) => r.meal === '식사 가능').length}명</span>
+                  <span className="text-stone-300">|</span>
+                  <span>불가 {attendingList.filter((r) => r.meal === '식사 불가').length}명</span>
+                  <span className="text-stone-300">|</span>
+                  <span>미정 {attendingList.filter((r) => r.meal === '미정').length}명</span>
+                </div>
+                {attendingList.some((r) => r.bus) && (
+                  <div className="px-3 py-1.5 bg-stone-50 border border-stone-200/70 rounded-lg text-stone-600 flex items-center gap-2">
+                    <span className="font-medium text-stone-700">전세버스:</span>
+                    <span className="font-semibold text-stone-900">탑승 {attendingList.filter((r) => r.bus === '탑승').length}명</span>
+                    <span className="text-stone-300">|</span>
+                    <span>미탑승 {attendingList.filter((r) => r.bus === '미탑승').length}명</span>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* 참석자 테이블 */}
             {rsvpList.length === 0 ? (
@@ -799,7 +821,7 @@ export default function ManageRsvpPage({ params }) {
                       <th className="py-2.5 px-3">성함</th>
                       <th className="py-2.5 px-3">연락처</th>
                       <th className="py-2.5 px-3 text-center">참석</th>
-                      <th className="py-2.5 px-3 text-center">동행</th>
+                      <th className="py-2.5 px-3 text-center">참석 인원</th>
                       <th className="py-2.5 px-3 text-center">식사</th>
                       <th className="py-2.5 px-3 text-center">버스</th>
                       <th className="py-2.5 px-3 text-right">등록일</th>
@@ -827,8 +849,8 @@ export default function ManageRsvpPage({ params }) {
                             <span className="text-stone-400">불참</span>
                           )}
                         </td>
-                        <td className="py-3 px-3 text-center whitespace-nowrap">
-                          {row.attend ? `${(row.companion_count || 0)}명` : '-'}
+                        <td className="py-3 px-3 text-center whitespace-nowrap font-medium text-stone-900">
+                          {row.attend ? `${(row.companion_count || 0) + 1}명` : '-'}
                         </td>
                         <td className="py-3 px-3 text-center whitespace-nowrap">
                           {row.attend ? row.meal || '-' : '-'}

@@ -7,7 +7,7 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
   const [side, setSide] = useState('groom'); // 'groom' | 'bride'
   const [attend, setAttend] = useState(true); // true | false
   const [name, setName] = useState('');
-  const [companionCount, setCompanionCount] = useState('');
+  const [attendeeCount, setAttendeeCount] = useState('1');
   const [phone, setPhone] = useState('');
   const [meal, setMeal] = useState('식사 가능'); // '식사 가능' | '식사 불가' | '미정'
   const [bus, setBus] = useState('미탑승'); // '탑승' | '미탑승'
@@ -64,12 +64,15 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
       }
     }
 
+    const totalAttendees = attend ? Math.max(1, parseInt(attendeeCount, 10) || 1) : 0;
+    const companionCountVal = attend ? Math.max(0, totalAttendees - 1) : 0;
+
     const payload = {
       invitation_id: invitationId,
       side,
       attend,
       name: cleanName,
-      companion_count: attend ? (parseInt(companionCount, 10) || 0) : 0,
+      companion_count: companionCountVal,
       phone: cleanPhone,
       meal: attend && showMealOption ? meal : null,
       bus: attend && showBusOption ? bus : null,
@@ -218,24 +221,29 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
             />
           </div>
 
-          {/* 4. 동행 인원 (참석 시) */}
+          {/* 4. 참석 인원 (참석 시) */}
           {attend && (
             <div>
               <span className="font-editorial-serif text-[11px] tracking-widest uppercase text-stone-400 block mb-1.5 font-semibold">
-                04 · COMPANIONS
+                04 · ATTENDEES (INCLUDING GUEST)
               </span>
-              <input
-                type="number"
-                min="0"
-                value={companionCount}
-                onChange={(e) => setCompanionCount(e.target.value)}
-                placeholder="본인 제외 동행 인원 수 (예: 1)"
-                className="w-full px-3.5 py-2.5 bg-white border border-stone-300 text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 text-xs font-sans transition-colors"
-              />
+              <div className="relative">
+                <input
+                  type="number"
+                  min="1"
+                  value={attendeeCount}
+                  onChange={(e) => setAttendeeCount(e.target.value)}
+                  placeholder="참석 인원 (본인 포함, 예: 1)"
+                  className="w-full px-3.5 py-2.5 bg-white border border-stone-300 text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 text-xs font-sans transition-colors"
+                />
+                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs font-sans">
+                  명
+                </span>
+              </div>
             </div>
           )}
 
-          {/* 4-1. 식사 여부 (참석 시 활성) */}
+          {/* 5. 식사 여부 (참석 시 활성) */}
           {attend && showMealOption && (
             <div>
               <span className="font-editorial-serif text-[11px] tracking-widest uppercase text-stone-400 block mb-2 font-semibold">
@@ -260,7 +268,7 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
             </div>
           )}
 
-          {/* 4-2. 전세버스 탑승 여부 (참석 시 & 버스 옵션 활성화 시) */}
+          {/* 6. 전세버스 탑승 여부 (참석 시 & 버스 옵션 활성화 시) */}
           {attend && showBusOption && (
             <div>
               <span className="font-editorial-serif text-[11px] tracking-widest uppercase text-stone-400 block mb-2 font-semibold">
@@ -285,10 +293,10 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
             </div>
           )}
 
-          {/* 5. 휴대전화 번호 뒤 4자리 */}
+          {/* 7. 휴대전화 번호 뒤 4자리 */}
           <div>
             <span className="font-editorial-serif text-[11px] tracking-widest uppercase text-stone-400 block mb-1.5 font-semibold">
-              05 · PHONE LAST 4 DIGITS *
+              07 · PHONE LAST 4 DIGITS *
             </span>
             <input
               type="tel"

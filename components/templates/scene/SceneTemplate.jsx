@@ -1321,7 +1321,7 @@ export default function SceneTemplate({ invitation }) {
                 {/* 3. 참석 인원 수 카운터 */}
                 <div className="flex items-center justify-between py-1">
                   <span className="text-xs font-semibold text-stone-800">
-                    <span className="text-rose-500 mr-1">*</span>참석 인원
+                    <span className="text-rose-500 mr-1">*</span>참석 인원 (본인 포함)
                   </span>
                   <div className="flex items-center gap-3 bg-[#FAFAFA] border border-stone-200 rounded-xl px-3 py-1.5">
                     <button
@@ -1332,7 +1332,7 @@ export default function SceneTemplate({ invitation }) {
                       -
                     </button>
                     <span className="font-mono text-sm font-semibold text-stone-900 min-w-5 text-center">
-                      {rsvpCount}
+                      {rsvpCount}명
                     </span>
                     <button
                       type="button"

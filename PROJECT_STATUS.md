@@ -447,10 +447,12 @@
   - `components/templates/playlist/PlaylistTemplate.jsx` (시안 3 · 감성 플레이리스트: 계좌 아코디언 기본 펼침, RSVP 모달 식사·전세버스 수집 연동)
   - `components/templates/cinematic/CinematicTemplate.jsx` (시안 4 · 시네마틱 모노리스: 신랑/신부 탭 전환 방식 유지, RSVP 모달 식사·전세버스 수집 연동)
   - `components/templates/scene/SceneTemplate.jsx` (시안 5 · 모던 씬: 계좌 아코디언 기본 펼침으로 전환 완비, 인페이지 RSVP 식사·전세버스 on/off 연동)
-- **RSVP 참석의사 조사 (전 시안 공통 표준화)**:
-  - `components/templates/basic/BasicRsvpModal.jsx` (시안 1 전용: 신랑/신부측, 참석여부, 성함, 동행인원, 식사여부(식사가능/불가/미정), 전세버스(탑승/미탑승) 연동)
-  - `components/templates/editorial/EditorialRsvpModal.jsx` (시안 2, 3, 4 공통: 에디토리얼 모던 고딕 규격 식사·전세버스 조사 완비)
-  - 제작(`/create`) 및 수정(`/edit`) 옵션 체크박스: `식사 여부 조사(show_rsvp_meal)`, `전세버스 탑승 조사(show_rsvp_bus)` 독립 ON/OFF 완비
+- **RSVP 참석의사 조사 (전 시안 공통 표준화 & '본인 포함 1부터 시작' 인원 체계)**:
+  - `components/templates/basic/BasicRsvpModal.jsx` (시안 1 전용: 신랑/신부측, 참석여부, 성함, 참석인원(본인포함 1부터 시작), 식사여부(식사가능/불가/미정), 전세버스(탑승/미탑승) 옵션 연동 완비)
+  - `components/templates/editorial/EditorialRsvpModal.jsx` (시안 2, 3, 4 공통: 참석인원(본인포함 1부터 시작, min 1), 에디토리얼 모던 고딕 규격 식사·전세버스 조사 완비)
+  - `components/templates/scene/SceneTemplate.jsx` (시안 5 전용: 인페이지 RSVP 참석 인원(본인 포함) 카운터 1부터 시작, 식사·전세버스 on/off 연동)
+  - 제작(`/create`) 및 수정(`/edit`) 옵션 체크박스: `참석 의사(show_rsvp)`, `식사 여부 조사(show_rsvp_meal)`, `전세버스 탑승 조사(show_rsvp_bus)` 독립 ON/OFF 완비
+  - 하객 관리 화면(`app/manage/[slug]/page.js`): 상단 통계 카드 `신랑측/신부측 (참석 인원)` 명시, 식사(가능/불가/미정) 및 전세버스 탑승 현황 요약 바 신설, 테이블 컬럼 `참석 인원`(`${companion_count + 1}명`) 표시, CSV 다운로드 `참석인원(본인포함)` 표준화 (기존 DB 스키마 100% 무결성 유지)
 - **오프닝 & BGM 핵심**:
   - `components/EnvelopeIntro.jsx` (시안 1 AirDrop 모달 오프닝)
   - `components/templates/editorial/EditorialIntro.jsx` (시안 2 매거진 룩북 오프닝)

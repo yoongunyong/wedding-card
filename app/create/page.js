@@ -193,7 +193,7 @@ function CreateInvitationContent() {
     quote_source: QUOTE_PRESETS[0].source,
 
     bgm_url: BGM_OPTIONS[0].url,
-    title_color: '#E5A866',
+    title_color: '#3B82F6',
 
     show_intro: true,
     show_countdown: true,
@@ -356,6 +356,7 @@ function CreateInvitationContent() {
   // 상태 제어
   const [submitting, setSubmitting] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
+  const [currentStep, setCurrentStep] = useState(1); // 1: 기본정보 | 2: 모시는글 | 3: 갤러리BGM | 4: 계좌교통 | 5: 설정완료
   const [showPreviewModal, setShowPreviewModal] = useState(false);
 
   // URL 파라미터로 전달된 템플릿 타입 자동 선택 (useSearchParams 리액티브 동기화)
@@ -440,6 +441,40 @@ function CreateInvitationContent() {
   }, [showPreviewModal]);
 
   // 폼 입력값 핸들러
+  // 단계별 스텝 전환 함수 (화면 상단으로 스무스 스크롤)
+  // 단계별 유효성 검사 및 안전한 다음 단계 이동 함수
+  const handleNextStepWithValidation = (fromStep) => {
+    if (fromStep === 1) {
+      if (!formData.groom_name.trim() || !formData.bride_name.trim()) {
+        return alert('신랑과 신부 성함을 모두 입력해 주세요.');
+      }
+      if (!formData.wedding_date) {
+        return alert('예식 날짜를 선택해 주세요.');
+      }
+      if (!formData.wedding_time) {
+        return alert('예식 시간을 선택해 주세요.');
+      }
+      if (!formData.venue_name.trim()) {
+        return alert('예식장 이름을 입력해 주세요.');
+      }
+      if (!formData.venue_address.trim()) {
+        return alert('예식장 주소를 입력해 주세요.');
+      }
+    } else if (fromStep === 3) {
+      if (!mainImageFile && !mainImagePreview) {
+        return alert('청첩장 첫 화면에 노출될 메인 대표 사진을 등록해 주세요.');
+      }
+    }
+    handleStepChange(fromStep + 1);
+  };
+
+  const handleStepChange = (targetStep) => {
+    setCurrentStep(targetStep);
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 80, behavior: 'smooth' });
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -1353,17 +1388,17 @@ function CreateInvitationContent() {
 
     return (
       <div 
-        className="min-h-screen bg-[#F6F5F2] py-16 px-4 flex justify-center items-center text-stone-900 font-sans selection:bg-stone-200 antialiased"
+        className="min-h-screen bg-[#F7F8FA] py-16 px-4 flex justify-center items-center text-[#0F172A] font-sans selection:bg-[#F1F5F9] antialiased"
         style={{ colorScheme: 'light' }}
       >
-        <div className="w-full max-w-lg bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-8 sm:p-10 text-center border border-stone-200/80">
-          <p className="text-[11px] font-mono tracking-[0.25em] text-stone-400 uppercase mb-3">
+        <div className="w-full max-w-lg bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-8 sm:p-10 text-center border border-[#E5E8EB]">
+          <p className="text-[11px] font-mono tracking-[0.25em] text-[#94A3B8] uppercase mb-3">
             ATELIER DE MUKIRU — COMPLETED
           </p>
-          <h1 className="text-2xl sm:text-[26px] font-serif text-stone-900 mb-2 font-normal tracking-tight">
+          <h1 className="text-2xl sm:text-[26px] font-serif text-[#0F172A] mb-2 font-normal tracking-tight">
             모바일 청첩장이 완성되었습니다
           </h1>
-          <p className="text-xs sm:text-[13px] text-stone-500 mb-8 font-light leading-relaxed">
+          <p className="text-xs sm:text-[13px] text-[#64748B] mb-8 font-light leading-relaxed">
             두 분의 소중한 순간을 담은 청첩장이 생성되었습니다.<br />
             아래 발급된 링크를 통해 청첩장 확인 및 관리가 가능합니다.
           </p>
@@ -1388,16 +1423,16 @@ function CreateInvitationContent() {
               </div>
             </div>
           ) : (
-            <div className="mb-6 p-4 rounded-2xl bg-amber-50/80 border border-amber-200/80 text-left flex items-start gap-3">
-              <span className="text-amber-600 text-lg mt-0.5">ⓘ</span>
+            <div className="mb-6 p-4 rounded-2xl bg-blue-50/60/80 border border-blue-200/80 text-left flex items-start gap-3">
+              <span className="text-blue-600 text-lg mt-0.5">ⓘ</span>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-semibold text-amber-900">샘플 미리보기 모드로 등록됨</span>
-                  <span className="text-[10px] font-mono bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-medium">
+                  <span className="text-xs font-semibold text-slate-800">샘플 미리보기 모드로 등록됨</span>
+                  <span className="text-[10px] font-mono bg-amber-100 text-slate-700 px-2 py-0.5 rounded-full font-medium">
                     SAMPLE MODE
                   </span>
                 </div>
-                <p className="text-[12px] text-amber-800 font-light leading-relaxed">
+                <p className="text-[12px] text-slate-700 font-light leading-relaxed">
                   스마트스토어 구매 고객님은 톡톡으로 전달받으신 1회용 주문 코드를 등록하시거나, 
                   관리자 승인이 완료되면 워터마크가 즉시 제거된 정식 청첩장으로 활성화됩니다.
                 </p>
@@ -1406,14 +1441,14 @@ function CreateInvitationContent() {
           )}
 
           {/* 하객 공유용 청첩장 링크 */}
-          <div className="p-5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80 text-left mb-4">
+          <div className="p-5 bg-white rounded-2xl border border-[#E5E8EB] text-left mb-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-mono tracking-widest text-stone-700 bg-stone-200/70 px-2 py-0.5 rounded-full uppercase font-medium">
+              <span className="text-[10px] font-mono tracking-widest text-[#334155] bg-[#F1F5F9]/70 px-2 py-0.5 rounded-full uppercase font-medium">
                 GUEST SHARE LINK
               </span>
-              <span className="text-[11px] text-stone-400 font-light">하객 공유용</span>
+              <span className="text-[11px] text-[#94A3B8] font-light">하객 공유용</span>
             </div>
-            <p className="text-sm font-mono text-stone-900 font-semibold break-all my-2.5">
+            <p className="text-sm font-mono text-[#0F172A] font-semibold break-all my-2.5">
               {cardUrl}
             </p>
             <div className="flex gap-2">
@@ -1431,7 +1466,7 @@ function CreateInvitationContent() {
                 href={`/${createdResult.slug}`}
                 target="_blank"
                 rel="noreferrer"
-                className="px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-medium rounded-xl transition-all flex items-center justify-center cursor-pointer"
+                className="px-4 py-2.5 bg-[#F1F5F9] hover:bg-[#F1F5F9] text-[#1E293B] text-xs font-medium rounded-xl transition-all flex items-center justify-center cursor-pointer"
               >
                 청첩장 바로보기 ↗
               </a>
@@ -1439,20 +1474,20 @@ function CreateInvitationContent() {
           </div>
 
           {/* 종이 청첩장 인쇄용 고해상도 QR코드 다운로드 */}
-          <div className="p-5 bg-white rounded-2xl border border-stone-200/90 text-left mb-4 shadow-2xs">
+          <div className="p-5 bg-white rounded-2xl border border-[#E5E8EB] text-left mb-4 shadow-2xs">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-mono tracking-widest text-stone-700 bg-stone-100 px-2 py-0.5 rounded-full uppercase font-medium">
+              <span className="text-[10px] font-mono tracking-widest text-[#334155] bg-[#F1F5F9] px-2 py-0.5 rounded-full uppercase font-medium">
                 PAPER CARD PRINT QR
               </span>
               <span className="text-[11px] text-emerald-600 font-medium">1024px 초고해상도</span>
             </div>
-            <p className="text-xs text-stone-600 leading-relaxed font-light mb-3">
+            <p className="text-xs text-[#475569] leading-relaxed font-light mb-3">
               종이 청첩장을 만드실 때 인쇄소에 전달할 수 있는 깨짐 없는 고해상도 QR코드 이미지 파일(PNG)을 다운로드하실 수 있습니다.
             </p>
             {createdResult.manage_password && (
-              <div className="mt-2 p-2.5 bg-stone-50 rounded-xl border border-stone-200/80 flex items-center justify-between text-xs">
-                <span className="text-stone-600 font-medium">🔒 2차 관리자 비밀번호</span>
-                <span className="font-mono font-bold text-stone-900 tracking-widest">{createdResult.manage_password}</span>
+              <div className="mt-2 p-2.5 bg-white rounded-xl border border-[#E5E8EB] flex items-center justify-between text-xs">
+                <span className="text-[#475569] font-medium">🔒 2차 관리자 비밀번호</span>
+                <span className="font-mono font-bold text-[#0F172A] tracking-widest">{createdResult.manage_password}</span>
               </div>
             )}
             <button
@@ -1468,20 +1503,20 @@ function CreateInvitationContent() {
           </div>
 
           {/* 신랑신부 전용 관리자 링크 (분실 방지 강화) */}
-          <div className="p-5 sm:p-6 bg-amber-50/80 rounded-2xl border-2 border-amber-300 text-left mb-8 shadow-sm">
+          <div className="p-5 sm:p-6 bg-blue-50/60/80 rounded-2xl border-2 border-amber-300 text-left mb-8 shadow-sm">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-mono tracking-widest text-amber-900 bg-amber-200/80 px-2.5 py-0.5 rounded-full uppercase font-bold">
+              <span className="text-[10px] font-mono tracking-widest text-slate-800 bg-amber-200/80 px-2.5 py-0.5 rounded-full uppercase font-bold">
                 ⚠️ IMPORTANT · 신랑·신부 전용 관리 링크
               </span>
-              <span className="text-[11px] text-amber-800 font-medium">수정 및 하객 관리용</span>
+              <span className="text-[11px] text-slate-700 font-medium">수정 및 하객 관리용</span>
             </div>
             
-            <p className="text-xs text-amber-950 font-normal leading-relaxed mt-2 mb-3">
+            <p className="text-xs text-sky-950 font-normal leading-relaxed mt-2 mb-3">
               예식 전까지 <strong>사진, 모시는 글, 예식 시간, 계좌번호 등을 언제든 수정</strong>하고 하객 참석 여부를 확인하실 수 있는 전용 관리 링크입니다.
             </p>
 
-            <div className="p-2.5 bg-white/90 rounded-xl border border-amber-200/90 mb-3">
-              <p className="text-xs font-mono text-stone-800 break-all select-all font-medium">
+            <div className="p-2.5 bg-white/90 rounded-xl border border-blue-200/90 mb-3">
+              <p className="text-xs font-mono text-[#1E293B] break-all select-all font-medium">
                 {manageUrl}
               </p>
             </div>
@@ -1493,7 +1528,7 @@ function CreateInvitationContent() {
                   navigator.clipboard.writeText(manageUrl);
                   alert('✅ 관리자 전용 링크가 복사되었습니다!\n\n카카오톡 [나와의 채팅방] 또는 메모장에 바로 붙여넣어 꼭 보관해 두세요.\n(이 링크가 있어야 추후 사진과 내용을 수정하실 수 있습니다)');
                 }}
-                className="w-full py-3 bg-amber-600 hover:bg-amber-700 active:scale-98 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
+                className="w-full py-3 bg-slate-900 hover:bg-black active:scale-98 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
               >
                 <span>📋</span>
                 <span>관리 링크 복사하기</span>
@@ -1511,7 +1546,7 @@ function CreateInvitationContent() {
               </a>
             </div>
 
-            <div className="mt-3 pt-3 border-t border-amber-200/70 flex items-start gap-1.5 text-[11px] text-amber-900/90 leading-tight">
+            <div className="mt-3 pt-3 border-t border-slate-200 flex items-start gap-1.5 text-[11px] text-slate-700 leading-tight">
               <span>💡</span>
               <p>
                 <strong>보관 필수:</strong> 관리 링크를 잃어버리시면 수정을 위해 판매자에게 직접 문의하셔야 하니 지금 꼭 카카오톡에 남겨두세요!
@@ -1534,7 +1569,7 @@ function CreateInvitationContent() {
               setCreatedResult(null);
               window.location.reload();
             }}
-            className="text-xs text-stone-400 hover:text-stone-700 font-mono underline cursor-pointer transition-colors"
+            className="text-xs text-[#94A3B8] hover:text-[#334155] font-mono underline cursor-pointer transition-colors"
           >
             CREATE ANOTHER INVITATION
           </button>
@@ -1545,39 +1580,41 @@ function CreateInvitationContent() {
 
   return (
     <div 
-      className="min-h-screen bg-[#F6F5F2] py-14 px-4 sm:px-6 flex justify-center text-stone-900 font-sans selection:bg-stone-200 antialiased"
+      className="min-h-screen bg-[#F7F8FA] py-14 px-4 sm:px-6 flex justify-center text-[#0F172A] font-sans selection:bg-[#F1F5F9] antialiased"
       style={{ colorScheme: 'light' }}
     >
       <div className="w-full max-w-[740px]">
         
         {/* 상단 헤더 - 시니컬 & 감성 에디토리얼 */}
         <div className="text-center mb-12 pt-2">
-          <p className="text-[11px] font-mono tracking-[0.28em] text-stone-400 uppercase mb-3 font-medium">
+          <p className="text-[11px] font-mono tracking-[0.28em] text-sky-600 uppercase mb-3 font-medium tracking-widest">
             ATELIER DE MUKIRU — BESPOKE ORDER
           </p>
-          <h1 className="text-2xl sm:text-[32px] font-serif tracking-tight text-stone-900 font-normal mb-3">
+          <h1 className="text-2xl sm:text-[32px] font-serif tracking-tight text-[#0F172A] font-normal mb-3">
             모바일 청첩장 셀프 제작 신청
           </h1>
-          <p className="text-xs sm:text-[13px] text-stone-500 font-light leading-relaxed max-w-md mx-auto break-keep">
+          <p className="text-xs sm:text-[13px] text-[#475569] font-light leading-relaxed max-w-md mx-auto break-keep">
             단 하나의 소중한 순간을 완성하는 감각적인 기록.<br className="hidden sm:inline" />
             예식 정보를 입력해 주시면 정갈하고 완성도 높은 모바일 청첩장이 자동으로 완성됩니다.
           </p>
-          <div className="w-8 h-px bg-stone-300 mx-auto mt-6" />
+          <div className="w-8 h-px bg-sky-200 mx-auto mt-6" />
         </div>
 
         {/* 폼 본문 */}
-        <form onSubmit={handleSubmit} className="space-y-8 pb-28 sm:pb-36">
+        <form onSubmit={handleSubmit} noValidate className="space-y-8 pb-28 sm:pb-36">
 
-          {/* 예시 데이터 채우기 배너 */}
-          <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 sm:p-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-left shadow-2xs">
-            <div className="flex items-start sm:items-center gap-2.5">
-              <span className="text-amber-600 text-lg sm:text-xl shrink-0 leading-none">✨</span>
+          {/* 세련된 가이드 배너 */}
+          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#E5E8EB] shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-left">
+            <div className="flex items-start sm:items-center gap-3">
+              <span className="w-8 h-8 rounded-full bg-[#F2F4F6] text-[#3182F6] flex items-center justify-center text-sm shrink-0 font-bold">
+                💡
+              </span>
               <div>
-                <p className="text-xs sm:text-[13px] font-semibold text-amber-950">
-                  어떻게 작성해야 할지 고민되시나요?
+                <p className="text-xs sm:text-[13px] font-semibold text-[#191F28]">
+                  처음 작성하시나요? 예시 샘플 데이터를 채워보세요
                 </p>
-                <p className="text-[11px] text-amber-850 font-light mt-0.5">
-                  샘플 예시 데이터를 한 번에 불러와 내 정보로 수정하며 편리하게 청첩장을 완성해보세요.
+                <p className="text-[11px] text-[#6B7684] font-normal mt-0.5">
+                  버튼 한 번으로 샘플을 채워 넣은 뒤, 내 정보로 간편하게 수정하실 수 있습니다.
                 </p>
               </div>
             </div>
@@ -1585,34 +1622,105 @@ function CreateInvitationContent() {
               <button
                 type="button"
                 onClick={handleFillSampleData}
-                className="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white text-xs font-medium rounded-xl transition-all cursor-pointer shadow-xs whitespace-nowrap"
+                className="px-3.5 py-2 bg-[#191F28] hover:bg-black active:scale-95 text-white text-xs font-medium rounded-xl transition-all cursor-pointer shadow-xs whitespace-nowrap"
               >
                 예시 데이터 채우기
               </button>
               <button
                 type="button"
                 onClick={handleResetForm}
-                className="px-3 py-2 bg-stone-200/80 hover:bg-stone-300 text-stone-700 text-xs font-medium rounded-xl transition-all cursor-pointer whitespace-nowrap"
+                className="px-3 py-2 bg-[#F2F4F6] hover:bg-[#E5E8EB] text-[#4E5968] border border-[#E5E8EB] text-xs font-medium rounded-xl transition-all cursor-pointer whitespace-nowrap"
               >
                 초기화
               </button>
             </div>
           </div>
 
-          {/* 00. 디자인 템플릿 선택 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
+          {/* 디얼디어 & 토스 감성의 슬릭 5단계 스텝퍼 네비게이션 */}
+          <div className="sticky top-2 z-40 mb-8 bg-white/95 backdrop-blur-md py-3.5 px-3 sm:px-5 rounded-2xl border border-[#E5E8EB] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+            {/* 상단 스텝 라벨 & 진행률 게이지 바 */}
+            <div className="flex items-center justify-between mb-2 px-0.5">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-mono tracking-wider text-[#3182F6] font-bold uppercase">
+                  STEP 0{currentStep} / 05
+                </span>
+                <span className="text-xs font-semibold text-[#191F28]">
+                  {currentStep === 1 && '기본 정보 (시안 · 신랑신부 · 예식일시)'}
+                  {currentStep === 2 && '모시는 글 (초대 인사말 · 감성 글귀)'}
+                  {currentStep === 3 && '갤러리 & BGM (웨딩 사진 · 배경음악)'}
+                  {currentStep === 4 && '편의 안내 & 계좌 (축의금 · 교통 · 안내)'}
+                  {currentStep === 5 && '완성 & 보안 설정 (2차 PIN · URL 생성)'}
+                </span>
+              </div>
+              <span className="text-[11px] font-mono font-bold text-[#3182F6]">
+                {Math.round((currentStep / 5) * 100)}%
+              </span>
+            </div>
+
+            {/* 얇고 세련된 프로그레스 게이지 바 */}
+            <div className="w-full bg-[#F2F4F6] h-1 rounded-full overflow-hidden mb-3">
+              <div
+                className="bg-[#191F28] h-full transition-all duration-300 ease-out"
+                style={{ width: `${(currentStep / 5) * 100}%` }}
+              />
+            </div>
+
+            {/* 5개 스텝 탭 버튼 (모바일 가로스크롤 지원으로 글자 잘림 0%) */}
+            <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5">
+              {[
+                { num: 1, title: '기본 정보' },
+                { num: 2, title: '모시는 글' },
+                { num: 3, title: '사진 & BGM' },
+                { num: 4, title: '편의 안내' },
+                { num: 5, title: '완성 & 보안' },
+              ].map((stepItem) => {
+                const isActive = currentStep === stepItem.num;
+                const isPassed = currentStep > stepItem.num;
+                return (
+                  <button
+                    key={stepItem.num}
+                    type="button"
+                    onClick={() => handleStepChange(stepItem.num)}
+                    className={`shrink-0 flex items-center gap-1.5 py-2 px-3 sm:px-3.5 rounded-xl text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
+                      isActive
+                        ? 'bg-[#191F28] text-white shadow-xs font-semibold'
+                        : isPassed
+                        ? 'bg-[#F2F4F6] text-[#333D4B] hover:bg-[#E5E8EB] border border-[#E5E8EB]'
+                        : 'bg-white text-[#8B95A1] hover:text-[#4E5968] hover:bg-slate-50 border border-[#E5E8EB]'
+                    }`}
+                  >
+                    <span className={`text-[10px] font-mono rounded-full w-4 h-4 inline-flex items-center justify-center font-bold ${
+                      isActive
+                        ? 'bg-white text-[#191F28]'
+                        : isPassed
+                        ? 'bg-[#4E5968] text-white'
+                        : 'bg-[#F2F4F6] text-[#8B95A1]'
+                    }`}>
+                      {isPassed ? '✓' : stepItem.num}
+                    </span>
+                    <span>{stepItem.title}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* STEP 1: 기본 정보 (시안 선택 + 신랑&신부 + 예식일시) */}
+          <div className={currentStep === 1 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
+            {/* 00. 디자인 템플릿 선택 */}
+          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
-                <span className="font-mono text-xs text-stone-400 tracking-wider">00</span>
-                <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
+                <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">00</span>
+                <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
                   청첩장 디자인 시안 선택
                 </h2>
-                <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase hidden sm:inline">
+                <span className="text-[10px] font-mono tracking-widest text-[#94A3B8] uppercase hidden sm:inline">
                   DESIGN TEMPLATE
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1 bg-stone-900 text-white rounded-full text-xs font-medium shadow-xs">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-sky-50 text-sky-700 border border-[#CBD0D6] rounded-full text-xs font-medium shadow-2xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
                 <span>
                   {formData.template_type === 'basic' ? 'OPTION 01 · 모던 클래식' :
                    formData.template_type === 'editorial' ? 'OPTION 02 · 에디토리얼' :
@@ -1629,24 +1737,24 @@ function CreateInvitationContent() {
                 onClick={() => setFormData((prev) => ({ ...prev, template_type: 'basic' }))}
                 className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative ${
                   formData.template_type === 'basic'
-                    ? 'border-stone-900 bg-stone-50/50 shadow-sm'
-                    : 'border-stone-200/80 bg-white hover:border-stone-300'
+                    ? 'border-stone-900 bg-white shadow-sm'
+                    : 'border-[#E5E8EB] bg-white hover:border-[#CBD5E1]'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-mono tracking-widest uppercase font-semibold text-stone-600 bg-stone-200/70 px-2 py-0.5 rounded-full">
+                  <span className="text-[10px] font-mono tracking-widest uppercase font-semibold text-[#475569] bg-[#F1F5F9]/70 px-2 py-0.5 rounded-full">
                     OPTION 01
                   </span>
                   <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                    formData.template_type === 'basic' ? 'border-stone-900 bg-stone-900' : 'border-stone-300'
+                    formData.template_type === 'basic' ? 'border-stone-900 bg-stone-900' : 'border-[#CBD5E1]'
                   }`}>
                     {formData.template_type === 'basic' && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
                   </div>
                 </div>
-                <h3 className="text-sm font-semibold text-stone-900 mb-1">
+                <h3 className="text-sm font-semibold text-[#0F172A] mb-1">
                   모던 클래식 (Modern)
                 </h3>
-                <p className="text-xs text-stone-500 font-light leading-relaxed">
+                <p className="text-xs text-[#64748B] font-light leading-relaxed">
                   편지 봉투 오프닝 카드 & 정갈하고 따뜻한 크림 베이지 톤 시안
                 </p>
               </div>
@@ -1656,24 +1764,24 @@ function CreateInvitationContent() {
                 onClick={() => setFormData((prev) => ({ ...prev, template_type: 'editorial' }))}
                 className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative ${
                   formData.template_type === 'editorial'
-                    ? 'border-stone-900 bg-stone-50/50 shadow-sm'
-                    : 'border-stone-200/80 bg-white hover:border-stone-300'
+                    ? 'border-stone-900 bg-white shadow-sm'
+                    : 'border-[#E5E8EB] bg-white hover:border-[#CBD5E1]'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-mono tracking-widest uppercase font-semibold text-stone-700 bg-stone-200/70 px-2 py-0.5 rounded-full">
+                  <span className="text-[10px] font-mono tracking-widest uppercase font-semibold text-[#334155] bg-[#F1F5F9]/70 px-2 py-0.5 rounded-full">
                     OPTION 02
                   </span>
                   <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                    formData.template_type === 'editorial' ? 'border-stone-900 bg-stone-900' : 'border-stone-300'
+                    formData.template_type === 'editorial' ? 'border-stone-900 bg-stone-900' : 'border-[#CBD5E1]'
                   }`}>
                     {formData.template_type === 'editorial' && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
                   </div>
                 </div>
-                <h3 className="text-sm font-semibold text-stone-900 mb-1">
+                <h3 className="text-sm font-semibold text-[#0F172A] mb-1">
                   에디토리얼 (Editorial)
                 </h3>
-                <p className="text-xs text-stone-500 font-light leading-relaxed">
+                <p className="text-xs text-[#64748B] font-light leading-relaxed">
                   패션 매거진 룩북 인트로 & 감각적인 세리프 타이포그래피 시안
                 </p>
               </div>
@@ -1684,7 +1792,7 @@ function CreateInvitationContent() {
                 className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative ${
                   formData.template_type === 'playlist'
                     ? 'border-emerald-700 bg-emerald-50/40 shadow-sm'
-                    : 'border-stone-200/80 bg-white hover:border-stone-300'
+                    : 'border-[#E5E8EB] bg-white hover:border-[#CBD5E1]'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
@@ -1692,15 +1800,15 @@ function CreateInvitationContent() {
                     OPTION 03
                   </span>
                   <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                    formData.template_type === 'playlist' ? 'border-emerald-700 bg-emerald-700' : 'border-stone-300'
+                    formData.template_type === 'playlist' ? 'border-emerald-700 bg-emerald-700' : 'border-[#CBD5E1]'
                   }`}>
                     {formData.template_type === 'playlist' && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
                   </div>
                 </div>
-                <h3 className="text-sm font-semibold text-stone-900 mb-1">
+                <h3 className="text-sm font-semibold text-[#0F172A] mb-1">
                   플레이리스트 (Playlist)
                 </h3>
-                <p className="text-xs text-stone-500 font-light leading-relaxed">
+                <p className="text-xs text-[#64748B] font-light leading-relaxed">
                   포레스트 그린 & 빈티지 폴라로이드, 뮤직 플레이어 위젯 시안
                 </p>
               </div>
@@ -1710,8 +1818,8 @@ function CreateInvitationContent() {
                 onClick={() => setFormData((prev) => ({ ...prev, template_type: 'cinematic' }))}
                 className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative ${
                   formData.template_type === 'cinematic'
-                    ? 'border-black bg-stone-100/70 shadow-sm'
-                    : 'border-stone-200/80 bg-white hover:border-stone-300'
+                    ? 'border-black bg-[#F1F5F9]/70 shadow-sm'
+                    : 'border-[#E5E8EB] bg-white hover:border-[#CBD5E1]'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
@@ -1719,15 +1827,15 @@ function CreateInvitationContent() {
                     OPTION 04 · NEW
                   </span>
                   <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                    formData.template_type === 'cinematic' ? 'border-black bg-black' : 'border-stone-300'
+                    formData.template_type === 'cinematic' ? 'border-black bg-black' : 'border-[#CBD5E1]'
                   }`}>
                     {formData.template_type === 'cinematic' && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
                   </div>
                 </div>
-                <h3 className="text-sm font-semibold text-stone-900 mb-1">
+                <h3 className="text-sm font-semibold text-[#0F172A] mb-1">
                   시네마틱 (Cinematic)
                 </h3>
-                <p className="text-xs text-stone-500 font-light leading-relaxed">
+                <p className="text-xs text-[#64748B] font-light leading-relaxed">
                   ☀️ Day / 🌙 Night 듀얼 테마 & 흑백 모노크롬 인물 스냅 시안
                 </p>
               </div>
@@ -1737,8 +1845,8 @@ function CreateInvitationContent() {
                 onClick={() => setFormData((prev) => ({ ...prev, template_type: 'scene' }))}
                 className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative ${
                   formData.template_type === 'scene'
-                    ? 'border-stone-900 bg-stone-50/50 shadow-sm'
-                    : 'border-stone-200/80 bg-white hover:border-stone-300'
+                    ? 'border-stone-900 bg-white shadow-sm'
+                    : 'border-[#E5E8EB] bg-white hover:border-[#CBD5E1]'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
@@ -1746,30 +1854,31 @@ function CreateInvitationContent() {
                     OPTION 05 · NEW
                   </span>
                   <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                    formData.template_type === 'scene' ? 'border-stone-900 bg-stone-900' : 'border-stone-300'
+                    formData.template_type === 'scene' ? 'border-stone-900 bg-stone-900' : 'border-[#CBD5E1]'
                   }`}>
                     {formData.template_type === 'scene' && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
                   </div>
                 </div>
-                <h3 className="text-sm font-semibold text-stone-900 mb-1">
+                <h3 className="text-sm font-semibold text-[#0F172A] mb-1">
                   모던 씬 (Scene 02)
                 </h3>
-                <p className="text-xs text-stone-500 font-light leading-relaxed">
+                <p className="text-xs text-[#64748B] font-light leading-relaxed">
                   우아하고 차분한 모던 클래식 & 인터뷰 Q&A, 3열 캘린더, 전세버스/식사 RSVP
                 </p>
               </div>
             </div>
           </div>
 
-          {/* 01. 신랑 & 신부 정보 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
+          
+            {/* 01. 신랑 & 신부 정보 */}
+          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
-                <span className="font-mono text-xs text-stone-400 tracking-wider">01</span>
-                <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
+                <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">01</span>
+                <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
                   신랑 & 신부 정보
                 </h2>
-                <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase hidden sm:inline">
+                <span className="text-[10px] font-mono tracking-widest text-[#94A3B8] uppercase hidden sm:inline">
                   GROOM & BRIDE
                 </span>
               </div>
@@ -1777,16 +1886,16 @@ function CreateInvitationContent() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
               {/* 신랑 */}
-              <div className="p-5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80 space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-stone-200/60">
-                  <span className="text-[11px] font-mono tracking-widest uppercase font-semibold text-stone-700 bg-stone-200/60 px-2.5 py-0.5 rounded-full">
+              <div className="p-5 bg-white rounded-2xl border border-[#E5E8EB] space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-[#F1F5F9]">
+                  <span className="text-[11px] font-mono tracking-widest uppercase font-semibold text-[#334155] bg-[#F1F5F9]/60 px-2.5 py-0.5 rounded-full">
                     GROOM · 신랑측
                   </span>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-2.5">
                   <div>
-                    <label className="block text-xs font-medium text-stone-700 mb-1.5">한글 성함 *</label>
+                    <label className="block text-xs font-medium text-[#334155] mb-1.5">한글 성함 *</label>
                     <input
                       type="text"
                       required
@@ -1794,25 +1903,25 @@ function CreateInvitationContent() {
                       value={formData.groom_name}
                       onChange={handleChange}
                       placeholder="김민준"
-                      className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all"
+                      className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 focus:ring-1 focus:ring-[#0F172A] transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-stone-700 mb-1.5">신랑 연락처</label>
+                    <label className="block text-xs font-medium text-[#334155] mb-1.5">신랑 연락처</label>
                     <input
                       type="tel"
                       name="groom_phone"
                       value={formData.groom_phone}
                       onChange={handleChange}
                       placeholder="010-0000-0000"
-                      className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all font-mono"
+                      className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 focus:ring-1 focus:ring-[#0F172A] transition-all font-mono"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2.5">
                   <div>
-                    <label className="block text-xs font-medium text-stone-700 mb-1.5">영문 이름 (First Name)</label>
+                    <label className="block text-xs font-medium text-[#334155] mb-1.5">영문 이름 (First Name)</label>
                     <input
                       type="text"
                       name="groom_first_name_en"
@@ -1826,11 +1935,11 @@ function CreateInvitationContent() {
                         }));
                       }}
                       placeholder="Minjun"
-                      className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all font-serif"
+                      className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 focus:ring-1 focus:ring-[#0F172A] transition-all font-serif"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-stone-700 mb-1.5">영문 성 (Last Name)</label>
+                    <label className="block text-xs font-medium text-[#334155] mb-1.5">영문 성 (Last Name)</label>
                     <input
                       type="text"
                       name="groom_last_name_en"
@@ -1844,14 +1953,14 @@ function CreateInvitationContent() {
                         }));
                       }}
                       placeholder="Kim"
-                      className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all font-serif"
+                      className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 focus:ring-1 focus:ring-[#0F172A] transition-all font-serif"
                     />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs font-medium text-stone-700">관계 호칭</label>
+                    <label className="text-xs font-medium text-[#334155]">관계 호칭</label>
                     <div className="flex gap-1">
                       {['장남', '차남', '삼남', '막내'].map((rel) => (
                         <button
@@ -1861,7 +1970,7 @@ function CreateInvitationContent() {
                           className={`px-2 py-0.5 rounded text-[10px] font-medium border transition-colors cursor-pointer ${
                             formData.groom_relation === rel
                               ? 'bg-stone-900 text-white border-stone-900'
-                              : 'bg-white text-stone-500 border-stone-200 hover:border-stone-400'
+                              : 'bg-white text-[#64748B] border-[#E5E8EB] hover:border-stone-400'
                           }`}
                         >
                           {rel}
@@ -1875,13 +1984,13 @@ function CreateInvitationContent() {
                     value={formData.groom_relation}
                     onChange={handleChange}
                     placeholder="장남"
-                    className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 focus:ring-1 focus:ring-[#0F172A] transition-all"
                   />
                 </div>
 
                 {/* 혼주 (신랑측 부모님) */}
-                <div className="pt-3 border-t border-stone-200/60 space-y-3">
-                  <span className="text-[11px] font-mono tracking-wider text-stone-400 block uppercase">
+                <div className="pt-3 border-t border-[#F1F5F9] space-y-3">
+                  <span className="text-[11px] font-mono tracking-wider text-[#94A3B8] block uppercase">
                     PARENTS · 신랑측 혼주
                   </span>
                   
@@ -1889,14 +1998,14 @@ function CreateInvitationContent() {
                   <div className="grid grid-cols-2 gap-2.5">
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
-                        <label className="text-xs font-medium text-stone-600">아버지 성함</label>
-                        <label className="flex items-center gap-1 text-[11px] text-stone-400 cursor-pointer select-none hover:text-stone-700">
+                        <label className="text-xs font-medium text-[#475569]">아버지 성함</label>
+                        <label className="flex items-center gap-1 text-[11px] text-[#94A3B8] cursor-pointer select-none hover:text-[#334155]">
                           <input
                             type="checkbox"
                             name="groom_father_deceased"
                             checked={formData.groom_father_deceased}
                             onChange={handleChange}
-                            className="rounded border-stone-300 text-stone-900 accent-stone-900"
+                            className="rounded border-[#CBD5E1] text-[#0F172A] accent-stone-900"
                           />
                           故 표기
                         </label>
@@ -1907,18 +2016,18 @@ function CreateInvitationContent() {
                         value={formData.groom_father}
                         onChange={handleChange}
                         placeholder="김OO"
-                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900"
+                        className="w-full px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-xs sm:text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-stone-600 mb-1.5">아버지 연락처</label>
+                      <label className="block text-xs font-medium text-[#475569] mb-1.5">아버지 연락처</label>
                       <input
                         type="tel"
                         name="groom_father_phone"
                         value={formData.groom_father_phone}
                         onChange={handleChange}
                         placeholder="010-0000-0000"
-                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 font-mono"
+                        className="w-full px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-xs sm:text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-mono"
                       />
                     </div>
                   </div>
@@ -1927,14 +2036,14 @@ function CreateInvitationContent() {
                   <div className="grid grid-cols-2 gap-2.5">
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
-                        <label className="text-xs font-medium text-stone-600">어머니 성함</label>
-                        <label className="flex items-center gap-1 text-[11px] text-stone-400 cursor-pointer select-none hover:text-stone-700">
+                        <label className="text-xs font-medium text-[#475569]">어머니 성함</label>
+                        <label className="flex items-center gap-1 text-[11px] text-[#94A3B8] cursor-pointer select-none hover:text-[#334155]">
                           <input
                             type="checkbox"
                             name="groom_mother_deceased"
                             checked={formData.groom_mother_deceased}
                             onChange={handleChange}
-                            className="rounded border-stone-300 text-stone-900 accent-stone-900"
+                            className="rounded border-[#CBD5E1] text-[#0F172A] accent-stone-900"
                           />
                           故 표기
                         </label>
@@ -1945,18 +2054,18 @@ function CreateInvitationContent() {
                         value={formData.groom_mother}
                         onChange={handleChange}
                         placeholder="이OO"
-                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900"
+                        className="w-full px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-xs sm:text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-stone-600 mb-1.5">어머니 연락처</label>
+                      <label className="block text-xs font-medium text-[#475569] mb-1.5">어머니 연락처</label>
                       <input
                         type="tel"
                         name="groom_mother_phone"
                         value={formData.groom_mother_phone}
                         onChange={handleChange}
                         placeholder="010-0000-0000"
-                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 font-mono"
+                        className="w-full px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-xs sm:text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-mono"
                       />
                     </div>
                   </div>
@@ -1964,16 +2073,16 @@ function CreateInvitationContent() {
               </div>
 
               {/* 신부 */}
-              <div className="p-5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80 space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-stone-200/60">
-                  <span className="text-[11px] font-mono tracking-widest uppercase font-semibold text-stone-700 bg-stone-200/60 px-2.5 py-0.5 rounded-full">
+              <div className="p-5 bg-white rounded-2xl border border-[#E5E8EB] space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-[#F1F5F9]">
+                  <span className="text-[11px] font-mono tracking-widest uppercase font-semibold text-[#334155] bg-[#F1F5F9]/60 px-2.5 py-0.5 rounded-full">
                     BRIDE · 신부측
                   </span>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-2.5">
                   <div>
-                    <label className="block text-xs font-medium text-stone-700 mb-1.5">한글 성함 *</label>
+                    <label className="block text-xs font-medium text-[#334155] mb-1.5">한글 성함 *</label>
                     <input
                       type="text"
                       required
@@ -1981,25 +2090,25 @@ function CreateInvitationContent() {
                       value={formData.bride_name}
                       onChange={handleChange}
                       placeholder="이서연"
-                      className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all"
+                      className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 focus:ring-1 focus:ring-[#0F172A] transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-stone-700 mb-1.5">신부 연락처</label>
+                    <label className="block text-xs font-medium text-[#334155] mb-1.5">신부 연락처</label>
                     <input
                       type="tel"
                       name="bride_phone"
                       value={formData.bride_phone}
                       onChange={handleChange}
                       placeholder="010-0000-0000"
-                      className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all font-mono"
+                      className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 focus:ring-1 focus:ring-[#0F172A] transition-all font-mono"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2.5">
                   <div>
-                    <label className="block text-xs font-medium text-stone-700 mb-1.5">영문 이름 (First Name)</label>
+                    <label className="block text-xs font-medium text-[#334155] mb-1.5">영문 이름 (First Name)</label>
                     <input
                       type="text"
                       name="bride_first_name_en"
@@ -2013,11 +2122,11 @@ function CreateInvitationContent() {
                         }));
                       }}
                       placeholder="Seoyeon"
-                      className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all font-serif"
+                      className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 focus:ring-1 focus:ring-[#0F172A] transition-all font-serif"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-stone-700 mb-1.5">영문 성 (Last Name)</label>
+                    <label className="block text-xs font-medium text-[#334155] mb-1.5">영문 성 (Last Name)</label>
                     <input
                       type="text"
                       name="bride_last_name_en"
@@ -2031,14 +2140,14 @@ function CreateInvitationContent() {
                         }));
                       }}
                       placeholder="Lee"
-                      className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all font-serif"
+                      className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 focus:ring-1 focus:ring-[#0F172A] transition-all font-serif"
                     />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs font-medium text-stone-700">관계 호칭</label>
+                    <label className="text-xs font-medium text-[#334155]">관계 호칭</label>
                     <div className="flex gap-1">
                       {['장녀', '차녀', '삼녀', '막내'].map((rel) => (
                         <button
@@ -2048,7 +2157,7 @@ function CreateInvitationContent() {
                           className={`px-2 py-0.5 rounded text-[10px] font-medium border transition-colors cursor-pointer ${
                             formData.bride_relation === rel
                               ? 'bg-stone-900 text-white border-stone-900'
-                              : 'bg-white text-stone-500 border-stone-200 hover:border-stone-400'
+                              : 'bg-white text-[#64748B] border-[#E5E8EB] hover:border-stone-400'
                           }`}
                         >
                           {rel}
@@ -2062,13 +2171,13 @@ function CreateInvitationContent() {
                     value={formData.bride_relation}
                     onChange={handleChange}
                     placeholder="장녀"
-                    className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-all"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 focus:ring-1 focus:ring-[#0F172A] transition-all"
                   />
                 </div>
 
                 {/* 혼주 (신부측 부모님) */}
-                <div className="pt-3 border-t border-stone-200/60 space-y-3">
-                  <span className="text-[11px] font-mono tracking-wider text-stone-400 block uppercase">
+                <div className="pt-3 border-t border-[#F1F5F9] space-y-3">
+                  <span className="text-[11px] font-mono tracking-wider text-[#94A3B8] block uppercase">
                     PARENTS · 신부측 혼주
                   </span>
                   
@@ -2076,14 +2185,14 @@ function CreateInvitationContent() {
                   <div className="grid grid-cols-2 gap-2.5">
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
-                        <label className="text-xs font-medium text-stone-600">아버지 성함</label>
-                        <label className="flex items-center gap-1 text-[11px] text-stone-400 cursor-pointer select-none hover:text-stone-700">
+                        <label className="text-xs font-medium text-[#475569]">아버지 성함</label>
+                        <label className="flex items-center gap-1 text-[11px] text-[#94A3B8] cursor-pointer select-none hover:text-[#334155]">
                           <input
                             type="checkbox"
                             name="bride_father_deceased"
                             checked={formData.bride_father_deceased}
                             onChange={handleChange}
-                            className="rounded border-stone-300 text-stone-900 accent-stone-900"
+                            className="rounded border-[#CBD5E1] text-[#0F172A] accent-stone-900"
                           />
                           故 표기
                         </label>
@@ -2094,18 +2203,18 @@ function CreateInvitationContent() {
                         value={formData.bride_father}
                         onChange={handleChange}
                         placeholder="이OO"
-                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900"
+                        className="w-full px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-xs sm:text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-stone-600 mb-1.5">아버지 연락처</label>
+                      <label className="block text-xs font-medium text-[#475569] mb-1.5">아버지 연락처</label>
                       <input
                         type="tel"
                         name="bride_father_phone"
                         value={formData.bride_father_phone}
                         onChange={handleChange}
                         placeholder="010-0000-0000"
-                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 font-mono"
+                        className="w-full px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-xs sm:text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-mono"
                       />
                     </div>
                   </div>
@@ -2114,14 +2223,14 @@ function CreateInvitationContent() {
                   <div className="grid grid-cols-2 gap-2.5">
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
-                        <label className="text-xs font-medium text-stone-600">어머니 성함</label>
-                        <label className="flex items-center gap-1 text-[11px] text-stone-400 cursor-pointer select-none hover:text-stone-700">
+                        <label className="text-xs font-medium text-[#475569]">어머니 성함</label>
+                        <label className="flex items-center gap-1 text-[11px] text-[#94A3B8] cursor-pointer select-none hover:text-[#334155]">
                           <input
                             type="checkbox"
                             name="bride_mother_deceased"
                             checked={formData.bride_mother_deceased}
                             onChange={handleChange}
-                            className="rounded border-stone-300 text-stone-900 accent-stone-900"
+                            className="rounded border-[#CBD5E1] text-[#0F172A] accent-stone-900"
                           />
                           故 표기
                         </label>
@@ -2132,18 +2241,18 @@ function CreateInvitationContent() {
                         value={formData.bride_mother}
                         onChange={handleChange}
                         placeholder="박OO"
-                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900"
+                        className="w-full px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-xs sm:text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-stone-600 mb-1.5">어머니 연락처</label>
+                      <label className="block text-xs font-medium text-[#475569] mb-1.5">어머니 연락처</label>
                       <input
                         type="tel"
                         name="bride_mother_phone"
                         value={formData.bride_mother_phone}
                         onChange={handleChange}
                         placeholder="010-0000-0000"
-                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 font-mono"
+                        className="w-full px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-xs sm:text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-mono"
                       />
                     </div>
                   </div>
@@ -2152,42 +2261,43 @@ function CreateInvitationContent() {
             </div>
 
             {/* 영문 URL 설정 */}
-            <div className="p-4 sm:p-4.5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
+            <div className="p-4 sm:p-4.5 bg-white rounded-2xl border border-[#E5E8EB]">
               <div className="flex items-center justify-between mb-2">
-                <label className="text-xs font-medium text-stone-700 tracking-tight">
+                <label className="text-xs font-medium text-[#334155] tracking-tight">
                   나만의 청첩장 영문 주소 (URL SLUG) *
                 </label>
                 <button
                   type="button"
                   onClick={handleAutoSlug}
-                  className="text-[11px] font-mono text-stone-500 hover:text-stone-900 underline cursor-pointer transition-colors"
+                  className="text-[11px] font-mono text-[#64748B] hover:text-[#0F172A] underline cursor-pointer transition-colors"
                 >
                   AUTO GENERATE
                 </button>
               </div>
-              <div className="flex items-center bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 focus-within:border-stone-900 focus-within:ring-1 focus-within:ring-stone-900 transition-all">
-                <span className="text-xs text-stone-400 font-mono select-none mr-1.5">wedding.com/</span>
+              <div className="flex items-center bg-white border border-[#E5E8EB] rounded-xl px-3.5 py-2.5 focus-within:border-stone-900 focus-within:ring-1 focus-within:ring-stone-900 transition-all">
+                <span className="text-xs text-[#94A3B8] font-mono select-none mr-1.5">wedding.com/</span>
                 <input
                   type="text"
                   name="slug"
                   value={formData.slug}
                   onChange={handleChange}
                   placeholder="minjun-seoyeon"
-                  className="flex-1 bg-transparent text-sm text-stone-900 font-mono focus:outline-none placeholder:text-stone-300"
+                  className="flex-1 bg-transparent text-sm text-[#0F172A] font-mono focus:outline-none placeholder:text-[#CBD5E1]"
                 />
               </div>
             </div>
           </div>
 
-          {/* 02. 예식 일시 및 웨딩홀 위치 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
+          
+            {/* 02. 예식 일시 및 웨딩홀 위치 */}
+          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
-                <span className="font-mono text-xs text-stone-400 tracking-wider">02</span>
-                <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
+                <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">02</span>
+                <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
                   예식 일시 및 웨딩홀 위치
                 </h2>
-                <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase hidden sm:inline">
+                <span className="text-[10px] font-mono tracking-widest text-[#94A3B8] uppercase hidden sm:inline">
                   CEREMONY & VENUE
                 </span>
               </div>
@@ -2195,25 +2305,25 @@ function CreateInvitationContent() {
 
             <div className="grid grid-cols-2 gap-3 mb-5">
               <div>
-                <label className="block text-xs font-medium text-stone-700 mb-1.5">예식 날짜 *</label>
+                <label className="block text-xs font-medium text-[#334155] mb-1.5">예식 날짜 *</label>
                 <input
                   type="date"
                   required
                   name="wedding_date"
                   value={formData.wedding_date}
                   onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-stone-900 font-sans"
+                  className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-sans"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-stone-700 mb-1.5">예식 시간 *</label>
+                <label className="block text-xs font-medium text-[#334155] mb-1.5">예식 시간 *</label>
                 <input
                   type="time"
                   required
                   name="wedding_time"
                   value={formData.wedding_time}
                   onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-stone-900 font-sans"
+                  className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-sans"
                 />
               </div>
             </div>
@@ -2221,7 +2331,7 @@ function CreateInvitationContent() {
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-medium text-stone-700 mb-1.5">예식장 이름 *</label>
+                  <label className="block text-xs font-medium text-[#334155] mb-1.5">예식장 이름 *</label>
                   <input
                     type="text"
                     required
@@ -2229,24 +2339,24 @@ function CreateInvitationContent() {
                     value={formData.venue_name}
                     onChange={handleChange}
                     placeholder="아펠가모 공덕"
-                    className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-stone-700 mb-1.5">층 및 홀 이름</label>
+                  <label className="block text-xs font-medium text-[#334155] mb-1.5">층 및 홀 이름</label>
                   <input
                     type="text"
                     name="venue_hall"
                     value={formData.venue_hall}
                     onChange={handleChange}
                     placeholder="7층 마리에홀"
-                    className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-stone-700 mb-1.5">예식장 주소 (지도 연동) *</label>
+                <label className="block text-xs font-medium text-[#334155] mb-1.5">예식장 주소 (지도 연동) *</label>
                 <input
                   type="text"
                   required
@@ -2254,43 +2364,69 @@ function CreateInvitationContent() {
                   value={formData.venue_address}
                   onChange={handleChange}
                   placeholder="서울 마포구 마포대로 92"
-                  className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900"
+                  className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                 />
-                <p className="text-[11px] text-stone-400 mt-1.5 font-light">
+                <p className="text-[11px] text-[#94A3B8] mt-1.5 font-light">
                   ※ 도로명 주소 또는 지번 주소를 입력하시면 카카오 지도와 네비게이션이 자동으로 연결됩니다.
                 </p>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-stone-700 mb-1.5">식장 추가 상세 안내</label>
+                <label className="block text-xs font-medium text-[#334155] mb-1.5">식장 추가 상세 안내</label>
                 <textarea
                   rows={2}
                   name="venue_detail"
                   value={formData.venue_detail}
                   onChange={handleChange}
                   placeholder="공덕역 8번 출구 도보 3분 / 건물 내 2시간 무료 주차"
-                  className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 leading-relaxed font-sans"
+                  className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 leading-relaxed font-sans"
                 />
               </div>
             </div>
           </div>
 
-          {/* 03. 모시는 글 (초대 인사말) */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
+          
+
+            {/* STEP 1 하단 네비게이션 */}
+            <div className="pt-4 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={openPreviewModal}
+                className="py-3.5 px-4 bg-[#FFFFFF] hover:bg-[#F1F5F9] text-[#334155] border border-[#CBD5E1] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+              >
+                <span>👁️</span>
+                <span>실시간 미리보기</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleNextStepWithValidation(1)}
+                className="flex-1 max-w-xs py-3.5 px-5 bg-[#191F28] hover:bg-black active:scale-98 text-white rounded-xl text-xs sm:text-sm font-medium tracking-wide transition-all shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap ml-auto"
+              >
+                <span>다음 단계 (모시는 글)</span>
+                <span className="font-mono text-xs">→</span>
+              </button>
+            </div>
+          </div>
+
+          {/* STEP 2: 모시는 글 & 스토리 (인사말 + 감성 글귀) */}
+          <div className={currentStep === 2 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
+            {/* 03. 모시는 글 (초대 인사말) */}
+          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
-                <span className="font-mono text-xs text-stone-400 tracking-wider">03</span>
-                <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
+                <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">03</span>
+                <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
                   모시는 글 (초대 인사말)
                 </h2>
-                <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase hidden sm:inline">
+                <span className="text-[10px] font-mono tracking-widest text-[#94A3B8] uppercase hidden sm:inline">
                   INVITATION MESSAGE
                 </span>
               </div>
             </div>
 
             <div className="mb-4">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-stone-400 block mb-2">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-[#94A3B8] block mb-2">
                 PRESET · 추천 초대 문구 불러오기
               </span>
               <div className="flex flex-wrap gap-2">
@@ -2305,7 +2441,7 @@ function CreateInvitationContent() {
                         message: preset.content,
                       }));
                     }}
-                    className="px-3 py-1.5 bg-[#FAFAF9] hover:bg-stone-900 hover:text-white border border-stone-200/80 text-stone-700 rounded-xl text-xs font-medium transition-all cursor-pointer"
+                    className="px-3 py-1.5 bg-white hover:bg-stone-900 hover:text-white border border-[#E5E8EB] text-[#334155] rounded-xl text-xs font-medium transition-all cursor-pointer"
                   >
                     {preset.title}
                   </button>
@@ -2315,24 +2451,24 @@ function CreateInvitationContent() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-stone-700 mb-1.5">인사말 제목</label>
+                <label className="block text-xs font-medium text-[#334155] mb-1.5">인사말 제목</label>
                 <input
                   type="text"
                   name="message_title"
                   value={formData.message_title}
                   onChange={handleChange}
                   placeholder="새로운 시작의 날"
-                  className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 font-serif"
+                  className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-serif"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-stone-700 mb-1.5">초대 본문 문구</label>
+                <label className="block text-xs font-medium text-[#334155] mb-1.5">초대 본문 문구</label>
                 <textarea
                   rows={6}
                   name="message"
                   value={formData.message}
                   onChange={handleChange}
-                  className="w-full px-3.5 py-3 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 leading-relaxed focus:outline-none focus:border-stone-900 font-sans"
+                  className="w-full px-3.5 py-3 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] placeholder:text-[#CBD5E1] leading-relaxed focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-sans"
                 />
               </div>
             </div>
@@ -2340,14 +2476,14 @@ function CreateInvitationContent() {
 
           {/* 시안 5 (모던 씬) 전용: 신랑 & 신부 인터뷰 (우리의 이야기) */}
           {formData.template_type === 'scene' && (
-            <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
-              <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
+            <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+              <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
                 <div className="flex items-baseline gap-2.5">
-                  <span className="font-mono text-xs text-stone-400 tracking-wider">03-1</span>
-                  <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
+                  <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">03-1</span>
+                  <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
                     신랑 & 신부 인터뷰 (우리의 이야기)
                   </h2>
-                  <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase hidden sm:inline">
+                  <span className="text-[10px] font-mono tracking-widest text-[#94A3B8] uppercase hidden sm:inline">
                     INTERVIEW Q&A
                   </span>
                 </div>
@@ -2356,14 +2492,14 @@ function CreateInvitationContent() {
                 </span>
               </div>
 
-              <p className="text-xs text-stone-500 mb-6 font-light leading-relaxed">
+              <p className="text-xs text-[#64748B] mb-6 font-light leading-relaxed">
                 모바일 청첩장의 [인터뷰 읽어보기] 버튼을 눌렀을 때 나타나는 신랑·신부님의 문답 스토리입니다. 질문과 답변을 자유롭게 수정하거나 추가해 보세요. (문답을 비워두실 경우 청첩장 본문에서 인터뷰 버튼이 자동으로 숨김 처리됩니다)
               </p>
 
               <div className="space-y-5">
                 {interviews.length === 0 ? (
-                  <div className="p-6 bg-stone-50/70 rounded-2xl border border-dashed border-stone-300 text-center space-y-3">
-                    <p className="text-xs text-stone-500 font-light">
+                  <div className="p-6 bg-white rounded-2xl border border-dashed border-[#CBD5E1] text-center space-y-3">
+                    <p className="text-xs text-[#64748B] font-light">
                       아직 등록된 인터뷰 질문이 없습니다.<br />
                       추천 질문을 불러와 답변을 작성하시거나, 직접 질문을 추가해 보세요.
                     </p>
@@ -2396,7 +2532,7 @@ function CreateInvitationContent() {
                             },
                           ]);
                         }}
-                        className="px-4 py-2 bg-stone-100 border border-stone-200 text-stone-700 rounded-xl text-xs font-medium hover:bg-stone-200 transition-colors cursor-pointer"
+                        className="px-4 py-2 bg-[#F1F5F9] border border-[#E5E8EB] text-[#334155] rounded-xl text-xs font-medium hover:bg-[#F1F5F9] transition-colors cursor-pointer"
                       >
                         + 직접 질문 작성
                       </button>
@@ -2404,9 +2540,9 @@ function CreateInvitationContent() {
                   </div>
                 ) : (
                   interviews.map((item, index) => (
-                    <div key={item.id || index} className="p-5 bg-stone-50/70 rounded-2xl border border-stone-200/80 space-y-3.5 relative">
+                    <div key={item.id || index} className="p-5 bg-white rounded-2xl border border-[#E5E8EB] space-y-3.5 relative">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-stone-800 font-mono">
+                        <span className="text-xs font-bold text-[#1E293B] font-mono">
                           QUESTION #{index + 1}
                         </span>
                         <button
@@ -2419,7 +2555,7 @@ function CreateInvitationContent() {
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-medium text-stone-600 mb-1">질문 제목</label>
+                        <label className="block text-[11px] font-medium text-[#475569] mb-1">질문 제목</label>
                         <input
                           type="text"
                           value={item.question || ''}
@@ -2428,13 +2564,13 @@ function CreateInvitationContent() {
                             setInterviews((prev) => prev.map((q, i) => i === index ? { ...q, question: val } : q));
                           }}
                           placeholder="예: 서로의 첫인상은 어땠나요?"
-                          className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-none focus:border-stone-900 font-medium"
+                          className="w-full px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-medium"
                         />
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                         <div>
-                          <label className="block text-[11px] font-medium text-stone-700 mb-1">
+                          <label className="block text-[11px] font-medium text-[#334155] mb-1">
                             신랑 답변 ({formData.groom_name || '신랑'})
                           </label>
                           <textarea
@@ -2445,11 +2581,11 @@ function CreateInvitationContent() {
                               setInterviews((prev) => prev.map((q, i) => i === index ? { ...q, groom_answer: val } : q));
                             }}
                             placeholder="신랑님의 생각을 적어주세요."
-                            className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-800 focus:outline-none focus:border-stone-900 leading-relaxed"
+                            className="w-full px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#1E293B] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 leading-relaxed"
                           />
                         </div>
                         <div>
-                          <label className="block text-[11px] font-medium text-stone-700 mb-1">
+                          <label className="block text-[11px] font-medium text-[#334155] mb-1">
                             신부 답변 ({formData.bride_name || '신부'})
                           </label>
                           <textarea
@@ -2460,7 +2596,7 @@ function CreateInvitationContent() {
                               setInterviews((prev) => prev.map((q, i) => i === index ? { ...q, bride_answer: val } : q));
                             }}
                             placeholder="신부님의 생각을 적어주세요."
-                            className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-800 focus:outline-none focus:border-stone-900 leading-relaxed"
+                            className="w-full px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#1E293B] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 leading-relaxed"
                           />
                         </div>
                       </div>
@@ -2483,7 +2619,7 @@ function CreateInvitationContent() {
                           },
                         ]);
                       }}
-                      className="flex-1 py-2.5 bg-stone-100 hover:bg-stone-200/80 text-stone-700 text-xs font-medium rounded-xl border border-stone-200 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                      className="flex-1 py-2.5 bg-[#F1F5F9] hover:bg-[#F1F5F9] text-[#334155] text-xs font-medium rounded-xl border border-[#E5E8EB] transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                     >
                       <span>+</span>
                       <span>인터뷰 질문 추가하기</span>
@@ -2505,15 +2641,127 @@ function CreateInvitationContent() {
             </div>
           )}
 
-          {/* 04. 웨딩 사진 등록 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
+          
+            {/* 05. 감성 글귀 및 영화 대사 */}
+          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
-                <span className="font-mono text-xs text-stone-400 tracking-wider">04</span>
-                <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
+                <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">05</span>
+                <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
+                  감성 글귀 & 인용구
+                </h2>
+                <span className="text-[10px] font-mono tracking-widest text-[#94A3B8] uppercase hidden sm:inline">
+                  EPILOGUE & QUOTE
+                </span>
+              </div>
+              <label className="flex items-center gap-1.5 text-xs text-[#64748B] cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  name="show_quote_section"
+                  checked={formData.show_quote_section}
+                  onChange={handleChange}
+                  className="rounded border-[#CBD5E1] text-[#0F172A] accent-stone-900"
+                />
+                <span>섹션 노출</span>
+              </label>
+            </div>
+
+            {formData.show_quote_section && (
+              <div className="space-y-4">
+                <div>
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-[#94A3B8] block mb-2">
+                    PRESET · 추천 명대사 / 시 인용
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {QUOTE_PRESETS.map((q, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            quote_content: q.content,
+                            quote_source: q.source,
+                          }));
+                        }}
+                        className="px-3 py-1.5 bg-white hover:bg-stone-900 hover:text-white border border-[#E5E8EB] text-[#334155] rounded-xl text-xs font-medium transition-all cursor-pointer"
+                      >
+                        {q.source}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-[#334155] mb-1.5">글귀 내용</label>
+                  <textarea
+                    rows={4}
+                    name="quote_content"
+                    value={formData.quote_content}
+                    onChange={handleChange}
+                    className="w-full px-3.5 py-3 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] placeholder:text-[#CBD5E1] leading-relaxed focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-sans"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-[#334155] mb-1.5">출처 (선택)</label>
+                  <input
+                    type="text"
+                    name="quote_source"
+                    value={formData.quote_source}
+                    onChange={handleChange}
+                    placeholder="영화 <연애의 온도>"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          
+
+            {/* STEP 2 하단 네비게이션 */}
+            <div className="pt-4 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => handleStepChange(1)}
+                className="py-3.5 px-4 bg-white hover:bg-sky-50 text-sky-700 border border-[#CBD0D6] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+              >
+                <span className="font-mono text-xs">←</span>
+                <span>이전 단계</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={openPreviewModal}
+                className="py-3.5 px-4 bg-[#FFFFFF] hover:bg-[#F1F5F9] text-[#334155] border border-[#CBD5E1] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer hidden sm:flex items-center gap-1.5 shadow-2xs"
+              >
+                <span>👁️</span>
+                <span>실시간 미리보기</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleNextStepWithValidation(2)}
+                className="flex-1 max-w-xs py-3.5 px-5 bg-[#191F28] hover:bg-black active:scale-98 text-white rounded-xl text-xs sm:text-sm font-medium tracking-wide transition-all shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap"
+              >
+                <span>다음 단계 (사진 & BGM)</span>
+                <span className="font-mono text-xs">→</span>
+              </button>
+            </div>
+          </div>
+
+          {/* STEP 3: 갤러리 & 배경음악 (웨딩 사진 + BGM) */}
+          <div className={currentStep === 3 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
+            {/* 04. 웨딩 사진 등록 */}
+          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
+              <div className="flex items-baseline gap-2.5">
+                <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">04</span>
+                <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
                   웨딩 사진 및 화보 등록
                 </h2>
-                <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase hidden sm:inline">
+                <span className="text-[10px] font-mono tracking-widest text-[#94A3B8] uppercase hidden sm:inline">
                   WEDDING PHOTOGRAPHY
                 </span>
               </div>
@@ -2523,16 +2771,16 @@ function CreateInvitationContent() {
               {/* 메인 풀스크린 커버 사진 & 매거진 슬리브 커버 사진 */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* 메인 풀스크린 사진 */}
-                <div className="p-4.5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
+                <div className="p-4.5 bg-white rounded-2xl border border-[#E5E8EB]">
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-semibold text-stone-800">
+                    <label className="block text-xs font-semibold text-[#1E293B]">
                       본문 메인 풀스크린 사진 <span className="text-rose-500 font-bold">*</span>
                     </label>
-                    <span className="text-[10px] font-mono text-stone-700 bg-stone-200/70 px-2 py-0.5 rounded-full font-medium">
+                    <span className="text-[10px] font-mono text-[#334155] bg-[#F1F5F9]/70 px-2 py-0.5 rounded-full font-medium">
                       MAIN
                     </span>
                   </div>
-                  <p className="text-[11px] text-stone-400 mb-3 font-light">
+                  <p className="text-[11px] text-[#94A3B8] mb-3 font-light">
                     청첩장 본문 첫 화면의 대표 풀스크린 사진입니다.
                   </p>
                   <input
@@ -2543,11 +2791,11 @@ function CreateInvitationContent() {
                     className="hidden"
                   />
                   <div className="flex items-center gap-3.5">
-                    <div className="w-16 h-22 bg-white rounded-xl overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center shadow-xs">
+                    <div className="w-16 h-22 bg-white rounded-xl overflow-hidden border border-[#E5E8EB] shrink-0 flex items-center justify-center shadow-xs">
                       {mainImagePreview ? (
                         <img src={mainImagePreview} alt="Main" className="w-full h-full object-cover" />
                       ) : (
-                        <div className="flex flex-col items-center justify-center text-stone-300 p-1 text-center">
+                        <div className="flex flex-col items-center justify-center text-[#CBD5E1] p-1 text-center">
                           <svg className="w-5 h-5 mb-0.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
@@ -2590,7 +2838,7 @@ function CreateInvitationContent() {
                             <span>+</span>
                             <span>메인 사진 선택하기</span>
                           </button>
-                          <p className="text-[10px] text-stone-400 mt-1 font-light">JPG, PNG 등 고화질 이미지 (최대 30MB)</p>
+                          <p className="text-[10px] text-[#94A3B8] mt-1 font-light">JPG, PNG 등 고화질 이미지 (최대 30MB)</p>
                         </div>
                       )}
                     </div>
@@ -2599,16 +2847,16 @@ function CreateInvitationContent() {
 
                 {/* 인트로 커버 사진 (시안 1 & 시안 2 공통) */}
                 {(formData.template_type === 'basic' || formData.template_type === 'editorial') && (
-                  <div className="p-4.5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
+                  <div className="p-4.5 bg-white rounded-2xl border border-[#E5E8EB]">
                     <div className="flex items-center justify-between mb-1">
-                      <label className="block text-xs font-semibold text-stone-800">
+                      <label className="block text-xs font-semibold text-[#1E293B]">
                         인트로 커버 사진 (선택)
                       </label>
-                      <span className="text-[10px] font-mono text-stone-700 bg-stone-200/70 px-2 py-0.5 rounded-full font-medium">
+                      <span className="text-[10px] font-mono text-[#334155] bg-[#F1F5F9]/70 px-2 py-0.5 rounded-full font-medium">
                         OPTION 01 & 02
                       </span>
                     </div>
-                    <p className="text-[11px] text-stone-400 mb-3 font-light">
+                    <p className="text-[11px] text-[#94A3B8] mb-3 font-light">
                       시안 1 봉투 카드 및 시안 2 매거진 슬리브 인트로 커버 (미등록 시 메인 사진 적용)
                     </p>
                     <input
@@ -2619,11 +2867,11 @@ function CreateInvitationContent() {
                       className="hidden"
                     />
                     <div className="flex items-center gap-3.5">
-                      <div className="w-16 h-22 bg-white rounded-xl overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center shadow-xs">
+                      <div className="w-16 h-22 bg-white rounded-xl overflow-hidden border border-[#E5E8EB] shrink-0 flex items-center justify-center shadow-xs">
                         {coverImagePreview ? (
                           <img src={coverImagePreview} alt="Cover" className="w-full h-full object-cover" />
                         ) : (
-                          <div className="flex flex-col items-center justify-center text-stone-300 p-1 text-center">
+                          <div className="flex flex-col items-center justify-center text-[#CBD5E1] p-1 text-center">
                             <svg className="w-5 h-5 mb-0.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
@@ -2661,12 +2909,12 @@ function CreateInvitationContent() {
                             <button
                               type="button"
                               onClick={() => coverImageInputRef.current?.click()}
-                              className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-200/80 text-xs font-medium rounded-xl transition-all cursor-pointer active:scale-95 inline-flex items-center gap-1.5 shadow-2xs"
+                              className="px-3.5 py-2 bg-[#F1F5F9] hover:bg-[#F1F5F9] text-[#1E293B] border border-[#E5E8EB] text-xs font-medium rounded-xl transition-all cursor-pointer active:scale-95 inline-flex items-center gap-1.5 shadow-2xs"
                             >
                               <span>+</span>
                               <span>커버 사진 선택</span>
                             </button>
-                            <p className="text-[10px] text-stone-400 mt-1 font-light">선택 사항 (미등록 시 메인 사진 적용)</p>
+                            <p className="text-[10px] text-[#94A3B8] mt-1 font-light">선택 사항 (미등록 시 메인 사진 적용)</p>
                           </div>
                         )}
                       </div>
@@ -2677,24 +2925,24 @@ function CreateInvitationContent() {
 
               {/* 시안 2 (에디토리얼) & 시안 4 (시네마틱) & 시안 5 (모던 씬) 전용: 신랑 & 신부 단독 인물 스냅 사진 */}
               {['editorial', 'cinematic', 'scene'].includes(formData.template_type) && (
-                <div className="p-5 bg-stone-50/80 rounded-2xl border-2 border-stone-900/40">
+                <div className="p-5 bg-white/80 rounded-2xl border-2 border-stone-900/40">
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-bold text-stone-900">
+                    <label className="block text-xs font-bold text-[#0F172A]">
                       신랑 & 신부 개별 인물 스냅 사진 (선택)
                     </label>
                     <span className="text-[10px] font-mono bg-stone-900 text-white px-2 py-0.5 rounded-full font-semibold">
                       {formData.template_type === 'editorial' ? 'OPTION 02 전용' : 'OPTION 04, 05 전용'}
                     </span>
                   </div>
-                  <p className="text-[11px] text-stone-500 mb-4 font-light">
+                  <p className="text-[11px] text-[#64748B] mb-4 font-light">
                     {formData.template_type === 'editorial'
                       ? '시안 2 에디토리얼 프로필 스프레드에 들어갈 신부 & 신랑 단독 액자 사진입니다. 미등록 시 화보 샘플로 자동 채워집니다.'
                       : '시안 4 및 시안 5의 2열 인물 스냅(Bride & Groom)에 들어가는 개별 단독 사진입니다. (미등록 시 사진 없이 성함 텍스트만 깔끔하게 노출됩니다)'}
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* 신부 단독 사진 */}
-                    <div className="p-4 bg-white rounded-xl border border-stone-200">
-                      <span className="block text-xs font-semibold text-stone-800 mb-2">신부 단독 사진</span>
+                    <div className="p-4 bg-white rounded-xl border border-[#E5E8EB]">
+                      <span className="block text-xs font-semibold text-[#1E293B] mb-2">신부 단독 사진</span>
                       <input
                         ref={bridePhotoInputRef}
                         type="file"
@@ -2703,11 +2951,11 @@ function CreateInvitationContent() {
                         className="hidden"
                       />
                       <div className="flex items-center gap-3">
-                        <div className="w-14 h-18 bg-stone-100 rounded-lg overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center">
+                        <div className="w-14 h-18 bg-[#F1F5F9] rounded-lg overflow-hidden border border-[#E5E8EB] shrink-0 flex items-center justify-center">
                           {bridePhotoPreview ? (
                             <img src={bridePhotoPreview} alt="Bride" className="w-full h-full object-cover grayscale" />
                           ) : (
-                            <span className="text-[9px] text-stone-400 font-mono text-center">BRIDE</span>
+                            <span className="text-[9px] text-[#94A3B8] font-mono text-center">BRIDE</span>
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -2735,7 +2983,7 @@ function CreateInvitationContent() {
                             <button
                               type="button"
                               onClick={() => bridePhotoInputRef.current?.click()}
-                              className="px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium rounded-lg cursor-pointer"
+                              className="px-3 py-1.5 bg-[#F1F5F9] hover:bg-[#F1F5F9] text-[#334155] text-xs font-medium rounded-lg cursor-pointer"
                             >
                               + 사진 선택
                             </button>
@@ -2745,8 +2993,8 @@ function CreateInvitationContent() {
                     </div>
 
                     {/* 신랑 단독 사진 */}
-                    <div className="p-4 bg-white rounded-xl border border-stone-200">
-                      <span className="block text-xs font-semibold text-stone-800 mb-2">신랑 단독 사진</span>
+                    <div className="p-4 bg-white rounded-xl border border-[#E5E8EB]">
+                      <span className="block text-xs font-semibold text-[#1E293B] mb-2">신랑 단독 사진</span>
                       <input
                         ref={groomPhotoInputRef}
                         type="file"
@@ -2755,11 +3003,11 @@ function CreateInvitationContent() {
                         className="hidden"
                       />
                       <div className="flex items-center gap-3">
-                        <div className="w-14 h-18 bg-stone-100 rounded-lg overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center">
+                        <div className="w-14 h-18 bg-[#F1F5F9] rounded-lg overflow-hidden border border-[#E5E8EB] shrink-0 flex items-center justify-center">
                           {groomPhotoPreview ? (
                             <img src={groomPhotoPreview} alt="Groom" className="w-full h-full object-cover grayscale" />
                           ) : (
-                            <span className="text-[9px] text-stone-400 font-mono text-center">GROOM</span>
+                            <span className="text-[9px] text-[#94A3B8] font-mono text-center">GROOM</span>
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -2787,7 +3035,7 @@ function CreateInvitationContent() {
                             <button
                               type="button"
                               onClick={() => groomPhotoInputRef.current?.click()}
-                              className="px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium rounded-lg cursor-pointer"
+                              className="px-3 py-1.5 bg-[#F1F5F9] hover:bg-[#F1F5F9] text-[#334155] text-xs font-medium rounded-lg cursor-pointer"
                             >
                               + 사진 선택
                             </button>
@@ -2802,14 +3050,14 @@ function CreateInvitationContent() {
               {/* 커플 사진 & 엔딩 사진 (선택) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* 축하 와이드 사진 / 커플 사진 */}
-                <div className="p-4.5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
+                <div className="p-4.5 bg-white rounded-2xl border border-[#E5E8EB]">
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-semibold text-stone-800">
+                    <label className="block text-xs font-semibold text-[#1E293B]">
                       {formData.template_type === 'cinematic' ? '축하 와이드 사진 (CELEBRATE)' : '커플 사진 (인용구 섹션용)'}
                     </label>
-                    <span className="text-[10px] font-mono text-stone-500">선택</span>
+                    <span className="text-[10px] font-mono text-[#64748B]">선택</span>
                   </div>
-                  <p className="text-[10px] text-stone-400 mb-3">
+                  <p className="text-[10px] text-[#94A3B8] mb-3">
                     {formData.template_type === 'cinematic' ? '시안 4 상단 CELEBRATE 16:9 와이드 화보용' : '미등록 시 메인 사진이 자동 적용됩니다.'}
                   </p>
                   <input
@@ -2820,11 +3068,11 @@ function CreateInvitationContent() {
                     className="hidden"
                   />
                   <div className="flex items-center gap-3.5">
-                    <div className="w-16 h-16 bg-white rounded-xl overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center shadow-xs">
+                    <div className="w-16 h-16 bg-white rounded-xl overflow-hidden border border-[#E5E8EB] shrink-0 flex items-center justify-center shadow-xs">
                       {coupleImagePreview ? (
                         <img src={coupleImagePreview} alt="Couple" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-[10px] text-stone-300 font-mono">COUPLE</span>
+                        <span className="text-[10px] text-[#CBD5E1] font-mono">COUPLE</span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -2852,7 +3100,7 @@ function CreateInvitationContent() {
                         <button
                           type="button"
                           onClick={() => coupleImageInputRef.current?.click()}
-                          className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-200/80 text-xs font-medium rounded-xl cursor-pointer inline-flex items-center gap-1.5"
+                          className="px-3.5 py-2 bg-[#F1F5F9] hover:bg-[#F1F5F9] text-[#1E293B] border border-[#E5E8EB] text-xs font-medium rounded-xl cursor-pointer inline-flex items-center gap-1.5"
                         >
                           <span>+</span>
                           <span>사진 선택하기</span>
@@ -2863,14 +3111,14 @@ function CreateInvitationContent() {
                 </div>
 
                 {/* 캘린더 스냅 사진 / 엔딩 사진 */}
-                <div className="p-4.5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
+                <div className="p-4.5 bg-white rounded-2xl border border-[#E5E8EB]">
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-semibold text-stone-800">
+                    <label className="block text-xs font-semibold text-[#1E293B]">
                       {formData.template_type === 'cinematic' ? '캘린더 감성 스냅 사진' : '엔딩 사진 (최하단 감사 인사용)'}
                     </label>
-                    <span className="text-[10px] font-mono text-stone-500">선택</span>
+                    <span className="text-[10px] font-mono text-[#64748B]">선택</span>
                   </div>
-                  <p className="text-[10px] text-stone-400 mb-3">
+                  <p className="text-[10px] text-[#94A3B8] mb-3">
                     {formData.template_type === 'cinematic' ? '시안 4 DATE 캘린더 상단 정사각형 스냅용' : '미등록 시 메인 사진이 자동 적용됩니다.'}
                   </p>
                   <input
@@ -2881,11 +3129,11 @@ function CreateInvitationContent() {
                     className="hidden"
                   />
                   <div className="flex items-center gap-3.5">
-                    <div className="w-16 h-16 bg-white rounded-xl overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center shadow-xs">
+                    <div className="w-16 h-16 bg-white rounded-xl overflow-hidden border border-[#E5E8EB] shrink-0 flex items-center justify-center shadow-xs">
                       {endingImagePreview ? (
                         <img src={endingImagePreview} alt="Ending" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-[10px] text-stone-300 font-mono">ENDING</span>
+                        <span className="text-[10px] text-[#CBD5E1] font-mono">ENDING</span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -2913,7 +3161,7 @@ function CreateInvitationContent() {
                         <button
                           type="button"
                           onClick={() => endingImageInputRef.current?.click()}
-                          className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-200/80 text-xs font-medium rounded-xl cursor-pointer inline-flex items-center gap-1.5"
+                          className="px-3.5 py-2 bg-[#F1F5F9] hover:bg-[#F1F5F9] text-[#1E293B] border border-[#E5E8EB] text-xs font-medium rounded-xl cursor-pointer inline-flex items-center gap-1.5"
                         >
                           <span>+</span>
                           <span>사진 선택하기</span>
@@ -2924,14 +3172,14 @@ function CreateInvitationContent() {
                 </div>
 
                 {/* 사진 공유 카드 대표 사진 (폴라로이드용) */}
-                <div className="p-4.5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
+                <div className="p-4.5 bg-white rounded-2xl border border-[#E5E8EB]">
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-semibold text-stone-800">
+                    <label className="block text-xs font-semibold text-[#1E293B]">
                       사진 공유 카드 대표 사진 (폴라로이드용)
                     </label>
-                    <span className="text-[10px] font-mono text-stone-500">선택</span>
+                    <span className="text-[10px] font-mono text-[#64748B]">선택</span>
                   </div>
-                  <p className="text-[10px] text-stone-400 mb-3">
+                  <p className="text-[10px] text-[#94A3B8] mb-3">
                     청첩장 내 &apos;사진 공유(Photo Sharing)&apos; 폴라로이드 프레임에 들어갈 사진입니다. 미등록 시 감성 스냅 아이콘으로 단정하게 표시됩니다.
                   </p>
                   <input
@@ -2942,11 +3190,11 @@ function CreateInvitationContent() {
                     className="hidden"
                   />
                   <div className="flex items-center gap-3.5">
-                    <div className="w-16 h-16 bg-white rounded-xl overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center shadow-xs">
+                    <div className="w-16 h-16 bg-white rounded-xl overflow-hidden border border-[#E5E8EB] shrink-0 flex items-center justify-center shadow-xs">
                       {photoSharingImagePreview ? (
                         <img src={photoSharingImagePreview} alt="Photo Sharing" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-[10px] text-stone-300 font-mono">SNAP</span>
+                        <span className="text-[10px] text-[#CBD5E1] font-mono">SNAP</span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -2974,7 +3222,7 @@ function CreateInvitationContent() {
                         <button
                           type="button"
                           onClick={() => photoSharingImageInputRef.current?.click()}
-                          className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-200/80 text-xs font-medium rounded-xl cursor-pointer inline-flex items-center gap-1.5"
+                          className="px-3.5 py-2 bg-[#F1F5F9] hover:bg-[#F1F5F9] text-[#1E293B] border border-[#E5E8EB] text-xs font-medium rounded-xl cursor-pointer inline-flex items-center gap-1.5"
                         >
                           <span>+</span>
                           <span>사진 선택하기</span>
@@ -2986,26 +3234,26 @@ function CreateInvitationContent() {
               </div>
 
               {/* 갤러리 다중 사진 */}
-              <div className="p-5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
+              <div className="p-5 bg-white rounded-2xl border border-[#E5E8EB]">
                 <div className="flex items-center justify-between mb-2">
                   <div>
-                    <label className="block text-xs font-semibold text-stone-800">
+                    <label className="block text-xs font-semibold text-[#1E293B]">
                       웨딩 갤러리 화보 사진 (최대 20장)
                     </label>
-                    <p className="text-[11px] text-stone-400 font-light mt-0.5">
+                    <p className="text-[11px] text-[#94A3B8] font-light mt-0.5">
                       여러 장을 한 번에 선택하여 등록하실 수 있습니다.
                     </p>
                   </div>
-                  <span className="text-[11px] font-mono text-stone-500 font-medium bg-stone-200/60 px-2.5 py-0.5 rounded-full">
+                  <span className="text-[11px] font-mono text-[#64748B] font-medium bg-[#F1F5F9]/60 px-2.5 py-0.5 rounded-full">
                     {galleryPreviews.length} / 20 PIC
                   </span>
                 </div>
 
                 {formData.template_type === 'cinematic' && (
-                  <div className="mb-3 p-3 bg-stone-100/80 border border-stone-200 rounded-xl text-xs text-stone-700 leading-relaxed flex items-start gap-2">
+                  <div className="mb-3 p-3 bg-[#F1F5F9] border border-[#E5E8EB] rounded-xl text-xs text-[#334155] leading-relaxed flex items-start gap-2">
                     <span className="text-sm">💡</span>
                     <div>
-                      <strong className="text-stone-900 font-semibold block mb-0.5">시안 4 (시네마틱 모노리스) 갤러리 안내</strong>
+                      <strong className="text-[#0F172A] font-semibold block mb-0.5">시안 4 (시네마틱 모노리스) 갤러리 안내</strong>
                       등록하신 사진 순서대로 <strong>앞쪽 절반은 [OUR STORY]</strong> 탭에, <strong>뒤쪽 절반은 [WEDDING PHOTO]</strong> 탭에 자동으로 나누어 전시됩니다.
                     </div>
                   </div>
@@ -3044,7 +3292,7 @@ function CreateInvitationContent() {
                 {galleryPreviews.length > 0 && (
                   <div className="grid grid-cols-4 sm:grid-cols-6 gap-2.5 pt-2">
                     {galleryPreviews.map((src, idx) => (
-                      <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-stone-200 group shadow-xs">
+                      <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-[#E5E8EB] group shadow-xs">
                         <img src={src} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
                         <button
                           type="button"
@@ -3062,385 +3310,16 @@ function CreateInvitationContent() {
             </div>
           </div>
 
-          {/* 05. 감성 글귀 및 영화 대사 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
+          
+            {/* 09. 배경음악 및 디자인 설정 */}
+          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
-                <span className="font-mono text-xs text-stone-400 tracking-wider">05</span>
-                <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
-                  감성 글귀 & 인용구
-                </h2>
-                <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase hidden sm:inline">
-                  EPILOGUE & QUOTE
-                </span>
-              </div>
-              <label className="flex items-center gap-1.5 text-xs text-stone-500 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  name="show_quote_section"
-                  checked={formData.show_quote_section}
-                  onChange={handleChange}
-                  className="rounded border-stone-300 text-stone-900 accent-stone-900"
-                />
-                <span>섹션 노출</span>
-              </label>
-            </div>
-
-            {formData.show_quote_section && (
-              <div className="space-y-4">
-                <div>
-                  <span className="text-[11px] font-mono uppercase tracking-wider text-stone-400 block mb-2">
-                    PRESET · 추천 명대사 / 시 인용
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    {QUOTE_PRESETS.map((q, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => {
-                          setFormData((prev) => ({
-                            ...prev,
-                            quote_content: q.content,
-                            quote_source: q.source,
-                          }));
-                        }}
-                        className="px-3 py-1.5 bg-[#FAFAF9] hover:bg-stone-900 hover:text-white border border-stone-200/80 text-stone-700 rounded-xl text-xs font-medium transition-all cursor-pointer"
-                      >
-                        {q.source}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-stone-700 mb-1.5">글귀 내용</label>
-                  <textarea
-                    rows={4}
-                    name="quote_content"
-                    value={formData.quote_content}
-                    onChange={handleChange}
-                    className="w-full px-3.5 py-3 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 leading-relaxed focus:outline-none focus:border-stone-900 font-sans"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-stone-700 mb-1.5">출처 (선택)</label>
-                  <input
-                    type="text"
-                    name="quote_source"
-                    value={formData.quote_source}
-                    onChange={handleChange}
-                    placeholder="영화 <연애의 온도>"
-                    className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 06. 축의금 계좌번호 (다중 계좌 등록) */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
-              <div className="flex items-baseline gap-2.5">
-                <span className="font-mono text-xs text-stone-400 tracking-wider">06</span>
-                <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
-                  마음 전하실 곳 (축의금 계좌)
-                </h2>
-                <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase hidden sm:inline">
-                  GIFT & ACCOUNT
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              {/* 신랑측 계좌 리스트 */}
-              <div className="p-5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80 space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-stone-200/60">
-                  <span className="text-[11px] font-mono tracking-widest uppercase font-semibold text-stone-700 bg-stone-200/60 px-2.5 py-0.5 rounded-full">
-                    GROOM&apos;S ACCOUNT · 신랑측 계좌
-                  </span>
-                  <button
-                    type="button"
-                    onClick={addGroomAccount}
-                    className="text-xs font-mono text-stone-600 hover:text-stone-900 bg-white border border-stone-200 px-3 py-1 rounded-lg transition-colors cursor-pointer"
-                  >
-                    + ADD ACCOUNT
-                  </button>
-                </div>
-
-                {groomAccounts.map((acc, idx) => (
-                  <div key={idx} className="p-4 bg-white rounded-xl border border-stone-200 space-y-3 relative shadow-2xs">
-                    {groomAccounts.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeGroomAccount(idx)}
-                        className="absolute top-3 right-3 text-stone-400 hover:text-rose-500 text-xs cursor-pointer transition-colors"
-                      >
-                        ✕ 삭제
-                      </button>
-                    )}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-medium text-stone-700 mb-1">구분 호칭</label>
-                        <input
-                          type="text"
-                          value={acc.title}
-                          onChange={(e) => updateGroomAccount(idx, 'title', e.target.value)}
-                          placeholder="신랑 / 아버지 / 어머니"
-                          className="w-full px-3 py-2 border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-stone-700 mb-1">은행</label>
-                        <select
-                          value={acc.bank}
-                          onChange={(e) => updateGroomAccount(idx, 'bank', e.target.value)}
-                          className="w-full px-3 py-2 border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 bg-white focus:outline-none focus:border-stone-900"
-                        >
-                          {BANK_OPTIONS.map((b, i) => (
-                            <option key={i} value={b}>{b}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="col-span-2">
-                        <label className="block text-xs font-medium text-stone-700 mb-1">계좌번호</label>
-                        <input
-                          type="text"
-                          value={acc.number}
-                          onChange={(e) => updateGroomAccount(idx, 'number', e.target.value)}
-                          placeholder="- 포함 입력"
-                          className="w-full px-3 py-2 border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 font-mono"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-stone-700 mb-1">예금주</label>
-                        <input
-                          type="text"
-                          value={acc.holder}
-                          onChange={(e) => updateGroomAccount(idx, 'holder', e.target.value)}
-                          placeholder="성함"
-                          className="w-full px-3 py-2 border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* 신부측 계좌 리스트 */}
-              <div className="p-5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80 space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-stone-200/60">
-                  <span className="text-[11px] font-mono tracking-widest uppercase font-semibold text-stone-700 bg-stone-200/60 px-2.5 py-0.5 rounded-full">
-                    BRIDE&apos;S ACCOUNT · 신부측 계좌
-                  </span>
-                  <button
-                    type="button"
-                    onClick={addBrideAccount}
-                    className="text-xs font-mono text-stone-600 hover:text-stone-900 bg-white border border-stone-200 px-3 py-1 rounded-lg transition-colors cursor-pointer"
-                  >
-                    + ADD ACCOUNT
-                  </button>
-                </div>
-
-                {brideAccounts.map((acc, idx) => (
-                  <div key={idx} className="p-4 bg-white rounded-xl border border-stone-200 space-y-3 relative shadow-2xs">
-                    {brideAccounts.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeBrideAccount(idx)}
-                        className="absolute top-3 right-3 text-stone-400 hover:text-rose-500 text-xs cursor-pointer transition-colors"
-                      >
-                        ✕ 삭제
-                      </button>
-                    )}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-medium text-stone-700 mb-1">구분 호칭</label>
-                        <input
-                          type="text"
-                          value={acc.title}
-                          onChange={(e) => updateBrideAccount(idx, 'title', e.target.value)}
-                          placeholder="신부 / 아버지 / 어머니"
-                          className="w-full px-3 py-2 border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-stone-700 mb-1">은행</label>
-                        <select
-                          value={acc.bank}
-                          onChange={(e) => updateBrideAccount(idx, 'bank', e.target.value)}
-                          className="w-full px-3 py-2 border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 bg-white focus:outline-none focus:border-stone-900"
-                        >
-                          {BANK_OPTIONS.map((b, i) => (
-                            <option key={i} value={b}>{b}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="col-span-2">
-                        <label className="block text-xs font-medium text-stone-700 mb-1">계좌번호</label>
-                        <input
-                          type="text"
-                          value={acc.number}
-                          onChange={(e) => updateBrideAccount(idx, 'number', e.target.value)}
-                          placeholder="- 포함 입력"
-                          className="w-full px-3 py-2 border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 font-mono"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-stone-700 mb-1">예금주</label>
-                        <input
-                          type="text"
-                          value={acc.holder}
-                          onChange={(e) => updateBrideAccount(idx, 'holder', e.target.value)}
-                          placeholder="성함"
-                          className="w-full px-3 py-2 border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* 07. 오시는 길 (교통편 안내) */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
-              <div className="flex items-baseline gap-2.5">
-                <span className="font-mono text-xs text-stone-400 tracking-wider">07</span>
-                <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
-                  오시는 길 & 교통편 안내
-                </h2>
-                <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase hidden sm:inline">
-                  LOCATION & TRANSPORT
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={addTransportation}
-                className="text-xs font-mono text-stone-600 hover:text-stone-900 bg-[#FAFAF9] border border-stone-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-              >
-                + ADD ROUTE
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {transportationList.map((item, idx) => (
-                <div key={idx} className="p-4 bg-[#FAFAF9] rounded-2xl border border-stone-200/80 relative space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <select
-                        value={item.type}
-                        onChange={(e) => updateTransportation(idx, 'type', e.target.value)}
-                        className="px-3 py-1.5 bg-white border border-stone-200 rounded-xl text-xs text-stone-800 focus:outline-none focus:border-stone-900 font-medium"
-                      >
-                        <option value="subway">지하철</option>
-                        <option value="bus">버스</option>
-                        <option value="car">자차</option>
-                        <option value="parking">주차안내</option>
-                      </select>
-                      <input
-                        type="text"
-                        value={item.title}
-                        onChange={(e) => updateTransportation(idx, 'title', e.target.value)}
-                        placeholder="교통편 구분명 (예: 지하철)"
-                        className="px-3 py-1.5 bg-white border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 placeholder:text-stone-300 font-semibold focus:outline-none focus:border-stone-900"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeTransportation(idx)}
-                      className="text-stone-400 hover:text-rose-500 text-xs cursor-pointer transition-colors"
-                    >
-                      ✕ 삭제
-                    </button>
-                  </div>
-                  <textarea
-                    rows={2}
-                    value={item.content}
-                    onChange={(e) => updateTransportation(idx, 'content', e.target.value)}
-                    placeholder="상세 교통 안내 문구를 입력해 주세요."
-                    className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 leading-relaxed focus:outline-none focus:border-stone-900 font-sans"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* 08. 안내 정보 (INFORMATION 카드) */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
-              <div className="flex items-baseline gap-2.5">
-                <span className="font-mono text-xs text-stone-400 tracking-wider">08</span>
-                <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
-                  예식 추가 안내사항
-                </h2>
-                <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase hidden sm:inline">
-                  GUEST INFORMATION
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={addInfoCard}
-                className="text-xs font-mono text-stone-600 hover:text-stone-900 bg-[#FAFAF9] border border-stone-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-              >
-                + ADD CARD
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {infoCards.map((card, idx) => (
-                <div key={idx} className="p-4 bg-[#FAFAF9] rounded-2xl border border-stone-200/80 relative space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="grid grid-cols-2 gap-2.5 flex-1 mr-3">
-                      <input
-                        type="text"
-                        value={card.title}
-                        onChange={(e) => updateInfoCard(idx, 'title', e.target.value)}
-                        placeholder="카드 제목 (예: 식사 안내)"
-                        className="px-3 py-2 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 font-semibold focus:outline-none focus:border-stone-900"
-                      />
-                      <input
-                        type="text"
-                        value={card.subtitle}
-                        onChange={(e) => updateInfoCard(idx, 'subtitle', e.target.value)}
-                        placeholder="부제/시간 (예: PM 14:00~ 16:00)"
-                        className="px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 font-mono"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeInfoCard(idx)}
-                      className="text-stone-400 hover:text-rose-500 text-xs cursor-pointer transition-colors"
-                    >
-                      ✕ 삭제
-                    </button>
-                  </div>
-                  <textarea
-                    rows={2}
-                    value={card.content}
-                    onChange={(e) => updateInfoCard(idx, 'content', e.target.value)}
-                    placeholder="상세 안내 내용을 입력해 주세요."
-                    className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-300 leading-relaxed focus:outline-none focus:border-stone-900 font-sans"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* 09. 배경음악 및 디자인 설정 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
-              <div className="flex items-baseline gap-2.5">
-                <span className="font-mono text-xs text-stone-400 tracking-wider">09</span>
-                <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
+                <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">09</span>
+                <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
                   배경음악 & 연출 설정
                 </h2>
-                <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase hidden sm:inline">
+                <span className="text-[10px] font-mono tracking-widest text-[#94A3B8] uppercase hidden sm:inline">
                   SOUND & DISPLAY
                 </span>
               </div>
@@ -3449,7 +3328,7 @@ function CreateInvitationContent() {
             <div className="space-y-6">
               {/* BGM 선택 및 업로드 */}
               <div>
-                <label className="block text-xs font-semibold text-stone-800 mb-2.5">
+                <label className="block text-xs font-semibold text-[#1E293B] mb-2.5">
                   배경음악 (BGM) 재생 설정
                 </label>
                 
@@ -3461,7 +3340,7 @@ function CreateInvitationContent() {
                     className={`py-2.5 px-3 rounded-xl text-xs font-medium border text-center transition-all cursor-pointer ${
                       bgmMode === 'preset'
                         ? 'border-stone-900 bg-stone-900 text-white shadow-xs'
-                        : 'border-stone-200 bg-[#FAFAF9] text-stone-600 hover:bg-stone-100'
+                        : 'border-[#E5E8EB] bg-white text-[#475569] hover:bg-[#F1F5F9]'
                     }`}
                   >
                     추천 멜로디
@@ -3472,7 +3351,7 @@ function CreateInvitationContent() {
                     className={`py-2.5 px-3 rounded-xl text-xs font-medium border text-center transition-all cursor-pointer ${
                       bgmMode === 'file'
                         ? 'border-stone-900 bg-stone-900 text-white shadow-xs'
-                        : 'border-stone-200 bg-[#FAFAF9] text-stone-600 hover:bg-stone-100'
+                        : 'border-[#E5E8EB] bg-white text-[#475569] hover:bg-[#F1F5F9]'
                     }`}
                   >
                     음원 파일 첨부
@@ -3483,7 +3362,7 @@ function CreateInvitationContent() {
                     className={`py-2.5 px-3 rounded-xl text-xs font-medium border text-center transition-all cursor-pointer ${
                       bgmMode === 'url'
                         ? 'border-stone-900 bg-stone-900 text-white shadow-xs'
-                        : 'border-stone-200 bg-[#FAFAF9] text-stone-600 hover:bg-stone-100'
+                        : 'border-[#E5E8EB] bg-white text-[#475569] hover:bg-[#F1F5F9]'
                     }`}
                   >
                     음원 URL 입력
@@ -3494,7 +3373,7 @@ function CreateInvitationContent() {
                     className={`py-2.5 px-3 rounded-xl text-xs font-medium border text-center transition-all cursor-pointer ${
                       bgmMode === 'none'
                         ? 'border-stone-900 bg-stone-900 text-white shadow-xs'
-                        : 'border-stone-200 bg-[#FAFAF9] text-stone-600 hover:bg-stone-100'
+                        : 'border-[#E5E8EB] bg-white text-[#475569] hover:bg-[#F1F5F9]'
                     }`}
                   >
                     음악 없음
@@ -3503,12 +3382,12 @@ function CreateInvitationContent() {
 
                 {/* 1. 무료 추천 멜로디 */}
                 {bgmMode === 'preset' && (
-                  <div className="p-4 bg-[#FAFAF9] rounded-2xl border border-stone-200/80 space-y-3">
+                  <div className="p-4 bg-white rounded-2xl border border-[#E5E8EB] space-y-3">
                     <div>
                       <select
                         value={bgmPresetUrl}
                         onChange={(e) => setBgmPresetUrl(e.target.value)}
-                        className="w-full px-3.5 py-2.5 border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 bg-white focus:outline-none focus:border-stone-900"
+                        className="w-full px-3.5 py-2.5 border border-[#E5E8EB] rounded-xl text-xs sm:text-sm text-[#0F172A] bg-white focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                       >
                         {BGM_OPTIONS.filter((b) => b.url).map((bgm, idx) => (
                           <option key={idx} value={bgm.url}>{bgm.label}</option>
@@ -3517,7 +3396,7 @@ function CreateInvitationContent() {
                     </div>
                     {bgmPresetUrl && (
                       <div>
-                        <span className="text-[11px] font-mono uppercase tracking-wider text-stone-400 block mb-1">
+                        <span className="text-[11px] font-mono uppercase tracking-wider text-[#94A3B8] block mb-1">
                           PREVIEW · 음원 미리듣기
                         </span>
                         <audio controls src={bgmPresetUrl} className="w-full h-8" />
@@ -3528,7 +3407,7 @@ function CreateInvitationContent() {
 
                 {/* 2. 고객 소장 음원 파일 직접 첨부 */}
                 {bgmMode === 'file' && (
-                  <div className="p-4 bg-[#FAFAF9] rounded-2xl border border-stone-200/80 space-y-3">
+                  <div className="p-4 bg-white rounded-2xl border border-[#E5E8EB] space-y-3">
                     <input
                       ref={bgmFileInputRef}
                       type="file"
@@ -3541,30 +3420,30 @@ function CreateInvitationContent() {
                     {!customBgmFile ? (
                       <label
                         htmlFor="custom-bgm-file-upload"
-                        className="w-full py-6 px-4 border border-dashed border-stone-300 hover:border-stone-800 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-colors bg-white group"
+                        className="w-full py-6 px-4 border border-dashed border-[#CBD5E1] hover:border-stone-800 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-colors bg-white group"
                       >
                         <span className="text-xl mb-1.5 opacity-60 group-hover:scale-110 transition-transform">🎧</span>
-                        <span className="text-xs font-semibold text-stone-800 mb-0.5">
+                        <span className="text-xs font-semibold text-[#1E293B] mb-0.5">
                           소장 음원 파일(MP3, M4A, WAV) 첨부하기
                         </span>
-                        <span className="text-[11px] text-stone-400 font-light">
+                        <span className="text-[11px] text-[#94A3B8] font-light">
                           클릭하여 파일을 선택해 주세요 (최대 30MB 권장)
                         </span>
                       </label>
                     ) : (
-                      <div className="bg-white p-4 rounded-xl border border-stone-200 space-y-3 shadow-2xs">
+                      <div className="bg-white p-4 rounded-xl border border-[#E5E8EB] space-y-3 shadow-2xs">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2.5 overflow-hidden mr-2">
                             <span className="text-base">🎵</span>
                             <div className="truncate">
-                              <p className="text-xs font-semibold text-stone-900 truncate">{customBgmFileName}</p>
-                              <p className="text-[10px] font-mono text-stone-400">{customBgmFileSize}</p>
+                              <p className="text-xs font-semibold text-[#0F172A] truncate">{customBgmFileName}</p>
+                              <p className="text-[10px] font-mono text-[#94A3B8]">{customBgmFileSize}</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-1.5 shrink-0">
                             <label
                               htmlFor="custom-bgm-file-upload"
-                              className="px-2.5 py-1 text-[11px] font-mono bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg cursor-pointer transition-colors"
+                              className="px-2.5 py-1 text-[11px] font-mono bg-[#F1F5F9] hover:bg-[#F1F5F9] text-[#334155] rounded-lg cursor-pointer transition-colors"
                             >
                               CHANGE
                             </label>
@@ -3579,8 +3458,8 @@ function CreateInvitationContent() {
                         </div>
 
                         {customBgmPreviewUrl && (
-                          <div className="pt-2 border-t border-stone-100">
-                            <span className="text-[11px] font-mono uppercase tracking-wider text-stone-400 block mb-1">
+                          <div className="pt-2 border-t border-[#F1F5F9]">
+                            <span className="text-[11px] font-mono uppercase tracking-wider text-[#94A3B8] block mb-1">
                               PREVIEW · 업로드 음원 재생 확인
                             </span>
                             <audio controls src={customBgmPreviewUrl} className="w-full h-8" />
@@ -3588,7 +3467,7 @@ function CreateInvitationContent() {
                         )}
                       </div>
                     )}
-                    <p className="text-[11px] text-stone-400 font-light leading-relaxed">
+                    <p className="text-[11px] text-[#94A3B8] font-light leading-relaxed">
                       ※ 신랑·신부님이 준비하신 특별한 음악이 모바일 청첩장 방문객에게 정갈하게 재생됩니다.
                     </p>
                   </div>
@@ -3596,19 +3475,19 @@ function CreateInvitationContent() {
 
                 {/* 3. 음원 링크(URL) 직접 입력 */}
                 {bgmMode === 'url' && (
-                  <div className="p-4 bg-[#FAFAF9] rounded-2xl border border-stone-200/80 space-y-3">
+                  <div className="p-4 bg-white rounded-2xl border border-[#E5E8EB] space-y-3">
                     <div>
                       <input
                         type="url"
                         value={customBgmUrl}
                         onChange={(e) => setCustomBgmUrl(e.target.value)}
                         placeholder="https://example.com/audio/wedding-bgm.mp3"
-                        className="w-full px-3.5 py-2.5 border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 placeholder:text-stone-300 bg-white focus:outline-none focus:border-stone-900 font-mono"
+                        className="w-full px-3.5 py-2.5 border border-[#E5E8EB] rounded-xl text-xs sm:text-sm text-[#0F172A] placeholder:text-[#CBD5E1] bg-white focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-mono"
                       />
                     </div>
                     {customBgmUrl.trim() && (
                       <div>
-                        <span className="text-[11px] font-mono uppercase tracking-wider text-stone-400 block mb-1">
+                        <span className="text-[11px] font-mono uppercase tracking-wider text-[#94A3B8] block mb-1">
                           PREVIEW · 링크 음원 재생
                         </span>
                         <audio controls src={customBgmUrl.trim()} className="w-full h-8" />
@@ -3619,19 +3498,19 @@ function CreateInvitationContent() {
 
                 {/* 4. 배경음악 없음 */}
                 {bgmMode === 'none' && (
-                  <div className="p-5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80 text-center py-5">
-                    <p className="text-xs font-medium text-stone-700">배경음악 없이 정적이고 차분하게 연출됩니다.</p>
-                    <p className="text-[11px] text-stone-400 mt-1 font-light">BGM 없이 미니멀한 모바일 청첩장을 원하실 때 권장합니다.</p>
+                  <div className="p-5 bg-white rounded-2xl border border-[#E5E8EB] text-center py-5">
+                    <p className="text-xs font-medium text-[#334155]">배경음악 없이 정적이고 차분하게 연출됩니다.</p>
+                    <p className="text-[11px] text-[#94A3B8] mt-1 font-light">BGM 없이 미니멀한 모바일 청첩장을 원하실 때 권장합니다.</p>
                   </div>
                 )}
               </div>
 
               {/* 커버 글자 색상 선택 */}
               <div className="pt-2">
-                <label className="block text-xs font-semibold text-stone-800 mb-2">메인 커버 타이포 컬러</label>
+                <label className="block text-xs font-semibold text-[#1E293B] mb-2">메인 커버 타이포 컬러</label>
                 <div className="flex flex-wrap gap-2.5">
                   {[
-                    { label: '골드', color: '#E5A866' },
+                    { label: '골드', color: '#3B82F6' },
                     { label: '로즈골드', color: '#D48B8B' },
                     { label: '화이트', color: '#FFFFFF' },
                     { label: '차콜 블랙', color: '#1C1917' },
@@ -3643,7 +3522,7 @@ function CreateInvitationContent() {
                       className={`px-3.5 py-2 rounded-xl text-xs font-medium border flex items-center gap-2 cursor-pointer transition-all ${
                         formData.title_color === item.color
                           ? 'border-stone-900 bg-stone-900 text-white shadow-xs'
-                          : 'border-stone-200 bg-white text-stone-700 hover:border-stone-400'
+                          : 'border-[#E5E8EB] bg-white text-[#334155] hover:border-stone-400'
                       }`}
                     >
                       <span className="w-3.5 h-3.5 rounded-full border border-black/15 inline-block shadow-2xs" style={{ backgroundColor: item.color }} />
@@ -3654,109 +3533,109 @@ function CreateInvitationContent() {
               </div>
 
               {/* 섹션별 토글 스위치 */}
-              <div className="pt-4 border-t border-stone-100">
-                <span className="text-xs font-semibold text-stone-800 block mb-3">청첩장 주요 기능 노출 여부</span>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs text-stone-700">
-                  <label className="flex items-center gap-2.5 cursor-pointer p-3 bg-[#FAFAF9] hover:bg-stone-100/70 border border-stone-200/60 rounded-xl transition-colors select-none">
+              <div className="pt-4 border-t border-[#F1F5F9]">
+                <span className="text-xs font-semibold text-[#1E293B] block mb-3">청첩장 주요 기능 노출 여부</span>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs text-[#334155]">
+                  <label className="flex items-center gap-2.5 cursor-pointer p-3 bg-white hover:bg-[#F1F5F9]/70 border border-[#F1F5F9] rounded-xl transition-colors select-none">
                     <input
                       type="checkbox"
                       name="show_intro"
                       checked={formData.show_intro}
                       onChange={handleChange}
-                      className="rounded border-stone-300 text-stone-900 accent-stone-900"
+                      className="rounded border-[#CBD5E1] text-[#0F172A] accent-stone-900"
                     />
                     <span>봉투 인트로 커버</span>
                   </label>
-                  <label className="flex items-center gap-2.5 cursor-pointer p-3 bg-[#FAFAF9] hover:bg-stone-100/70 border border-stone-200/60 rounded-xl transition-colors select-none">
+                  <label className="flex items-center gap-2.5 cursor-pointer p-3 bg-white hover:bg-[#F1F5F9]/70 border border-[#F1F5F9] rounded-xl transition-colors select-none">
                     <input
                       type="checkbox"
                       name="show_countdown"
                       checked={formData.show_countdown}
                       onChange={handleChange}
-                      className="rounded border-stone-300 text-stone-900 accent-stone-900"
+                      className="rounded border-[#CBD5E1] text-[#0F172A] accent-stone-900"
                     />
                     <span>D-Day 카운트다운</span>
                   </label>
-                  <label className="flex items-center gap-2.5 cursor-pointer p-3 bg-[#FAFAF9] hover:bg-stone-100/70 border border-stone-200/60 rounded-xl transition-colors select-none">
+                  <label className="flex items-center gap-2.5 cursor-pointer p-3 bg-white hover:bg-[#F1F5F9]/70 border border-[#F1F5F9] rounded-xl transition-colors select-none">
                     <input
                       type="checkbox"
                       name="show_gallery"
                       checked={formData.show_gallery}
                       onChange={handleChange}
-                      className="rounded border-stone-300 text-stone-900 accent-stone-900"
+                      className="rounded border-[#CBD5E1] text-[#0F172A] accent-stone-900"
                     />
                     <span>웨딩 사진 갤러리</span>
                   </label>
-                  <label className="flex items-center gap-2.5 cursor-pointer p-3 bg-[#FAFAF9] hover:bg-stone-100/70 border border-stone-200/60 rounded-xl transition-colors select-none">
+                  <label className="flex items-center gap-2.5 cursor-pointer p-3 bg-white hover:bg-[#F1F5F9]/70 border border-[#F1F5F9] rounded-xl transition-colors select-none">
                     <input
                       type="checkbox"
                       name="show_accounts"
                       checked={formData.show_accounts}
                       onChange={handleChange}
-                      className="rounded border-stone-300 text-stone-900 accent-stone-900"
+                      className="rounded border-[#CBD5E1] text-[#0F172A] accent-stone-900"
                     />
                     <span>축의금 계좌 안내</span>
                   </label>
-                  <label className="flex items-center gap-2.5 cursor-pointer p-3 bg-[#FAFAF9] hover:bg-stone-100/70 border border-stone-200/60 rounded-xl transition-colors select-none">
+                  <label className="flex items-center gap-2.5 cursor-pointer p-3 bg-white hover:bg-[#F1F5F9]/70 border border-[#F1F5F9] rounded-xl transition-colors select-none">
                     <input
                       type="checkbox"
                       name="show_rsvp"
                       checked={formData.show_rsvp}
                       onChange={handleChange}
-                      className="rounded border-stone-300 text-stone-900 accent-stone-900"
+                      className="rounded border-[#CBD5E1] text-[#0F172A] accent-stone-900"
                     />
                     <span>참석의사 조사 (RSVP)</span>
                   </label>
-                  <label className={`flex items-center gap-2.5 p-3 bg-[#FAFAF9] hover:bg-stone-100/70 border border-stone-200/60 rounded-xl transition-colors select-none ${!formData.show_rsvp ? 'opacity-40 pointer-events-none' : 'cursor-pointer'}`}>
+                  <label className={`flex items-center gap-2.5 p-3 bg-white hover:bg-[#F1F5F9]/70 border border-[#F1F5F9] rounded-xl transition-colors select-none ${!formData.show_rsvp ? 'opacity-40 pointer-events-none' : 'cursor-pointer'}`}>
                     <input
                       type="checkbox"
                       name="show_rsvp_meal"
                       disabled={!formData.show_rsvp}
                       checked={formData.show_rsvp && formData.show_rsvp_meal !== false}
                       onChange={handleChange}
-                      className="rounded border-stone-300 text-stone-900 accent-stone-900"
+                      className="rounded border-[#CBD5E1] text-[#0F172A] accent-stone-900"
                     />
                     <div>
                       <span>식사 여부 조사 (RSVP)</span>
-                      <span className="text-[10px] text-stone-400 block font-light">전 시안 적용: 식사 가능/불가/미정 질문</span>
+                      <span className="text-[10px] text-[#94A3B8] block font-light">전 시안 적용: 식사 가능/불가/미정 질문</span>
                     </div>
                   </label>
-                  <label className={`flex items-center gap-2.5 p-3 bg-[#FAFAF9] hover:bg-stone-100/70 border border-stone-200/60 rounded-xl transition-colors select-none ${!formData.show_rsvp ? 'opacity-40 pointer-events-none' : 'cursor-pointer'}`}>
+                  <label className={`flex items-center gap-2.5 p-3 bg-white hover:bg-[#F1F5F9]/70 border border-[#F1F5F9] rounded-xl transition-colors select-none ${!formData.show_rsvp ? 'opacity-40 pointer-events-none' : 'cursor-pointer'}`}>
                     <input
                       type="checkbox"
                       name="show_rsvp_bus"
                       disabled={!formData.show_rsvp}
                       checked={formData.show_rsvp && Boolean(formData.show_rsvp_bus)}
                       onChange={handleChange}
-                      className="rounded border-stone-300 text-stone-900 accent-stone-900"
+                      className="rounded border-[#CBD5E1] text-[#0F172A] accent-stone-900"
                     />
                     <div>
                       <span>전세버스 탑승 조사 (RSVP)</span>
-                      <span className="text-[10px] text-stone-400 block font-light">전 시안 적용: 전세버스 탑승/미탑승 질문</span>
+                      <span className="text-[10px] text-[#94A3B8] block font-light">전 시안 적용: 전세버스 탑승/미탑승 질문</span>
                     </div>
                   </label>
-                  <label className="flex items-center gap-2.5 cursor-pointer p-3 bg-[#FAFAF9] hover:bg-stone-100/70 border border-stone-200/60 rounded-xl transition-colors select-none">
+                  <label className="flex items-center gap-2.5 cursor-pointer p-3 bg-white hover:bg-[#F1F5F9]/70 border border-[#F1F5F9] rounded-xl transition-colors select-none">
                     <input
                       type="checkbox"
                       name="show_guestbook"
                       checked={formData.show_guestbook}
                       onChange={handleChange}
-                      className="rounded border-stone-300 text-stone-900 accent-stone-900"
+                      className="rounded border-[#CBD5E1] text-[#0F172A] accent-stone-900"
                     />
                     <span>축하 방명록</span>
                   </label>
 
-                  <label className="flex items-center gap-2.5 cursor-pointer p-3 bg-[#FAFAF9] hover:bg-stone-100/70 border border-stone-200/60 rounded-xl transition-colors select-none">
+                  <label className="flex items-center gap-2.5 cursor-pointer p-3 bg-white hover:bg-[#F1F5F9]/70 border border-[#F1F5F9] rounded-xl transition-colors select-none">
                     <input
                       type="checkbox"
                       name="show_guest_photos"
                       checked={formData.show_guest_photos !== false}
                       onChange={handleChange}
-                      className="rounded border-stone-300 text-stone-900 accent-stone-900"
+                      className="rounded border-[#CBD5E1] text-[#0F172A] accent-stone-900"
                     />
                     <div>
-                      <span className="text-xs font-medium text-stone-800">📷 하객 현장 사진 수집함 (비공개)</span>
-                      <span className="text-[10px] text-stone-400 block font-light">하객이 청첩장으로 올린 사진을 신랑·신부 관리자함에서 소장</span>
+                      <span className="text-xs font-medium text-[#1E293B]">📷 하객 현장 사진 수집함 (비공개)</span>
+                      <span className="text-[10px] text-[#94A3B8] block font-light">하객이 청첩장으로 올린 사진을 신랑·신부 관리자함에서 소장</span>
                     </div>
                   </label>
                 </div>
@@ -3764,27 +3643,393 @@ function CreateInvitationContent() {
             </div>
           </div>
 
-          {/* 10. 신랑·신부 관리자 2차 보안 비밀번호 설정 섹션 */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200/80 shadow-xs">
-            <div className="flex items-center justify-between pb-4 border-b border-stone-100 mb-6">
+          
+
+            {/* STEP 3 하단 네비게이션 */}
+            <div className="pt-4 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => handleStepChange(2)}
+                className="py-3.5 px-4 bg-white hover:bg-sky-50 text-sky-700 border border-[#CBD0D6] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+              >
+                <span className="font-mono text-xs">←</span>
+                <span>이전 단계</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={openPreviewModal}
+                className="py-3.5 px-4 bg-[#FFFFFF] hover:bg-[#F1F5F9] text-[#334155] border border-[#CBD5E1] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer hidden sm:flex items-center gap-1.5 shadow-2xs"
+              >
+                <span>👁️</span>
+                <span>실시간 미리보기</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleNextStepWithValidation(3)}
+                className="flex-1 max-w-xs py-3.5 px-5 bg-[#191F28] hover:bg-black active:scale-98 text-white rounded-xl text-xs sm:text-sm font-medium tracking-wide transition-all shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap"
+              >
+                <span>다음 단계 (편의 안내)</span>
+                <span className="font-mono text-xs">→</span>
+              </button>
+            </div>
+          </div>
+
+          {/* STEP 4: 편의 안내 & 계좌 (축의금 + 교통 + 카드) */}
+          <div className={currentStep === 4 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
+            {/* 06. 축의금 계좌번호 (다중 계좌 등록) */}
+          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
+              <div className="flex items-baseline gap-2.5">
+                <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">06</span>
+                <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
+                  마음 전하실 곳 (축의금 계좌)
+                </h2>
+                <span className="text-[10px] font-mono tracking-widest text-[#94A3B8] uppercase hidden sm:inline">
+                  GIFT & ACCOUNT
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {/* 신랑측 계좌 리스트 */}
+              <div className="p-5 bg-white rounded-2xl border border-[#E5E8EB] space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-[#F1F5F9]">
+                  <span className="text-[11px] font-mono tracking-widest uppercase font-semibold text-[#334155] bg-[#F1F5F9]/60 px-2.5 py-0.5 rounded-full">
+                    GROOM&apos;S ACCOUNT · 신랑측 계좌
+                  </span>
+                  <button
+                    type="button"
+                    onClick={addGroomAccount}
+                    className="text-xs font-mono text-[#475569] hover:text-[#0F172A] bg-white border border-[#E5E8EB] px-3 py-1 rounded-lg transition-colors cursor-pointer"
+                  >
+                    + ADD ACCOUNT
+                  </button>
+                </div>
+
+                {groomAccounts.map((acc, idx) => (
+                  <div key={idx} className="p-4 bg-white rounded-xl border border-[#E5E8EB] space-y-3 relative shadow-2xs">
+                    {groomAccounts.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeGroomAccount(idx)}
+                        className="absolute top-3 right-3 text-[#94A3B8] hover:text-rose-500 text-xs cursor-pointer transition-colors"
+                      >
+                        ✕ 삭제
+                      </button>
+                    )}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-[#334155] mb-1">구분 호칭</label>
+                        <input
+                          type="text"
+                          value={acc.title}
+                          onChange={(e) => updateGroomAccount(idx, 'title', e.target.value)}
+                          placeholder="신랑 / 아버지 / 어머니"
+                          className="w-full px-3 py-2 border border-[#E5E8EB] rounded-xl text-xs sm:text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-[#334155] mb-1">은행</label>
+                        <select
+                          value={acc.bank}
+                          onChange={(e) => updateGroomAccount(idx, 'bank', e.target.value)}
+                          className="w-full px-3 py-2 border border-[#E5E8EB] rounded-xl text-xs sm:text-sm text-[#0F172A] bg-white focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
+                        >
+                          {BANK_OPTIONS.map((b, i) => (
+                            <option key={i} value={b}>{b}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="col-span-2">
+                        <label className="block text-xs font-medium text-[#334155] mb-1">계좌번호</label>
+                        <input
+                          type="text"
+                          value={acc.number}
+                          onChange={(e) => updateGroomAccount(idx, 'number', e.target.value)}
+                          placeholder="- 포함 입력"
+                          className="w-full px-3 py-2 border border-[#E5E8EB] rounded-xl text-xs sm:text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-[#334155] mb-1">예금주</label>
+                        <input
+                          type="text"
+                          value={acc.holder}
+                          onChange={(e) => updateGroomAccount(idx, 'holder', e.target.value)}
+                          placeholder="성함"
+                          className="w-full px-3 py-2 border border-[#E5E8EB] rounded-xl text-xs sm:text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* 신부측 계좌 리스트 */}
+              <div className="p-5 bg-white rounded-2xl border border-[#E5E8EB] space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-[#F1F5F9]">
+                  <span className="text-[11px] font-mono tracking-widest uppercase font-semibold text-[#334155] bg-[#F1F5F9]/60 px-2.5 py-0.5 rounded-full">
+                    BRIDE&apos;S ACCOUNT · 신부측 계좌
+                  </span>
+                  <button
+                    type="button"
+                    onClick={addBrideAccount}
+                    className="text-xs font-mono text-[#475569] hover:text-[#0F172A] bg-white border border-[#E5E8EB] px-3 py-1 rounded-lg transition-colors cursor-pointer"
+                  >
+                    + ADD ACCOUNT
+                  </button>
+                </div>
+
+                {brideAccounts.map((acc, idx) => (
+                  <div key={idx} className="p-4 bg-white rounded-xl border border-[#E5E8EB] space-y-3 relative shadow-2xs">
+                    {brideAccounts.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeBrideAccount(idx)}
+                        className="absolute top-3 right-3 text-[#94A3B8] hover:text-rose-500 text-xs cursor-pointer transition-colors"
+                      >
+                        ✕ 삭제
+                      </button>
+                    )}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-[#334155] mb-1">구분 호칭</label>
+                        <input
+                          type="text"
+                          value={acc.title}
+                          onChange={(e) => updateBrideAccount(idx, 'title', e.target.value)}
+                          placeholder="신부 / 아버지 / 어머니"
+                          className="w-full px-3 py-2 border border-[#E5E8EB] rounded-xl text-xs sm:text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-[#334155] mb-1">은행</label>
+                        <select
+                          value={acc.bank}
+                          onChange={(e) => updateBrideAccount(idx, 'bank', e.target.value)}
+                          className="w-full px-3 py-2 border border-[#E5E8EB] rounded-xl text-xs sm:text-sm text-[#0F172A] bg-white focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
+                        >
+                          {BANK_OPTIONS.map((b, i) => (
+                            <option key={i} value={b}>{b}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="col-span-2">
+                        <label className="block text-xs font-medium text-[#334155] mb-1">계좌번호</label>
+                        <input
+                          type="text"
+                          value={acc.number}
+                          onChange={(e) => updateBrideAccount(idx, 'number', e.target.value)}
+                          placeholder="- 포함 입력"
+                          className="w-full px-3 py-2 border border-[#E5E8EB] rounded-xl text-xs sm:text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-[#334155] mb-1">예금주</label>
+                        <input
+                          type="text"
+                          value={acc.holder}
+                          onChange={(e) => updateBrideAccount(idx, 'holder', e.target.value)}
+                          placeholder="성함"
+                          className="w-full px-3 py-2 border border-[#E5E8EB] rounded-xl text-xs sm:text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          
+            {/* 07. 오시는 길 (교통편 안내) */}
+          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
+              <div className="flex items-baseline gap-2.5">
+                <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">07</span>
+                <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
+                  오시는 길 & 교통편 안내
+                </h2>
+                <span className="text-[10px] font-mono tracking-widest text-[#94A3B8] uppercase hidden sm:inline">
+                  LOCATION & TRANSPORT
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={addTransportation}
+                className="text-xs font-mono text-[#475569] hover:text-[#0F172A] bg-white border border-[#E5E8EB] px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+              >
+                + ADD ROUTE
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {transportationList.map((item, idx) => (
+                <div key={idx} className="p-4 bg-white rounded-2xl border border-[#E5E8EB] relative space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <select
+                        value={item.type}
+                        onChange={(e) => updateTransportation(idx, 'type', e.target.value)}
+                        className="px-3 py-1.5 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#1E293B] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-medium"
+                      >
+                        <option value="subway">지하철</option>
+                        <option value="bus">버스</option>
+                        <option value="car">자차</option>
+                        <option value="parking">주차안내</option>
+                      </select>
+                      <input
+                        type="text"
+                        value={item.title}
+                        onChange={(e) => updateTransportation(idx, 'title', e.target.value)}
+                        placeholder="교통편 구분명 (예: 지하철)"
+                        className="px-3 py-1.5 bg-white border border-[#E5E8EB] rounded-xl text-xs sm:text-sm text-[#0F172A] placeholder:text-[#CBD5E1] font-semibold focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeTransportation(idx)}
+                      className="text-[#94A3B8] hover:text-rose-500 text-xs cursor-pointer transition-colors"
+                    >
+                      ✕ 삭제
+                    </button>
+                  </div>
+                  <textarea
+                    rows={2}
+                    value={item.content}
+                    onChange={(e) => updateTransportation(idx, 'content', e.target.value)}
+                    placeholder="상세 교통 안내 문구를 입력해 주세요."
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] placeholder:text-[#CBD5E1] leading-relaxed focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-sans"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          
+            {/* 08. 안내 정보 (INFORMATION 카드) */}
+          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
+              <div className="flex items-baseline gap-2.5">
+                <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">08</span>
+                <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
+                  예식 추가 안내사항
+                </h2>
+                <span className="text-[10px] font-mono tracking-widest text-[#94A3B8] uppercase hidden sm:inline">
+                  GUEST INFORMATION
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={addInfoCard}
+                className="text-xs font-mono text-[#475569] hover:text-[#0F172A] bg-white border border-[#E5E8EB] px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+              >
+                + ADD CARD
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {infoCards.map((card, idx) => (
+                <div key={idx} className="p-4 bg-white rounded-2xl border border-[#E5E8EB] relative space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="grid grid-cols-2 gap-2.5 flex-1 mr-3">
+                      <input
+                        type="text"
+                        value={card.title}
+                        onChange={(e) => updateInfoCard(idx, 'title', e.target.value)}
+                        placeholder="카드 제목 (예: 식사 안내)"
+                        className="px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] placeholder:text-[#CBD5E1] font-semibold focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
+                      />
+                      <input
+                        type="text"
+                        value={card.subtitle}
+                        onChange={(e) => updateInfoCard(idx, 'subtitle', e.target.value)}
+                        placeholder="부제/시간 (예: PM 14:00~ 16:00)"
+                        className="px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-xs sm:text-sm text-[#0F172A] placeholder:text-[#CBD5E1] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-mono"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeInfoCard(idx)}
+                      className="text-[#94A3B8] hover:text-rose-500 text-xs cursor-pointer transition-colors"
+                    >
+                      ✕ 삭제
+                    </button>
+                  </div>
+                  <textarea
+                    rows={2}
+                    value={card.content}
+                    onChange={(e) => updateInfoCard(idx, 'content', e.target.value)}
+                    placeholder="상세 안내 내용을 입력해 주세요."
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] placeholder:text-[#CBD5E1] leading-relaxed focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-sans"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          
+
+            {/* STEP 4 하단 네비게이션 */}
+            <div className="pt-4 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => handleStepChange(3)}
+                className="py-3.5 px-4 bg-white hover:bg-sky-50 text-sky-700 border border-[#CBD0D6] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+              >
+                <span className="font-mono text-xs">←</span>
+                <span>이전 단계</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={openPreviewModal}
+                className="py-3.5 px-4 bg-[#FFFFFF] hover:bg-[#F1F5F9] text-[#334155] border border-[#CBD5E1] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer hidden sm:flex items-center gap-1.5 shadow-2xs"
+              >
+                <span>👁️</span>
+                <span>실시간 미리보기</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleNextStepWithValidation(4)}
+                className="flex-1 max-w-xs py-3.5 px-5 bg-[#191F28] hover:bg-black active:scale-98 text-white rounded-xl text-xs sm:text-sm font-medium tracking-wide transition-all shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap"
+              >
+                <span>다음 단계 (완성 & 보안)</span>
+                <span className="font-mono text-xs">→</span>
+              </button>
+            </div>
+          </div>
+
+          {/* STEP 5: 완성 및 보안 설정 (보안 PIN + 스마트스토어 코드 + URL 슬러그) */}
+          <div className={currentStep === 5 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
+            {/* 10. 신랑·신부 관리자 2차 보안 비밀번호 설정 섹션 */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E5E8EB] shadow-xs">
+            <div className="flex items-center justify-between pb-4 border-b border-[#F1F5F9] mb-6">
               <div className="flex items-center gap-2.5">
                 <span className="text-xl">🛡️</span>
                 <div>
-                  <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
-                    신랑·신부 관리자 2차 보안 비밀번호 <span className="text-xs font-sans text-stone-400 font-normal">(숫자 4자리)</span>
+                  <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
+                    신랑·신부 관리자 2차 보안 비밀번호 <span className="text-xs font-sans text-[#94A3B8] font-normal">(숫자 4자리)</span>
                   </h2>
-                  <p className="text-xs text-stone-500 mt-0.5">
+                  <p className="text-xs text-[#64748B] mt-0.5">
                     관리 페이지 진입 시 개인정보(하객 연락처, 방명록, 사진)를 안전하게 보호하는 둘만의 4자리 PIN입니다.
                   </p>
                 </div>
               </div>
-              <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase hidden sm:inline">
+              <span className="text-[10px] font-mono tracking-widest text-[#94A3B8] uppercase hidden sm:inline">
                 2FA PIN
               </span>
             </div>
 
             <div className="max-w-xs space-y-2">
-              <label className="block text-xs font-semibold text-stone-700">
+              <label className="block text-xs font-semibold text-[#334155]">
                 4자리 비밀번호 (숫자)
               </label>
               <input
@@ -3798,23 +4043,24 @@ function CreateInvitationContent() {
                   setFormData((prev) => ({ ...prev, manage_password: val }));
                 }}
                 placeholder="예: 2504 (둘만의 기념일 등)"
-                className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-center text-lg font-mono tracking-widest text-stone-900 focus:outline-none focus:border-stone-900 focus:bg-white transition-colors"
+                className="w-full px-4 py-3 bg-white border border-[#E5E8EB] rounded-xl text-center text-lg font-mono tracking-widest text-[#0F172A] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 focus:bg-white transition-colors"
               />
-              <p className="text-[11px] text-stone-400 leading-relaxed font-light">
+              <p className="text-[11px] text-[#94A3B8] leading-relaxed font-light">
                 * 비워두실 경우, 관리자 링크 첫 접속 시 둘만의 4자리 비밀번호를 등록하실 수 있습니다.
               </p>
             </div>
           </div>
 
-          {/* 11. 스마트스토어 주문 인증코드 (선택) */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
+          
+            {/* 11. 스마트스토어 주문 인증코드 (선택) */}
+          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
-                <span className="font-mono text-xs text-stone-400 tracking-wider">10</span>
-                <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
-                  스마트스토어 주문 인증코드 <span className="text-xs font-sans text-stone-400 font-normal">(선택)</span>
+                <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">10</span>
+                <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
+                  스마트스토어 주문 인증코드 <span className="text-xs font-sans text-[#94A3B8] font-normal">(선택)</span>
                 </h2>
-                <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase hidden sm:inline">
+                <span className="text-[10px] font-mono tracking-widest text-[#94A3B8] uppercase hidden sm:inline">
                   ORDER CODE
                 </span>
               </div>
@@ -3822,7 +4068,7 @@ function CreateInvitationContent() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-stone-700 mb-1.5">
+                <label className="block text-xs font-medium text-[#334155] mb-1.5">
                   1회용 정식 활성화 인증코드
                 </label>
                 <div className="relative">
@@ -3835,13 +4081,13 @@ function CreateInvitationContent() {
                       setFormData((prev) => ({ ...prev, order_code: val }));
                     }}
                     placeholder="예: WED-8492-1049 또는 GIFT-3948-2819"
-                    className="w-full px-4 py-3 border border-stone-200 rounded-xl text-sm font-mono tracking-wider text-stone-900 placeholder:text-stone-300 placeholder:font-sans bg-white focus:outline-none focus:border-stone-900 transition-colors uppercase"
+                    className="w-full px-4 py-3 border border-[#E5E8EB] rounded-xl text-sm font-mono tracking-wider text-[#0F172A] placeholder:text-[#CBD5E1] placeholder:font-sans bg-white focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 transition-colors uppercase"
                   />
                   {formData.order_code && (
                     <button
                       type="button"
                       onClick={() => setFormData((prev) => ({ ...prev, order_code: '' }))}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 text-xs cursor-pointer"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#334155] text-xs cursor-pointer"
                     >
                       ✕
                     </button>
@@ -3849,17 +4095,17 @@ function CreateInvitationContent() {
                 </div>
               </div>
 
-              <div className="p-4 bg-[#FAFAF9] rounded-2xl border border-stone-200/60 space-y-2">
+              <div className="p-4 bg-white rounded-2xl border border-[#F1F5F9] space-y-2">
                 <div className="flex items-start gap-2">
-                  <span className="text-stone-400 text-xs mt-0.5">✦</span>
-                  <p className="text-xs text-stone-600 leading-relaxed font-light">
-                    <strong className="font-medium text-stone-800">스마트스토어 구매 고객:</strong> 주문 결제 후 네이버 톡톡 메시지로 전달받으신 1회용 인증코드를 입력하시면 워터마크가 제거된 정식 청첩장으로 즉시 개통됩니다.
+                  <span className="text-[#94A3B8] text-xs mt-0.5">✦</span>
+                  <p className="text-xs text-[#475569] leading-relaxed font-light">
+                    <strong className="font-medium text-[#1E293B]">스마트스토어 구매 고객:</strong> 주문 결제 후 네이버 톡톡 메시지로 전달받으신 1회용 인증코드를 입력하시면 워터마크가 제거된 정식 청첩장으로 즉시 개통됩니다.
                   </p>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-amber-500 text-xs mt-0.5">💡</span>
-                  <p className="text-[11px] text-stone-500 leading-relaxed font-light">
-                    <strong className="font-medium text-stone-700">코드가 아직 없으신가요?</strong> 인증코드를 비워두셔도 <strong className="text-stone-700">무료 샘플 모드</strong>로 모든 화면을 자유롭게 제작 및 실시간 테스트하실 수 있습니다. (마음에 드실 때 언제든 정식 전환 가능)
+                  <p className="text-[11px] text-[#64748B] leading-relaxed font-light">
+                    <strong className="font-medium text-[#334155]">코드가 아직 없으신가요?</strong> 인증코드를 비워두셔도 <strong className="text-[#334155]">무료 샘플 모드</strong>로 모든 화면을 자유롭게 제작 및 실시간 테스트하실 수 있습니다. (마음에 드실 때 언제든 정식 전환 가능)
                   </p>
                 </div>
               </div>
@@ -3868,12 +4114,26 @@ function CreateInvitationContent() {
 
           {/* 하단 고정 플로팅 액션 바 (100% 불투명 솔리드 배경으로 하단 텍스트 겹침 완벽 차단) */}
           {/* 고객 상담 안내 배너 */}
-          <div className="mt-8 p-4 bg-amber-50/60 rounded-2xl border border-amber-200/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+          
+
+            {/* STEP 5 하단 이전 버튼 */}
+            <div className="pt-4 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => handleStepChange(4)}
+                className="py-3.5 px-4 bg-white hover:bg-sky-50 text-sky-700 border border-[#CBD0D6] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+              >
+                <span className="font-mono text-xs">←</span>
+                <span>이전 단계</span>
+              </button>
+            </div>
+          </div>
+<div className="mt-8 p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
             <div>
-              <p className="text-xs font-semibold text-stone-800">
+              <p className="text-xs font-semibold text-[#1E293B]">
                 제작 중 궁금한 점이나 도움이 필요하신가요?
               </p>
-              <p className="text-[11px] text-stone-500 mt-0.5">
+              <p className="text-[11px] text-[#64748B] mt-0.5">
                 사진 교체나 옵션 문의 등 무엇이든 편하게 물어보세요.
               </p>
             </div>
@@ -3890,11 +4150,11 @@ function CreateInvitationContent() {
             </a>
           </div>
 
-          <div className="sticky bottom-4 z-40 bg-white p-3.5 sm:p-4 rounded-2xl shadow-[0_4px_30px_rgba(0,0,0,0.12)] border border-stone-200/90 flex gap-3 items-center">
+          <div className="sticky bottom-4 z-40 bg-white/95 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.08)] border border-[#E5E8EB] flex gap-3 items-center">
             <button
               type="button"
               onClick={openPreviewModal}
-              className="flex-1 py-4 px-4 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-2"
+              className="flex-1 py-4 px-4 bg-[#FFFFFF] hover:bg-[#F1F5F9] text-[#1E293B] border border-[#CBD5E1] rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-2xs"
             >
               <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
               <span>실시간 미리보기</span>
@@ -3903,7 +4163,7 @@ function CreateInvitationContent() {
             <button
               type="submit"
               disabled={submitting}
-              className="flex-2 py-4 px-6 bg-stone-900 hover:bg-black disabled:bg-stone-400 text-white rounded-xl text-xs sm:text-sm font-medium tracking-wide transition-all shadow-md hover:shadow-lg cursor-pointer flex items-center justify-center gap-2"
+              className="flex-2 py-3.5 sm:py-4 px-4 sm:px-6 bg-[#191F28] hover:bg-black disabled:bg-[#CBD0D6] text-white rounded-xl text-xs sm:text-sm font-semibold tracking-wide transition-all shadow-sm hover:shadow-md cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap"
             >
               <span>{submitting ? '청첩장 생성 처리 중...' : '청첩장 제작 신청하기'}</span>
               <span className="text-xs font-mono opacity-60">→</span>
@@ -3911,7 +4171,7 @@ function CreateInvitationContent() {
           </div>
 
           {uploadStatus && (
-            <p className="text-center text-xs font-mono text-stone-500 animate-pulse py-2">
+            <p className="text-center text-xs font-mono text-[#64748B] animate-pulse py-2">
               {uploadStatus}
             </p>
           )}
@@ -3957,7 +4217,7 @@ function CreateInvitationContent() {
               }}
               className="flex items-center gap-2 px-5 py-3 bg-stone-900/95 hover:bg-black text-white text-xs sm:text-sm font-semibold rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.5)] backdrop-blur-md border border-stone-600/80 transition-all hover:scale-105 active:scale-95 cursor-pointer ring-2 ring-white/20"
             >
-              <svg className="w-4 h-4 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-[#CBD5E1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
               </svg>
               <span>미리보기 닫기 (작성으로 복귀)</span>
@@ -3972,7 +4232,7 @@ function CreateInvitationContent() {
             <div className="py-3 px-4 sm:px-5 bg-stone-950 text-white flex items-center justify-between shrink-0 border-b border-stone-800 z-10">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[11px] sm:text-xs font-mono tracking-wider sm:tracking-widest uppercase text-stone-300">
+                <span className="text-[11px] sm:text-xs font-mono tracking-wider sm:tracking-widest uppercase text-[#CBD5E1]">
                   LIVE PREVIEW
                 </span>
               </div>
@@ -4007,10 +4267,10 @@ function CreateInvitationContent() {
                   : previewInvitation?.template_type === 'cinematic'
                   ? 'bg-white'
                   : previewInvitation?.template_type === 'playlist' 
-                  ? 'bg-[#FBF9F5]' 
+                  ? 'bg-[#FFFFFF]' 
                   : previewInvitation?.template_type === 'editorial' 
                   ? 'bg-white' 
-                  : 'bg-[#FCFBF7]'
+                  : 'bg-[#FFFFFF]'
               }`}
             >
               <BgmPlayer
@@ -4041,10 +4301,10 @@ export default function CreateInvitationPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+        <div className="min-h-screen bg-[#F7F8FA] flex items-center justify-center">
           <div className="text-center">
             <div className="w-8 h-8 border-2 border-stone-800 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-xs font-mono tracking-widest text-stone-500 uppercase">Loading Mukiru Studio...</p>
+            <p className="text-xs font-mono tracking-widest text-[#64748B] uppercase">Loading Mukiru Studio...</p>
           </div>
         </div>
       }

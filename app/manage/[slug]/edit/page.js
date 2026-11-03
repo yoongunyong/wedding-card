@@ -141,7 +141,7 @@ export default function EditInvitationPage({ params }) {
     quote_source: QUOTE_PRESETS[0].source,
 
     bgm_url: BGM_OPTIONS[0].url,
-    title_color: '#E5A866',
+    title_color: '#3B82F6',
 
     show_intro: true,
     show_countdown: true,
@@ -215,6 +215,39 @@ export default function EditInvitationPage({ params }) {
   const bgmFileInputRef = useRef(null);
 
   // 저장 처리 상태
+  const [currentStep, setCurrentStep] = useState(1); // 1: 기본정보 | 2: 초대문구 | 3: 사진BGM | 4: 편의안내 | 5: 보안완료
+  // 단계별 유효성 검사 및 안전한 다음 단계 이동 함수
+  const handleNextStepWithValidation = (fromStep) => {
+    if (fromStep === 1) {
+      if (!formData.groom_name.trim() || !formData.bride_name.trim()) {
+        return alert('신랑과 신부 성함을 모두 입력해 주세요.');
+      }
+      if (!formData.wedding_date) {
+        return alert('예식 날짜를 선택해 주세요.');
+      }
+      if (!formData.wedding_time) {
+        return alert('예식 시간을 선택해 주세요.');
+      }
+      if (!formData.venue_name.trim()) {
+        return alert('예식장 이름을 입력해 주세요.');
+      }
+      if (!formData.venue_address.trim()) {
+        return alert('예식장 주소를 입력해 주세요.');
+      }
+    } else if (fromStep === 3) {
+      if (!mainImagePreview) {
+        return alert('청첩장 첫 화면에 노출될 메인 대표 사진을 등록해 주세요.');
+      }
+    }
+    handleStepChange(fromStep + 1);
+  };
+
+  const handleStepChange = (targetStep) => {
+    setCurrentStep(targetStep);
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 80, behavior: 'smooth' });
+    }
+  };
   const [submitting, setSubmitting] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -312,7 +345,7 @@ export default function EditInvitationPage({ params }) {
         quote_source: card.quote_source || config.quote_source || QUOTE_PRESETS[0].source,
 
         bgm_url: card.bgm_url || BGM_OPTIONS[0].url,
-        title_color: config.title_color || '#E5A866',
+        title_color: config.title_color || '#3B82F6',
 
         show_intro: config.show_intro !== false,
         show_countdown: config.show_countdown !== false,
@@ -1151,7 +1184,7 @@ export default function EditInvitationPage({ params }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F6F5F2] text-stone-500 text-sm font-sans">
+      <div className="min-h-screen flex items-center justify-center bg-white text-[#64748B] text-sm font-sans">
         청첩장 기존 데이터를 불러오고 있습니다...
       </div>
     );
@@ -1159,10 +1192,10 @@ export default function EditInvitationPage({ params }) {
 
   if (!authorized) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F6F5F2] p-6 text-center font-sans">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white p-6 text-center font-sans">
         <div className="text-4xl mb-3">🔒</div>
-        <h1 className="text-lg font-bold text-stone-900 mb-1">수정 권한이 없습니다</h1>
-        <p className="text-xs text-stone-500 mb-6">
+        <h1 className="text-lg font-bold text-[#0F172A] mb-1">수정 권한이 없습니다</h1>
+        <p className="text-xs text-[#64748B] mb-6">
           올바른 관리용 보안 토큰 링크로 접속해 주세요.
         </p>
         <Link
@@ -1177,16 +1210,16 @@ export default function EditInvitationPage({ params }) {
 
   return (
     <div 
-      className="min-h-screen bg-[#F6F5F2] py-10 px-4 sm:px-6 flex justify-center text-stone-900 font-sans selection:bg-stone-200 antialiased"
+      className="min-h-screen bg-[#F7F8FA] py-10 px-4 sm:px-6 flex justify-center text-[#0F172A] font-sans selection:bg-[#F1F5F9] antialiased"
       style={{ colorScheme: 'light' }}
     >
       <div className="w-full max-w-[740px]">
 
         {/* 상단 네비게이션 바 */}
-        <div className="flex items-center justify-between pb-6 mb-8 border-b border-stone-200/80">
+        <div className="flex items-center justify-between pb-6 mb-8 border-b border-[#E5E8EB]">
           <Link
             href={`/manage/${slug}?token=${token}`}
-            className="inline-flex items-center gap-1.5 text-xs text-stone-500 hover:text-stone-900 font-medium transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-xs text-[#64748B] hover:text-[#0F172A] font-medium transition-colors cursor-pointer"
           >
             <span>←</span>
             <span>관리 대시보드로 돌아가기</span>
@@ -1196,7 +1229,7 @@ export default function EditInvitationPage({ params }) {
               href={`/${slug}`}
               target="_blank"
               rel="noreferrer"
-              className="px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs rounded-lg transition-colors cursor-pointer flex items-center gap-1 font-medium"
+              className="px-3 py-1.5 bg-[#F1F5F9] hover:bg-[#F1F5F9] text-[#334155] text-xs rounded-lg transition-colors cursor-pointer flex items-center gap-1 font-medium"
             >
               <span>청첩장 바로보기</span>
               <span className="text-[10px]">↗</span>
@@ -1206,33 +1239,104 @@ export default function EditInvitationPage({ params }) {
 
         {/* 헤더 안내 */}
         <div className="text-center mb-10">
-          <span className="text-[11px] font-mono tracking-[0.25em] text-stone-400 uppercase font-medium">
+          <span className="text-[11px] font-mono tracking-[0.25em] text-[#94A3B8] uppercase font-medium">
             LIVE EDIT MODE
           </span>
-          <h1 className="text-2xl sm:text-[28px] font-serif tracking-tight text-stone-900 font-normal mt-2 mb-2">
+          <h1 className="text-2xl sm:text-[28px] font-serif tracking-tight text-[#0F172A] font-normal mt-2 mb-2">
             청첩장 정보 & 사진 수정하기
           </h1>
-          <p className="text-xs sm:text-[13px] text-stone-500 font-light leading-relaxed max-w-md mx-auto break-keep">
+          <p className="text-xs sm:text-[13px] text-[#64748B] font-light leading-relaxed max-w-md mx-auto break-keep">
             기존에 전달하신 URL 주소는 그대로 유지되며,<br />
             수정하신 모든 내용과 사진은 하객용 청첩장에 즉시 실시간으로 반영됩니다.
           </p>
         </div>
 
         {/* 폼 본문 */}
-        <form onSubmit={handleSubmit} className="space-y-8 pb-28 sm:pb-36">
+        <form onSubmit={handleSubmit} noValidate className="space-y-8 pb-28 sm:pb-36">
 
-          {/* 00. 디자인 템플릿 변경 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
-            <div className="flex items-center justify-between pb-4 mb-4 border-b border-stone-100">
+          {/* 디얼디어 & 토스 감성의 슬릭 5단계 스텝퍼 네비게이션 */}
+          <div className="sticky top-2 z-40 mb-8 bg-white/95 backdrop-blur-md py-3.5 px-3 sm:px-5 rounded-2xl border border-[#E5E8EB] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+            {/* 상단 스텝 라벨 & 진행률 게이지 바 */}
+            <div className="flex items-center justify-between mb-2 px-0.5">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-mono tracking-wider text-[#3182F6] font-bold uppercase">
+                  STEP 0{currentStep} / 05
+                </span>
+                <span className="text-xs font-semibold text-[#191F28]">
+                  {currentStep === 1 && '기본 정보 (시안 변경 · 신랑신부 · 예식일시)'}
+                  {currentStep === 2 && '초대 문구 (인사말 · 인터뷰 문답)'}
+                  {currentStep === 3 && '갤러리 & BGM (웨딩 사진 · 배경음악)'}
+                  {currentStep === 4 && '편의 안내 & 옵션 (축의금 계좌 · 표시 제어)'}
+                  {currentStep === 5 && '보안 관리 & 수정 완료 (관리자 PIN 설정)'}
+                </span>
+              </div>
+              <span className="text-[11px] font-mono font-bold text-[#3182F6]">
+                {Math.round((currentStep / 5) * 100)}%
+              </span>
+            </div>
+
+            {/* 얇고 세련된 프로그레스 게이지 바 */}
+            <div className="w-full bg-[#F2F4F6] h-1 rounded-full overflow-hidden mb-3">
+              <div
+                className="bg-[#191F28] h-full transition-all duration-300 ease-out"
+                style={{ width: `${(currentStep / 5) * 100}%` }}
+              />
+            </div>
+
+            {/* 5개 스텝 탭 버튼 (모바일 가로스크롤 지원으로 글자 잘림 0%) */}
+            <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5">
+              {[
+                { num: 1, title: '기본 정보' },
+                { num: 2, title: '초대 문구' },
+                { num: 3, title: '사진 & BGM' },
+                { num: 4, title: '편의 & 옵션' },
+                { num: 5, title: '보안 & 완료' },
+              ].map((stepItem) => {
+                const isActive = currentStep === stepItem.num;
+                const isPassed = currentStep > stepItem.num;
+                return (
+                  <button
+                    key={stepItem.num}
+                    type="button"
+                    onClick={() => handleStepChange(stepItem.num)}
+                    className={`shrink-0 flex items-center gap-1.5 py-2 px-3 sm:px-3.5 rounded-xl text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
+                      isActive
+                        ? 'bg-[#191F28] text-white shadow-xs font-semibold'
+                        : isPassed
+                        ? 'bg-[#F2F4F6] text-[#333D4B] hover:bg-[#E5E8EB] border border-[#E5E8EB]'
+                        : 'bg-white text-[#8B95A1] hover:text-[#4E5968] hover:bg-slate-50 border border-[#E5E8EB]'
+                    }`}
+                  >
+                    <span className={`text-[10px] font-mono rounded-full w-4 h-4 inline-flex items-center justify-center font-bold ${
+                      isActive
+                        ? 'bg-white text-[#191F28]'
+                        : isPassed
+                        ? 'bg-[#4E5968] text-white'
+                        : 'bg-[#F2F4F6] text-[#8B95A1]'
+                    }`}>
+                      {isPassed ? '✓' : stepItem.num}
+                    </span>
+                    <span>{stepItem.title}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* STEP 1: 기본 정보 (시안 변경 + 신랑&신부 + 예식일시) */}
+          <div className={currentStep === 1 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
+            {/* 00. 디자인 템플릿 변경 */}
+          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="flex items-center justify-between pb-4 mb-4 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
-                <span className="font-mono text-xs text-stone-400 tracking-wider">00</span>
-                <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
+                <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">00</span>
+                <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
                   디자인 시안 변경
                 </h2>
               </div>
             </div>
 
-            <p className="text-xs text-stone-500 mb-4 bg-stone-50 p-3 rounded-xl border border-stone-100 leading-relaxed">
+            <p className="text-xs text-[#64748B] mb-4 bg-white p-3 rounded-xl border border-[#F1F5F9] leading-relaxed">
               💡 <strong>시안을 변경하셔도 청첩장 영문 주소(URL)와 종이 QR코드는 100% 그대로 유지됩니다.</strong><br />
               시안마다 사진 연출(봉투 오프닝 vs 화보 룩북)이 다르므로, 시안을 바꾸신 후 하단의 <strong>[👁️ 실시간 미리보기]</strong>로 전체적인 느낌을 확인해 보세요.
             </p>
@@ -1242,18 +1346,18 @@ export default function EditInvitationPage({ params }) {
                 onClick={() => setFormData((prev) => ({ ...prev, template_type: 'basic' }))}
                 className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative ${
                   formData.template_type === 'basic'
-                    ? 'border-stone-900 bg-stone-50/50 shadow-sm'
-                    : 'border-stone-200 hover:border-stone-300 bg-white'
+                    ? 'border-stone-900 bg-white shadow-sm'
+                    : 'border-[#E5E8EB] hover:border-[#CBD5E1] bg-white'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-mono text-stone-400 tracking-widest">OPTION 01</span>
+                  <span className="text-xs font-mono text-[#94A3B8] tracking-widest">OPTION 01</span>
                   {formData.template_type === 'basic' && (
                     <span className="w-2 h-2 rounded-full bg-stone-900" />
                   )}
                 </div>
-                <h3 className="text-sm font-semibold text-stone-900 mb-1">모던 클래식 (Modern)</h3>
-                <p className="text-xs text-stone-500 font-light leading-relaxed">
+                <h3 className="text-sm font-semibold text-[#0F172A] mb-1">모던 클래식 (Modern)</h3>
+                <p className="text-xs text-[#64748B] font-light leading-relaxed">
                   편지 봉투 오프닝 카드 & 크림 베이지 톤의 정갈하고 따뜻한 시안
                 </p>
               </div>
@@ -1262,18 +1366,18 @@ export default function EditInvitationPage({ params }) {
                 onClick={() => setFormData((prev) => ({ ...prev, template_type: 'editorial' }))}
                 className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative ${
                   formData.template_type === 'editorial'
-                    ? 'border-stone-900 bg-stone-50/50 shadow-sm'
-                    : 'border-stone-200 hover:border-stone-300 bg-white'
+                    ? 'border-stone-900 bg-white shadow-sm'
+                    : 'border-[#E5E8EB] hover:border-[#CBD5E1] bg-white'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-mono text-stone-400 tracking-widest">OPTION 02</span>
+                  <span className="text-xs font-mono text-[#94A3B8] tracking-widest">OPTION 02</span>
                   {formData.template_type === 'editorial' && (
                     <span className="w-2 h-2 rounded-full bg-stone-900" />
                   )}
                 </div>
-                <h3 className="text-sm font-semibold text-stone-900 mb-1">에디토리얼 (Editorial)</h3>
-                <p className="text-xs text-stone-500 font-light leading-relaxed">
+                <h3 className="text-sm font-semibold text-[#0F172A] mb-1">에디토리얼 (Editorial)</h3>
+                <p className="text-xs text-[#64748B] font-light leading-relaxed">
                   패션 매거진 룩북 인트로 & 감각적인 세리프 타이포그래피 시안
                 </p>
               </div>
@@ -1283,7 +1387,7 @@ export default function EditInvitationPage({ params }) {
                 className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative ${
                   formData.template_type === 'playlist'
                     ? 'border-emerald-700 bg-emerald-50/40 shadow-sm'
-                    : 'border-stone-200 hover:border-stone-300 bg-white'
+                    : 'border-[#E5E8EB] hover:border-[#CBD5E1] bg-white'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -1292,8 +1396,8 @@ export default function EditInvitationPage({ params }) {
                     <span className="w-2 h-2 rounded-full bg-emerald-700" />
                   )}
                 </div>
-                <h3 className="text-sm font-semibold text-stone-900 mb-1">플레이리스트 (Playlist)</h3>
-                <p className="text-xs text-stone-500 font-light leading-relaxed">
+                <h3 className="text-sm font-semibold text-[#0F172A] mb-1">플레이리스트 (Playlist)</h3>
+                <p className="text-xs text-[#64748B] font-light leading-relaxed">
                   포레스트 그린 & 빈티지 폴라로이드, 뮤직 플레이어 위젯 시안
                 </p>
               </div>
@@ -1302,8 +1406,8 @@ export default function EditInvitationPage({ params }) {
                 onClick={() => setFormData((prev) => ({ ...prev, template_type: 'cinematic' }))}
                 className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative ${
                   formData.template_type === 'cinematic'
-                    ? 'border-black bg-stone-100/70 shadow-sm'
-                    : 'border-stone-200 hover:border-stone-300 bg-white'
+                    ? 'border-black bg-[#F1F5F9]/70 shadow-sm'
+                    : 'border-[#E5E8EB] hover:border-[#CBD5E1] bg-white'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -1312,8 +1416,8 @@ export default function EditInvitationPage({ params }) {
                     <span className="w-2 h-2 rounded-full bg-black" />
                   )}
                 </div>
-                <h3 className="text-sm font-semibold text-stone-900 mb-1">시네마틱 (Cinematic)</h3>
-                <p className="text-xs text-stone-500 font-light leading-relaxed">
+                <h3 className="text-sm font-semibold text-[#0F172A] mb-1">시네마틱 (Cinematic)</h3>
+                <p className="text-xs text-[#64748B] font-light leading-relaxed">
                   ☀️ Day / 🌙 Night 듀얼 테마 & 흑백 모노크롬 인물 스냅 시안
                 </p>
               </div>
@@ -1323,30 +1427,31 @@ export default function EditInvitationPage({ params }) {
                 onClick={() => setFormData((prev) => ({ ...prev, template_type: 'scene' }))}
                 className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative ${
                   formData.template_type === 'scene'
-                    ? 'border-stone-900 bg-stone-50/50 shadow-sm'
-                    : 'border-stone-200 hover:border-stone-300 bg-white'
+                    ? 'border-stone-900 bg-white shadow-sm'
+                    : 'border-[#E5E8EB] hover:border-[#CBD5E1] bg-white'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-mono text-stone-900 font-semibold tracking-widest">OPTION 05 · NEW</span>
+                  <span className="text-xs font-mono text-[#0F172A] font-semibold tracking-widest">OPTION 05 · NEW</span>
                   {formData.template_type === 'scene' && (
                     <span className="w-2 h-2 rounded-full bg-stone-900" />
                   )}
                 </div>
-                <h3 className="text-sm font-semibold text-stone-900 mb-1">모던 씬 (Scene 02)</h3>
-                <p className="text-xs text-stone-500 font-light leading-relaxed">
+                <h3 className="text-sm font-semibold text-[#0F172A] mb-1">모던 씬 (Scene 02)</h3>
+                <p className="text-xs text-[#64748B] font-light leading-relaxed">
                   우아하고 차분한 모던 클래식 & 인터뷰 Q&A, 3열 캘린더, 전세버스/식사 RSVP
                 </p>
               </div>
             </div>
           </div>
 
-          {/* 01. 신랑 & 신부 인적사항 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
+          
+            {/* 01. 신랑 & 신부 인적사항 */}
+          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
-                <span className="font-mono text-xs text-stone-400 tracking-wider">01</span>
-                <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
+                <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">01</span>
+                <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
                   신랑 & 신부 정보
                 </h2>
               </div>
@@ -1354,17 +1459,17 @@ export default function EditInvitationPage({ params }) {
 
             <div className="space-y-6">
               {/* 신랑 정보 */}
-              <div className="p-5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
+              <div className="p-5 bg-white rounded-2xl border border-[#E5E8EB]">
                 <div className="flex items-center gap-2 mb-4">
                   <span className="w-2 h-2 rounded-full bg-stone-800" />
-                  <span className="text-xs font-mono text-stone-700 tracking-wider uppercase font-semibold">
+                  <span className="text-xs font-mono text-[#334155] tracking-wider uppercase font-semibold">
                     GROOM INFO
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-3.5">
                   <div>
-                    <label className="block text-xs font-medium text-stone-700 mb-1.5">신랑 성함 *</label>
+                    <label className="block text-xs font-medium text-[#334155] mb-1.5">신랑 성함 *</label>
                     <input
                       type="text"
                       name="groom_name"
@@ -1372,45 +1477,45 @@ export default function EditInvitationPage({ params }) {
                       value={formData.groom_name}
                       onChange={handleChange}
                       placeholder="예: 이도현"
-                      className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-hidden focus:border-stone-900"
+                      className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-stone-700 mb-1.5">신랑 영문 이름</label>
+                    <label className="block text-xs font-medium text-[#334155] mb-1.5">신랑 영문 이름</label>
                     <input
                       type="text"
                       name="groom_name_en"
                       value={formData.groom_name_en}
                       onChange={handleChange}
                       placeholder="예: Dohyun Lee"
-                      className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-hidden focus:border-stone-900"
+                      className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-stone-700 mb-1.5">신랑 연락처</label>
+                    <label className="block text-xs font-medium text-[#334155] mb-1.5">신랑 연락처</label>
                     <input
                       type="tel"
                       name="groom_phone"
                       value={formData.groom_phone}
                       onChange={handleChange}
                       placeholder="010-0000-0000"
-                      className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-hidden focus:border-stone-900"
+                      className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                     />
                   </div>
                 </div>
 
                 {/* 신랑 부모님 */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-3 border-t border-stone-200/60">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-3 border-t border-[#F1F5F9]">
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-xs font-medium text-stone-700">아버지 성함</label>
-                      <label className="flex items-center gap-1 text-[11px] text-stone-500 cursor-pointer">
+                      <label className="text-xs font-medium text-[#334155]">아버지 성함</label>
+                      <label className="flex items-center gap-1 text-[11px] text-[#64748B] cursor-pointer">
                         <input
                           type="checkbox"
                           name="groom_father_deceased"
                           checked={formData.groom_father_deceased}
                           onChange={handleChange}
-                          className="rounded text-stone-900"
+                          className="rounded text-[#0F172A]"
                         />
                         <span>故 (작고)</span>
                       </label>
@@ -1422,7 +1527,7 @@ export default function EditInvitationPage({ params }) {
                         value={formData.groom_father}
                         onChange={handleChange}
                         placeholder="성함"
-                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-hidden focus:border-stone-900"
+                        className="w-full px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                       />
                       <input
                         type="tel"
@@ -1431,21 +1536,21 @@ export default function EditInvitationPage({ params }) {
                         value={formData.groom_father_phone}
                         onChange={handleChange}
                         placeholder="연락처"
-                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-900 disabled:bg-stone-100 disabled:text-stone-400 focus:outline-hidden focus:border-stone-900"
+                        className="w-full px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] disabled:bg-[#F1F5F9] disabled:text-[#94A3B8] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                       />
                     </div>
                   </div>
 
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-xs font-medium text-stone-700">어머니 성함</label>
-                      <label className="flex items-center gap-1 text-[11px] text-stone-500 cursor-pointer">
+                      <label className="text-xs font-medium text-[#334155]">어머니 성함</label>
+                      <label className="flex items-center gap-1 text-[11px] text-[#64748B] cursor-pointer">
                         <input
                           type="checkbox"
                           name="groom_mother_deceased"
                           checked={formData.groom_mother_deceased}
                           onChange={handleChange}
-                          className="rounded text-stone-900"
+                          className="rounded text-[#0F172A]"
                         />
                         <span>故 (작고)</span>
                       </label>
@@ -1457,7 +1562,7 @@ export default function EditInvitationPage({ params }) {
                         value={formData.groom_mother}
                         onChange={handleChange}
                         placeholder="성함"
-                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-hidden focus:border-stone-900"
+                        className="w-full px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                       />
                       <input
                         type="tel"
@@ -1466,7 +1571,7 @@ export default function EditInvitationPage({ params }) {
                         value={formData.groom_mother_phone}
                         onChange={handleChange}
                         placeholder="연락처"
-                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-900 disabled:bg-stone-100 disabled:text-stone-400 focus:outline-hidden focus:border-stone-900"
+                        className="w-full px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] disabled:bg-[#F1F5F9] disabled:text-[#94A3B8] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                       />
                     </div>
                   </div>
@@ -1474,17 +1579,17 @@ export default function EditInvitationPage({ params }) {
               </div>
 
               {/* 신부 정보 */}
-              <div className="p-5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
+              <div className="p-5 bg-white rounded-2xl border border-[#E5E8EB]">
                 <div className="flex items-center gap-2 mb-4">
                   <span className="w-2 h-2 rounded-full bg-rose-400" />
-                  <span className="text-xs font-mono text-stone-700 tracking-wider uppercase font-semibold">
+                  <span className="text-xs font-mono text-[#334155] tracking-wider uppercase font-semibold">
                     BRIDE INFO
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-3.5">
                   <div>
-                    <label className="block text-xs font-medium text-stone-700 mb-1.5">신부 성함 *</label>
+                    <label className="block text-xs font-medium text-[#334155] mb-1.5">신부 성함 *</label>
                     <input
                       type="text"
                       name="bride_name"
@@ -1492,45 +1597,45 @@ export default function EditInvitationPage({ params }) {
                       value={formData.bride_name}
                       onChange={handleChange}
                       placeholder="예: 임지연"
-                      className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-hidden focus:border-stone-900"
+                      className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-stone-700 mb-1.5">신부 영문 이름</label>
+                    <label className="block text-xs font-medium text-[#334155] mb-1.5">신부 영문 이름</label>
                     <input
                       type="text"
                       name="bride_name_en"
                       value={formData.bride_name_en}
                       onChange={handleChange}
                       placeholder="예: Jiyeon Lim"
-                      className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-hidden focus:border-stone-900"
+                      className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-stone-700 mb-1.5">신부 연락처</label>
+                    <label className="block text-xs font-medium text-[#334155] mb-1.5">신부 연락처</label>
                     <input
                       type="tel"
                       name="bride_phone"
                       value={formData.bride_phone}
                       onChange={handleChange}
                       placeholder="010-0000-0000"
-                      className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-hidden focus:border-stone-900"
+                      className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                     />
                   </div>
                 </div>
 
                 {/* 신부 부모님 */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-3 border-t border-stone-200/60">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-3 border-t border-[#F1F5F9]">
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-xs font-medium text-stone-700">아버지 성함</label>
-                      <label className="flex items-center gap-1 text-[11px] text-stone-500 cursor-pointer">
+                      <label className="text-xs font-medium text-[#334155]">아버지 성함</label>
+                      <label className="flex items-center gap-1 text-[11px] text-[#64748B] cursor-pointer">
                         <input
                           type="checkbox"
                           name="bride_father_deceased"
                           checked={formData.bride_father_deceased}
                           onChange={handleChange}
-                          className="rounded text-stone-900"
+                          className="rounded text-[#0F172A]"
                         />
                         <span>故 (작고)</span>
                       </label>
@@ -1542,7 +1647,7 @@ export default function EditInvitationPage({ params }) {
                         value={formData.bride_father}
                         onChange={handleChange}
                         placeholder="성함"
-                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-hidden focus:border-stone-900"
+                        className="w-full px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                       />
                       <input
                         type="tel"
@@ -1551,21 +1656,21 @@ export default function EditInvitationPage({ params }) {
                         value={formData.bride_father_phone}
                         onChange={handleChange}
                         placeholder="연락처"
-                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-900 disabled:bg-stone-100 disabled:text-stone-400 focus:outline-hidden focus:border-stone-900"
+                        className="w-full px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] disabled:bg-[#F1F5F9] disabled:text-[#94A3B8] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                       />
                     </div>
                   </div>
 
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-xs font-medium text-stone-700">어머니 성함</label>
-                      <label className="flex items-center gap-1 text-[11px] text-stone-500 cursor-pointer">
+                      <label className="text-xs font-medium text-[#334155]">어머니 성함</label>
+                      <label className="flex items-center gap-1 text-[11px] text-[#64748B] cursor-pointer">
                         <input
                           type="checkbox"
                           name="bride_mother_deceased"
                           checked={formData.bride_mother_deceased}
                           onChange={handleChange}
-                          className="rounded text-stone-900"
+                          className="rounded text-[#0F172A]"
                         />
                         <span>故 (작고)</span>
                       </label>
@@ -1577,7 +1682,7 @@ export default function EditInvitationPage({ params }) {
                         value={formData.bride_mother}
                         onChange={handleChange}
                         placeholder="성함"
-                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-hidden focus:border-stone-900"
+                        className="w-full px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                       />
                       <input
                         type="tel"
@@ -1586,7 +1691,7 @@ export default function EditInvitationPage({ params }) {
                         value={formData.bride_mother_phone}
                         onChange={handleChange}
                         placeholder="연락처"
-                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-900 disabled:bg-stone-100 disabled:text-stone-400 focus:outline-hidden focus:border-stone-900"
+                        className="w-full px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] disabled:bg-[#F1F5F9] disabled:text-[#94A3B8] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                       />
                     </div>
                   </div>
@@ -1595,12 +1700,13 @@ export default function EditInvitationPage({ params }) {
             </div>
           </div>
 
-          {/* 02. 예식 일시 및 장소 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
+          
+            {/* 02. 예식 일시 및 장소 */}
+          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
-                <span className="font-mono text-xs text-stone-400 tracking-wider">02</span>
-                <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
+                <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">02</span>
+                <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
                   예식 일시 및 장소
                 </h2>
               </div>
@@ -1609,32 +1715,32 @@ export default function EditInvitationPage({ params }) {
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-medium text-stone-700 mb-1.5">예식 날짜 *</label>
+                  <label className="block text-xs font-medium text-[#334155] mb-1.5">예식 날짜 *</label>
                   <input
                     type="date"
                     name="wedding_date"
                     required
                     value={formData.wedding_date}
                     onChange={handleChange}
-                    className="w-full px-3.5 py-2.5 bg-[#FAFAF9] border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-hidden focus:border-stone-900"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-stone-700 mb-1.5">예식 시간 *</label>
+                  <label className="block text-xs font-medium text-[#334155] mb-1.5">예식 시간 *</label>
                   <input
                     type="time"
                     name="wedding_time"
                     required
                     value={formData.wedding_time}
                     onChange={handleChange}
-                    className="w-full px-3.5 py-2.5 bg-[#FAFAF9] border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-hidden focus:border-stone-900"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-medium text-stone-700 mb-1.5">예식장 이름 *</label>
+                  <label className="block text-xs font-medium text-[#334155] mb-1.5">예식장 이름 *</label>
                   <input
                     type="text"
                     name="venue_name"
@@ -1642,24 +1748,24 @@ export default function EditInvitationPage({ params }) {
                     value={formData.venue_name}
                     onChange={handleChange}
                     placeholder="예: 아펠가모 반포"
-                    className="w-full px-3.5 py-2.5 bg-[#FAFAF9] border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-hidden focus:border-stone-900"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-stone-700 mb-1.5">홀 이름 / 층수</label>
+                  <label className="block text-xs font-medium text-[#334155] mb-1.5">홀 이름 / 층수</label>
                   <input
                     type="text"
                     name="venue_hall"
                     value={formData.venue_hall}
                     onChange={handleChange}
                     placeholder="예: 단독홀 LL층"
-                    className="w-full px-3.5 py-2.5 bg-[#FAFAF9] border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-hidden focus:border-stone-900"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-stone-700 mb-1.5">예식장 주소 (지도 검색용) *</label>
+                <label className="block text-xs font-medium text-[#334155] mb-1.5">예식장 주소 (지도 검색용) *</label>
                 <input
                   type="text"
                   name="venue_address"
@@ -1667,30 +1773,56 @@ export default function EditInvitationPage({ params }) {
                   value={formData.venue_address}
                   onChange={handleChange}
                   placeholder="예: 서울 서초구 반포대로 235"
-                  className="w-full px-3.5 py-2.5 bg-[#FAFAF9] border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-hidden focus:border-stone-900"
+                  className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-stone-700 mb-1.5">오시는 길 추가 안내 (지하철 출구 등)</label>
+                <label className="block text-xs font-medium text-[#334155] mb-1.5">오시는 길 추가 안내 (지하철 출구 등)</label>
                 <input
                   type="text"
                   name="venue_detail"
                   value={formData.venue_detail}
                   onChange={handleChange}
                   placeholder="예: 고속터미널역 3번 출구 도보 5분"
-                  className="w-full px-3.5 py-2.5 bg-[#FAFAF9] border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-hidden focus:border-stone-900"
+                  className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                 />
               </div>
             </div>
           </div>
 
-          {/* 03. 초대 문구 & 영화 대사 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
+          
+
+            {/* STEP 1 하단 네비게이션 */}
+            <div className="pt-4 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={openPreviewModal}
+                className="py-3.5 px-4 bg-[#FFFFFF] hover:bg-[#F1F5F9] text-[#334155] border border-[#CBD5E1] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+              >
+                <span>👁️</span>
+                <span>실시간 미리보기</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleNextStepWithValidation(1)}
+                className="flex-1 max-w-xs py-3.5 px-5 bg-[#191F28] hover:bg-black active:scale-98 text-white rounded-xl text-xs sm:text-sm font-medium tracking-wide transition-all shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap ml-auto"
+              >
+                <span>다음 단계 (초대 문구)</span>
+                <span className="font-mono text-xs">→</span>
+              </button>
+            </div>
+          </div>
+
+          {/* STEP 2: 초대 문구 & 스토리 (인사말 + 인터뷰 문답) */}
+          <div className={currentStep === 2 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
+            {/* 03. 초대 문구 & 영화 대사 */}
+          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
-                <span className="font-mono text-xs text-stone-400 tracking-wider">03</span>
-                <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
+                <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">03</span>
+                <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
                   초대 문구 및 감성 글귀
                 </h2>
               </div>
@@ -1698,39 +1830,39 @@ export default function EditInvitationPage({ params }) {
 
             <div className="space-y-5">
               <div>
-                <label className="block text-xs font-medium text-stone-700 mb-2">모시는 말씀 (초대글)</label>
+                <label className="block text-xs font-medium text-[#334155] mb-2">모시는 말씀 (초대글)</label>
                 <textarea
                   name="message"
                   rows={5}
                   value={formData.message}
                   onChange={handleChange}
-                  className="w-full p-4 bg-[#FAFAF9] border border-stone-200 rounded-2xl text-xs text-stone-800 leading-relaxed focus:outline-hidden focus:border-stone-900 font-sans"
+                  className="w-full p-4 bg-white border border-[#E5E8EB] rounded-2xl text-xs text-[#1E293B] leading-relaxed focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-sans"
                 />
               </div>
 
-              <div className="pt-4 border-t border-stone-100">
+              <div className="pt-4 border-t border-[#F1F5F9]">
                 <label className="flex items-center gap-2 mb-3 cursor-pointer">
                   <input
                     type="checkbox"
                     name="show_quote_section"
                     checked={formData.show_quote_section}
                     onChange={handleChange}
-                    className="rounded text-stone-900"
+                    className="rounded text-[#0F172A]"
                   />
-                  <span className="text-xs font-semibold text-stone-800">
+                  <span className="text-xs font-semibold text-[#1E293B]">
                     영화 대사 / 시 구절 섹션 표시
                   </span>
                 </label>
 
                 {formData.show_quote_section && (
-                  <div className="space-y-3 pl-6 border-l-2 border-stone-200">
+                  <div className="space-y-3 pl-6 border-l-2 border-[#E5E8EB]">
                     <textarea
                       name="quote_content"
                       rows={3}
                       value={formData.quote_content}
                       onChange={handleChange}
                       placeholder="감성 글귀 내용"
-                      className="w-full p-3.5 bg-[#FAFAF9] border border-stone-200 rounded-xl text-xs text-stone-800 focus:outline-hidden focus:border-stone-900 font-sans leading-relaxed"
+                      className="w-full p-3.5 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#1E293B] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-sans leading-relaxed"
                     />
                     <input
                       type="text"
@@ -1738,7 +1870,7 @@ export default function EditInvitationPage({ params }) {
                       value={formData.quote_source}
                       onChange={handleChange}
                       placeholder="출처 (예: 영화 <연애의 온도>)"
-                      className="w-full px-3.5 py-2.5 bg-[#FAFAF9] border border-stone-200 rounded-xl text-xs text-stone-800 focus:outline-hidden focus:border-stone-900"
+                      className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#1E293B] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
                     />
                   </div>
                 )}
@@ -1746,16 +1878,17 @@ export default function EditInvitationPage({ params }) {
             </div>
           </div>
 
-          {/* 시안 5 (모던 씬) 전용: 신랑 & 신부 인터뷰 (우리의 이야기) */}
+          
+            {/* 시안 5 (모던 씬) 전용: 신랑 & 신부 인터뷰 (우리의 이야기) */}
           {formData.template_type === 'scene' && (
-            <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
-              <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
+            <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+              <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
                 <div className="flex items-baseline gap-2.5">
-                  <span className="font-mono text-xs text-stone-400 tracking-wider">03-1</span>
-                  <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
+                  <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">03-1</span>
+                  <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
                     신랑 & 신부 인터뷰 (우리의 이야기)
                   </h2>
-                  <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase hidden sm:inline">
+                  <span className="text-[10px] font-mono tracking-widest text-[#94A3B8] uppercase hidden sm:inline">
                     INTERVIEW Q&A
                   </span>
                 </div>
@@ -1764,14 +1897,14 @@ export default function EditInvitationPage({ params }) {
                 </span>
               </div>
 
-              <p className="text-xs text-stone-500 mb-6 font-light leading-relaxed">
+              <p className="text-xs text-[#64748B] mb-6 font-light leading-relaxed">
                 모바일 청첩장의 [인터뷰 읽어보기] 버튼을 눌렀을 때 나타나는 신랑·신부님의 문답 스토리입니다. 질문과 답변을 자유롭게 수정하거나 추가해 보세요. (문답을 비워두실 경우 청첩장 본문에서 인터뷰 버튼이 자동으로 숨김 처리됩니다)
               </p>
 
               <div className="space-y-5">
                 {interviews.length === 0 ? (
-                  <div className="p-6 bg-stone-50/70 rounded-2xl border border-dashed border-stone-300 text-center space-y-3">
-                    <p className="text-xs text-stone-500 font-light">
+                  <div className="p-6 bg-white rounded-2xl border border-dashed border-[#CBD5E1] text-center space-y-3">
+                    <p className="text-xs text-[#64748B] font-light">
                       아직 등록된 인터뷰 질문이 없습니다.<br />
                       추천 질문을 불러와 답변을 작성하시거나, 직접 질문을 추가해 보세요.
                     </p>
@@ -1804,7 +1937,7 @@ export default function EditInvitationPage({ params }) {
                             },
                           ]);
                         }}
-                        className="px-4 py-2 bg-stone-100 border border-stone-200 text-stone-700 rounded-xl text-xs font-medium hover:bg-stone-200 transition-colors cursor-pointer"
+                        className="px-4 py-2 bg-[#F1F5F9] border border-[#E5E8EB] text-[#334155] rounded-xl text-xs font-medium hover:bg-[#F1F5F9] transition-colors cursor-pointer"
                       >
                         + 직접 질문 작성
                       </button>
@@ -1812,9 +1945,9 @@ export default function EditInvitationPage({ params }) {
                   </div>
                 ) : (
                   interviews.map((item, index) => (
-                    <div key={item.id || index} className="p-5 bg-stone-50/70 rounded-2xl border border-stone-200/80 space-y-3.5 relative">
+                    <div key={item.id || index} className="p-5 bg-white rounded-2xl border border-[#E5E8EB] space-y-3.5 relative">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-stone-800 font-mono">
+                        <span className="text-xs font-bold text-[#1E293B] font-mono">
                           QUESTION #{index + 1}
                         </span>
                         <button
@@ -1827,7 +1960,7 @@ export default function EditInvitationPage({ params }) {
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-medium text-stone-600 mb-1">질문 제목</label>
+                        <label className="block text-[11px] font-medium text-[#475569] mb-1">질문 제목</label>
                         <input
                           type="text"
                           value={item.question || ''}
@@ -1836,13 +1969,13 @@ export default function EditInvitationPage({ params }) {
                             setInterviews((prev) => prev.map((q, i) => i === index ? { ...q, question: val } : q));
                           }}
                           placeholder="예: 서로의 첫인상은 어땠나요?"
-                          className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-hidden focus:border-stone-900 font-medium"
+                          className="w-full px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-medium"
                         />
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                         <div>
-                          <label className="block text-[11px] font-medium text-stone-700 mb-1">
+                          <label className="block text-[11px] font-medium text-[#334155] mb-1">
                             신랑 답변 ({formData.groom_name || '신랑'})
                           </label>
                           <textarea
@@ -1853,11 +1986,11 @@ export default function EditInvitationPage({ params }) {
                               setInterviews((prev) => prev.map((q, i) => i === index ? { ...q, groom_answer: val } : q));
                             }}
                             placeholder="신랑님의 생각을 적어주세요."
-                            className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-800 focus:outline-hidden focus:border-stone-900 leading-relaxed"
+                            className="w-full px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#1E293B] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 leading-relaxed"
                           />
                         </div>
                         <div>
-                          <label className="block text-[11px] font-medium text-stone-700 mb-1">
+                          <label className="block text-[11px] font-medium text-[#334155] mb-1">
                             신부 답변 ({formData.bride_name || '신부'})
                           </label>
                           <textarea
@@ -1868,7 +2001,7 @@ export default function EditInvitationPage({ params }) {
                               setInterviews((prev) => prev.map((q, i) => i === index ? { ...q, bride_answer: val } : q));
                             }}
                             placeholder="신부님의 생각을 적어주세요."
-                            className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-800 focus:outline-hidden focus:border-stone-900 leading-relaxed"
+                            className="w-full px-3 py-2 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#1E293B] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 leading-relaxed"
                           />
                         </div>
                       </div>
@@ -1891,7 +2024,7 @@ export default function EditInvitationPage({ params }) {
                           },
                         ]);
                       }}
-                      className="flex-1 py-2.5 bg-stone-100 hover:bg-stone-200/80 text-stone-700 text-xs font-medium rounded-xl border border-stone-200 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                      className="flex-1 py-2.5 bg-[#F1F5F9] hover:bg-[#F1F5F9] text-[#334155] text-xs font-medium rounded-xl border border-[#E5E8EB] transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                     >
                       <span>+</span>
                       <span>인터뷰 질문 추가하기</span>
@@ -1913,12 +2046,47 @@ export default function EditInvitationPage({ params }) {
             </div>
           )}
 
-          {/* 04. 웨딩 사진 교체 및 갤러리 관리 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
+          
+
+            {/* STEP 2 하단 네비게이션 */}
+            <div className="pt-4 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => handleStepChange(1)}
+                className="py-3.5 px-4 bg-white hover:bg-sky-50 text-sky-700 border border-[#CBD0D6] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+              >
+                <span className="font-mono text-xs">←</span>
+                <span>이전 단계</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={openPreviewModal}
+                className="py-3.5 px-4 bg-[#FFFFFF] hover:bg-[#F1F5F9] text-[#334155] border border-[#CBD5E1] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer hidden sm:flex items-center gap-1.5 shadow-2xs"
+              >
+                <span>👁️</span>
+                <span>실시간 미리보기</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleNextStepWithValidation(2)}
+                className="flex-1 max-w-xs py-3.5 px-5 bg-[#191F28] hover:bg-black active:scale-98 text-white rounded-xl text-xs sm:text-sm font-medium tracking-wide transition-all shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap"
+              >
+                <span>다음 단계 (사진 & BGM)</span>
+                <span className="font-mono text-xs">→</span>
+              </button>
+            </div>
+          </div>
+
+          {/* STEP 3: 웨딩 사진 & 배경음악 (갤러리 관리 + BGM) */}
+          <div className={currentStep === 3 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
+            {/* 04. 웨딩 사진 교체 및 갤러리 관리 */}
+          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
-                <span className="font-mono text-xs text-stone-400 tracking-wider">04</span>
-                <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
+                <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">04</span>
+                <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
                   웨딩 사진 관리 및 교체
                 </h2>
               </div>
@@ -1926,16 +2094,16 @@ export default function EditInvitationPage({ params }) {
 
             <div className="space-y-5">
               {/* 메인 풀스크린 사진 */}
-              <div className="p-4.5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
+              <div className="p-4.5 bg-white rounded-2xl border border-[#E5E8EB]">
                 <div className="flex items-center justify-between mb-1">
-                  <label className="block text-xs font-semibold text-stone-800">
+                  <label className="block text-xs font-semibold text-[#1E293B]">
                     본문 메인 대표 풀스크린 사진 <span className="text-rose-500 font-bold">*</span>
                   </label>
-                  <span className="text-[10px] font-mono text-stone-700 bg-stone-200/70 px-2 py-0.5 rounded-full font-medium">
+                  <span className="text-[10px] font-mono text-[#334155] bg-[#F1F5F9]/70 px-2 py-0.5 rounded-full font-medium">
                     MAIN
                   </span>
                 </div>
-                <p className="text-[11px] text-stone-400 mb-3 font-light">
+                <p className="text-[11px] text-[#94A3B8] mb-3 font-light">
                   청첩장 본문 첫 화면의 대표 풀스크린 사진입니다. (새 파일을 선택하지 않으시면 기존 사진이 유지됩니다)
                 </p>
                 <input
@@ -1946,11 +2114,11 @@ export default function EditInvitationPage({ params }) {
                   className="hidden"
                 />
                 <div className="flex items-center gap-3.5">
-                  <div className="w-16 h-22 bg-white rounded-xl overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center shadow-xs">
+                  <div className="w-16 h-22 bg-white rounded-xl overflow-hidden border border-[#E5E8EB] shrink-0 flex items-center justify-center shadow-xs">
                     {mainImagePreview ? (
                       <img src={mainImagePreview} alt="Main" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="flex flex-col items-center justify-center text-stone-300 p-1 text-center">
+                      <div className="flex flex-col items-center justify-center text-[#CBD5E1] p-1 text-center">
                         <svg className="w-5 h-5 mb-0.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
@@ -1993,7 +2161,7 @@ export default function EditInvitationPage({ params }) {
                           <span>+</span>
                           <span>메인 사진 선택하기</span>
                         </button>
-                        <p className="text-[10px] text-stone-400 mt-1 font-light">JPG, PNG 등 고화질 이미지 (최대 30MB)</p>
+                        <p className="text-[10px] text-[#94A3B8] mt-1 font-light">JPG, PNG 등 고화질 이미지 (최대 30MB)</p>
                       </div>
                     )}
                   </div>
@@ -2002,16 +2170,16 @@ export default function EditInvitationPage({ params }) {
 
               {/* 인트로 커버 사진 (시안 1 & 시안 2 공통) */}
               {(formData.template_type === 'basic' || formData.template_type === 'editorial') && (
-                <div className="p-4.5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
+                <div className="p-4.5 bg-white rounded-2xl border border-[#E5E8EB]">
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-semibold text-stone-800">
+                    <label className="block text-xs font-semibold text-[#1E293B]">
                       인트로 커버 사진 (선택)
                     </label>
-                    <span className="text-[10px] font-mono text-stone-500 bg-stone-200/60 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-mono text-[#64748B] bg-[#F1F5F9]/60 px-2 py-0.5 rounded-full">
                       OPTION 01 & 02
                     </span>
                   </div>
-                  <p className="text-[11px] text-stone-400 mb-3 font-light">봉투 카드 및 매거진 룩북 표지 (미등록 시 메인 사진 적용)</p>
+                  <p className="text-[11px] text-[#94A3B8] mb-3 font-light">봉투 카드 및 매거진 룩북 표지 (미등록 시 메인 사진 적용)</p>
                   <input
                     ref={coverImageInputRef}
                     type="file"
@@ -2020,11 +2188,11 @@ export default function EditInvitationPage({ params }) {
                     className="hidden"
                   />
                   <div className="flex items-center gap-3.5">
-                    <div className="w-16 h-22 bg-white rounded-xl overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center shadow-xs">
+                    <div className="w-16 h-22 bg-white rounded-xl overflow-hidden border border-[#E5E8EB] shrink-0 flex items-center justify-center shadow-xs">
                       {coverImagePreview ? (
                         <img src={coverImagePreview} alt="Cover" className="w-full h-full object-cover" />
                       ) : (
-                        <div className="flex flex-col items-center justify-center text-stone-300 p-1 text-center">
+                        <div className="flex flex-col items-center justify-center text-[#CBD5E1] p-1 text-center">
                           <svg className="w-5 h-5 mb-0.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2z" />
                           </svg>
@@ -2062,12 +2230,12 @@ export default function EditInvitationPage({ params }) {
                           <button
                             type="button"
                             onClick={() => coverImageInputRef.current?.click()}
-                            className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-200/80 text-xs font-medium rounded-xl transition-all cursor-pointer active:scale-95 inline-flex items-center gap-1.5 shadow-2xs"
+                            className="px-3.5 py-2 bg-[#F1F5F9] hover:bg-[#F1F5F9] text-[#1E293B] border border-[#E5E8EB] text-xs font-medium rounded-xl transition-all cursor-pointer active:scale-95 inline-flex items-center gap-1.5 shadow-2xs"
                           >
                             <span>+</span>
                             <span>커버 사진 선택</span>
                           </button>
-                          <p className="text-[10px] text-stone-400 mt-1 font-light">선택 사항 (미등록 시 메인 사진 적용)</p>
+                          <p className="text-[10px] text-[#94A3B8] mt-1 font-light">선택 사항 (미등록 시 메인 사진 적용)</p>
                         </div>
                       )}
                     </div>
@@ -2077,24 +2245,24 @@ export default function EditInvitationPage({ params }) {
 
               {/* 시안 4 (시네마틱) & 시안 5 (모던 씬) 전용: 신랑 & 신부 단독 인물 스냅 사진 */}
               {['editorial', 'cinematic', 'scene'].includes(formData.template_type) && (
-                <div className="p-5 bg-stone-50/80 rounded-2xl border-2 border-stone-900/40">
+                <div className="p-5 bg-white/80 rounded-2xl border-2 border-stone-900/40">
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-bold text-stone-900">
+                    <label className="block text-xs font-bold text-[#0F172A]">
                       신랑 & 신부 개별 인물 스냅 사진 (선택)
                     </label>
                     <span className="text-[10px] font-mono bg-stone-900 text-white px-2 py-0.5 rounded-full font-semibold">
                       {formData.template_type === 'editorial' ? 'OPTION 02 전용' : 'OPTION 04, 05 전용'}
                     </span>
                   </div>
-                  <p className="text-[11px] text-stone-500 mb-4 font-light">
+                  <p className="text-[11px] text-[#64748B] mb-4 font-light">
                     {formData.template_type === 'editorial'
                       ? '시안 2 에디토리얼 프로필 스프레드에 들어갈 신부 & 신랑 단독 액자 사진입니다. 미등록 시 화보 샘플로 자동 채워집니다.'
                       : '시안 4 및 시안 5의 2열 인물 스냅(Bride & Groom)에 들어가는 개별 단독 사진입니다. (미등록 시 사진 없이 성함 텍스트만 깔끔하게 노출됩니다)'}
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* 신부 단독 사진 */}
-                    <div className="p-4 bg-white rounded-xl border border-stone-200">
-                      <span className="block text-xs font-semibold text-stone-800 mb-2">신부 단독 사진</span>
+                    <div className="p-4 bg-white rounded-xl border border-[#E5E8EB]">
+                      <span className="block text-xs font-semibold text-[#1E293B] mb-2">신부 단독 사진</span>
                       <input
                         ref={bridePhotoInputRef}
                         type="file"
@@ -2103,11 +2271,11 @@ export default function EditInvitationPage({ params }) {
                         className="hidden"
                       />
                       <div className="flex items-center gap-3">
-                        <div className="w-14 h-18 bg-stone-100 rounded-lg overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center">
+                        <div className="w-14 h-18 bg-[#F1F5F9] rounded-lg overflow-hidden border border-[#E5E8EB] shrink-0 flex items-center justify-center">
                           {bridePhotoPreview ? (
                             <img src={bridePhotoPreview} alt="Bride" className="w-full h-full object-cover grayscale" />
                           ) : (
-                            <span className="text-[9px] text-stone-400 font-mono text-center">BRIDE</span>
+                            <span className="text-[9px] text-[#94A3B8] font-mono text-center">BRIDE</span>
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -2135,7 +2303,7 @@ export default function EditInvitationPage({ params }) {
                             <button
                               type="button"
                               onClick={() => bridePhotoInputRef.current?.click()}
-                              className="px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium rounded-lg cursor-pointer"
+                              className="px-3 py-1.5 bg-[#F1F5F9] hover:bg-[#F1F5F9] text-[#334155] text-xs font-medium rounded-lg cursor-pointer"
                             >
                               + 사진 선택
                             </button>
@@ -2145,8 +2313,8 @@ export default function EditInvitationPage({ params }) {
                     </div>
 
                     {/* 신랑 단독 사진 */}
-                    <div className="p-4 bg-white rounded-xl border border-stone-200">
-                      <span className="block text-xs font-semibold text-stone-800 mb-2">신랑 단독 사진</span>
+                    <div className="p-4 bg-white rounded-xl border border-[#E5E8EB]">
+                      <span className="block text-xs font-semibold text-[#1E293B] mb-2">신랑 단독 사진</span>
                       <input
                         ref={groomPhotoInputRef}
                         type="file"
@@ -2155,11 +2323,11 @@ export default function EditInvitationPage({ params }) {
                         className="hidden"
                       />
                       <div className="flex items-center gap-3">
-                        <div className="w-14 h-18 bg-stone-100 rounded-lg overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center">
+                        <div className="w-14 h-18 bg-[#F1F5F9] rounded-lg overflow-hidden border border-[#E5E8EB] shrink-0 flex items-center justify-center">
                           {groomPhotoPreview ? (
                             <img src={groomPhotoPreview} alt="Groom" className="w-full h-full object-cover grayscale" />
                           ) : (
-                            <span className="text-[9px] text-stone-400 font-mono text-center">GROOM</span>
+                            <span className="text-[9px] text-[#94A3B8] font-mono text-center">GROOM</span>
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -2187,7 +2355,7 @@ export default function EditInvitationPage({ params }) {
                             <button
                               type="button"
                               onClick={() => groomPhotoInputRef.current?.click()}
-                              className="px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium rounded-lg cursor-pointer"
+                              className="px-3 py-1.5 bg-[#F1F5F9] hover:bg-[#F1F5F9] text-[#334155] text-xs font-medium rounded-lg cursor-pointer"
                             >
                               + 사진 선택
                             </button>
@@ -2202,14 +2370,14 @@ export default function EditInvitationPage({ params }) {
               {/* 커플 사진 & 엔딩 사진 */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* 축하 와이드 사진 / 커플 사진 */}
-                <div className="p-4.5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
+                <div className="p-4.5 bg-white rounded-2xl border border-[#E5E8EB]">
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-semibold text-stone-800">
+                    <label className="block text-xs font-semibold text-[#1E293B]">
                       {formData.template_type === 'cinematic' ? '축하 와이드 사진 (CELEBRATE)' : '커플 화보 사진 (인용구용)'}
                     </label>
-                    <span className="text-[10px] font-mono text-stone-500">선택</span>
+                    <span className="text-[10px] font-mono text-[#64748B]">선택</span>
                   </div>
-                  <p className="text-[10px] text-stone-400 mb-3">
+                  <p className="text-[10px] text-[#94A3B8] mb-3">
                     {formData.template_type === 'cinematic' ? '시안 4 상단 CELEBRATE 16:9 와이드 화보용' : '미등록 시 메인 사진이 자동 적용됩니다.'}
                   </p>
                   <input
@@ -2220,11 +2388,11 @@ export default function EditInvitationPage({ params }) {
                     className="hidden"
                   />
                   <div className="flex items-center gap-3.5">
-                    <div className="w-16 h-16 bg-white rounded-xl overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center shadow-xs">
+                    <div className="w-16 h-16 bg-white rounded-xl overflow-hidden border border-[#E5E8EB] shrink-0 flex items-center justify-center shadow-xs">
                       {coupleImagePreview ? (
                         <img src={coupleImagePreview} alt="Couple" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-[9px] text-stone-300 font-mono">COUPLE</span>
+                        <span className="text-[9px] text-[#CBD5E1] font-mono">COUPLE</span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -2252,7 +2420,7 @@ export default function EditInvitationPage({ params }) {
                         <button
                           type="button"
                           onClick={() => coupleImageInputRef.current?.click()}
-                          className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-200/80 text-xs font-medium rounded-xl cursor-pointer inline-flex items-center gap-1.5"
+                          className="px-3.5 py-2 bg-[#F1F5F9] hover:bg-[#F1F5F9] text-[#1E293B] border border-[#E5E8EB] text-xs font-medium rounded-xl cursor-pointer inline-flex items-center gap-1.5"
                         >
                           <span>+</span>
                           <span>사진 선택하기</span>
@@ -2263,14 +2431,14 @@ export default function EditInvitationPage({ params }) {
                 </div>
 
                 {/* 캘린더 감성 스냅 사진 / 엔딩 사진 */}
-                <div className="p-4.5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
+                <div className="p-4.5 bg-white rounded-2xl border border-[#E5E8EB]">
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-semibold text-stone-800">
+                    <label className="block text-xs font-semibold text-[#1E293B]">
                       {formData.template_type === 'cinematic' ? '캘린더 감성 스냅 사진' : '엔딩 감사 사진 (최하단)'}
                     </label>
-                    <span className="text-[10px] font-mono text-stone-500">선택</span>
+                    <span className="text-[10px] font-mono text-[#64748B]">선택</span>
                   </div>
-                  <p className="text-[10px] text-stone-400 mb-3">
+                  <p className="text-[10px] text-[#94A3B8] mb-3">
                     {formData.template_type === 'cinematic' ? '시안 4 DATE 캘린더 상단 정사각형 스냅용' : '미등록 시 메인 사진이 자동 적용됩니다.'}
                   </p>
                   <input
@@ -2281,11 +2449,11 @@ export default function EditInvitationPage({ params }) {
                     className="hidden"
                   />
                   <div className="flex items-center gap-3.5">
-                    <div className="w-16 h-16 bg-white rounded-xl overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center shadow-xs">
+                    <div className="w-16 h-16 bg-white rounded-xl overflow-hidden border border-[#E5E8EB] shrink-0 flex items-center justify-center shadow-xs">
                       {endingImagePreview ? (
                         <img src={endingImagePreview} alt="Ending" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-[9px] text-stone-300 font-mono">ENDING</span>
+                        <span className="text-[9px] text-[#CBD5E1] font-mono">ENDING</span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -2313,7 +2481,7 @@ export default function EditInvitationPage({ params }) {
                         <button
                           type="button"
                           onClick={() => endingImageInputRef.current?.click()}
-                          className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-200/80 text-xs font-medium rounded-xl cursor-pointer inline-flex items-center gap-1.5"
+                          className="px-3.5 py-2 bg-[#F1F5F9] hover:bg-[#F1F5F9] text-[#1E293B] border border-[#E5E8EB] text-xs font-medium rounded-xl cursor-pointer inline-flex items-center gap-1.5"
                         >
                           <span>+</span>
                           <span>사진 선택하기</span>
@@ -2324,14 +2492,14 @@ export default function EditInvitationPage({ params }) {
                 </div>
 
                 {/* 사진 공유 카드 대표 사진 (폴라로이드용) */}
-                <div className="p-4.5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
+                <div className="p-4.5 bg-white rounded-2xl border border-[#E5E8EB]">
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-semibold text-stone-800">
+                    <label className="block text-xs font-semibold text-[#1E293B]">
                       사진 공유 카드 대표 사진 (폴라로이드용)
                     </label>
-                    <span className="text-[10px] font-mono text-stone-500">선택</span>
+                    <span className="text-[10px] font-mono text-[#64748B]">선택</span>
                   </div>
-                  <p className="text-[10px] text-stone-400 mb-3">
+                  <p className="text-[10px] text-[#94A3B8] mb-3">
                     청첩장 내 &apos;사진 공유(Photo Sharing)&apos; 폴라로이드 프레임에 들어갈 사진입니다. 미등록 시 감성 스냅 아이콘으로 단정하게 표시됩니다.
                   </p>
                   <input
@@ -2342,11 +2510,11 @@ export default function EditInvitationPage({ params }) {
                     className="hidden"
                   />
                   <div className="flex items-center gap-3.5">
-                    <div className="w-16 h-16 bg-white rounded-xl overflow-hidden border border-stone-200 shrink-0 flex items-center justify-center shadow-xs">
+                    <div className="w-16 h-16 bg-white rounded-xl overflow-hidden border border-[#E5E8EB] shrink-0 flex items-center justify-center shadow-xs">
                       {photoSharingImagePreview ? (
                         <img src={photoSharingImagePreview} alt="Photo Sharing" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-[9px] text-stone-300 font-mono">SNAP</span>
+                        <span className="text-[9px] text-[#CBD5E1] font-mono">SNAP</span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -2374,7 +2542,7 @@ export default function EditInvitationPage({ params }) {
                         <button
                           type="button"
                           onClick={() => photoSharingImageInputRef.current?.click()}
-                          className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-200/80 text-xs font-medium rounded-xl cursor-pointer inline-flex items-center gap-1.5"
+                          className="px-3.5 py-2 bg-[#F1F5F9] hover:bg-[#F1F5F9] text-[#1E293B] border border-[#E5E8EB] text-xs font-medium rounded-xl cursor-pointer inline-flex items-center gap-1.5"
                         >
                           <span>+</span>
                           <span>사진 선택하기</span>
@@ -2386,26 +2554,26 @@ export default function EditInvitationPage({ params }) {
               </div>
 
               {/* 갤러리 다중 사진 */}
-              <div className="p-5 bg-[#FAFAF9] rounded-2xl border border-stone-200/80">
+              <div className="p-5 bg-white rounded-2xl border border-[#E5E8EB]">
                 <div className="flex items-center justify-between mb-2">
                   <div>
-                    <label className="block text-xs font-semibold text-stone-800">
+                    <label className="block text-xs font-semibold text-[#1E293B]">
                       웨딩 갤러리 화보 사진 (최대 20장)
                     </label>
-                    <p className="text-[11px] text-stone-400 font-light mt-0.5">
+                    <p className="text-[11px] text-[#94A3B8] font-light mt-0.5">
                       여러 장을 한 번에 선택하여 등록하실 수 있습니다.
                     </p>
                   </div>
-                  <span className="text-[11px] font-mono text-stone-500 font-medium bg-stone-200/60 px-2.5 py-0.5 rounded-full">
+                  <span className="text-[11px] font-mono text-[#64748B] font-medium bg-[#F1F5F9]/60 px-2.5 py-0.5 rounded-full">
                     현재 총 {existingGalleryUrls.length + newGalleryPreviews.length} / 20장
                   </span>
                 </div>
 
                 {formData.template_type === 'cinematic' && (
-                  <div className="mb-3 p-3 bg-stone-100/80 border border-stone-200 rounded-xl text-xs text-stone-700 leading-relaxed flex items-start gap-2">
+                  <div className="mb-3 p-3 bg-[#F1F5F9] border border-[#E5E8EB] rounded-xl text-xs text-[#334155] leading-relaxed flex items-start gap-2">
                     <span className="text-sm">💡</span>
                     <div>
-                      <strong className="text-stone-900 font-semibold block mb-0.5">시안 4 (시네마틱 모노리스) 갤러리 안내</strong>
+                      <strong className="text-[#0F172A] font-semibold block mb-0.5">시안 4 (시네마틱 모노리스) 갤러리 안내</strong>
                       등록하신 사진 순서대로 <strong>앞쪽 절반은 [OUR STORY]</strong> 탭에, <strong>뒤쪽 절반은 [WEDDING PHOTO]</strong> 탭에 자동으로 나누어 전시됩니다.
                     </div>
                   </div>
@@ -2446,7 +2614,7 @@ export default function EditInvitationPage({ params }) {
                   <div className="grid grid-cols-4 sm:grid-cols-6 gap-2.5 pt-1">
                     {/* 기존 유지 중인 사진들 */}
                     {existingGalleryUrls.map((src, idx) => (
-                      <div key={`existing-${idx}`} className="relative aspect-square rounded-xl overflow-hidden border border-stone-200 group shadow-xs">
+                      <div key={`existing-${idx}`} className="relative aspect-square rounded-xl overflow-hidden border border-[#E5E8EB] group shadow-xs">
                         <img src={src} alt={`기존 ${idx + 1}`} className="w-full h-full object-cover" />
                         <button
                           type="button"
@@ -2480,144 +2648,13 @@ export default function EditInvitationPage({ params }) {
             </div>
           </div>
 
-          {/* 05. 축의금 계좌번호 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
+          
+            {/* 06. 배경음악(BGM) 설정 */}
+          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
-                <span className="font-mono text-xs text-stone-400 tracking-wider">05</span>
-                <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
-                  축의금 계좌번호
-                </h2>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              {/* 신랑측 계좌 */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs font-semibold text-stone-800">신랑측 계좌</h3>
-                  <button
-                    type="button"
-                    onClick={addGroomAccount}
-                    className="text-xs text-stone-600 hover:text-stone-900 font-medium underline cursor-pointer"
-                  >
-                    + 계좌 추가
-                  </button>
-                </div>
-                <div className="space-y-2.5">
-                  {groomAccounts.map((acc, idx) => (
-                    <div key={idx} className="flex flex-col sm:flex-row items-center gap-2 p-3 bg-[#FAFAF9] rounded-xl border border-stone-200/70">
-                      <input
-                        type="text"
-                        value={acc.title}
-                        onChange={(e) => updateGroomAccount(idx, 'title', e.target.value)}
-                        placeholder="구분 (예: 신랑)"
-                        className="w-full sm:w-24 px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-xs"
-                      />
-                      <select
-                        value={acc.bank}
-                        onChange={(e) => updateGroomAccount(idx, 'bank', e.target.value)}
-                        className="w-full sm:w-28 px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-xs"
-                      >
-                        {BANK_OPTIONS.map((b) => (
-                          <option key={b} value={b}>{b}</option>
-                        ))}
-                      </select>
-                      <input
-                        type="text"
-                        value={acc.number}
-                        onChange={(e) => updateGroomAccount(idx, 'number', e.target.value)}
-                        placeholder="계좌번호 (- 포함)"
-                        className="w-full sm:flex-1 px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-xs"
-                      />
-                      <input
-                        type="text"
-                        value={acc.holder}
-                        onChange={(e) => updateGroomAccount(idx, 'holder', e.target.value)}
-                        placeholder="예금주"
-                        className="w-full sm:w-24 px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-xs"
-                      />
-                      {groomAccounts.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeGroomAccount(idx)}
-                          className="text-stone-400 hover:text-rose-500 text-xs px-2 py-1"
-                        >
-                          ✕
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* 신부측 계좌 */}
-              <div className="pt-4 border-t border-stone-100">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs font-semibold text-stone-800">신부측 계좌</h3>
-                  <button
-                    type="button"
-                    onClick={addBrideAccount}
-                    className="text-xs text-stone-600 hover:text-stone-900 font-medium underline cursor-pointer"
-                  >
-                    + 계좌 추가
-                  </button>
-                </div>
-                <div className="space-y-2.5">
-                  {brideAccounts.map((acc, idx) => (
-                    <div key={idx} className="flex flex-col sm:flex-row items-center gap-2 p-3 bg-[#FAFAF9] rounded-xl border border-stone-200/70">
-                      <input
-                        type="text"
-                        value={acc.title}
-                        onChange={(e) => updateBrideAccount(idx, 'title', e.target.value)}
-                        placeholder="구분 (예: 신부)"
-                        className="w-full sm:w-24 px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-xs"
-                      />
-                      <select
-                        value={acc.bank}
-                        onChange={(e) => updateBrideAccount(idx, 'bank', e.target.value)}
-                        className="w-full sm:w-28 px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-xs"
-                      >
-                        {BANK_OPTIONS.map((b) => (
-                          <option key={b} value={b}>{b}</option>
-                        ))}
-                      </select>
-                      <input
-                        type="text"
-                        value={acc.number}
-                        onChange={(e) => updateBrideAccount(idx, 'number', e.target.value)}
-                        placeholder="계좌번호 (- 포함)"
-                        className="w-full sm:flex-1 px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-xs"
-                      />
-                      <input
-                        type="text"
-                        value={acc.holder}
-                        onChange={(e) => updateBrideAccount(idx, 'holder', e.target.value)}
-                        placeholder="예금주"
-                        className="w-full sm:w-24 px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-xs"
-                      />
-                      {brideAccounts.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeBrideAccount(idx)}
-                          className="text-stone-400 hover:text-rose-500 text-xs px-2 py-1"
-                        >
-                          ✕
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 06. 배경음악(BGM) 설정 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
-              <div className="flex items-baseline gap-2.5">
-                <span className="font-mono text-xs text-stone-400 tracking-wider">06</span>
-                <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
+                <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">06</span>
+                <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
                   배경음악 (BGM)
                 </h2>
               </div>
@@ -2638,7 +2675,7 @@ export default function EditInvitationPage({ params }) {
                     className={`py-2.5 px-3 rounded-xl text-xs font-medium transition-all ${
                       bgmMode === item.id
                         ? 'bg-stone-900 text-white shadow-xs'
-                        : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                        : 'bg-[#F1F5F9] text-[#475569] hover:bg-[#F1F5F9]'
                     }`}
                   >
                     {item.label}
@@ -2647,22 +2684,22 @@ export default function EditInvitationPage({ params }) {
               </div>
 
               {bgmMode === 'preset' && (
-                <div className="p-4 bg-[#FAFAF9] rounded-2xl border border-stone-200/70 text-xs text-stone-600">
+                <div className="p-4 bg-white rounded-2xl border border-[#E5E8EB]/70 text-xs text-[#475569]">
                   클래식 감성 피아노 멜로디가 적용됩니다.
                 </div>
               )}
 
               {bgmMode === 'file' && (
-                <div className="p-4 bg-[#FAFAF9] rounded-2xl border border-stone-200/70 space-y-2">
+                <div className="p-4 bg-white rounded-2xl border border-[#E5E8EB]/70 space-y-2">
                   <input
                     ref={bgmFileInputRef}
                     type="file"
                     accept="audio/*"
                     onChange={handleBgmFileChange}
-                    className="text-xs text-stone-600 file:mr-2.5 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:bg-stone-900 file:text-white"
+                    className="text-xs text-[#475569] file:mr-2.5 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:bg-stone-900 file:text-white"
                   />
                   {customBgmFileName && (
-                    <div className="flex items-center justify-between text-xs text-stone-700 bg-white p-2 rounded-lg border border-stone-200">
+                    <div className="flex items-center justify-between text-xs text-[#334155] bg-white p-2 rounded-lg border border-[#E5E8EB]">
                       <span>{customBgmFileName} ({customBgmFileSize})</span>
                       <button type="button" onClick={handleRemoveBgmFile} className="text-rose-500 font-bold">✕</button>
                     </div>
@@ -2671,25 +2708,193 @@ export default function EditInvitationPage({ params }) {
               )}
 
               {bgmMode === 'url' && (
-                <div className="p-4 bg-[#FAFAF9] rounded-2xl border border-stone-200/70">
+                <div className="p-4 bg-white rounded-2xl border border-[#E5E8EB]/70">
                   <input
                     type="url"
                     value={customBgmUrl}
                     onChange={(e) => setCustomBgmUrl(e.target.value)}
                     placeholder="https://... MP3 직접 링크 주소"
-                    className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-xs text-stone-800"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#1E293B]"
                   />
                 </div>
               )}
             </div>
           </div>
 
-          {/* 07. 세부 섹션 표시 제어 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-stone-200/80">
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
+          
+
+            {/* STEP 3 하단 네비게이션 */}
+            <div className="pt-4 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => handleStepChange(2)}
+                className="py-3.5 px-4 bg-white hover:bg-sky-50 text-sky-700 border border-[#CBD0D6] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+              >
+                <span className="font-mono text-xs">←</span>
+                <span>이전 단계</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={openPreviewModal}
+                className="py-3.5 px-4 bg-[#FFFFFF] hover:bg-[#F1F5F9] text-[#334155] border border-[#CBD5E1] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer hidden sm:flex items-center gap-1.5 shadow-2xs"
+              >
+                <span>👁️</span>
+                <span>실시간 미리보기</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleNextStepWithValidation(3)}
+                className="flex-1 max-w-xs py-3.5 px-5 bg-[#191F28] hover:bg-black active:scale-98 text-white rounded-xl text-xs sm:text-sm font-medium tracking-wide transition-all shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap"
+              >
+                <span>다음 단계 (편의 안내)</span>
+                <span className="font-mono text-xs">→</span>
+              </button>
+            </div>
+          </div>
+
+          {/* STEP 4: 편의 안내 & 계좌 (축의금 계좌 + 노출 옵션) */}
+          <div className={currentStep === 4 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
+            {/* 05. 축의금 계좌번호 */}
+          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
-                <span className="font-mono text-xs text-stone-400 tracking-wider">07</span>
-                <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
+                <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">05</span>
+                <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
+                  축의금 계좌번호
+                </h2>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {/* 신랑측 계좌 */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs font-semibold text-[#1E293B]">신랑측 계좌</h3>
+                  <button
+                    type="button"
+                    onClick={addGroomAccount}
+                    className="text-xs text-[#475569] hover:text-[#0F172A] font-medium underline cursor-pointer"
+                  >
+                    + 계좌 추가
+                  </button>
+                </div>
+                <div className="space-y-2.5">
+                  {groomAccounts.map((acc, idx) => (
+                    <div key={idx} className="flex flex-col sm:flex-row items-center gap-2 p-3 bg-white rounded-xl border border-[#E5E8EB]/70">
+                      <input
+                        type="text"
+                        value={acc.title}
+                        onChange={(e) => updateGroomAccount(idx, 'title', e.target.value)}
+                        placeholder="구분 (예: 신랑)"
+                        className="w-full sm:w-24 px-2.5 py-1.5 bg-white border border-[#E5E8EB] rounded-lg text-xs"
+                      />
+                      <select
+                        value={acc.bank}
+                        onChange={(e) => updateGroomAccount(idx, 'bank', e.target.value)}
+                        className="w-full sm:w-28 px-2.5 py-1.5 bg-white border border-[#E5E8EB] rounded-lg text-xs"
+                      >
+                        {BANK_OPTIONS.map((b) => (
+                          <option key={b} value={b}>{b}</option>
+                        ))}
+                      </select>
+                      <input
+                        type="text"
+                        value={acc.number}
+                        onChange={(e) => updateGroomAccount(idx, 'number', e.target.value)}
+                        placeholder="계좌번호 (- 포함)"
+                        className="w-full sm:flex-1 px-2.5 py-1.5 bg-white border border-[#E5E8EB] rounded-lg text-xs"
+                      />
+                      <input
+                        type="text"
+                        value={acc.holder}
+                        onChange={(e) => updateGroomAccount(idx, 'holder', e.target.value)}
+                        placeholder="예금주"
+                        className="w-full sm:w-24 px-2.5 py-1.5 bg-white border border-[#E5E8EB] rounded-lg text-xs"
+                      />
+                      {groomAccounts.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeGroomAccount(idx)}
+                          className="text-[#94A3B8] hover:text-rose-500 text-xs px-2 py-1"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 신부측 계좌 */}
+              <div className="pt-4 border-t border-[#F1F5F9]">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs font-semibold text-[#1E293B]">신부측 계좌</h3>
+                  <button
+                    type="button"
+                    onClick={addBrideAccount}
+                    className="text-xs text-[#475569] hover:text-[#0F172A] font-medium underline cursor-pointer"
+                  >
+                    + 계좌 추가
+                  </button>
+                </div>
+                <div className="space-y-2.5">
+                  {brideAccounts.map((acc, idx) => (
+                    <div key={idx} className="flex flex-col sm:flex-row items-center gap-2 p-3 bg-white rounded-xl border border-[#E5E8EB]/70">
+                      <input
+                        type="text"
+                        value={acc.title}
+                        onChange={(e) => updateBrideAccount(idx, 'title', e.target.value)}
+                        placeholder="구분 (예: 신부)"
+                        className="w-full sm:w-24 px-2.5 py-1.5 bg-white border border-[#E5E8EB] rounded-lg text-xs"
+                      />
+                      <select
+                        value={acc.bank}
+                        onChange={(e) => updateBrideAccount(idx, 'bank', e.target.value)}
+                        className="w-full sm:w-28 px-2.5 py-1.5 bg-white border border-[#E5E8EB] rounded-lg text-xs"
+                      >
+                        {BANK_OPTIONS.map((b) => (
+                          <option key={b} value={b}>{b}</option>
+                        ))}
+                      </select>
+                      <input
+                        type="text"
+                        value={acc.number}
+                        onChange={(e) => updateBrideAccount(idx, 'number', e.target.value)}
+                        placeholder="계좌번호 (- 포함)"
+                        className="w-full sm:flex-1 px-2.5 py-1.5 bg-white border border-[#E5E8EB] rounded-lg text-xs"
+                      />
+                      <input
+                        type="text"
+                        value={acc.holder}
+                        onChange={(e) => updateBrideAccount(idx, 'holder', e.target.value)}
+                        placeholder="예금주"
+                        className="w-full sm:w-24 px-2.5 py-1.5 bg-white border border-[#E5E8EB] rounded-lg text-xs"
+                      />
+                      {brideAccounts.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeBrideAccount(idx)}
+                          className="text-[#94A3B8] hover:text-rose-500 text-xs px-2 py-1"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          
+            {/* 07. 세부 섹션 표시 제어 */}
+          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
+              <div className="flex items-baseline gap-2.5">
+                <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">07</span>
+                <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
                   세부 섹션 노출 옵션
                 </h2>
               </div>
@@ -2706,41 +2911,76 @@ export default function EditInvitationPage({ params }) {
                 { name: 'show_guestbook', label: '축하 방명록' },
                 { name: 'show_guest_photos', label: '📷 하객 사진 수집함 (비공개)' },
               ].map((opt) => (
-                <label key={opt.name} className="flex items-center gap-2 p-3 bg-[#FAFAF9] rounded-xl border border-stone-200/60 cursor-pointer">
+                <label key={opt.name} className="flex items-center gap-2 p-3 bg-white rounded-xl border border-[#F1F5F9] cursor-pointer">
                   <input
                     type="checkbox"
                     name={opt.name}
                     checked={formData[opt.name]}
                     onChange={handleChange}
-                    className="rounded text-stone-900"
+                    className="rounded text-[#0F172A]"
                   />
-                  <span className="text-stone-700 font-medium">{opt.label}</span>
+                  <span className="text-[#334155] font-medium">{opt.label}</span>
                 </label>
               ))}
             </div>
           </div>
 
-          {/* 신랑·신부 관리자 2차 보안 비밀번호 설정 카드 */}
-          <div className="mt-8 bg-white rounded-3xl p-6 sm:p-8 border border-stone-200/80 shadow-xs">
-            <div className="flex items-center justify-between pb-4 border-b border-stone-100 mb-6">
+          
+
+            {/* STEP 4 하단 네비게이션 */}
+            <div className="pt-4 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => handleStepChange(3)}
+                className="py-3.5 px-4 bg-white hover:bg-sky-50 text-sky-700 border border-[#CBD0D6] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+              >
+                <span className="font-mono text-xs">←</span>
+                <span>이전 단계</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={openPreviewModal}
+                className="py-3.5 px-4 bg-[#FFFFFF] hover:bg-[#F1F5F9] text-[#334155] border border-[#CBD5E1] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer hidden sm:flex items-center gap-1.5 shadow-2xs"
+              >
+                <span>👁️</span>
+                <span>실시간 미리보기</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleNextStepWithValidation(4)}
+                className="flex-1 max-w-xs py-3.5 px-5 bg-[#191F28] hover:bg-black active:scale-98 text-white rounded-xl text-xs sm:text-sm font-medium tracking-wide transition-all shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap"
+              >
+                <span>다음 단계 (보안 & 완료)</span>
+                <span className="font-mono text-xs">→</span>
+              </button>
+            </div>
+          </div>
+
+          {/* STEP 5: 보안 관리 & 수정 완료 (관리자 2차 PIN) */}
+          <div className={currentStep === 5 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
+            {/* 신랑·신부 관리자 2차 보안 비밀번호 설정 카드 */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E5E8EB] shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="flex items-center justify-between pb-4 border-b border-[#F1F5F9] mb-6">
               <div className="flex items-center gap-2.5">
                 <span className="text-xl">🛡️</span>
                 <div>
-                  <h2 className="text-base sm:text-lg font-serif text-stone-900 tracking-tight font-medium">
+                  <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
                     신랑·신부 관리자 2차 보안 비밀번호 (숫자 4자리)
                   </h2>
-                  <p className="text-xs text-stone-500 mt-0.5">
+                  <p className="text-xs text-[#64748B] mt-0.5">
                     관리 페이지 진입 시 개인정보(하객 연락처, 방명록, 사진)를 안전하게 보호하는 둘만의 4자리 PIN입니다.
                   </p>
                 </div>
               </div>
-              <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase hidden sm:inline">
+              <span className="text-[10px] font-mono tracking-widest text-[#94A3B8] uppercase hidden sm:inline">
                 2FA PIN
               </span>
             </div>
 
             <div className="max-w-xs">
-              <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+              <label className="block text-xs font-semibold text-[#334155] mb-1.5">
                 4자리 숫자 비밀번호
               </label>
               <div className="relative">
@@ -2755,22 +2995,36 @@ export default function EditInvitationPage({ params }) {
                     setFormData((prev) => ({ ...prev, manage_password: val }));
                   }}
                   placeholder="예: 2504"
-                  className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-center text-lg font-mono tracking-widest text-stone-900 focus:outline-none focus:border-stone-900 focus:bg-white transition-colors"
+                  className="w-full px-4 py-3 bg-white border border-[#E5E8EB] rounded-xl text-center text-lg font-mono tracking-widest text-[#0F172A] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 focus:bg-white transition-colors"
                 />
               </div>
-              <p className="text-[11px] text-stone-400 mt-1.5 leading-relaxed">
+              <p className="text-[11px] text-[#94A3B8] mt-1.5 leading-relaxed">
                 * 지인이 추측하기 쉬운 번호(핸드폰 뒷자리 등) 대신 둘만의 기념일 등으로 설정해 주세요.
               </p>
             </div>
           </div>
 
-          {/* 고객 상담 안내 배너 */}
-          <div className="mt-8 mb-4 p-4 bg-amber-50/60 rounded-2xl border border-amber-200/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+          
+
+            {/* STEP 5 하단 이전 버튼 */}
+            <div className="pt-4 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => handleStepChange(4)}
+                className="py-3.5 px-4 bg-white hover:bg-sky-50 text-sky-700 border border-[#CBD0D6] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+              >
+                <span className="font-mono text-xs">←</span>
+                <span>이전 단계</span>
+              </button>
+            </div>
+          </div>
+{/* 고객 상담 안내 배너 */}
+          <div className="mt-8 mb-4 p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
             <div>
-              <p className="text-xs font-semibold text-stone-800">
+              <p className="text-xs font-semibold text-[#1E293B]">
                 수정 중 문의사항이나 도움이 필요하신가요?
               </p>
-              <p className="text-[11px] text-stone-500 mt-0.5">
+              <p className="text-[11px] text-[#64748B] mt-0.5">
                 청첩장 수정이나 옵션 변경 등 무엇이든 편하게 물어보세요.
               </p>
             </div>
@@ -2788,11 +3042,11 @@ export default function EditInvitationPage({ params }) {
           </div>
 
           {/* 하단 고정 플로팅 액션 바 (100% 불투명 솔리드 배경으로 하단 텍스트 겹침 완벽 차단) */}
-          <div className="sticky bottom-4 z-40 bg-white p-3.5 sm:p-4 rounded-2xl shadow-[0_4px_30px_rgba(0,0,0,0.12)] border border-stone-200/90 flex gap-3 items-center">
+          <div className="sticky bottom-4 z-40 bg-white/95 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.08)] border border-[#E5E8EB] flex gap-3 items-center">
             <button
               type="button"
               onClick={openPreviewModal}
-              className="flex-1 py-4 px-4 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-2"
+              className="flex-1 py-4 px-4 bg-[#FFFFFF] hover:bg-[#F1F5F9] text-[#1E293B] border border-[#CBD5E1] rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-2xs"
             >
               <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
               <span>실시간 미리보기</span>
@@ -2801,7 +3055,7 @@ export default function EditInvitationPage({ params }) {
             <button
               type="submit"
               disabled={submitting}
-              className="flex-2 py-4 px-6 bg-stone-900 hover:bg-black disabled:bg-stone-400 text-white rounded-xl text-xs sm:text-sm font-semibold tracking-wide transition-all shadow-md hover:shadow-lg cursor-pointer flex items-center justify-center gap-2"
+              className="flex-2 py-3.5 sm:py-4 px-4 sm:px-6 bg-[#191F28] hover:bg-black disabled:bg-[#CBD0D6] text-white rounded-xl text-xs sm:text-sm font-semibold tracking-wide transition-all shadow-sm hover:shadow-md cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap"
             >
               <span>{submitting ? '수정 내용 반영 중...' : '수정사항 저장하기 (즉시 반영)'}</span>
               <span className="text-xs font-mono opacity-60">✓</span>
@@ -2809,7 +3063,7 @@ export default function EditInvitationPage({ params }) {
           </div>
 
           {uploadStatus && (
-            <p className="text-center text-xs font-mono text-stone-500 animate-pulse py-2">
+            <p className="text-center text-xs font-mono text-[#64748B] animate-pulse py-2">
               {uploadStatus}
             </p>
           )}
@@ -2855,7 +3109,7 @@ export default function EditInvitationPage({ params }) {
               }}
               className="flex items-center gap-2 px-5 py-3 bg-stone-900/95 hover:bg-black text-white text-xs sm:text-sm font-semibold rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.5)] backdrop-blur-md border border-stone-600/80 transition-all hover:scale-105 active:scale-95 cursor-pointer ring-2 ring-white/20"
             >
-              <svg className="w-4 h-4 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-[#CBD5E1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
               </svg>
               <span>미리보기 닫기 (작성으로 복귀)</span>
@@ -2869,8 +3123,8 @@ export default function EditInvitationPage({ params }) {
             {/* 미리보기 상단 헤더 */}
             <div className="py-3 px-4 sm:px-5 bg-stone-950 text-white flex items-center justify-between shrink-0 border-b border-stone-800 z-10">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[11px] sm:text-xs font-mono tracking-wider sm:tracking-widest uppercase text-stone-300">
+                <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
+                <span className="text-[11px] sm:text-xs font-mono tracking-wider sm:tracking-widest uppercase text-[#CBD5E1]">
                   LIVE PREVIEW — EDIT
                 </span>
               </div>
@@ -2897,10 +3151,10 @@ export default function EditInvitationPage({ params }) {
                   : previewInvitation?.template_type === 'cinematic'
                   ? 'bg-white'
                   : previewInvitation?.template_type === 'playlist' 
-                  ? 'bg-[#FBF9F5]' 
+                  ? 'bg-[#FFFFFF]' 
                   : previewInvitation?.template_type === 'editorial' 
                   ? 'bg-white' 
-                  : 'bg-[#FCFBF7]'
+                  : 'bg-[#FFFFFF]'
               }`}
             >
               <BgmPlayer

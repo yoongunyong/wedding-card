@@ -431,32 +431,60 @@ function CreateInvitationContent() {
     };
   }, [showPreviewModal]);
 
-  // 폼 입력값 핸들러
-  // 단계별 스텝 전환 함수 (화면 상단으로 스무스 스크롤)
-  // 단계별 유효성 검사 및 안전한 다음 단계 이동 함수
-  const handleNextStepWithValidation = (fromStep) => {
-    if (fromStep === 1) {
-      if (!formData.groom_name.trim() || !formData.bride_name.trim()) {
-        return alert('신랑과 신부 성함을 모두 입력해 주세요.');
+  // 단계별 필수 입력값 유효성 검사
+  const validateStep = (step) => {
+    if (step === 1) {
+      if (!formData.groom_name?.trim() || !formData.bride_name?.trim()) {
+        alert('신랑과 신부 성함을 모두 입력해 주세요.');
+        return false;
       }
       if (!formData.wedding_date) {
-        return alert('예식 날짜를 선택해 주세요.');
+        alert('예식 날짜를 선택해 주세요.');
+        return false;
       }
       if (!formData.wedding_time) {
-        return alert('예식 시간을 선택해 주세요.');
+        alert('예식 시간을 선택해 주세요.');
+        return false;
       }
-      if (!formData.venue_name.trim()) {
-        return alert('예식장 이름을 입력해 주세요.');
+      if (!formData.venue_name?.trim()) {
+        alert('예식장 이름을 입력해 주세요.');
+        return false;
       }
-      if (!formData.venue_address.trim()) {
-        return alert('예식장 주소를 입력해 주세요.');
+      if (!formData.venue_address?.trim()) {
+        alert('예식장 주소를 입력해 주세요.');
+        return false;
       }
-    } else if (fromStep === 3) {
+    } else if (step === 3) {
       if (!mainImageFile && !mainImagePreview) {
-        return alert('청첩장 첫 화면에 노출될 메인 대표 사진을 등록해 주세요.');
+        alert('청첩장 첫 화면에 노출될 메인 대표 사진을 등록해 주세요.');
+        return false;
       }
     }
+    return true;
+  };
+
+  // 하단 '다음 단계로' 버튼 클릭 핸들러
+  const handleNextStepWithValidation = (fromStep) => {
+    if (!validateStep(fromStep)) return;
     handleStepChange(fromStep + 1);
+  };
+
+  // 상단 스텝 탭(1~5) 직접 클릭 핸들러
+  const handleStepTabClick = (targetStep) => {
+    if (targetStep === currentStep) return;
+    // 이전 단계로 돌아가는 것은 언제나 자유롭게 허용
+    if (targetStep < currentStep) {
+      handleStepChange(targetStep);
+      return;
+    }
+    // 미래 단계로 전진하려는 경우 1단계부터 targetStep 직전까지의 모든 필수 검증 통과 필요
+    for (let s = 1; s < targetStep; s++) {
+      if (!validateStep(s)) {
+        handleStepChange(s);
+        return;
+      }
+    }
+    handleStepChange(targetStep);
   };
 
   const handleStepChange = (targetStep) => {
@@ -1703,7 +1731,7 @@ function CreateInvitationContent() {
                   <button
                     key={stepItem.num}
                     type="button"
-                    onClick={() => handleStepChange(stepItem.num)}
+                    onClick={() => handleStepTabClick(stepItem.num)}
                     className={`shrink-0 flex items-center gap-1.5 py-2 px-3 sm:px-3.5 rounded-xl text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
                       isActive
                         ? 'bg-[#191F28] text-white shadow-xs font-semibold'

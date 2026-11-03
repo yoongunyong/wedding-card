@@ -1210,10 +1210,40 @@ export default function EditInvitationPage({ params }) {
 
   return (
     <div 
-      className="min-h-screen bg-[#F7F8FA] py-10 px-4 sm:px-6 flex justify-center text-[#0F172A] font-sans selection:bg-[#F1F5F9] antialiased"
+      className="min-h-screen bg-[#F7F8FA] text-[#0F172A] font-sans selection:bg-[#F1F5F9] antialiased flex flex-col items-center"
       style={{ colorScheme: 'light' }}
     >
-      <div className="w-full max-w-[740px]">
+      {/* 1. 상단 글로벌 네비게이션 헤더 (어디서나 홈으로 이동) */}
+      <header className="w-full sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-[#E5E8EB]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 sm:py-3.5 flex items-center justify-between">
+          <Link href="/" className="flex flex-col text-left group">
+            <span className="font-editorial-serif text-[16px] sm:text-[18px] tracking-[0.2em] font-bold uppercase text-[#191F28] group-hover:text-[#3182F6] transition-colors">
+              ATELIER DE MUKIRU
+            </span>
+            <span className="text-[8.5px] sm:text-[9px] font-mono tracking-widest text-[#8B95A1] uppercase -mt-0.5">
+              BOUTIQUE WEDDING ATELIER
+            </span>
+          </Link>
+
+          <div className="flex items-center gap-2">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-[#4E5968] hover:text-[#191F28] hover:bg-[#F2F4F6] rounded-xl font-medium transition-all"
+            >
+              <span>🏠</span>
+              <span>홈으로</span>
+            </Link>
+            <Link
+              href={`/manage/${slug}?token=${token}`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#F2F4F6] hover:bg-[#E5E8EB] text-[#191F28] text-xs font-semibold rounded-xl transition-all"
+            >
+              <span>← 대시보드</span>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <div className="w-full max-w-[740px] py-8 sm:py-10 px-4 sm:px-6">
 
         {/* 상단 네비게이션 바 */}
         <div className="flex items-center justify-between pb-6 mb-8 border-b border-[#E5E8EB]">

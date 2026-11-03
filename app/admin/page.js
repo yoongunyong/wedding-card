@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
@@ -715,8 +716,40 @@ ATELIER DE MUKIRU 드림`;
   const unusedCodes = codes.filter((c) => !c.is_used).length;
 
   return (
-    <div className="min-h-screen bg-[#F6F5F2] py-10 px-4 sm:px-8 text-stone-900 font-sans">
-      <div className="w-full max-w-5xl mx-auto space-y-8">
+    <div className="min-h-screen bg-[#F6F5F2] text-stone-900 font-sans">
+      {/* 1. 글로벌 상단 브랜드 네비게이션 헤더 */}
+      <header className="w-full sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200">
+        <div className="max-w-5xl mx-auto px-4 sm:px-8 py-3 flex items-center justify-between">
+          <Link href="/" className="flex flex-col text-left group">
+            <span className="font-editorial-serif text-[16px] sm:text-[18px] tracking-[0.2em] font-bold uppercase text-stone-900 group-hover:text-amber-800 transition-colors">
+              ATELIER DE MUKIRU
+            </span>
+            <span className="text-[8.5px] sm:text-[9px] font-mono tracking-widest text-stone-400 uppercase -mt-0.5">
+              BOUTIQUE WEDDING ATELIER — MASTER
+            </span>
+          </Link>
+
+          <div className="flex items-center gap-2">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-stone-600 hover:text-stone-900 hover:bg-stone-100 rounded-xl font-medium transition-all"
+            >
+              <span>🏠</span>
+              <span>홈으로</span>
+            </Link>
+            <a
+              href="/create"
+              target="_blank"
+              rel="noreferrer"
+              className="px-3 py-1.5 bg-stone-900 hover:bg-black text-white text-xs font-medium rounded-xl transition-all shadow-xs"
+            >
+              제작 화면 ↗
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <div className="w-full max-w-5xl mx-auto py-8 sm:py-10 px-4 sm:px-8 space-y-8">
         
         {/* 상단 네비게이션 헤더 */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-stone-200 gap-4">

@@ -573,8 +573,40 @@ export default function ManageRsvpPage({ params }) {
 
   // 4. 인증 통과 후 관리자 대시보드 렌더링
   return (
-    <div className="min-h-screen bg-stone-100 py-8 px-4 flex justify-center">
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-sm p-6 sm:p-8">
+    <div className="min-h-screen bg-stone-100 text-stone-800 font-sans flex flex-col items-center">
+      {/* 글로벌 상단 브랜드 네비게이션 헤더 */}
+      <header className="w-full sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/80">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+          <Link href="/" className="flex flex-col text-left group">
+            <span className="font-editorial-serif text-[16px] sm:text-[18px] tracking-[0.2em] font-bold uppercase text-stone-900 group-hover:text-amber-800 transition-colors">
+              ATELIER DE MUKIRU
+            </span>
+            <span className="text-[8.5px] sm:text-[9px] font-mono tracking-widest text-stone-400 uppercase -mt-0.5">
+              BOUTIQUE WEDDING ATELIER
+            </span>
+          </Link>
+
+          <div className="flex items-center gap-2">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-stone-600 hover:text-stone-900 hover:bg-stone-100 rounded-xl font-medium transition-all"
+            >
+              <span>🏠</span>
+              <span>홈으로</span>
+            </Link>
+            <Link
+              href={`/manage/${slug}/edit?token=${token}`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-900 hover:bg-black text-white text-xs font-semibold rounded-xl transition-all shadow-2xs"
+            >
+              <span>✏️</span>
+              <span>정보 수정</span>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <div className="w-full max-w-2xl py-8 px-4 flex justify-center">
+        <div className="w-full bg-white rounded-2xl shadow-sm p-6 sm:p-8">
         
         {/* 상단 헤더 */}
         <div className="pb-6 border-b border-stone-200/80">
@@ -1068,6 +1100,7 @@ export default function ManageRsvpPage({ params }) {
         )}
 
       </div>
+    </div>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 
 import { useState, useEffect, useRef, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -1580,10 +1581,42 @@ function CreateInvitationContent() {
 
   return (
     <div 
-      className="min-h-screen bg-[#F7F8FA] py-14 px-4 sm:px-6 flex justify-center text-[#0F172A] font-sans selection:bg-[#F1F5F9] antialiased"
+      className="min-h-screen bg-[#F7F8FA] text-[#0F172A] font-sans selection:bg-[#F1F5F9] antialiased flex flex-col items-center"
       style={{ colorScheme: 'light' }}
     >
-      <div className="w-full max-w-[740px]">
+      {/* 1. 상단 글로벌 네비게이션 헤더 (어디서나 홈으로 이동) */}
+      <header className="w-full sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-[#E5E8EB]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 sm:py-3.5 flex items-center justify-between">
+          <Link href="/" className="flex flex-col text-left group">
+            <span className="font-editorial-serif text-[16px] sm:text-[18px] tracking-[0.2em] font-bold uppercase text-[#191F28] group-hover:text-[#3182F6] transition-colors">
+              ATELIER DE MUKIRU
+            </span>
+            <span className="text-[8.5px] sm:text-[9px] font-mono tracking-widest text-[#8B95A1] uppercase -mt-0.5">
+              BOUTIQUE WEDDING ATELIER
+            </span>
+          </Link>
+
+          <div className="flex items-center gap-2">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-[#4E5968] hover:text-[#191F28] hover:bg-[#F2F4F6] rounded-xl font-medium transition-all"
+            >
+              <span>🏠</span>
+              <span>홈으로</span>
+            </Link>
+            <a
+              href="http://pf.kakao.com/_RJamX/chat"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#FEE500] hover:bg-[#FADA0A] text-[#191919] text-xs font-semibold rounded-xl shadow-2xs transition-all active:scale-95"
+            >
+              <span>카카오 문의</span>
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <div className="w-full max-w-[740px] py-10 sm:py-14 px-4 sm:px-6">
         
         {/* 상단 헤더 - 시니컬 & 감성 에디토리얼 */}
         <div className="text-center mb-12 pt-2">

@@ -214,7 +214,9 @@ function CreateInvitationContent() {
   useEffect(() => {
     const targetTemplate = templateParam || (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('template') : null);
     if (targetTemplate && VALID_TEMPLATES.includes(targetTemplate)) {
-      setFormData((prev) => (prev.template_type === targetTemplate ? prev : { ...prev, template_type: targetTemplate }));
+      queueMicrotask(() => {
+        setFormData((prev) => (prev.template_type === targetTemplate ? prev : { ...prev, template_type: targetTemplate }));
+      });
     }
   }, [templateParam]);
 
@@ -360,18 +362,6 @@ function CreateInvitationContent() {
   const [currentStep, setCurrentStep] = useState(1); // 1: 기본정보 | 2: 모시는글 | 3: 갤러리BGM | 4: 계좌교통 | 5: 설정완료
   const [showPreviewModal, setShowPreviewModal] = useState(false);
 
-  // URL 파라미터로 전달된 템플릿 타입 자동 선택 (useSearchParams 리액티브 동기화)
-  useEffect(() => {
-    const targetT = templateParam || (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('template') : null);
-    if (targetT && VALID_TEMPLATES.includes(targetT)) {
-      setFormData((prev) => {
-        if (prev.template_type !== targetT) {
-          return { ...prev, template_type: targetT };
-        }
-        return prev;
-      });
-    }
-  }, [templateParam]);
   const [createdResult, setCreatedResult] = useState(null);
   const [showQrModal, setShowQrModal] = useState(false);
   const isClosingRef = useRef(false);

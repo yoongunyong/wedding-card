@@ -108,10 +108,12 @@ export default function PlaylistTemplate({ invitation }) {
   const [dDay, setDDay] = useState(0);
   useEffect(() => {
     if (!weddingDateStr) return;
-    const now = new Date();
-    const target = new Date(weddingDateStr);
-    const diff = Math.ceil((target - now) / (1000 * 60 * 60 * 24));
-    setDDay(diff);
+    const id = requestAnimationFrame(() => {
+      const now = new Date();
+      const target = new Date(weddingDateStr);
+      setDDay(Math.ceil((target - now) / (1000 * 60 * 60 * 24)));
+    });
+    return () => cancelAnimationFrame(id);
   }, [weddingDateStr]);
 
   // 전역 오디오 상태 동기화 및 제어 (상단 BgmPlayer와 100% 실시간 양방향 이벤트 동기화)
@@ -206,15 +208,16 @@ export default function PlaylistTemplate({ invitation }) {
   }, [invitation?.id]);
 
   // 계좌번호 파싱
+  const rawAccounts = invitation?.accounts;
   const groomAccounts = useMemo(() => {
-    if (!Array.isArray(invitation?.accounts)) return [];
-    return invitation.accounts.filter((a) => a.group === '신랑측');
-  }, [invitation?.accounts]);
+    if (!Array.isArray(rawAccounts)) return [];
+    return rawAccounts.filter((a) => a.group === '신랑측');
+  }, [rawAccounts]);
 
   const brideAccounts = useMemo(() => {
-    if (!Array.isArray(invitation?.accounts)) return [];
-    return invitation.accounts.filter((a) => a.group === '신부측');
-  }, [invitation?.accounts]);
+    if (!Array.isArray(rawAccounts)) return [];
+    return rawAccounts.filter((a) => a.group === '신부측');
+  }, [rawAccounts]);
 
   // 클립보드 복사
   const handleCopy = (text, label) => {

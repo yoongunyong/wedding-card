@@ -397,16 +397,24 @@
       - **기본 타이틀 색상**: 피그마 원본 기본값 `#ffbe68`로 갱신 (`config.title_color || extra.title_color || '#ffbe68'`).
       - **1섹션 메인 커버**: Bodoni 72 Book Italic 40px `#ffbe68`, Helvetica Neue 18px 날짜, Helvetica Neue Light 22.5px Welcome/이름, 피그마 원본 그라데이션 오버레이.
       - **2섹션 초대합니다**: Noto Serif KR Medium 22.5px `#303030`, Pretendard 16px `#575757`, 60px 세로 구분선 `#d3d3d3`, 혼주-관계-성함 3열 정렬, 198×42px 라운드 `#f4f3f1` 버튼.
-      - **09-2섹션 사진 공유 (`2832:2498`)**: 기존 공용 컴포넌트(`GuestPhotoSnapSection`)를 걷어내고 피그마 1:1 전용 레이아웃 완비:
-        - 헤더: `Photo Sharing` (Cormorant 30px sm:34px), `사진 공유` (Noto Serif KR 18px sm:19px), 감성 3줄 안내문 (`저희의 소중한 순간을 함께 담아주세요...`).
-        - 폴라로이드 감성 포토 카드: `159x192.5px` (2x: 318x385) 화이트 프레임 카드 + 정사각형 감성 화보 프레임.
-        - **사진 중복 방지 및 전용 업로더 완비 (방안 B 반영)**:
-          - 제작 신청(`app/create/page.js`) 및 청첩장 수정(`app/manage/[slug]/edit/page.js`) 폼에 **`사진 공유 카드 대표 사진 (폴라로이드용, 선택)`** 파일 업로더 추가.
-          - `images.photo_sharing` JSONB 필드로 영구 저장 및 실시간 미리보기 동기화.
-          - 고객이 별도 사진을 업로드한 경우 해당 사진이 렌더링되며, 미등록 시 상단의 커플 사진이 중복 반복되지 않도록 미니멀 감성 스냅 아이콘(`Photo Snap`)으로 품격 있게 대체됨.
-        - 하단 안내: `예식 당일 부터 업로드 가능합니다.` (Pretendard 13.5px #707070).
-        - 업로드 버튼: `사진 업로드하기` (165×40px 다크 라운드 버튼).
-        - 동작 로직: 당일(D-Day) 전이라도 피그마 디자인 그대로 상시 우아하게 노출되며, 당일/샘플 모드에서는 클릭 시 `GuestPhotoUploadModal`이 즉시 열리고, 당일 전 실제 고객 화면에서는 "예식 당일부터 사진을 등록하실 수 있습니다 🤍" 안내가 표시됨.
+        - **전 시안(5종) 공통 적용 및 컴포넌트 일원화 (`components/GuestPhotoSnapSection.jsx`)**:
+          - 기존 임시 뱃지 UI를 피그마 2832:2498 "Photo Sharing / 사진 공유" 1:1 규격으로 전면 리팩토링.
+          - 시안 1(`BasicTemplate`), 시안 2(`EditorialTemplate`), 시안 3(`PlaylistTemplate`), 시안 4(`CinematicTemplate`), 시안 5(`SceneTemplate`) 모두 단일 컴포넌트(`GuestPhotoSnapSection`)를 공유하여 코드 중복 제거(DRY) 및 유지보수성 극대화.
+          - **시안 4 (시네마틱) 듀얼 테마 호환**: `isNightMode` prop을 지원하여 다크/미드나잇 테마 전환 시에도 다크 폴라로이드 및 반전 텍스트로 자연스럽고 품격 있게 어우러짐.
+          - **공식 샘플 화보 동기화 (`lib/sampleInvitations.js`)**:
+            - 5대 공식 샘플 청첩장에 각각 고유한 웨딩 스냅 사진을 `photo_sharing`으로 배정하여 상단 사진과의 중복 없이 다채로운 무드 연출:
+              - basic: `/samples/photo-04-garden-wine.jpg`
+              - editorial: `/samples/photo-05-street-hip.jpg`
+              - playlist: `/samples/photo-09-kiss-bouquet.jpg`
+              - cinematic: `/samples/photo-10-orchid-night.jpg`
+              - scene: `/samples/photo-13-ring-laugh.jpg`
+          - **사진 중복 방지 및 전용 업로더 완비 (방안 B 반영)**:
+            - 제작 신청(`app/create/page.js`) 및 청첩장 수정(`app/manage/[slug]/edit/page.js`) 폼에 **`사진 공유 카드 대표 사진 (폴라로이드용, 선택)`** 파일 업로더 추가.
+            - `images.photo_sharing` JSONB 필드로 영구 저장 및 실시간 미리보기 동기화.
+            - 고객이 별도 사진을 업로드한 경우 해당 사진이 렌더링되며, 미등록 시 상단의 커플 사진이 중복 반복되지 않도록 미니멀 감성 스냅 아이콘(`Photo Snap`)으로 품격 있게 대체됨 (제5원칙: 하드코딩 및 중복 절대 금지).
+          - 하단 안내: `예식 당일 부터 업로드 가능합니다.` (Pretendard 13.5px #707070).
+          - 업로드 버튼: `사진 업로드하기` (165×40px 다크 라운드 버튼 / 나이트모드 시 화이트 라운드 버튼).
+          - 동작 로직: 당일(D-Day) 전이라도 피그마 디자인 그대로 상시 우아하게 노출되며, 당일/샘플 모드에서는 클릭 시 `GuestPhotoUploadModal`이 즉시 열리고, 당일 전 실제 고객 화면에서는 "예식 당일부터 사진을 등록하실 수 있습니다 🤍" 안내가 표시됨.
       - **동적 데이터 바인딩 철칙**: 고객 청첩장에 가짜 샘플이 노출되지 않도록 데이터 부재 시 공백 처리 원칙 100% 준수.
 
 ---

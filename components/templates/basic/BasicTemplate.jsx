@@ -12,7 +12,7 @@ import BasicGuestbookModal from './BasicGuestbookModal';
 import BasicGuestbookDeleteModal from './BasicGuestbookDeleteModal';
 import ScrollReveal from '@/components/ScrollReveal';
 import TodayConciergeCard from '@/components/TodayConciergeCard';
-import GuestPhotoUploadModal from '@/components/GuestPhotoUploadModal';
+import GuestPhotoSnapSection from '@/components/GuestPhotoSnapSection';
 
 export default function BasicTemplate({ invitation }) {
   const extra = { ...(invitation?.template_config || {}), ...(invitation?.extra_data || {}) };
@@ -24,7 +24,6 @@ export default function BasicTemplate({ invitation }) {
   const [showContactModal, setShowContactModal] = useState(false);
   const [showRsvpModal, setShowRsvpModal] = useState(false);
   const [showGuestbookModal, setShowGuestbookModal] = useState(false);
-  const [showPhotoUploadModal, setShowPhotoUploadModal] = useState(false);
   const [deleteTargetMsg, setDeleteTargetMsg] = useState(null);
 
   // 갤러리 선택 인덱스 및 터치 제어
@@ -50,7 +49,6 @@ export default function BasicTemplate({ invitation }) {
   const showGallerySection = config.show_gallery !== false;
   const showAccountsSection = config.show_accounts !== false;
   const showRsvpSection = config.show_rsvp !== false;
-  const showGuestPhotosSection = config.show_guest_photos !== false;
   const showGuestbookSection = config.show_guestbook !== false;
 
   // 본문 메인 풀스크린 사진 (images.main 최우선)
@@ -71,9 +69,6 @@ export default function BasicTemplate({ invitation }) {
 
   // 엔딩 사진 (images.ending 최우선)
   const endingImage = images.ending || extra.ending_image || invitation?.ending_image || mainImage;
-
-  // 사진 공유 전용 대표 사진 (images.photo_sharing 최우선)
-  const photoSharingImage = images.photo_sharing || images.snap_photo || extra.photo_sharing_image || '';
 
   // 갤러리 이미지 안전 파싱 (배열 및 문자열 대응)
   const parseGalleryImages = (raw) => {
@@ -1298,78 +1293,7 @@ export default function BasicTemplate({ invitation }) {
       )}
 
       {/* 09-2. 하객 현장 사진 공유 (Figma Node 2832:2498 "Photo Sharing / 사진 공유" 1:1) */}
-      {showGuestPhotosSection && (
-        <section className="py-20 sm:py-24 px-6 bg-[#FCFBF7] text-center border-t border-stone-200/70">
-          <ScrollReveal>
-            {/* 영문 헤더: Photo Sharing (Cormorant 30px sm:34px) */}
-            <h2 className="font-cormorant font-normal text-[30px] sm:text-[34px] tracking-normal text-stone-900 leading-none">
-              Photo Sharing
-            </h2>
-
-            {/* 한글 서브헤더: 사진 공유 (Noto Serif KR 18px sm:19px) */}
-            <p className="font-serif text-[18px] sm:text-[19px] text-stone-800 font-normal tracking-normal mt-3.5 sm:mt-4 mb-3.5">
-              사진 공유
-            </p>
-
-            {/* 감성 안내 문구 (Pretendard 13.5px leading-relaxed #707070) */}
-            <p className="text-[13px] sm:text-[14px] text-[#707070] font-sans leading-relaxed mb-8 sm:mb-10 whitespace-pre-line max-w-[340px] mx-auto">
-              저희의 소중한 순간을 함께 담아주세요.
-              {'\n'}
-              여러분의 시선으로 기록된 특별한 순간들을
-              {'\n'}
-              오래도록 간직하고 싶습니다.
-            </p>
-          </ScrollReveal>
-
-          <ScrollReveal delay={120}>
-            {/* 폴라로이드 감성 포토 프레임 (Figma Rectangle 6232: 318x385 / 2x -> 159x192.5px 1x) */}
-            <div className="inline-block bg-white p-3 pb-5 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-[#EBEBEB]">
-              <div className="w-[155px] h-[155px] sm:w-[170px] sm:h-[170px] rounded-lg overflow-hidden bg-[#F5F5F3] flex items-center justify-center">
-                {(() => {
-                  const snapPhoto = photoSharingImage || (isSample ? '/samples/main-01-garden.jpg' : '');
-                  return snapPhoto ? (
-                    <img
-                      src={snapPhoto}
-                      alt="사진 공유 포토 프레임"
-                      className="w-full h-full object-cover select-none"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center text-stone-400 gap-1.5 p-4">
-                      <svg className="w-8 h-8 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
-                      </svg>
-                      <span className="text-[11px] font-sans">Photo Snap</span>
-                    </div>
-                  );
-                })()}
-              </div>
-            </div>
-
-            {/* 예식 당일 안내 문구 (Figma 2832:2508) */}
-            <p className="text-[13px] sm:text-[14px] text-stone-600 font-sans mt-5 sm:mt-6 mb-4 sm:mb-5 font-normal">
-              예식 당일 부터 업로드 가능합니다.
-            </p>
-
-            {/* 사진 업로드하기 버튼 (Figma Rectangle 6233: 329x78 / 2x -> 165x39px) */}
-            <div>
-              <button
-                type="button"
-                onClick={() => {
-                  if (isDDayOrAfter) {
-                    setShowPhotoUploadModal(true);
-                  } else {
-                    alert('예식 당일부터 사진을 등록하실 수 있습니다 🤍');
-                  }
-                }}
-                className="inline-flex items-center justify-center w-[165px] h-[40px] bg-[#333333] hover:bg-[#222222] text-white text-[13.5px] sm:text-[14px] font-sans font-medium rounded-xl transition-colors shadow-xs cursor-pointer select-none"
-              >
-                사진 업로드하기
-              </button>
-            </div>
-          </ScrollReveal>
-        </section>
-      )}
+      <GuestPhotoSnapSection invitation={invitation} />
 
       {/* 10. 축하 메시지 (Image 10) */}
       {showGuestbookSection && (
@@ -1577,16 +1501,6 @@ export default function BasicTemplate({ invitation }) {
           onDeleteSuccess={(deletedId) => {
             setGuestbookList((prev) => prev.filter((item) => item.id !== deletedId));
             setGuestbookIndex(0);
-          }}
-        />
-      )}
-
-      {showPhotoUploadModal && (
-        <GuestPhotoUploadModal
-          invitation={invitation}
-          onClose={() => setShowPhotoUploadModal(false)}
-          onSuccess={() => {
-            alert('소중한 사진이 성공적으로 전달되었습니다! 감사합니다 🤍');
           }}
         />
       )}

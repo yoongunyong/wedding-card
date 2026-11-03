@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import QrCodeModal from '@/components/QrCodeModal';
 import ExpiryAdjustModal from '@/components/ExpiryAdjustModal';
@@ -30,7 +30,99 @@ export default function AdminDashboardPage() {
   const [currentTimestamp, setCurrentTimestamp] = useState(0);
   const [copiedNoticeSlug, setCopiedNoticeSlug] = useState(null); // 톡톡 안내문 복사 상태 피드백
 
-  // 컴포넌트 마운트 시 현재 타임스탬프 설정 (렌더 중 Date.now 호출 방지)
+  // 3. 청첩장 필터 & 검색 & 페이지네이션 상태
+  const [searchCategory, setSearchCategory] = useState('all'); // 'all' | 'groom' | 'bride' | 'phone' | 'slug'
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [filterActiveStatus, setFilterActiveStatus] = useState('all'); // 'all' | 'active' | 'sample'
+  const [filterTemplate, setFilterTemplate] = useState('all'); // 'all' | 'basic' | 'editorial' | 'playlist' | 'cinematic' | 'scene'
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10); // 페이지당 노출 건수 (10, 20, 50)
+
+  // 청첩장 필터링 및 검색 계산
+  const filteredInvitations = useMemo(() => {
+    return invitations.filter((inv) => {
+      // 1. 활성화 상태 필터
+      const isActive = Boolean(inv.is_active ?? inv.template_config?.is_active ?? false);
+      if (filterActiveStatus === 'active' && !isActive) return false;
+      if (filterActiveStatus === 'sample' && isActive) return false;
+
+      // 2. 시안(템플릿) 필터
+      if (filterTemplate !== 'all') {
+        const tType = inv.template_type || 'basic';
+        if (tType !== filterTemplate) return false;
+      }
+
+      // 3. 검색어 필터
+      const keyword = searchKeyword.trim().toLowerCase();
+      if (!keyword) return true;
+
+      const groomName = (inv.groom_name || '').toLowerCase();
+      const brideName = (inv.bride_name || '').toLowerCase();
+      const slug = (inv.slug || '').toLowerCase();
+
+      // 모든 연락처 수집 (신랑, 신부, 혼주 연락처)
+      const phones = [
+        inv.groom_phone,
+        inv.bride_phone,
+        inv.groom_father_phone,
+        inv.bride_father_phone,
+        inv.groom_mother_phone,
+        inv.bride_mother_phone,
+        inv.template_config?.groom_phone,
+        inv.template_config?.bride_phone,
+      ].filter(Boolean);
+
+      const phoneRawJoined = phones.join(' ').toLowerCase();
+      const numericKeyword = keyword.replace(/[^0-9]/g, '');
+      const phonesNumeric = phones.map((p) => String(p).replace(/[^0-9]/g, '')).join(' ');
+
+      const phoneMatched =
+        phoneRawJoined.includes(keyword) ||
+        (numericKeyword.length > 0 && phonesNumeric.includes(numericKeyword));
+
+      if (searchCategory === 'groom') {
+        return groomName.includes(keyword);
+      }
+      if (searchCategory === 'bride') {
+        return brideName.includes(keyword);
+      }
+      if (searchCategory === 'phone') {
+        return phoneMatched;
+      }
+      if (searchCategory === 'slug') {
+        return slug.includes(keyword);
+      }
+
+      // 'all' (통합 검색)
+      return (
+        groomName.includes(keyword) ||
+        brideName.includes(keyword) ||
+        slug.includes(keyword) ||
+        phoneMatched
+      );
+    });
+  }, [invitations, searchCategory, searchKeyword, filterActiveStatus, filterTemplate]);
+
+  // 페이지네이션 계산
+  const totalItems = filteredInvitations.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+
+  const paginatedInvitations = useMemo(() => {
+    const start = (safeCurrentPage - 1) * pageSize;
+    return filteredInvitations.slice(start, start + pageSize);
+  }, [filteredInvitations, safeCurrentPage, pageSize]);
+
+  // 필터 초기화
+  const handleResetFilters = () => {
+    setSearchCategory('all');
+    setSearchKeyword('');
+    setFilterActiveStatus('all');
+    setFilterTemplate('all');
+    setCurrentPage(1);
+  };
+
+  // // 컴포넌트 마운트 시 현재 타임스탬프 설정 (렌더 중 Date.now 호출 방지)
   useEffect(() => {
     const timer = setTimeout(() => {
       setCurrentTimestamp(Date.now());
@@ -78,7 +170,7 @@ export default function AdminDashboardPage() {
     try {
       const { data, error } = await supabase
         .from('invitations')
-        .select('id, slug, groom_name, bride_name, wedding_date, template_type, is_active, template_config, order_code, created_at, manage_token, service_expired_at')
+        .select('id, slug, groom_name, bride_name, groom_phone, bride_phone, groom_father_phone, bride_father_phone, groom_mother_phone, bride_mother_phone, wedding_date, template_type, is_active, template_config, order_code, created_at, manage_token, service_expired_at')
         .order('created_at', { ascending: false });
 
       if (!error && data) {
@@ -100,7 +192,7 @@ export default function AdminDashboardPage() {
       try {
         const [codesRes, invsRes] = await Promise.all([
           supabase.from('order_codes').select('*').order('created_at', { ascending: false }),
-          supabase.from('invitations').select('id, slug, groom_name, bride_name, wedding_date, template_type, is_active, template_config, order_code, created_at, manage_token, service_expired_at').order('created_at', { ascending: false }),
+          supabase.from('invitations').select('id, slug, groom_name, bride_name, groom_phone, bride_phone, groom_father_phone, bride_father_phone, groom_mother_phone, bride_mother_phone, wedding_date, template_type, is_active, template_config, order_code, created_at, manage_token, service_expired_at').order('created_at', { ascending: false }),
         ]);
 
         if (isMounted) {
@@ -637,212 +729,511 @@ ATELIER DE MUKIRU 드림`;
            ======================================================== */}
         {activeTab === 'invitations' && (
           <div className="bg-white rounded-3xl p-6 sm:p-7 border border-stone-200/80 shadow-2xs overflow-hidden">
-            <div className="flex items-center justify-between mb-4">
+            {/* 상단 헤더 */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
               <div>
-                <h3 className="text-base font-serif font-bold text-stone-900">제작된 청첩장 목록</h3>
-                <p className="text-xs text-stone-500 font-light">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <h3 className="text-base font-serif font-bold text-stone-900">제작된 청첩장 목록</h3>
+                  <span className="inline-flex items-center gap-1.5 font-mono text-xs font-semibold px-2.5 py-0.5 rounded-full bg-stone-100 text-stone-800 border border-stone-200/80 shadow-2xs">
+                    <span className="text-[10px] text-stone-400 font-normal uppercase">Total</span>
+                    <span>{invitations.length}개</span>
+                  </span>
+                  {(searchKeyword || filterActiveStatus !== 'all' || filterTemplate !== 'all' || searchCategory !== 'all') && (
+                    <span className="inline-flex items-center gap-1 font-mono text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+                      <span>검색결과</span>
+                      <strong>{totalItems}개</strong>
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-stone-500 font-light mt-0.5">
                   활성화 스위치를 켜면 즉시 워터마크가 제거되고 정식 서비스됩니다. <strong>[📋 안내문 복사]</strong>로 완성 링크를 고객에게 1초 만에 전송하세요.
                 </p>
               </div>
               <button
+                type="button"
                 onClick={loadInvitations}
-                className="text-xs text-stone-400 hover:text-stone-700 font-mono underline"
+                disabled={loadingInvs}
+                className="self-start sm:self-center text-xs text-stone-500 hover:text-stone-900 font-mono underline inline-flex items-center gap-1 cursor-pointer"
               >
-                새로고침
+                <span>{loadingInvs ? '불러오는 중...' : '새로고침 ↻'}</span>
               </button>
             </div>
 
             {loadingInvs ? (
-              <p className="text-center py-10 text-xs text-stone-400">청첩장 목록을 불러오고 있습니다...</p>
+              <p className="text-center py-14 text-xs text-stone-400">청첩장 목록을 불러오고 있습니다...</p>
             ) : invitations.length === 0 ? (
-              <div className="text-center py-12 text-stone-400">
+              <div className="text-center py-14 text-stone-400">
                 제작된 청첩장이 아직 없습니다.
               </div>
             ) : (
-              <div className="overflow-x-auto -mx-2 sm:mx-0">
-                <table className="w-full min-w-[1280px] text-left text-xs text-stone-700 border-collapse">
-                  <thead className="bg-[#FAFAF9] text-stone-500 uppercase font-mono text-[11px] border-b border-stone-200/80">
-                    <tr>
-                      <th className="py-3.5 px-4 whitespace-nowrap font-medium">신랑 & 신부</th>
-                      <th className="py-3.5 px-4 whitespace-nowrap font-medium">시안</th>
-                      <th className="py-3.5 px-4 whitespace-nowrap font-medium">예식 일시</th>
-                      <th className="py-3.5 px-4 whitespace-nowrap font-medium">서비스 만료일</th>
-                      <th className="py-3.5 px-4 whitespace-nowrap font-medium">영문 주소 (URL)</th>
-                      <th className="py-3.5 px-4 whitespace-nowrap font-medium">2차 보안 PIN</th>
-                      <th className="py-3.5 px-4 whitespace-nowrap font-medium">정식 활성화 상태</th>
-                      <th className="py-3.5 px-4 text-center whitespace-nowrap font-medium">청첩장 관리 & 안내문</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-stone-100 font-sans">
-                    {invitations.map((inv) => {
-                      const isActive = Boolean(inv.is_active ?? inv.template_config?.is_active ?? false);
-                      
-                      // 서비스 만료일 계산
-                      const rawExpiry = inv.service_expired_at !== undefined ? inv.service_expired_at : inv.template_config?.service_expired_at;
-                      const isUnlimited = rawExpiry === null;
-                      const expDate = isUnlimited 
-                        ? null 
-                        : (rawExpiry ? new Date(rawExpiry) : (inv.wedding_date ? new Date(new Date(inv.wedding_date.replace(' ', 'T')).getTime() + 365 * 24 * 60 * 60 * 1000) : null));
-                      const isExpired = !isUnlimited && expDate && currentTimestamp > 0 && currentTimestamp > expDate.getTime();
-                      const daysLeft = !isUnlimited && expDate && currentTimestamp > 0 ? Math.ceil((expDate.getTime() - currentTimestamp) / (1000 * 60 * 60 * 24)) : null;
+              <>
+                {/* ========================================================
+                    필터 & 검색 바 (연락처, 신랑이름, 신부이름, 활성화상태, 시안)
+                   ======================================================== */}
+                <div className="bg-stone-50/80 rounded-2xl p-4 sm:p-5 border border-stone-200/70 mb-5 space-y-3 font-sans">
+                  {/* 1행: 검색 필터 컨트롤 */}
+                  <div className="flex flex-col lg:flex-row gap-2.5 items-stretch lg:items-center justify-between">
+                    <div className="flex flex-1 flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+                      {/* 검색 카테고리 셀렉트 */}
+                      <select
+                        value={searchCategory}
+                        onChange={(e) => {
+                          setSearchCategory(e.target.value);
+                          setCurrentPage(1);
+                        }}
+                        className="bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs font-medium text-stone-700 outline-none focus:border-stone-400 cursor-pointer shadow-2xs"
+                      >
+                        <option value="all">전체 검색 (이름·연락처·URL)</option>
+                        <option value="groom">신랑 이름</option>
+                        <option value="bride">신부 이름</option>
+                        <option value="phone">연락처 (신랑·신부·혼주)</option>
+                        <option value="slug">영문 주소 (URL)</option>
+                      </select>
 
-                      const formattedExp = isUnlimited 
-                        ? '무제한 (영구)' 
-                        : (expDate && !isNaN(expDate.getTime()) 
-                            ? `${expDate.getFullYear()}.${String(expDate.getMonth() + 1).padStart(2, '0')}.${String(expDate.getDate()).padStart(2, '0')}` 
-                            : '-');
+                      {/* 검색어 입력창 */}
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          value={searchKeyword}
+                          onChange={(e) => {
+                            setSearchKeyword(e.target.value);
+                            setCurrentPage(1);
+                          }}
+                          placeholder={
+                            searchCategory === 'phone'
+                              ? '전화번호 검색 (예: 01012345678, 5678)...'
+                              : searchCategory === 'groom'
+                              ? '신랑 이름 입력...'
+                              : searchCategory === 'bride'
+                              ? '신부 이름 입력...'
+                              : searchCategory === 'slug'
+                              ? 'URL 주소(slug) 입력...'
+                              : '신랑/신부 이름, 연락처, URL 검색...'
+                          }
+                          className="w-full bg-white border border-stone-200 rounded-xl pl-8 pr-8 py-2 text-xs text-stone-800 placeholder:text-stone-400 outline-none focus:border-stone-400 shadow-2xs"
+                        />
+                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs">
+                          🔍
+                        </span>
+                        {searchKeyword && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSearchKeyword('');
+                              setCurrentPage(1);
+                            }}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 text-xs cursor-pointer"
+                            title="검색어 지우기"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    </div>
 
-                      // 예식일 파싱 (YYYY.MM.DD HH:mm 깔끔한 포맷)
-                      const weddingDateFormatted = (() => {
-                        if (!inv.wedding_date) return '-';
-                        const parts = inv.wedding_date.replace('T', ' ').split(' ');
-                        const d = parts[0] ? parts[0].replace(/-/g, '.') : '-';
-                        const t = parts[1] ? parts[1].slice(0, 5) : '';
-                        return t ? `${d} ${t}` : d;
-                      })();
+                    {/* 상태 & 시안 & 페이지 크기 필터 그룹 */}
+                    <div className="flex flex-wrap gap-2 items-center">
+                      {/* 정식 활성화 상태 필터 */}
+                      <select
+                        value={filterActiveStatus}
+                        onChange={(e) => {
+                          setFilterActiveStatus(e.target.value);
+                          setCurrentPage(1);
+                        }}
+                        className="bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs font-medium text-stone-700 outline-none focus:border-stone-400 cursor-pointer shadow-2xs"
+                      >
+                        <option value="all">전체 활성화 상태</option>
+                        <option value="active">정식 활성화 ON</option>
+                        <option value="sample">샘플 모드 (미활성)</option>
+                      </select>
 
-                      return (
-                        <tr key={inv.id} className="hover:bg-stone-50/70 transition-colors">
-                          {/* 1. 신랑 & 신부 */}
-                          <td className="py-4 px-4 whitespace-nowrap font-semibold text-stone-900 text-sm">
-                            {inv.groom_name} & {inv.bride_name}
-                          </td>
+                      {/* 시안 필터 */}
+                      <select
+                        value={filterTemplate}
+                        onChange={(e) => {
+                          setFilterTemplate(e.target.value);
+                          setCurrentPage(1);
+                        }}
+                        className="bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs font-medium text-stone-700 outline-none focus:border-stone-400 cursor-pointer shadow-2xs"
+                      >
+                        <option value="all">전체 시안</option>
+                        <option value="basic">시안 1 (모던 클래식)</option>
+                        <option value="editorial">시안 2 (에디토리얼)</option>
+                        <option value="playlist">시안 3 (플레이리스트)</option>
+                        <option value="cinematic">시안 4 (시네마틱)</option>
+                        <option value="scene">시안 5 (모던 씬)</option>
+                      </select>
 
-                          {/* 2. 시안 */}
-                          <td className="py-4 px-4 whitespace-nowrap">
-                            <span className="text-[11px] font-mono px-2.5 py-1 rounded-full bg-stone-100 text-stone-700 font-medium border border-stone-200/60 inline-block">
-                              {inv.template_type === 'scene'
-                                ? '시안 5 (모던 씬)'
-                                : inv.template_type === 'cinematic'
-                                ? '시안 4 (시네마틱)'
-                                : inv.template_type === 'playlist'
-                                ? '시안 3 (플레이리스트)'
-                                : inv.template_type === 'editorial'
-                                ? '시안 2 (에디토리얼)'
-                                : '시안 1 (모던 클래식)'}
-                            </span>
-                          </td>
+                      {/* 페이지당 노출 건수 */}
+                      <select
+                        value={pageSize}
+                        onChange={(e) => {
+                          setPageSize(Number(e.target.value));
+                          setCurrentPage(1);
+                        }}
+                        className="bg-white border border-stone-200 rounded-xl px-2.5 py-2 text-xs font-medium text-stone-700 outline-none focus:border-stone-400 cursor-pointer shadow-2xs"
+                        title="페이지당 노출 건수"
+                      >
+                        <option value={10}>10개씩</option>
+                        <option value={20}>20개씩</option>
+                        <option value={50}>50개씩</option>
+                      </select>
 
-                          {/* 3. 예식 일시 */}
-                          <td className="py-4 px-4 whitespace-nowrap font-mono text-xs text-stone-600">
-                            {weddingDateFormatted}
-                          </td>
+                      {/* 초기화 버튼 */}
+                      {(searchKeyword || filterActiveStatus !== 'all' || filterTemplate !== 'all' || searchCategory !== 'all') && (
+                        <button
+                          type="button"
+                          onClick={handleResetFilters}
+                          className="px-3 py-2 bg-stone-200 hover:bg-stone-300 text-stone-700 rounded-xl text-xs font-medium transition-colors cursor-pointer inline-flex items-center gap-1 shadow-2xs"
+                          title="필터 및 검색어 초기화"
+                        >
+                          <span>↺ 초기화</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
 
-                          {/* 4. 서비스 만료일 */}
-                          <td className="py-4 px-4 whitespace-nowrap">
-                            <div className="flex flex-col gap-1 items-start">
-                              <div className="flex items-center gap-1.5 font-mono text-xs font-medium text-stone-800">
-                                <span>{formattedExp}</span>
-                                {isUnlimited ? (
-                                  <span className="text-[10px] bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded-full font-mono font-bold whitespace-nowrap inline-block">
-                                    영구
-                                  </span>
-                                ) : isExpired ? (
-                                  <span className="text-[10px] bg-stone-100 text-stone-500 border border-stone-200 px-2 py-0.5 rounded-full font-mono font-medium whitespace-nowrap inline-block">
-                                    만료됨
-                                  </span>
+                  {/* 2행: 검색 통계 */}
+                  <div className="flex flex-wrap items-center justify-between text-xs text-stone-500 pt-1 border-t border-stone-200/50">
+                    <div className="flex items-center gap-2">
+                      <span>
+                        총 <strong className="text-stone-900 font-mono font-semibold">{invitations.length}</strong>건 중{' '}
+                        <strong className="text-stone-900 font-mono font-semibold">{totalItems}</strong>건 일치
+                      </span>
+                      {totalItems > 0 && (
+                        <span className="text-[11px] text-stone-400 font-mono">
+                          ({safeCurrentPage} / {totalPages} 페이지)
+                        </span>
+                      )}
+                    </div>
+                    {totalItems > 0 && (
+                      <div className="text-[11px] font-mono text-stone-400">
+                        {(safeCurrentPage - 1) * pageSize + 1} - {Math.min(safeCurrentPage * pageSize, totalItems)}번째 청첩장 표시 중
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* ========================================================
+                    청첩장 목록 테이블
+                   ======================================================== */}
+                {totalItems === 0 ? (
+                  <div className="text-center py-16 bg-stone-50/50 rounded-2xl border border-dashed border-stone-200 my-4">
+                    <p className="text-stone-500 text-xs mb-2">검색 조건과 일치하는 청첩장이 없습니다.</p>
+                    <button
+                      type="button"
+                      onClick={handleResetFilters}
+                      className="px-3 py-1.5 bg-stone-800 text-white rounded-lg text-xs font-medium hover:bg-black transition-colors cursor-pointer shadow-2xs"
+                    >
+                      필터 초기화
+                    </button>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto -mx-2 sm:mx-0">
+                    <table className="w-full min-w-[1280px] text-left text-xs text-stone-700 border-collapse">
+                      <thead className="bg-[#FAFAF9] text-stone-500 uppercase font-mono text-[11px] border-b border-stone-200/80">
+                        <tr>
+                          <th className="py-3.5 px-3 text-center whitespace-nowrap font-medium w-14">NO</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap font-medium">신랑 & 신부 (연락처)</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap font-medium">시안</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap font-medium">예식 일시</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap font-medium">서비스 만료일</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap font-medium">영문 주소 (URL)</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap font-medium">2차 보안 PIN</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap font-medium">정식 활성화 상태</th>
+                          <th className="py-3.5 px-4 text-center whitespace-nowrap font-medium">청첩장 관리 & 안내문</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-stone-100 font-sans">
+                        {paginatedInvitations.map((inv, idx) => {
+                          const isActive = Boolean(inv.is_active ?? inv.template_config?.is_active ?? false);
+                          
+                          // 서비스 만료일 계산
+                          const rawExpiry = inv.service_expired_at !== undefined ? inv.service_expired_at : inv.template_config?.service_expired_at;
+                          const isUnlimited = rawExpiry === null;
+                          const expDate = isUnlimited 
+                            ? null 
+                            : (rawExpiry ? new Date(rawExpiry) : (inv.wedding_date ? new Date(new Date(inv.wedding_date.replace(' ', 'T')).getTime() + 365 * 24 * 60 * 60 * 1000) : null));
+                          const isExpired = !isUnlimited && expDate && currentTimestamp > 0 && currentTimestamp > expDate.getTime();
+                          const daysLeft = !isUnlimited && expDate && currentTimestamp > 0 ? Math.ceil((expDate.getTime() - currentTimestamp) / (1000 * 60 * 60 * 24)) : null;
+
+                          const formattedExp = isUnlimited 
+                            ? '무제한 (영구)' 
+                            : (expDate && !isNaN(expDate.getTime()) 
+                                ? `${expDate.getFullYear()}.${String(expDate.getMonth() + 1).padStart(2, '0')}.${String(expDate.getDate()).padStart(2, '0')}` 
+                                : '-');
+
+                          // 예식일 파싱 (YYYY.MM.DD HH:mm 깔끔한 포맷)
+                          const weddingDateFormatted = (() => {
+                            if (!inv.wedding_date) return '-';
+                            const parts = inv.wedding_date.replace('T', ' ').split(' ');
+                            const d = parts[0] ? parts[0].replace(/-/g, '.') : '-';
+                            const t = parts[1] ? parts[1].slice(0, 5) : '';
+                            return t ? `${d} ${t}` : d;
+                          })();
+
+                          // 신랑 / 신부 연락처
+                          const groomPhone = inv.groom_phone || inv.template_config?.groom_phone;
+                          const bridePhone = inv.bride_phone || inv.template_config?.bride_phone;
+
+                          return (
+                            <tr key={inv.id} className="hover:bg-stone-50/70 transition-colors">
+                              {/* 0. NO (넘버링) */}
+                              <td className="py-4 px-3 text-center whitespace-nowrap font-mono text-xs text-stone-400 font-medium">
+                                {(safeCurrentPage - 1) * pageSize + idx + 1}
+                              </td>
+
+                              {/* 1. 신랑 & 신부 + 연락처 */}
+                              <td className="py-4 px-4 whitespace-nowrap">
+                                <div className="font-semibold text-stone-900 text-sm">
+                                  {inv.groom_name} & {inv.bride_name}
+                                </div>
+                                {(groomPhone || bridePhone) ? (
+                                  <div className="flex flex-wrap items-center gap-1.5 font-mono text-[11px] text-stone-500 mt-1">
+                                    {groomPhone && (
+                                      <span className="bg-stone-100/80 border border-stone-200/70 px-1.5 py-0.5 rounded text-stone-700">
+                                        신랑 {groomPhone}
+                                      </span>
+                                    )}
+                                    {bridePhone && (
+                                      <span className="bg-stone-100/80 border border-stone-200/70 px-1.5 py-0.5 rounded text-stone-700">
+                                        신부 {bridePhone}
+                                      </span>
+                                    )}
+                                  </div>
                                 ) : (
-                                  <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-mono font-bold whitespace-nowrap inline-block">
-                                    D-{daysLeft}
+                                  <span className="font-mono text-[10px] text-stone-300 mt-0.5 block">
+                                    연락처 미등록
                                   </span>
                                 )}
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => setSelectedExpiryInv(inv)}
-                                className="text-[11px] text-stone-400 hover:text-stone-800 underline font-mono cursor-pointer transition-colors inline-flex items-center gap-0.5"
-                              >
-                                <span>만료일 조정</span>
-                                <span className="text-[10px]">✎</span>
-                              </button>
-                            </div>
-                          </td>
+                              </td>
 
-                          {/* 5. 영문 주소 (URL) */}
-                          <td className="py-4 px-4 whitespace-nowrap font-mono font-medium text-stone-700 text-xs">
-                            <span className="bg-stone-50 border border-stone-200/80 px-2.5 py-1 rounded-md text-stone-800">
-                              /{inv.slug}
-                            </span>
-                          </td>
+                              {/* 2. 시안 */}
+                              <td className="py-4 px-4 whitespace-nowrap">
+                                <span className="text-[11px] font-mono px-2.5 py-1 rounded-full bg-stone-100 text-stone-700 font-medium border border-stone-200/60 inline-block">
+                                  {inv.template_type === 'scene'
+                                    ? '시안 5 (모던 씬)'
+                                    : inv.template_type === 'cinematic'
+                                    ? '시안 4 (시네마틱)'
+                                    : inv.template_type === 'playlist'
+                                    ? '시안 3 (플레이리스트)'
+                                    : inv.template_type === 'editorial'
+                                    ? '시안 2 (에디토리얼)'
+                                    : '시안 1 (모던 클래식)'}
+                                </span>
+                              </td>
 
-                          {/* 6. 2차 보안 PIN */}
-                          <td className="py-4 px-4 whitespace-nowrap font-mono">
-                            {inv.template_config?.manage_password ? (
-                              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 bg-stone-100 text-stone-800 rounded border border-stone-200">
-                                <span>🔒</span>
-                                <span>{inv.template_config.manage_password}</span>
-                              </span>
-                            ) : (
-                              <span className="text-[11px] text-stone-400">미설정</span>
-                            )}
-                          </td>
+                              {/* 3. 예식 일시 */}
+                              <td className="py-4 px-4 whitespace-nowrap font-mono text-xs text-stone-600">
+                                {weddingDateFormatted}
+                              </td>
 
-                          {/* 7. 정식 활성화 상태 (슬림 & 세련된 스위치 버튼) */}
-                          <td className="py-4 px-4 whitespace-nowrap">
-                            <button
-                              onClick={() => handleToggleActive(inv)}
-                              disabled={togglingSlug === inv.slug}
-                              className={`py-1.5 px-3 rounded-full text-xs font-semibold transition-all cursor-pointer inline-flex items-center gap-1.5 border whitespace-nowrap ${
-                                isActive
-                                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100 shadow-2xs'
-                                  : 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100'
-                              }`}
-                              title={isActive ? '정식 서비스 중 (클릭 시 샘플 모드로 전환)' : '샘플 모드 (클릭 시 정식 활성화)'}
-                            >
-                              <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                              <span>{isActive ? '정식 활성화 ON' : '샘플 모드 (클릭 시 ON)'}</span>
-                            </button>
-                          </td>
+                              {/* 4. 서비스 만료일 */}
+                              <td className="py-4 px-4 whitespace-nowrap">
+                                <div className="flex flex-col gap-1 items-start">
+                                  <div className="flex items-center gap-1.5 font-mono text-xs font-medium text-stone-800">
+                                    <span>{formattedExp}</span>
+                                    {isUnlimited ? (
+                                      <span className="text-[10px] bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded-full font-mono font-bold whitespace-nowrap inline-block">
+                                        영구
+                                      </span>
+                                    ) : isExpired ? (
+                                      <span className="text-[10px] bg-stone-100 text-stone-500 border border-stone-200 px-2 py-0.5 rounded-full font-mono font-medium whitespace-nowrap inline-block">
+                                        만료됨
+                                      </span>
+                                    ) : (
+                                      <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-mono font-bold whitespace-nowrap inline-block">
+                                        D-{daysLeft}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => setSelectedExpiryInv(inv)}
+                                    className="text-[11px] text-stone-400 hover:text-stone-800 underline font-mono cursor-pointer transition-colors inline-flex items-center gap-0.5"
+                                  >
+                                    <span>만료일 조정</span>
+                                    <span className="text-[10px]">✎</span>
+                                  </button>
+                                </div>
+                              </td>
 
-                          {/* 7. 관리 버튼 그룹 */}
-                          <td className="py-4 px-4 text-center whitespace-nowrap">
-                            <div className="inline-flex items-center justify-center gap-1.5">
-                              <button
-                                type="button"
-                                onClick={() => handleCopyCustomerNotice(inv)}
-                                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all inline-flex items-center gap-1 border shadow-2xs active:scale-98 ${
-                                  copiedNoticeSlug === inv.slug
-                                    ? 'bg-[#6A5A48] text-white border-[#6A5A48]'
-                                    : 'bg-[#F7F4EE] hover:bg-[#EFE9DF] text-[#6A5A48] border-[#DDD5C7]'
-                                }`}
-                                title="고객 전달용 완성 안내문 복사 (네이버 톡톡/카톡 전송)"
-                              >
-                                <span>{copiedNoticeSlug === inv.slug ? '✓ 복사완료!' : '📋 안내문 복사'}</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setSelectedQrInv(inv)}
-                                className="px-2.5 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-medium cursor-pointer transition-colors inline-flex items-center gap-1 border border-stone-200/60"
-                              >
-                                <span>QR코드</span>
-                                <span className="text-[10px] text-stone-500">⬇</span>
-                              </button>
-                              <a
-                                href={`/${inv.slug}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="px-2.5 py-1.5 bg-white hover:bg-stone-50 text-stone-700 rounded-lg text-xs font-medium transition-colors border border-stone-200 inline-flex items-center gap-1"
-                              >
-                                <span>하객 화면</span>
-                                <span className="text-[10px] text-stone-400">↗</span>
-                              </a>
-                              <a
-                                href={`/manage/${inv.slug}?token=${inv.manage_token}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="px-2.5 py-1.5 bg-stone-900 hover:bg-black text-white rounded-lg text-xs font-medium transition-colors shadow-2xs inline-flex items-center gap-1"
-                              >
-                                <span>참석자 관리</span>
-                                <span className="text-[10px] text-stone-400">↗</span>
-                              </a>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                              {/* 5. 영문 주소 (URL) */}
+                              <td className="py-4 px-4 whitespace-nowrap font-mono font-medium text-stone-700 text-xs">
+                                <span className="bg-stone-50 border border-stone-200/80 px-2.5 py-1 rounded-md text-stone-800">
+                                  /{inv.slug}
+                                </span>
+                              </td>
+
+                              {/* 6. 2차 보안 PIN */}
+                              <td className="py-4 px-4 whitespace-nowrap font-mono">
+                                {inv.template_config?.manage_password ? (
+                                  <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 bg-stone-100 text-stone-800 rounded border border-stone-200">
+                                    <span>🔒</span>
+                                    <span>{inv.template_config.manage_password}</span>
+                                  </span>
+                                ) : (
+                                  <span className="text-[11px] text-stone-400">미설정</span>
+                                )}
+                              </td>
+
+                              {/* 7. 정식 활성화 상태 */}
+                              <td className="py-4 px-4 whitespace-nowrap">
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleActive(inv)}
+                                  disabled={togglingSlug === inv.slug}
+                                  className={`py-1.5 px-3 rounded-full text-xs font-semibold transition-all cursor-pointer inline-flex items-center gap-1.5 border whitespace-nowrap ${
+                                    isActive
+                                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100 shadow-2xs'
+                                      : 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100'
+                                  }`}
+                                  title={isActive ? '정식 서비스 중 (클릭 시 샘플 모드로 전환)' : '샘플 모드 (클릭 시 정식 활성화)'}
+                                >
+                                  <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                  <span>{isActive ? '정식 활성화 ON' : '샘플 모드 (클릭 시 ON)'}</span>
+                                </button>
+                              </td>
+
+                              {/* 8. 관리 버튼 그룹 */}
+                              <td className="py-4 px-4 text-center whitespace-nowrap">
+                                <div className="inline-flex items-center justify-center gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCopyCustomerNotice(inv)}
+                                    className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all inline-flex items-center gap-1 border shadow-2xs active:scale-98 ${
+                                      copiedNoticeSlug === inv.slug
+                                        ? 'bg-[#6A5A48] text-white border-[#6A5A48]'
+                                        : 'bg-[#F7F4EE] hover:bg-[#EFE9DF] text-[#6A5A48] border-[#DDD5C7]'
+                                    }`}
+                                    title="고객 전달용 완성 안내문 복사 (네이버 톡톡/카톡 전송)"
+                                  >
+                                    <span>{copiedNoticeSlug === inv.slug ? '✓ 복사완료!' : '📋 안내문 복사'}</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setSelectedQrInv(inv)}
+                                    className="px-2.5 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-medium cursor-pointer transition-colors inline-flex items-center gap-1 border border-stone-200/60"
+                                  >
+                                    <span>QR코드</span>
+                                    <span className="text-[10px] text-stone-500">⬇</span>
+                                  </button>
+                                  <a
+                                    href={`/${inv.slug}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="px-2.5 py-1.5 bg-white hover:bg-stone-50 text-stone-700 rounded-lg text-xs font-medium transition-colors border border-stone-200 inline-flex items-center gap-1"
+                                  >
+                                    <span>하객 화면</span>
+                                    <span className="text-[10px] text-stone-400">↗</span>
+                                  </a>
+                                  <a
+                                    href={`/manage/${inv.slug}?token=${inv.manage_token}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="px-2.5 py-1.5 bg-stone-900 hover:bg-black text-white rounded-lg text-xs font-medium transition-colors shadow-2xs inline-flex items-center gap-1"
+                                  >
+                                    <span>참석자 관리</span>
+                                    <span className="text-[10px] text-stone-400">↗</span>
+                                  </a>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* ========================================================
+                    페이지네이션 바 (Pagination Controls)
+                   ======================================================== */}
+                {totalPages > 1 && (
+                  <div className="relative flex flex-col sm:flex-row items-center justify-center gap-3 mt-6 pt-5 border-t border-stone-100 font-sans">
+                    <div className="sm:absolute sm:left-0 text-xs text-stone-400 font-mono">
+                      전체 {totalItems}건 중 {(safeCurrentPage - 1) * pageSize + 1} - {Math.min(safeCurrentPage * pageSize, totalItems)}건
+                    </div>
+
+                    <div className="inline-flex items-center gap-1 font-mono text-xs">
+                      {/* 맨 처음 페이지 */}
+                      <button
+                        type="button"
+                        disabled={safeCurrentPage <= 1}
+                        onClick={() => setCurrentPage(1)}
+                        className="px-2.5 py-1.5 rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+                        title="처음 페이지"
+                      >
+                        «
+                      </button>
+
+                      {/* 이전 페이지 */}
+                      <button
+                        type="button"
+                        disabled={safeCurrentPage <= 1}
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        className="px-2.5 py-1.5 rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+                        title="이전 페이지"
+                      >
+                        ‹
+                      </button>
+
+                      {/* 페이지 번호 목록 (최대 5개 동적 표기) */}
+                      {(() => {
+                        const maxButtons = 5;
+                        let startPage = Math.max(1, safeCurrentPage - Math.floor(maxButtons / 2));
+                        let endPage = startPage + maxButtons - 1;
+                        if (endPage > totalPages) {
+                          endPage = totalPages;
+                          startPage = Math.max(1, endPage - maxButtons + 1);
+                        }
+
+                        const pages = [];
+                        for (let i = startPage; i <= endPage; i++) {
+                          pages.push(i);
+                        }
+
+                        return pages.map((pageNum) => (
+                          <button
+                            key={pageNum}
+                            type="button"
+                            onClick={() => setCurrentPage(pageNum)}
+                            className={`min-w-[32px] h-8 px-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                              pageNum === safeCurrentPage
+                                ? 'bg-stone-900 text-white shadow-2xs'
+                                : 'border border-stone-200 bg-white text-stone-700 hover:bg-stone-100'
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        ));
+                      })()}
+
+                      {/* 다음 페이지 */}
+                      <button
+                        type="button"
+                        disabled={safeCurrentPage >= totalPages}
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        className="px-2.5 py-1.5 rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+                        title="다음 페이지"
+                      >
+                        ›
+                      </button>
+
+                      {/* 맨 끝 페이지 */}
+                      <button
+                        type="button"
+                        disabled={safeCurrentPage >= totalPages}
+                        onClick={() => setCurrentPage(totalPages)}
+                        className="px-2.5 py-1.5 rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+                        title="마지막 페이지"
+                      >
+                        »
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}

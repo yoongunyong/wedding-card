@@ -38,6 +38,13 @@ export default function AdminDashboardPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10); // 페이지당 노출 건수 (10, 20, 50)
 
+  // 4. 청첩장 안전 삭제 상태
+  const [deleteTarget, setDeleteTarget] = useState(null); // 단일 삭제 대상
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmSlugInput, setConfirmSlugInput] = useState('');
+  const [showBatchPurgeModal, setShowBatchPurgeModal] = useState(false); // 30일 경과 미활성화 샘플 일괄 정리 모달
+  const [isBatchPurging, setIsBatchPurging] = useState(false);
+
   // 청첩장 필터링 및 검색 계산
   const filteredInvitations = useMemo(() => {
     return invitations.filter((inv) => {
@@ -60,6 +67,13 @@ export default function AdminDashboardPage() {
       const brideName = (inv.bride_name || '').toLowerCase();
       const slug = (inv.slug || '').toLowerCase();
 
+      // 공백 무시 비교를 위한 정규화
+      const noSpaceKeyword = keyword.replace(/\s+/g, '');
+      const noSpaceGroom = groomName.replace(/\s+/g, '');
+      const noSpaceBride = brideName.replace(/\s+/g, '');
+      const groomMatched = groomName.includes(keyword) || (noSpaceKeyword && noSpaceGroom.includes(noSpaceKeyword));
+      const brideMatched = brideName.includes(keyword) || (noSpaceKeyword && noSpaceBride.includes(noSpaceKeyword));
+
       // 모든 연락처 수집 (신랑, 신부, 혼주 연락처)
       const phones = [
         inv.groom_phone,
@@ -81,10 +95,10 @@ export default function AdminDashboardPage() {
         (numericKeyword.length > 0 && phonesNumeric.includes(numericKeyword));
 
       if (searchCategory === 'groom') {
-        return groomName.includes(keyword);
+        return groomMatched;
       }
       if (searchCategory === 'bride') {
-        return brideName.includes(keyword);
+        return brideMatched;
       }
       if (searchCategory === 'phone') {
         return phoneMatched;
@@ -95,8 +109,8 @@ export default function AdminDashboardPage() {
 
       // 'all' (통합 검색)
       return (
-        groomName.includes(keyword) ||
-        brideName.includes(keyword) ||
+        groomMatched ||
+        brideMatched ||
         slug.includes(keyword) ||
         phoneMatched
       );
@@ -107,6 +121,13 @@ export default function AdminDashboardPage() {
   const totalItems = filteredInvitations.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+
+  // 현재 페이지가 전체 페이지 범위를 벗어나면 자동 보정
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const paginatedInvitations = useMemo(() => {
     const start = (safeCurrentPage - 1) * pageSize;
@@ -122,7 +143,189 @@ export default function AdminDashboardPage() {
     setCurrentPage(1);
   };
 
-  // // 컴포넌트 마운트 시 현재 타임스탬프 설정 (렌더 중 Date.now 호출 방지)
+  // 30일 이상 지난 미활성화(샘플) 청첩장 목록 계산
+  const oldSampleInvitations = useMemo(() => {
+    if (!currentTimestamp) return [];
+    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+    return invitations.filter((inv) => {
+      const isActive = Boolean(inv.is_active ?? inv.template_config?.is_active ?? false);
+      if (isActive) return false;
+      if (!inv.created_at) return false;
+      const createdTime = new Date(inv.created_at).getTime();
+      return (currentTimestamp - createdTime) > THIRTY_DAYS_MS;
+    });
+  }, [invitations, currentTimestamp]);
+
+  // 스토리지 파일 삭제 공통 함수 (DB 레코드 삭제 전 연결된 모든 사진/음원 파일 영구 삭제)
+  const deleteInvitationStorageFiles = async (inv) => {
+    const storageFilesToDelete = {
+      'wedding-images': [],
+      'wedding-bgm': [],
+    };
+
+    const extractStoragePath = (url) => {
+      if (!url || typeof url !== 'string') return;
+      if (url.startsWith('/') || url.includes('/presets/') || url.includes('/samples/')) return;
+
+      const match = url.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)$/);
+      if (match) {
+        const bucket = match[1];
+        const filePath = decodeURIComponent(match[2].split('?')[0]);
+        if (storageFilesToDelete[bucket]) {
+          storageFilesToDelete[bucket].push(filePath);
+        } else {
+          storageFilesToDelete[bucket] = [filePath];
+        }
+      }
+    };
+
+    // 1) images 객체 내 모든 사진 (main, cover, ending, profile 등 - 문자열 파싱 방어)
+    let parsedImages = inv.images;
+    if (typeof parsedImages === 'string') {
+      try { parsedImages = JSON.parse(parsedImages); } catch (e) { parsedImages = null; }
+    }
+    if (parsedImages && typeof parsedImages === 'object') {
+      Object.values(parsedImages).forEach((u) => extractStoragePath(u));
+    }
+
+    // 2) gallery_images 배열 내 모든 사진 (문자열 파싱 방어)
+    let parsedGallery = inv.gallery_images;
+    if (typeof parsedGallery === 'string') {
+      try { parsedGallery = JSON.parse(parsedGallery); } catch (e) { parsedGallery = null; }
+    }
+    if (Array.isArray(parsedGallery)) {
+      parsedGallery.forEach((u) => extractStoragePath(u));
+    }
+
+    // 3) 커스텀 업로드 음원
+    if (inv.bgm_url) {
+      extractStoragePath(inv.bgm_url);
+    }
+
+    // 4) slug 폴더 내 잔여 파일 전체 검색
+    if (inv.slug) {
+      try {
+        const { data: folderFiles } = await supabase.storage.from('wedding-images').list(inv.slug);
+        if (folderFiles && folderFiles.length > 0) {
+          folderFiles.forEach((f) => {
+            if (f.name) storageFilesToDelete['wedding-images'].push(`${inv.slug}/${f.name}`);
+          });
+        }
+      } catch (e) {
+        console.warn('Storage folder list warning:', e);
+      }
+    }
+
+    // 5) 하객 포토 스냅 사진
+    try {
+      const { data: guestPhotos } = await supabase.from('guest_photos').select('photo_url').eq('invitation_id', inv.id);
+      if (guestPhotos && guestPhotos.length > 0) {
+        guestPhotos.forEach((gp) => extractStoragePath(gp.photo_url));
+      }
+    } catch (e) {
+      console.warn('Guest photos check warning:', e);
+    }
+
+    // Storage 삭제 실행
+    for (const [bucket, files] of Object.entries(storageFilesToDelete)) {
+      const uniqueFiles = [...new Set(files)];
+      if (uniqueFiles.length > 0) {
+        try {
+          await supabase.storage.from(bucket).remove(uniqueFiles);
+        } catch (storageErr) {
+          console.warn(`Storage delete error in ${bucket}:`, storageErr);
+        }
+      }
+    }
+  };
+
+  // 단일 청첩장 영구 삭제 핸들러 (스토리지 + DB 완전 정리)
+  const handleDeleteInvitation = async () => {
+    if (!deleteTarget) return;
+    const inv = deleteTarget;
+    const isActive = Boolean(inv.is_active ?? inv.template_config?.is_active ?? false);
+
+    if (isActive && confirmSlugInput.trim() !== inv.slug) {
+      alert(`정식 서비스 중인 청첩장은 영문 주소(${inv.slug})를 정확히 입력해야 삭제할 수 있습니다.`);
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      // 1. 스토리지 파일 영구 삭제
+      await deleteInvitationStorageFiles(inv);
+
+      // 2. 연관 DB 테이블 삭제 (외래키 제약조건 방지)
+      await Promise.allSettled([
+        supabase.from('rsvp').delete().eq('invitation_id', inv.id),
+        supabase.from('guestbook').delete().eq('invitation_id', inv.id),
+        supabase.from('guest_photos').delete().eq('invitation_id', inv.id),
+      ]);
+
+      // 3. invitations 메인 테이블 삭제
+      const { error: invErr } = await supabase.from('invitations').delete().eq('id', inv.id);
+      if (invErr) throw invErr;
+
+      // 4. 연결된 1회용 인증코드가 있었다면 '사용 가능' 상태로 안전하게 자동 복원
+      if (inv.slug) {
+        try {
+          await supabase
+            .from('order_codes')
+            .update({ is_used: false, used_at: null, used_by_slug: null })
+            .eq('used_by_slug', inv.slug);
+        } catch (codeErr) {
+          console.warn('order_codes restore warning:', codeErr);
+        }
+      }
+
+      // 4. 로컬 상태 업데이트
+      setInvitations((prev) => prev.filter((item) => item.id !== inv.id));
+      setDeleteTarget(null);
+      setConfirmSlugInput('');
+      alert(`[${inv.groom_name} & ${inv.bride_name}] 청첩장과 업로드된 모든 사진 파일이 안전하게 영구 삭제되었습니다.`);
+    } catch (err) {
+      console.error('Delete invitation error:', err);
+      alert('삭제 중 오류가 발생했습니다: ' + (err.message || err));
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // 30일 경과 미활성화 샘플 일괄 정리 핸들러
+  const handleBatchPurgeOldSamples = async () => {
+    if (oldSampleInvitations.length === 0) return;
+    setIsBatchPurging(true);
+
+    try {
+      let successCount = 0;
+      for (const inv of oldSampleInvitations) {
+        try {
+          await deleteInvitationStorageFiles(inv);
+          await Promise.allSettled([
+            supabase.from('rsvp').delete().eq('invitation_id', inv.id),
+            supabase.from('guestbook').delete().eq('invitation_id', inv.id),
+            supabase.from('guest_photos').delete().eq('invitation_id', inv.id),
+          ]);
+          await supabase.from('invitations').delete().eq('id', inv.id);
+          successCount++;
+        } catch (subErr) {
+          console.warn(`Batch purge item error (${inv.slug}):`, subErr);
+        }
+      }
+
+      const purgedIds = new Set(oldSampleInvitations.map((i) => i.id));
+      setInvitations((prev) => prev.filter((item) => !purgedIds.has(item.id)));
+      setShowBatchPurgeModal(false);
+      alert(`30일 이상 지난 미활성화 샘플 총 ${successCount}건과 저장 공간이 모두 성공적으로 정리되었습니다.`);
+    } catch (err) {
+      console.error('Batch purge failed:', err);
+      alert('일괄 정리 중 오류가 발생했습니다: ' + (err.message || err));
+    } finally {
+      setIsBatchPurging(false);
+    }
+  };
+
+  // 컴포넌트 마운트 시 현재 타임스탬프 설정 (렌더 중 Date.now 호출 방지)
   useEffect(() => {
     const timer = setTimeout(() => {
       setCurrentTimestamp(Date.now());
@@ -170,7 +373,7 @@ export default function AdminDashboardPage() {
     try {
       const { data, error } = await supabase
         .from('invitations')
-        .select('id, slug, groom_name, bride_name, groom_phone, bride_phone, groom_father_phone, bride_father_phone, groom_mother_phone, bride_mother_phone, wedding_date, template_type, is_active, template_config, order_code, created_at, manage_token, service_expired_at')
+        .select('id, slug, groom_name, bride_name, groom_phone, bride_phone, groom_father_phone, bride_father_phone, groom_mother_phone, bride_mother_phone, wedding_date, template_type, is_active, template_config, order_code, created_at, manage_token, service_expired_at, images, gallery_images, bgm_url')
         .order('created_at', { ascending: false });
 
       if (!error && data) {
@@ -192,7 +395,7 @@ export default function AdminDashboardPage() {
       try {
         const [codesRes, invsRes] = await Promise.all([
           supabase.from('order_codes').select('*').order('created_at', { ascending: false }),
-          supabase.from('invitations').select('id, slug, groom_name, bride_name, groom_phone, bride_phone, groom_father_phone, bride_father_phone, groom_mother_phone, bride_mother_phone, wedding_date, template_type, is_active, template_config, order_code, created_at, manage_token, service_expired_at').order('created_at', { ascending: false }),
+          supabase.from('invitations').select('id, slug, groom_name, bride_name, groom_phone, bride_phone, groom_father_phone, bride_father_phone, groom_mother_phone, bride_mother_phone, wedding_date, template_type, is_active, template_config, order_code, created_at, manage_token, service_expired_at, images, gallery_images, bgm_url').order('created_at', { ascending: false }),
         ]);
 
         if (isMounted) {
@@ -749,14 +952,27 @@ ATELIER DE MUKIRU 드림`;
                   활성화 스위치를 켜면 즉시 워터마크가 제거되고 정식 서비스됩니다. <strong>[📋 안내문 복사]</strong>로 완성 링크를 고객에게 1초 만에 전송하세요.
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={loadInvitations}
-                disabled={loadingInvs}
-                className="self-start sm:self-center text-xs text-stone-500 hover:text-stone-900 font-mono underline inline-flex items-center gap-1 cursor-pointer"
-              >
-                <span>{loadingInvs ? '불러오는 중...' : '새로고침 ↻'}</span>
-              </button>
+              <div className="flex items-center gap-2 self-start sm:self-center">
+                {oldSampleInvitations.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowBatchPurgeModal(true)}
+                    className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-medium border border-rose-200 transition-colors cursor-pointer inline-flex items-center gap-1 shadow-2xs"
+                    title="제작된 지 30일 이상 지난 미활성화 샘플 청첩장 일괄 정리"
+                  >
+                    <span>🧹 30일 경과 샘플 정리</span>
+                    <span className="font-mono font-bold">({oldSampleInvitations.length}건)</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={loadInvitations}
+                  disabled={loadingInvs}
+                  className="text-xs text-stone-500 hover:text-stone-900 font-mono underline inline-flex items-center gap-1 cursor-pointer ml-1"
+                >
+                  <span>{loadingInvs ? '불러오는 중...' : '새로고침 ↻'}</span>
+                </button>
+              </div>
             </div>
 
             {loadingInvs ? (
@@ -1136,6 +1352,18 @@ ATELIER DE MUKIRU 드림`;
                                     <span>참석자 관리</span>
                                     <span className="text-[10px] text-stone-400">↗</span>
                                   </a>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setDeleteTarget(inv);
+                                      setConfirmSlugInput('');
+                                    }}
+                                    className="px-2 py-1.5 bg-white hover:bg-rose-50 text-rose-600 hover:text-rose-700 rounded-lg text-xs font-medium transition-colors border border-stone-200 hover:border-rose-300 inline-flex items-center gap-1 cursor-pointer"
+                                    title="청첩장 영구 삭제 (스토리지 사진 및 데이터 정리)"
+                                  >
+                                    <span>🗑️</span>
+                                    <span>삭제</span>
+                                  </button>
                                 </div>
                               </td>
                             </tr>
@@ -1323,6 +1551,181 @@ ATELIER DE MUKIRU 드림`;
               >
                 <span>{confirmTarget.nextActive ? '정식 활성화 실행' : '샘플 모드로 변경'}</span>
                 <span>→</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================
+          청첩장 개별 영구 삭제 확인 모달 (스토리지 + DB 완전 정리)
+         ======================================================== */}
+      {deleteTarget && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4"
+          onClick={() => {
+            if (!isDeleting) {
+              setDeleteTarget(null);
+              setConfirmSlugInput('');
+            }
+          }}
+        >
+          <div 
+            className="bg-white w-full max-w-md rounded-3xl p-6 sm:p-7 shadow-2xl border border-stone-200 text-left animate-in fade-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 상단 경고 배지 */}
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-[10px] font-mono tracking-widest uppercase px-2.5 py-0.5 rounded-full font-bold bg-rose-100 text-rose-800">
+                PERMANENT DELETE
+              </span>
+              {Boolean(deleteTarget.is_active ?? deleteTarget.template_config?.is_active ?? false) && (
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800">
+                  정식 서비스 중
+                </span>
+              )}
+            </div>
+
+            <h3 className="text-lg font-serif font-bold text-stone-900 mb-2">
+              청첩장을 완전히 삭제하시겠습니까?
+            </h3>
+
+            {/* 청첩장 정보 요약 박스 */}
+            <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200/80 my-4 space-y-2 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-stone-400">신랑 & 신부</span>
+                <span className="font-semibold text-stone-900">
+                  {deleteTarget.groom_name} & {deleteTarget.bride_name}
+                </span>
+              </div>
+              <div className="flex items-center justify-between font-mono">
+                <span className="text-stone-400">영문 주소 (URL)</span>
+                <span className="text-stone-700 font-medium">
+                  /{deleteTarget.slug}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-stone-400">예식 일시</span>
+                <span className="text-stone-700">
+                  {deleteTarget.wedding_date?.replace('T', ' ') || '-'}
+                </span>
+              </div>
+            </div>
+
+            {/* 삭제 안내 및 경고 */}
+            <div className="p-3.5 bg-rose-50/70 rounded-xl border border-rose-200/80 text-xs text-rose-900 leading-relaxed mb-4 space-y-1.5">
+              <p className="font-semibold flex items-center gap-1 text-rose-800">
+                <span>⚠️</span>
+                <span>삭제 시 다음 데이터가 즉시 영구 파기됩니다:</span>
+              </p>
+              <ul className="list-disc pl-5 space-y-0.5 text-rose-700 text-[11.5px]">
+                <li>Supabase Storage에 업로드된 <strong>모든 사진 및 음원 파일</strong> (용량 즉시 반환)</li>
+                <li>하객 참석 의사(RSVP) 응답 및 방명록 축하 메시지 전체</li>
+                <li>청첩장 웹페이지 및 관리자 토큰</li>
+              </ul>
+            </div>
+
+            {/* 정식 활성화된 청첩장인 경우 안전 가드 (슬러그 직접 입력 확인) */}
+            {Boolean(deleteTarget.is_active ?? deleteTarget.template_config?.is_active ?? false) ? (
+              <div className="mb-5">
+                <label className="block text-xs font-medium text-stone-700 mb-1.5">
+                  안전을 위해 영문 주소 <strong className="text-rose-600 font-mono">"{deleteTarget.slug}"</strong>을 아래에 똑같이 입력하세요:
+                </label>
+                <input
+                  type="text"
+                  value={confirmSlugInput}
+                  onChange={(e) => setConfirmSlugInput(e.target.value)}
+                  placeholder={deleteTarget.slug}
+                  disabled={isDeleting}
+                  className="w-full bg-white border border-stone-300 rounded-xl px-3 py-2 text-xs font-mono text-stone-900 outline-none focus:border-rose-500"
+                />
+              </div>
+            ) : null}
+
+            {/* 액션 버튼 */}
+            <div className="flex gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setDeleteTarget(null);
+                  setConfirmSlugInput('');
+                }}
+                disabled={isDeleting}
+                className="flex-1 py-3 px-4 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteInvitation}
+                disabled={isDeleting || (Boolean(deleteTarget.is_active ?? deleteTarget.template_config?.is_active ?? false) && confirmSlugInput.trim() !== deleteTarget.slug)}
+                className="flex-1 py-3 px-4 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <span>{isDeleting ? '스토리지 및 데이터 삭제 중...' : '영구 삭제 실행'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================
+          30일 경과 미활성화 샘플 일괄 정리 모달
+         ======================================================== */}
+      {showBatchPurgeModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4"
+          onClick={() => {
+            if (!isBatchPurging) setShowBatchPurgeModal(false);
+          }}
+        >
+          <div 
+            className="bg-white w-full max-w-md rounded-3xl p-6 sm:p-7 shadow-2xl border border-stone-200 text-left animate-in fade-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-[10px] font-mono tracking-widest uppercase px-2.5 py-0.5 rounded-full font-bold bg-amber-100 text-amber-800">
+                BATCH CLEANUP
+              </span>
+            </div>
+
+            <h3 className="text-lg font-serif font-bold text-stone-900 mb-2">
+              오래된 미활성화 샘플 일괄 정리
+            </h3>
+
+            <p className="text-xs text-stone-500 leading-relaxed font-light mb-4">
+              제작된 지 <strong className="text-stone-800 font-medium">30일이 지난 미활성화(샘플) 청첩장 {oldSampleInvitations.length}건</strong>을 일괄 정리하여 Supabase 스토리지 저장 공간을 확보합니다.
+            </p>
+
+            {/* 정리 대상 목록 미리보기 */}
+            <div className="max-h-40 overflow-y-auto p-3 bg-stone-50 rounded-xl border border-stone-200/80 mb-4 divide-y divide-stone-100 text-xs font-mono">
+              {oldSampleInvitations.map((inv) => (
+                <div key={inv.id} className="py-1.5 first:pt-0 last:pb-0 flex items-center justify-between text-stone-600">
+                  <span>{inv.groom_name} & {inv.bride_name}</span>
+                  <span className="text-stone-400">/{inv.slug}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-3 bg-amber-50 rounded-xl border border-amber-200/70 text-xs text-amber-800 mb-5 leading-relaxed">
+              정리 실행 시 해당 청첩장들의 <strong>업로드된 사진/오디오 파일과 DB 데이터가 영구 삭제</strong>되며 되돌릴 수 없습니다.
+            </div>
+
+            <div className="flex gap-2.5">
+              <button
+                type="button"
+                onClick={() => setShowBatchPurgeModal(false)}
+                disabled={isBatchPurging}
+                className="flex-1 py-3 px-4 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={handleBatchPurgeOldSamples}
+                disabled={isBatchPurging}
+                className="flex-1 py-3 px-4 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
+              >
+                <span>{isBatchPurging ? '일괄 정리 중...' : `${oldSampleInvitations.length}건 모두 영구 삭제`}</span>
               </button>
             </div>
           </div>

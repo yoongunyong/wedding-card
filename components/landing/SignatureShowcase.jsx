@@ -283,15 +283,12 @@ export default function SignatureShowcase() {
                         style={{ animation: 'fadeInScale 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}
                       >
                         {/* 상단 필기체 문구 (0.5배 확대 및 카드 밀착 밸런스) */}
-                        <div className="text-center mb-2.5">
-                          <p
-                            className="text-white text-[26px] font-normal tracking-wide drop-shadow-sm select-none leading-tight"
-                            style={{
-                              fontFamily: "'Bickham Script Pro', 'BickhamScriptPro-Regular', 'Bickham Script Pro 3', cursive",
-                            }}
-                          >
-                            We are getting married
-                          </p>
+                        <div className="w-full flex justify-center mb-2 px-2">
+                          <img
+                            src="/samples/editorial-we-are-getting-married.png"
+                            alt="We are getting married"
+                            className="w-[195px] h-auto object-contain select-none pointer-events-none drop-shadow-sm"
+                          />
                         </div>
 
                         {/* 중앙 화이트 카드 */}

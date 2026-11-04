@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600;6..96,700;6..96,800;6..96,900&family=Noto+Serif+KR:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @font-face {
@@ -14,6 +14,22 @@
   src: url('/fonts/BickhamScriptPro-Regular.woff') format('woff');
   font-weight: 400;
   font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Weddingday Personal Use';
+  src: url('/fonts/WeddingdayPersonalUse.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NanumSquare Neo';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_11-01@1.0/NanumSquareNeo-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
   font-display: swap;
 }
 
@@ -66,11 +82,20 @@ body {
 }
 
 .font-bodoni {
-  font-family: "Bodoni 72", "Bodoni 72 Oldstyle", "Bodoni 72 Smallcaps", "Bodoni MT", "Bodoni Moda", "Playfair Display", serif !important;
+  font-family: 'Bodoni 72', 'Bodoni Moda', 'Didot', 'Bodoni MT', serif !important;
+  font-variant-numeric: lining-nums tabular-nums !important;
 }
 
 .font-bickham {
   font-family: 'Bickham Script Pro', 'Bickham Script Pro 3', 'Bickham Script Pro Regular', 'Great Vibes', 'Alex Brush', 'Pinyon Script', cursive !important;
+}
+
+.font-weddingday {
+  font-family: 'Weddingday Personal Use', 'Bickham Script Pro', cursive !important;
+}
+
+.font-nanumsquare {
+  font-family: 'NanumSquare Neo', 'NanumSquare Neo OTF', -apple-system, BlinkMacSystemFont, sans-serif !important;
 }
 
 .font-script,

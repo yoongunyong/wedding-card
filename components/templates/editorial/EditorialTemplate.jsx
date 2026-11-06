@@ -328,10 +328,27 @@ export default function EditorialTemplate({ invitation }) {
   const groomAccounts = (invitation?.accounts || []).filter((a) => a.group === '신랑측' || a.side === 'groom');
   const brideAccounts = (invitation?.accounts || []).filter((a) => a.group === '신부측' || a.side === 'bride');
 
-  // 정보 카드 목록
-  const infoCards = invitation?.info_notices || [];
-  // 교통편 목록
-  const transportationList = invitation?.transportation || [];
+  // 정보 카드 목록 (동적 배열 및 레거시 extra_data 완벽 호환)
+  const infoCards = useMemo(() => {
+    const raw = invitation?.info_notices;
+    if (Array.isArray(raw) && raw.length > 0) return raw;
+    const legacy = [];
+    if (extra.meal_info) legacy.push({ title: '식사 안내', content: extra.meal_info });
+    if (extra.shuttle_info) legacy.push({ title: '셔틀버스 안내', content: extra.shuttle_info });
+    return legacy;
+  }, [invitation?.info_notices, extra.meal_info, extra.shuttle_info]);
+
+  // 교통편 목록 (동적 배열 및 레거시 extra_data 완벽 호환)
+  const transportationList = useMemo(() => {
+    const raw = invitation?.transportation;
+    if (Array.isArray(raw) && raw.length > 0) return raw;
+    const legacy = [];
+    if (extra.transport_subway) legacy.push({ type: 'subway', title: '지하철', content: extra.transport_subway });
+    if (extra.transport_bus) legacy.push({ type: 'bus', title: '버스', content: extra.transport_bus });
+    if (extra.transport_car) legacy.push({ type: 'car', title: '자가용', content: extra.transport_car });
+    if (extra.transport_parking) legacy.push({ type: 'parking', title: '주차 안내', content: extra.transport_parking });
+    return legacy;
+  }, [invitation?.transportation, extra.transport_subway, extra.transport_bus, extra.transport_car, extra.transport_parking]);
 
   // 공유 함수
   const handleCopyLink = async () => {
@@ -826,7 +843,7 @@ export default function EditorialTemplate({ invitation }) {
                     </>
                   ) : (
                     <>
-                      {coupleHeartText.split(' ♥ ')[0] || groomName} <span className="text-[#F17171] mx-0.5">♥</span> {coupleHeartText.split(' ♥ ')[1] || brideName}님의 결혼식이{' '}
+                      {groomName && brideName ? (<>{groomName} <span className="text-[#F17171] mx-0.5">♥</span> {brideName}님의</>) : coupleKo ? (<>{coupleKo}님의</>) : (<>두 사람의</>)} 결혼식이{' '}
                       {timeLeft.isToday ? (
                         <>오늘 <span className="text-[#F17171] font-medium">축복 속에</span> 시작됩니다.</>
                       ) : timeLeft.isPast ? (
@@ -1034,8 +1051,9 @@ export default function EditorialTemplate({ invitation }) {
             </div>
 
             {/* 오시는 길 안내 관련 박스 (Figma: 너비 553px -> 1x 276.5px, mt-[54.5px], text-left) */}
-            <div className="mt-[54.5px] w-[276.5px] max-w-full mx-auto text-left">
-              {transportationList.length > 0 ? (
+            {(transportationList.length > 0 || isSample) && (
+              <div className="mt-[54.5px] w-[276.5px] max-w-full mx-auto text-left">
+                {transportationList.length > 0 ? (
                 /* 고객 직접 입력 교통편이 있는 경우 */
                 <div className="space-y-[24px]">
                   {transportationList.map((item, idx) => (
@@ -1052,7 +1070,7 @@ export default function EditorialTemplate({ invitation }) {
                     </div>
                   ))}
                 </div>
-              ) : (
+              ) : isSample ? (
                 /* 피그마 시안 2 기본 오시는 길 안내 */
                 <div>
                   {/* 지하철 블록 */}
@@ -1090,8 +1108,9 @@ export default function EditorialTemplate({ invitation }) {
                     </p>
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
+            )}
 
             {/* 식장 위치 섹션 바닥 공통 구분선 (인수인계서 필수 탑재 규격: w-[280.5px], borderTop: 0.5px solid #999999) */}
             <div 

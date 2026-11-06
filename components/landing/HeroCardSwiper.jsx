@@ -414,36 +414,6 @@ export default function HeroCardSwiper() {
                     }`}
                   />
 
-                  {/* 카드 상단 헤더: 옵션 넘버 & 날짜 & 우측 '눈(Eye)' 퀵뷰 버튼 */}
-                  <div className="relative z-10 p-4 sm:p-5 flex items-start justify-between">
-                    <div>
-                      <span className="inline-block px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[10px] sm:text-[11px] font-mono tracking-widest text-white uppercase shadow-xs whitespace-nowrap">
-                        {card.category} · {card.badge}
-                      </span>
-                      <p className="font-mono text-[10px] text-white/80 tracking-wider mt-1.5">
-                        {card.dateText}
-                      </p>
-                    </div>
-
-                    {/* 중앙 활성 카드에 뜨는 눈(Eye) 아이콘 퀵뷰 */}
-                    {isActive && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openPreview(card.templateId);
-                        }}
-                        aria-label="청첩장 전체화면 미리보기"
-                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/25 flex items-center justify-center text-white transition-all shadow-md hover:scale-105 active:scale-95"
-                      >
-                        <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white/90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
-
                   {/* =====================================================
                       카드 중앙 맞춤형 시그니처 비주얼 요소 (5대 시안 100% 특화)
                      ===================================================== */}
@@ -589,9 +559,6 @@ export default function HeroCardSwiper() {
 
                   {/* 카드 하단 정보: 성함 & 웨딩홀 & 시안 타이틀 */}
                   <div className="absolute inset-x-0 bottom-0 z-10 p-4 sm:p-6 text-white text-left">
-                    <span className="text-[10px] font-mono text-amber-300 tracking-wider uppercase block mb-1">
-                      {card.category} · {card.subTitle}
-                    </span>
                     <h3 className="font-sans text-base sm:text-lg font-bold text-white tracking-tight drop-shadow-xs">
                       {card.title}
                     </h3>

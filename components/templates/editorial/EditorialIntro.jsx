@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import WeAreGettingMarriedSvg from './WeAreGettingMarriedSvg';
 
 export default function EditorialIntro({ invitation, onOpen }) {
   // 'idle' | 'darkening' | 'revealing'
@@ -137,11 +138,9 @@ export default function EditorialIntro({ invitation, onOpen }) {
         {/* 1-2. 중앙 클러스터: 상단 손글씨 타이틀 + 중앙 화이트 카드 + 하단 날짜 (Figma 프레임 1:1 매칭) */}
         <div className="relative z-10 w-full max-w-[310px] flex flex-col items-center py-1">
           
-          {/* 상단: We are getting married (Figma 2832:2131: Weddingday Personal Use 80px -> 1x 40px, #F3F3F3, mb 48px -> 1x 24px) */}
+          {/* 상단: We are getting married 손글씨 드로잉 벡터 (Figma 2832:2131) */}
           <div className="w-full text-center mb-[24px] shrink-0 flex justify-center items-center">
-            <h1 className="font-weddingday text-[40px] text-[#F3F3F3] leading-[70%] text-center select-none tracking-normal drop-shadow-md whitespace-nowrap">
-              We are getting married
-            </h1>
+            <WeAreGettingMarriedSvg className="w-full" />
           </div>
 
           {/* 중앙: 피그마 화이트 프레임 카드 (Figma Rectangle 6219: 619x998 -> 1x 309.5x499, background: #FEFEFE) */}
@@ -211,107 +210,7 @@ export default function EditorialIntro({ invitation, onOpen }) {
         </div>
       </div>
 
-      {/* 2. 사선 캘리그래피 획 마스크 & 펜촉 이동 인라인 CSS */}
-      <style jsx>{`
-        .editorial-handwriting-stroke {
-          display: block;
-          filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
-          animation: realHandwritingDraw 2.4s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
-          will-change: mask-image, -webkit-mask-image;
-        }
-
-        /* 필기체 펜촉 각도(115deg)와 단어별 리듬(We -> are -> getting -> married)에 맞춘 잉크 드로잉 */
-        @keyframes realHandwritingDraw {
-          0% {
-            -webkit-mask-image: linear-gradient(115deg, black 0%, black 0%, transparent 3%, transparent 100%);
-            mask-image: linear-gradient(115deg, black 0%, black 0%, transparent 3%, transparent 100%);
-            opacity: 0.2;
-          }
-          /* We 완성 (약 0.45초) */
-          18% {
-            -webkit-mask-image: linear-gradient(115deg, black 0%, black 20%, transparent 24%, transparent 100%);
-            mask-image: linear-gradient(115deg, black 0%, black 20%, transparent 24%, transparent 100%);
-            opacity: 1;
-          }
-          /* are 완성 (약 0.9초) */
-          38% {
-            -webkit-mask-image: linear-gradient(115deg, black 0%, black 38%, transparent 43%, transparent 100%);
-            mask-image: linear-gradient(115deg, black 0%, black 38%, transparent 43%, transparent 100%);
-          }
-          /* getting 완성 (약 1.6초) */
-          68% {
-            -webkit-mask-image: linear-gradient(115deg, black 0%, black 67%, transparent 72%, transparent 100%);
-            mask-image: linear-gradient(115deg, black 0%, black 67%, transparent 72%, transparent 100%);
-          }
-          /* married 완성 (약 2.3초) */
-          96% {
-            -webkit-mask-image: linear-gradient(115deg, black 0%, black 97%, transparent 100%, transparent 100%);
-            mask-image: linear-gradient(115deg, black 0%, black 97%, transparent 100%, transparent 100%);
-          }
-          100% {
-            -webkit-mask-image: none;
-            mask-image: none;
-            opacity: 1;
-            filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.5));
-          }
-        }
-
-        /* 펜촉 잉크 광원 효과 (단어들의 중심선 높낮이와 사선 각도를 따라 정밀 이동) */
-        .editorial-pen-nib {
-          position: absolute;
-          width: 14px;
-          height: 14px;
-          border-radius: 50%;
-          background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgba(255, 235, 185, 0.8) 35%, rgba(255, 255, 255, 0) 70%);
-          pointer-events: none;
-          box-shadow: 0 0 10px rgba(255, 255, 255, 0.9), 0 0 20px rgba(255, 220, 160, 0.6);
-          animation: realPenNibMove 2.4s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
-          will-change: left, top, opacity;
-        }
-
-        @keyframes realPenNibMove {
-          0% {
-            left: 2%;
-            top: 40%;
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.3);
-          }
-          3% {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1.1);
-          }
-          /* We */
-          18% {
-            left: 20%;
-            top: 48%;
-          }
-          /* are */
-          38% {
-            left: 38%;
-            top: 50%;
-          }
-          /* getting */
-          68% {
-            left: 67%;
-            top: 44%;
-          }
-          /* married */
-          96% {
-            left: 98%;
-            top: 42%;
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(0.9);
-          }
-          100% {
-            left: 100%;
-            top: 42%;
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.2);
-          }
-        }
-      `}</style>
-
-      {/* 3. 시네마틱 껌뻑(Blink / Fade to black) 암전 오버레이 */}
+      {/* 2. 시네마틱 껌뻑(Blink / Fade to black) 암전 오버레이 */}
       <div
         className={`fixed inset-0 z-[60] bg-black pointer-events-none transition-opacity ${
           transitionStep === 'darkening'

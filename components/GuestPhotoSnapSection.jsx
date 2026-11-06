@@ -7,6 +7,7 @@ import GuestPhotoUploadModal from './GuestPhotoUploadModal';
 export default function GuestPhotoSnapSection({ 
   invitation, 
   isNightMode = false,
+  isEditorial = false,
   className = ''
 }) {
   const [showModal, setShowModal] = useState(false);
@@ -18,6 +19,13 @@ export default function GuestPhotoSnapSection({
   const isSample = Boolean(
     invitation?.is_sample_preview || 
     ['basic', 'editorial', 'playlist', 'cinematic', 'scene'].includes(invitation?.slug)
+  );
+
+  // 에디토리얼 모드 판별 (명시적 prop 또는 template_id/slug 감지)
+  const isEditorialMode = Boolean(
+    isEditorial || 
+    invitation?.template_id === 'editorial' || 
+    invitation?.slug === 'editorial'
   );
 
   // 사진 공유 전용 대표 사진 (방안 B: images.photo_sharing 최우선, 미등록 시 빈값 -> 카메라 플레이스홀더)
@@ -59,6 +67,116 @@ export default function GuestPhotoSnapSection({
 
   if (!isEnabled || (!invitation?.id && !invitation?.slug)) return null;
 
+  // 1. 에디토리얼(시안 2) 피그마 실측 1:1 정밀 렌더링
+  if (isEditorialMode) {
+    const displayImage = photoSharingImage || images.couple_profile || images.couple || extra.couple_profile_image || (isSample ? '/samples/couple-profile-01.jpg' : (images.main || images.cover || invitation?.main_image || ''));
+
+    return (
+      <section
+        id="guest-photo-snap"
+        className={`w-full bg-[#FEFEFE] pt-[65.5px] pb-0 text-center select-none overflow-hidden ${className}`}
+      >
+        <ScrollReveal>
+          {/* 상단 1: Photo Sharing 영문 필기체 (Figma: Weddingday Personal Use 70px -> 1x 35px, #292929, leading-[72%]) */}
+          <h2 className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal">
+            Photo Sharing
+          </h2>
+
+          {/* 상단 2: 사진 공유 (Figma: NanumSquare Neo OTF 36px -> 1x 18px, #292929, mt-[34.5px]) */}
+          <p className="font-nanumsquare font-normal text-[18px] text-[#292929] leading-none text-center mt-[34.5px] tracking-tight">
+            사진 공유
+          </p>
+
+          {/* 상단 3: 감성 안내 문구 (Figma: NanumSquare Neo OTF 28px -> 1x 14px, #333333, leading-[1.74], mt-[43px]) */}
+          <p className="font-nanumsquare font-normal text-[14px] text-[#333333] leading-[1.74] text-center mt-[43px] tracking-tight whitespace-pre-line max-w-[280px] mx-auto">
+            저희의 소중한 순간을 함께 담아주세요.{'\n'}
+            여러분의 시선으로 기록된 특별한 순간들을{'\n'}
+            오래도록 간직하고 싶습니다.
+          </p>
+
+          {/* 중앙: 폴라로이드 액자 카드 (Figma: 318x385 -> 1x 159x192.5px, bg #FEFEFE, shadow, mt-[22.5px]) */}
+          <div className="mt-[22.5px] flex items-center justify-center">
+            <div
+              style={{
+                boxShadow: '0px 2.7px 5.1px rgba(0, 0, 0, 0.35)',
+              }}
+              className="w-[159px] bg-[#FEFEFE] pt-[8.6px] px-[8.6px] pb-[10px] flex flex-col items-center select-none"
+            >
+              {/* 폴라로이드 내부 상단 이미지 (Figma: 283.5x288.46 -> 1x 141.75x144.23px) */}
+              <div className="w-[141.75px] h-[144.23px] bg-stone-100 overflow-hidden flex items-center justify-center">
+                {displayImage ? (
+                  <img
+                    src={displayImage}
+                    alt="Photo Sharing Frame"
+                    className="w-full h-full object-cover select-none"
+                    onError={(e) => {
+                      if (isSample && e.currentTarget.src !== '/samples/couple-profile-01.jpg') {
+                        e.currentTarget.src = '/samples/couple-profile-01.jpg';
+                      }
+                    }}
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-stone-400 gap-1">
+                    <svg className="w-6 h-6 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+                    </svg>
+                    <span className="text-[10px] font-sans">Photo Snap</span>
+                  </div>
+                )}
+              </div>
+
+              {/* 폴라로이드 내부 하단 문구: 예식 당일 부터 업로드 가능합니다. (Figma: 18px -> 1x 9px, #999999, mt-[8px]) */}
+              <p className="font-nanumsquare font-normal text-[9px] text-[#999999] leading-none text-center mt-[8px]">
+                예식 당일 부터 업로드 가능합니다.
+              </p>
+            </div>
+          </div>
+
+          {/* 하단 버튼: 사진 업로드하기 (Figma: 329x78 -> 1x 164.5x39px, bg #393939, rounded-full, mt-[26.5px]) */}
+          <div className="mt-[26.5px] flex items-center justify-center">
+            <button
+              type="button"
+              onClick={() => {
+                if (isDDayOrAfter) {
+                  setShowModal(true);
+                } else {
+                  alert('예식 당일부터 사진을 등록하실 수 있습니다 🤍');
+                }
+              }}
+              style={{
+                boxShadow: '0px 4px 14.2px rgba(0, 0, 0, 0.09)',
+              }}
+              className="w-[164.5px] h-[39px] bg-[#393939] hover:bg-[#2c2c2c] active:scale-[0.98] rounded-full flex items-center justify-center transition-all cursor-pointer select-none"
+            >
+              <span className="font-nanumsquare font-bold text-[14px] text-[#F3F3F3] leading-none tracking-tight">
+                사진 업로드하기
+              </span>
+            </button>
+          </div>
+
+          {/* 사진 공유 섹션 바닥 공통 구분선 (인수인계서 필수 원칙: w-[280.5px], borderTop: 0.5px solid #999999) */}
+          <div 
+            style={{ borderTop: '0.5px solid #999999' }}
+            className="w-[280.5px] max-w-[75%] mt-[70px] mb-[50px] mx-auto shrink-0" 
+          />
+        </ScrollReveal>
+
+        {/* 업로드 모달 레이어 */}
+        {showModal && (
+          <GuestPhotoUploadModal
+            invitation={invitation}
+            onClose={() => setShowModal(false)}
+            onSuccess={() => {
+              alert('소중한 사진이 성공적으로 전달되었습니다! 감사합니다 🤍');
+            }}
+          />
+        )}
+      </section>
+    );
+  }
+
+  // 2. 기본형 템플릿 (Basic, Playlist, Cinematic, Scene) 렌더링 유지
   return (
     <section
       id="guest-photo-snap"

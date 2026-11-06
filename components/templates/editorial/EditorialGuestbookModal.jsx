@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export default function EditorialGuestbookModal({ invitationId, onClose, onSuccess }) {
@@ -8,6 +8,15 @@ export default function EditorialGuestbookModal({ invitationId, onClose, onSucce
   const [password, setPassword] = useState('');
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // 모달 마운트 시 배경 스크롤 잠금 (브라우저 퀵스크롤 및 배경 밀림 완전 차단)
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,88 +56,93 @@ export default function EditorialGuestbookModal({ invitationId, onClose, onSucce
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs select-none"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs select-none"
       onClick={onClose}
     >
       <div
-        className="bg-white w-full max-w-[390px] border border-stone-200 shadow-2xl relative p-7 sm:p-8 animate-in fade-in zoom-in-95 duration-200"
+        className="bg-white w-full max-w-[340px] rounded-[20px] shadow-2xl relative pt-[32px] pb-[28px] px-[20px] sm:px-[24px] animate-in fade-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto no-scrollbar"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 닫기 버튼 */}
+        {/* 닫기 버튼 (X표시) */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 text-stone-400 hover:text-stone-900 transition-colors cursor-pointer w-8 h-8 flex items-center justify-center text-xl font-light"
+          className="absolute top-5 right-5 text-[#3C3A3A] hover:text-black transition-colors cursor-pointer w-8 h-8 flex items-center justify-center"
           aria-label="닫기"
         >
-          ✕
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M1.5 1.5L14.5 14.5M14.5 1.5L1.5 14.5" stroke="#3C3A3A" strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
         </button>
 
         {/* 헤더 */}
-        <div className="text-center pb-6 border-b border-stone-200 mb-6">
-          <span className="font-sans text-[10px] sm:text-[10.5px] tracking-[0.28em] uppercase text-stone-400 block mb-1 font-medium">
-            GUESTBOOK INSCRIPTION
-          </span>
-          <h3 className="font-sans text-[22px] sm:text-[24px] text-stone-900 leading-tight font-normal">
-            Leave a Message
+        <div className="text-center">
+          {/* 축하 메시지 작성하기 (Figma: NanumSquare Neo OTF 34px -> 1x 17px, #333333) */}
+          <h3 className="font-nanumsquare font-normal text-[17px] text-[#333333] leading-none text-center tracking-tight">
+            축하 메시지 작성하기
           </h3>
-          <p className="font-serif text-[12.5px] sm:text-[13px] text-stone-600 mt-1.5 leading-relaxed font-normal tracking-tight">
-            두 사람의 새로운 여정에 따뜻한 한마디를 남겨주세요.
-          </p>
+
+          {/* 헤더 구분선 Line 127 (Figma: width 546px -> 1x 273px, border: 1px solid #9C9C9C) */}
+          <div style={{ borderTop: '1px solid #9C9C9C' }} className="w-full max-w-[273px] mx-auto mt-[18px] mb-[22px]" />
         </div>
 
         {/* 폼 */}
-        <form onSubmit={handleSubmit} className="space-y-4 text-xs font-sans">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <span className="font-editorial-serif text-[11px] tracking-widest uppercase text-stone-400 block mb-1.5 font-semibold">
-                NAME *
-              </span>
-              <input
-                type="text"
-                required
-                value={author}
-                onChange={(e) => setAuthor(e.target.value)}
-                placeholder="작성자 성함"
-                className="w-full px-3 py-2.5 bg-white border border-stone-300 text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 text-xs transition-colors"
-              />
-            </div>
-
-            <div>
-              <span className="font-editorial-serif text-[11px] tracking-widest uppercase text-stone-400 block mb-1.5 font-semibold">
-                PASSWORD *
-              </span>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="삭제용 비밀번호"
-                className="w-full px-3 py-2.5 bg-white border border-stone-300 text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 text-xs transition-colors"
-              />
-            </div>
-          </div>
-
+        <form onSubmit={handleSubmit} className="space-y-[16px] text-left">
+          {/* 1. 작성자 */}
           <div>
-            <span className="font-editorial-serif text-[11px] tracking-widest uppercase text-stone-400 block mb-1.5 font-semibold">
-              MESSAGE *
-            </span>
-            <textarea
+            <label className="font-nanumsquare font-bold text-[15px] text-[#575757] leading-none mb-[8px] block">
+              작성자
+            </label>
+            <input
+              type="text"
               required
-              rows={4}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="따뜻한 축하의 메시지를 남겨주세요"
-              className="w-full px-3.5 py-3 bg-white border border-stone-300 text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 text-xs font-korean-serif leading-relaxed transition-colors resize-none"
+              value={author}
+              onChange={(e) => setAuthor(e.target.value)}
+              placeholder="성함"
+              style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.08)' }}
+              className="w-full h-[50px] px-4 bg-white border border-[#DAD1D1] rounded-[11.5px] text-[#333333] placeholder:text-[#B5B5B5] font-nanumsquare text-[13px] focus:outline-none focus:border-[#393939] transition-colors"
             />
           </div>
 
-          <div className="pt-3 border-t border-stone-200">
+          {/* 2. 비밀번호 */}
+          <div>
+            <label className="font-nanumsquare font-bold text-[15px] text-[#575757] leading-none mb-[8px] block">
+              비밀번호
+            </label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="비밀번호 입력"
+              style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.08)' }}
+              className="w-full h-[50px] px-4 bg-white border border-[#DAD1D1] rounded-[11.5px] text-[#333333] placeholder:text-[#B5B5B5] font-nanumsquare text-[13px] focus:outline-none focus:border-[#393939] transition-colors"
+            />
+          </div>
+
+          {/* 3. 내용 */}
+          <div>
+            <label className="font-nanumsquare font-bold text-[15px] text-[#575757] leading-none mb-[8px] block">
+              내용
+            </label>
+            <textarea
+              required
+              rows={5}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="내용 입력"
+              style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.08)' }}
+              className="w-full h-[140px] p-4 bg-white border border-[#DAD1D1] rounded-[11.5px] text-[#333333] placeholder:text-[#B5B5B5] font-nanumsquare text-[13px] leading-relaxed focus:outline-none focus:border-[#393939] transition-colors resize-none"
+            />
+          </div>
+
+          {/* 4. 작성 완료 버튼 */}
+          <div className="pt-2">
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-stone-900 hover:bg-stone-800 disabled:bg-stone-400 text-white text-[11px] uppercase tracking-[0.22em] font-sans font-medium rounded-full transition-colors cursor-pointer shadow-sm"
+              className="w-full h-[46px] bg-[#393939] hover:bg-[#2c2c2c] active:scale-[0.99] disabled:bg-[#888888] text-[#F6F6F6] font-nanumsquare font-bold text-[14px] rounded-[11.5px] transition-all cursor-pointer shadow-sm flex items-center justify-center select-none"
             >
-              {loading ? 'Posting...' : 'Register Message · 축하글 남기기'}
+              {loading ? '등록 중...' : '작성 완료'}
             </button>
           </div>
         </form>

@@ -1,21 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export default function EditorialRsvpModal({ invitation, invitationId, onClose }) {
   const [side, setSide] = useState('groom'); // 'groom' | 'bride'
   const [attend, setAttend] = useState(true); // true | false
   const [name, setName] = useState('');
-  const [attendeeCount, setAttendeeCount] = useState('1');
+  const [attendeeCount, setAttendeeCount] = useState(1);
   const [phone, setPhone] = useState('');
-  const [meal, setMeal] = useState('식사 가능'); // '식사 가능' | '식사 불가' | '미정'
-  const [bus, setBus] = useState('미탑승'); // '탑승' | '미탑승'
+  const [meal, setMeal] = useState('식사 가능'); // '미정' | '식사 가능' | '식사 불가'
+  const [bus, setBus] = useState('탑승'); // '탑승' | '미탑승'
   const [loading, setLoading] = useState(false);
 
   const config = invitation?.template_config || {};
   const extra = invitation?.extra_data || {};
   const isSample = Boolean(invitation?.is_sample_preview || invitation?.slug === 'editorial');
+
+  // 모달 마운트 시 배경 스크롤 잠금 (브라우저 퀵스크롤 및 배경 밀림 완전 차단)
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
 
   // 전세버스 탑승 조사 노출 여부 (제작/수정 시 체크박스 on/off 연동)
   const showBusOption = Boolean(
@@ -113,152 +122,180 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs select-none"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs select-none"
       onClick={onClose}
     >
       <div
-        className="bg-white w-full max-w-[390px] border border-stone-200 shadow-2xl relative p-7 sm:p-8 animate-in fade-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto"
+        className="bg-white w-full max-w-[340px] rounded-[20px] shadow-2xl relative pt-[32px] pb-[28px] px-[20px] sm:px-[24px] animate-in fade-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto no-scrollbar"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 닫기 버튼 */}
+        {/* 닫기 버튼 (X표시) */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 text-stone-400 hover:text-stone-900 transition-colors cursor-pointer w-8 h-8 flex items-center justify-center text-xl font-light"
+          className="absolute top-5 right-5 text-[#3C3A3A] hover:text-black transition-colors cursor-pointer w-8 h-8 flex items-center justify-center"
           aria-label="닫기"
         >
-          ✕
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M1.5 1.5L14.5 14.5M14.5 1.5L1.5 14.5" stroke="#3C3A3A" strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
         </button>
 
         {/* 헤더 */}
-        <div className="text-center pb-6 border-b border-stone-200 mb-6">
-          <span className="font-sans text-[10px] sm:text-[10.5px] tracking-[0.28em] uppercase text-stone-400 block mb-1 font-medium">
-            R . S . V . P
-          </span>
-          <h3 className="font-sans text-[22px] sm:text-[24px] text-stone-900 leading-tight font-normal">
-            Attendance Card
+        <div className="text-center">
+          {/* 참석 의사 체크하기 (Figma: NanumSquare Neo OTF 34px -> 1x 17px, #333333) */}
+          <h3 className="font-nanumsquare font-normal text-[17px] text-[#333333] leading-none text-center tracking-tight">
+            참석 의사 체크하기
           </h3>
-          <p className="font-serif text-[12.5px] sm:text-[13px] text-stone-600 mt-1.5 leading-relaxed break-keep font-normal tracking-tight">
-            귀한 발걸음으로 축복해 주실 분들을<br />소중히 맞이하고자 하오니 참석 여부를 알려주세요.
+
+          {/* 서브 안내 문구 (Figma: NanumSquare Neo OTF 24px -> 1x 12px, leading-150%, #575757) */}
+          <p className="font-nanumsquare font-normal text-[12px] text-[#575757] leading-[1.5] text-center mt-[14px] tracking-tight whitespace-pre-line">
+            한 분 한 분을 소중히 모실 수 있도록{'\n'}
+            참석 의사를 전해주시면 감사하겠습니다.
           </p>
+
+          {/* 헤더 하단 구분선 (Figma: 546px -> 1x 273px, border: 1px solid #D3D3D3) */}
+          <div style={{ borderTop: '1px solid #D3D3D3' }} className="w-full max-w-[273px] mx-auto mt-[18px] mb-[20px]" />
         </div>
 
         {/* 폼 본문 */}
-        <form onSubmit={handleSubmit} className="space-y-5 text-xs font-sans">
-          {/* 1. 구분 선택 (신랑측 / 신부측) */}
+        <form onSubmit={handleSubmit} className="space-y-[18px] text-left">
+          {/* 1. 어느 분의 하객이신가요? */}
           <div>
-            <span className="font-editorial-serif text-[11px] tracking-widest uppercase text-stone-400 block mb-2 font-semibold">
-              01 · INVITATION SIDE
-            </span>
-            <div className="grid grid-cols-2 gap-2">
+            <label className="font-nanumsquare font-normal text-[12px] text-[#575757] leading-none mb-[8px] block">
+              어느 분의 하객이신가요?
+            </label>
+            <div className="grid grid-cols-2 gap-[10px]">
+              {/* 신랑 버튼 */}
               <button
                 type="button"
                 onClick={() => setSide('groom')}
-                className={`py-3 text-xs tracking-wider transition-all cursor-pointer ${
+                style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.08)' }}
+                className={`h-[41.5px] rounded-[11.5px] flex items-center justify-center font-nanumsquare text-[12px] tracking-tight transition-all cursor-pointer select-none ${
                   side === 'groom'
-                    ? 'bg-stone-900 text-white font-medium'
-                    : 'bg-white border border-stone-300 text-stone-600 hover:border-stone-900'
+                    ? 'bg-[#393939] border border-[#393939] text-[#F6F6F6] font-bold'
+                    : 'bg-white border border-[#DAD1D1] text-[#B5B5B5] font-normal hover:border-stone-400'
                 }`}
               >
-                신랑측 하객
+                신랑
               </button>
+
+              {/* 신부 버튼 */}
               <button
                 type="button"
                 onClick={() => setSide('bride')}
-                className={`py-3 text-xs tracking-wider transition-all cursor-pointer ${
+                style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.08)' }}
+                className={`h-[41.5px] rounded-[11.5px] flex items-center justify-center font-nanumsquare text-[12px] tracking-tight transition-all cursor-pointer select-none ${
                   side === 'bride'
-                    ? 'bg-stone-900 text-white font-medium'
-                    : 'bg-white border border-stone-300 text-stone-600 hover:border-stone-900'
+                    ? 'bg-[#393939] border border-[#393939] text-[#F6F6F6] font-bold'
+                    : 'bg-white border border-[#DAD1D1] text-[#B5B5B5] font-normal hover:border-stone-400'
                 }`}
               >
-                신부측 하객
+                신부
               </button>
             </div>
           </div>
 
-          {/* 2. 참석 여부 */}
+          {/* 2. 참석하실 수 있나요? */}
           <div>
-            <span className="font-editorial-serif text-[11px] tracking-widest uppercase text-stone-400 block mb-2 font-semibold">
-              02 · ATTENDANCE
-            </span>
-            <div className="grid grid-cols-2 gap-2">
+            <label className="font-nanumsquare font-normal text-[12px] text-[#575757] leading-none mb-[8px] block">
+              참석하실 수 있나요?
+            </label>
+            <div className="grid grid-cols-2 gap-[10px]">
+              {/* 참석할게요 버튼 */}
               <button
                 type="button"
                 onClick={() => setAttend(true)}
-                className={`py-3 text-xs tracking-wider transition-all cursor-pointer ${
+                style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.08)' }}
+                className={`h-[41.5px] rounded-[11.5px] flex items-center justify-center font-nanumsquare text-[12px] tracking-tight transition-all cursor-pointer select-none ${
                   attend
-                    ? 'bg-stone-900 text-white font-medium'
-                    : 'bg-white border border-stone-300 text-stone-600 hover:border-stone-900'
+                    ? 'bg-[#393939] border border-[#393939] text-[#F6F6F6] font-bold'
+                    : 'bg-white border border-[#DAD1D1] text-[#B5B5B5] font-normal hover:border-stone-400'
                 }`}
               >
-                참석합니다
+                참석할게요
               </button>
+
+              {/* 참석이 어려워요 버튼 */}
               <button
                 type="button"
                 onClick={() => setAttend(false)}
-                className={`py-3 text-xs tracking-wider transition-all cursor-pointer ${
+                style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.08)' }}
+                className={`h-[41.5px] rounded-[11.5px] flex items-center justify-center font-nanumsquare text-[12px] tracking-tight transition-all cursor-pointer select-none ${
                   !attend
-                    ? 'bg-stone-900 text-white font-medium'
-                    : 'bg-white border border-stone-300 text-stone-600 hover:border-stone-900'
+                    ? 'bg-[#393939] border border-[#393939] text-[#F6F6F6] font-bold'
+                    : 'bg-white border border-[#DAD1D1] text-[#B5B5B5] font-normal hover:border-stone-400'
                 }`}
               >
-                마음으로 축하합니다
+                참석이 어려워요
               </button>
             </div>
           </div>
 
-          {/* 3. 성함 */}
+          {/* 3. 성함이 어떻게 되시나요? */}
           <div>
-            <span className="font-editorial-serif text-[11px] tracking-widest uppercase text-stone-400 block mb-1.5 font-semibold">
-              03 · GUEST NAME *
-            </span>
+            <label className="font-nanumsquare font-normal text-[12px] text-[#575757] leading-none mb-[8px] block">
+              성함이 어떻게 되시나요?
+            </label>
             <input
               type="text"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="성함을 입력해 주세요"
-              className="w-full px-3.5 py-2.5 bg-white border border-stone-300 text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 text-xs font-sans transition-colors"
+              placeholder="참석자 본인 성함"
+              style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.08)' }}
+              className="w-full h-[41.5px] px-3.5 bg-white border border-[#DAD1D1] rounded-[11.5px] text-[#333333] placeholder:text-[#C5C5C5] font-nanumsquare text-[12px] text-center focus:outline-none focus:border-[#393939] transition-colors"
             />
           </div>
 
-          {/* 4. 참석 인원 (참석 시) */}
+          {/* 4. 참석 인원 (참석 시 노출) */}
           {attend && (
-            <div>
-              <span className="font-editorial-serif text-[11px] tracking-widest uppercase text-stone-400 block mb-1.5 font-semibold">
-                04 · ATTENDEES (INCLUDING GUEST)
-              </span>
-              <div className="relative">
-                <input
-                  type="number"
-                  min="1"
-                  value={attendeeCount}
-                  onChange={(e) => setAttendeeCount(e.target.value)}
-                  placeholder="참석 인원 (본인 포함, 예: 1)"
-                  className="w-full px-3.5 py-2.5 bg-white border border-stone-300 text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 text-xs font-sans transition-colors"
-                />
-                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs font-sans">
-                  명
+            <div className="flex items-center justify-between">
+              <label className="font-nanumsquare font-normal text-[12px] text-[#575757] leading-none">
+                참석 인원
+              </label>
+              {/* 카운트 박스 */}
+              <div 
+                style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.08)' }}
+                className="w-[121.5px] h-[41.5px] bg-white border border-[#DAD1D1] rounded-[11.5px] flex items-center justify-between px-3"
+              >
+                <button
+                  type="button"
+                  onClick={() => setAttendeeCount((prev) => Math.max(1, prev - 1))}
+                  className="w-6 h-full flex items-center justify-center font-nanumsquare text-[15px] text-[#575757] hover:text-black cursor-pointer select-none"
+                >
+                  -
+                </button>
+                <span className="font-nanumsquare font-normal text-[12px] text-[#575757] select-none">
+                  {attendeeCount}
                 </span>
+                <button
+                  type="button"
+                  onClick={() => setAttendeeCount((prev) => prev + 1)}
+                  className="w-6 h-full flex items-center justify-center font-nanumsquare text-[15px] text-[#575757] hover:text-black cursor-pointer select-none"
+                >
+                  +
+                </button>
               </div>
             </div>
           )}
 
-          {/* 5. 식사 여부 (참석 시 활성) */}
+          {/* 5. 식사 여부를 알려주세요. (참석 시 활성) */}
           {attend && showMealOption && (
             <div>
-              <span className="font-editorial-serif text-[11px] tracking-widest uppercase text-stone-400 block mb-2 font-semibold">
-                05 · MEAL PREFERENCE
-              </span>
-              <div className="grid grid-cols-3 gap-2">
-                {['식사 가능', '식사 불가', '미정'].map((opt) => (
+              <label className="font-nanumsquare font-normal text-[12px] text-[#575757] leading-none mb-[8px] block">
+                식사 여부를 알려주세요.
+              </label>
+              <div className="grid grid-cols-3 gap-[8px]">
+                {['미정', '식사 가능', '식사 불가'].map((opt) => (
                   <button
                     key={opt}
                     type="button"
                     onClick={() => setMeal(opt)}
-                    className={`py-2.5 text-xs tracking-wider transition-all cursor-pointer ${
+                    style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.08)' }}
+                    className={`h-[41.5px] rounded-[11.5px] flex items-center justify-center font-nanumsquare text-[12px] tracking-tight transition-all cursor-pointer select-none ${
                       meal === opt
-                        ? 'bg-stone-900 text-white font-medium'
-                        : 'bg-white border border-stone-300 text-stone-600 hover:border-stone-900'
+                        ? 'bg-[#393939] border border-[#393939] text-[#F6F6F6] font-bold'
+                        : 'bg-white border border-[#DAD1D1] text-[#B5B5B5] font-normal hover:border-stone-400'
                     }`}
                   >
                     {opt}
@@ -271,19 +308,20 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
           {/* 6. 전세버스 탑승 여부 (참석 시 & 버스 옵션 활성화 시) */}
           {attend && showBusOption && (
             <div>
-              <span className="font-editorial-serif text-[11px] tracking-widest uppercase text-stone-400 block mb-2 font-semibold">
-                06 · CHARTER BUS
-              </span>
-              <div className="grid grid-cols-2 gap-2">
+              <label className="font-nanumsquare font-normal text-[12px] text-[#575757] leading-none mb-[8px] block">
+                전세버스 탑승 여부
+              </label>
+              <div className="grid grid-cols-2 gap-[10px]">
                 {['탑승', '미탑승'].map((opt) => (
                   <button
                     key={opt}
                     type="button"
                     onClick={() => setBus(opt)}
-                    className={`py-2.5 text-xs tracking-wider transition-all cursor-pointer ${
+                    style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.08)' }}
+                    className={`h-[41.5px] rounded-[11.5px] flex items-center justify-center font-nanumsquare text-[12px] tracking-tight transition-all cursor-pointer select-none ${
                       bus === opt
-                        ? 'bg-stone-900 text-white font-medium'
-                        : 'bg-white border border-stone-300 text-stone-600 hover:border-stone-900'
+                        ? 'bg-[#393939] border border-[#393939] text-[#F6F6F6] font-bold'
+                        : 'bg-white border border-[#DAD1D1] text-[#B5B5B5] font-normal hover:border-stone-400'
                     }`}
                   >
                     {opt}
@@ -293,11 +331,11 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
             </div>
           )}
 
-          {/* 7. 휴대전화 번호 뒤 4자리 */}
+          {/* 7. 동명이인 체크를 위한 번호를 알려주세요. */}
           <div>
-            <span className="font-editorial-serif text-[11px] tracking-widest uppercase text-stone-400 block mb-1.5 font-semibold">
-              07 · PHONE LAST 4 DIGITS *
-            </span>
+            <label className="font-nanumsquare font-normal text-[12px] text-[#575757] leading-none mb-[8px] block">
+              동명이인 체크를 위한 번호를 알려주세요.
+            </label>
             <input
               type="tel"
               inputMode="numeric"
@@ -306,19 +344,20 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
               maxLength={4}
               value={phone}
               onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 4))}
-              placeholder="휴대전화 번호 뒤 4자리 (예: 1234)"
-              className="w-full px-3.5 py-2.5 bg-white border border-stone-300 text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 text-xs font-sans transition-colors"
+              placeholder="핸드폰 번호 뒤 4자리"
+              style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.08)' }}
+              className="w-full h-[41.5px] px-3.5 bg-white border border-[#DAD1D1] rounded-[11.5px] text-[#333333] placeholder:text-[#C5C5C5] font-nanumsquare text-[12px] text-center focus:outline-none focus:border-[#393939] transition-colors"
             />
           </div>
 
-          {/* 제출 버튼 */}
-          <div className="pt-4 border-t border-stone-200">
+          {/* 8. 작성 완료 버튼 */}
+          <div className="pt-2">
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-stone-900 hover:bg-stone-800 disabled:bg-stone-400 text-white text-[11px] uppercase tracking-[0.22em] font-sans font-medium rounded-full transition-colors cursor-pointer shadow-sm"
+              className="w-full h-[46px] bg-[#393939] hover:bg-[#2c2c2c] active:scale-[0.99] disabled:bg-[#888888] text-[#F6F6F6] font-nanumsquare font-bold text-[14px] rounded-[11.5px] transition-all cursor-pointer shadow-sm flex items-center justify-center select-none"
             >
-              {loading ? 'Submitting...' : 'Submit RSVP · 참석 의사 전달'}
+              {loading ? '전달 중...' : '작성 완료'}
             </button>
           </div>
         </form>

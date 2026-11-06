@@ -43,18 +43,26 @@ export default function EditorialGalleryModal({ images = [], initialIndex = 0, o
   };
 
   useEffect(() => {
+    // 모달 활성화 시 배경 스크롤 방지
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') onClose();
       if (e.key === 'ArrowLeft') prevImage();
       if (e.key === 'ArrowRight') nextImage();
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [onClose, prevImage, nextImage]);
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md select-none p-4"
+      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/90 backdrop-blur-md select-none p-4"
       onClick={onClose}
     >
       <div
@@ -113,7 +121,7 @@ export default function EditorialGalleryModal({ images = [], initialIndex = 0, o
         </div>
 
         {/* 하단 썸네일 스트립 */}
-        <div className="w-full flex items-center justify-center gap-1.5 pt-3 overflow-x-auto">
+        <div className="w-full flex items-center justify-center gap-1.5 pt-3 overflow-x-auto no-scrollbar">
           {images.map((src, idx) => (
             <button
               key={idx}

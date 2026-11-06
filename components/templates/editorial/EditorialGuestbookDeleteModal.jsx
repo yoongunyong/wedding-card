@@ -1,11 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export default function EditorialGuestbookDeleteModal({ targetMsg, onClose, onDeleteSuccess }) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // 모달 마운트 시 배경 스크롤 잠금
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
 
   const handleDelete = async (e) => {
     e.preventDefault();
@@ -34,58 +43,60 @@ export default function EditorialGuestbookDeleteModal({ targetMsg, onClose, onDe
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs select-none"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs select-none"
       onClick={onClose}
     >
       <div
-        className="bg-white w-full max-w-[340px] border border-stone-200 shadow-2xl relative p-7 animate-in fade-in zoom-in-95 duration-200"
+        className="bg-white w-full max-w-[320px] rounded-[20px] shadow-2xl relative pt-[28px] pb-[24px] px-[20px] animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* 닫기 버튼 */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 text-stone-400 hover:text-stone-900 transition-colors cursor-pointer w-8 h-8 flex items-center justify-center text-xl font-light"
+          className="absolute top-4 right-4 text-[#3C3A3A] hover:text-black transition-colors cursor-pointer w-8 h-8 flex items-center justify-center"
           aria-label="닫기"
         >
-          ✕
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M1.5 1.5L14.5 14.5M14.5 1.5L1.5 14.5" stroke="#3C3A3A" strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
         </button>
 
-        <div className="text-center pb-5 border-b border-stone-200 mb-5">
-          <span className="font-editorial-serif text-[11px] tracking-[0.3em] uppercase text-stone-400 block mb-1 font-semibold">
-            DELETE MESSAGE
-          </span>
-          <h3 className="font-editorial-title text-[24px] text-stone-900 leading-tight">
-            Confirm Password
+        {/* 헤더 */}
+        <div className="text-center mb-[18px]">
+          <h3 className="font-nanumsquare font-normal text-[16px] text-[#333333] leading-none">
+            메시지 삭제
           </h3>
-          <p className="font-korean-serif text-xs text-stone-600 mt-1">
+          <p className="font-nanumsquare text-[11.5px] text-[#777777] mt-[10px] leading-relaxed">
             작성 시 입력했던 비밀번호를 입력해 주세요.
           </p>
         </div>
 
-        <form onSubmit={handleDelete} className="space-y-4">
+        <form onSubmit={handleDelete} className="space-y-[14px]">
           <input
             type="password"
             required
             autoFocus
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="비밀번호"
-            className="w-full px-3.5 py-2.5 bg-white border border-stone-300 text-stone-900 placeholder:text-stone-300 focus:outline-none focus:border-stone-900 text-xs transition-colors"
+            placeholder="비밀번호 입력"
+            style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.08)' }}
+            className="w-full h-[46px] px-4 bg-white border border-[#DAD1D1] rounded-[11.5px] text-[#333333] placeholder:text-[#B5B5B5] font-nanumsquare text-[13px] text-center focus:outline-none focus:border-[#393939] transition-colors"
           />
 
-          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-stone-200">
+          <div className="grid grid-cols-2 gap-2 pt-1">
             <button
               type="button"
               onClick={onClose}
-              className="py-2.5 border border-stone-300 text-stone-600 hover:border-stone-900 text-xs font-editorial-serif uppercase tracking-wider transition-colors cursor-pointer"
+              className="h-[42px] border border-[#DAD1D1] text-[#666666] hover:bg-stone-50 font-nanumsquare text-[13px] rounded-[11.5px] transition-colors cursor-pointer"
             >
-              Cancel
+              취소
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="py-2.5 bg-stone-900 hover:bg-stone-800 disabled:bg-stone-400 text-white text-xs font-editorial-serif uppercase tracking-wider transition-colors cursor-pointer"
+              className="h-[42px] bg-[#393939] hover:bg-[#2c2c2c] disabled:bg-[#888888] text-[#F6F6F6] font-nanumsquare font-bold text-[13px] rounded-[11.5px] transition-colors cursor-pointer"
             >
-              {loading ? 'Deleting...' : 'Delete'}
+              {loading ? '삭제 중...' : '삭제'}
             </button>
           </div>
         </form>

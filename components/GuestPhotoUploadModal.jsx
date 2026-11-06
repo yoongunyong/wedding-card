@@ -182,55 +182,72 @@ export default function GuestPhotoUploadModal({ invitation, onClose, onSuccess }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+    <div 
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs select-none animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      {/* 모달 컨테이너 (Figma 1:1 시각적 매칭: 너비 340px, 좌우 패딩 px-[20px], 배경 #FCFCFC) */}
       <div 
-        className="w-full max-w-md bg-[#FAF9F6] rounded-3xl shadow-2xl border border-stone-200 overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200"
+        className="bg-[#FCFCFC] w-full max-w-[340px] rounded-[14.5px] shadow-2xl relative pt-[36px] pb-[30px] px-[20px] sm:px-[24px] animate-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto no-scrollbar"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* 닫기 버튼 (X표시, Figma color: #3C3A3A, top-5 right-5) */}
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={uploading}
+          className="absolute top-5 right-5 text-[#3C3A3A] hover:text-black transition-colors cursor-pointer w-8 h-8 flex items-center justify-center z-10"
+          aria-label="닫기"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M1.5 1.5L14.5 14.5M14.5 1.5L1.5 14.5" stroke="#3C3A3A" strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
+        </button>
+
         {/* 모달 헤더 */}
-        <div className="px-6 pt-6 pb-4 border-b border-stone-200/80 flex items-center justify-between bg-white/70">
-          <div>
-            <span className="font-mono text-[10px] uppercase tracking-widest text-amber-700 font-bold block mb-0.5">
-              ATELIER SNAP DROPBOX
-            </span>
-            <h3 className="text-base font-bold text-stone-900 tracking-tight">
-              신랑·신부에게 사진 선물하기
-            </h3>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={uploading}
-            className="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-500 hover:text-stone-800 transition-colors cursor-pointer text-sm font-bold"
-          >
-            ✕
-          </button>
+        <div className="text-center">
+          {/* 타이틀 (Figma: NanumSquare Neo 34px -> 1x 17px, #292929) */}
+          <h3 className="font-nanumsquare font-normal text-[17px] text-[#292929] leading-none text-center tracking-tight">
+            신랑·신부에게 사진 선물하기
+          </h3>
+
+          {/* 서브 안내 문구 (Figma: NanumSquare Neo 24px -> 1x 12px, leading-150%, #666666) */}
+          <p className="font-nanumsquare font-normal text-[12px] text-[#666666] leading-[1.5] text-center mt-[14px] tracking-tight whitespace-pre-line">
+            보내주신 사진은 다른 하객에게 공개되지 않고,{'\n'}
+            신랑 신부에게만 안전하게 전달됩니다.
+          </p>
+
+          {/* 헤더 하단 구분선 (Figma: width 546px -> 1x 273px, border: 1px solid #D3D3D3) */}
+          <div 
+            style={{ borderTop: '1px solid #D3D3D3' }} 
+            className="w-full max-w-[273px] mx-auto mt-[18px] mb-[24px]" 
+          />
         </div>
 
         {/* 모달 본문 */}
-        <div className="p-6 overflow-y-auto space-y-5">
+        <div className="overflow-y-auto">
           {loadingCount ? (
-            <div className="py-12 text-center text-xs text-stone-500 font-light">
+            <div className="py-12 text-center text-xs text-[#999999] font-nanumsquare">
               보관함 연결 중...
             </div>
           ) : isFull ? (
             /* 100장 만석 마감 화면 */
             <div className="py-8 text-center space-y-4">
-              <div className="w-14 h-14 bg-amber-50 rounded-full flex items-center justify-center text-2xl mx-auto border border-amber-200/70">
+              <div className="w-14 h-14 bg-stone-100 rounded-full flex items-center justify-center text-2xl mx-auto border border-[#DAD1D1]">
                 🤍
               </div>
               <div>
-                <h4 className="text-base font-bold text-stone-900 mb-1.5">
+                <h4 className="font-nanumsquare font-bold text-[15px] text-[#292929] mb-1.5">
                   사진 보관함이 가득 채워졌습니다
                 </h4>
-                <p className="text-xs text-stone-600 leading-relaxed font-light break-keep max-w-xs mx-auto">
+                <p className="font-nanumsquare text-[12px] text-[#666666] leading-relaxed break-keep max-w-xs mx-auto">
                   하객분들의 넘치는 사랑과 축하로 소중한 사진 보관함(100장)이 모두 채워졌습니다. 두 사람을 향한 따뜻한 마음에 진심으로 감사드립니다!
                 </p>
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="w-full py-3 bg-stone-900 text-white rounded-xl text-xs font-semibold hover:bg-black transition-all cursor-pointer"
+                className="w-full h-[46px] bg-[#393939] text-white rounded-[11.5px] font-nanumsquare font-bold text-[14px] hover:bg-black transition-all cursor-pointer"
               >
                 확인
               </button>
@@ -238,56 +255,50 @@ export default function GuestPhotoUploadModal({ invitation, onClose, onSuccess }
           ) : uploadComplete ? (
             /* 업로드 완료 성공 화면 */
             <div className="py-8 text-center space-y-4">
-              <div className="w-14 h-14 bg-emerald-50 rounded-full flex items-center justify-center text-2xl mx-auto border border-emerald-200/70">
+              <div className="w-14 h-14 bg-emerald-50 rounded-full flex items-center justify-center text-2xl mx-auto border border-emerald-200">
                 ✨
               </div>
               <div>
-                <h4 className="text-base font-bold text-stone-900 mb-1.5">
+                <h4 className="font-nanumsquare font-bold text-[15px] text-[#292929] mb-1.5">
                   사진이 소중히 전달되었습니다
                 </h4>
-                <p className="text-xs text-stone-600 leading-relaxed font-light break-keep max-w-xs mx-auto">
+                <p className="font-nanumsquare text-[12px] text-[#666666] leading-relaxed break-keep max-w-xs mx-auto">
                   보내주신 소중한 사진은 신랑·신부 둘만의 비밀 보관함으로 안전하게 전달되었습니다. 오늘의 기쁜 순간을 함께해 주셔서 감사합니다 🤍
                 </p>
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="w-full py-3 bg-stone-900 text-white rounded-xl text-xs font-semibold hover:bg-black transition-all cursor-pointer"
+                className="w-full h-[46px] bg-[#393939] text-white rounded-[11.5px] font-nanumsquare font-bold text-[14px] hover:bg-black transition-all cursor-pointer"
               >
                 닫기
               </button>
             </div>
           ) : (
-            /* 기본 입력 폼 */
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* 비공개 안심 안내 배지 */}
-              <div className="p-3 bg-stone-100/80 rounded-xl border border-stone-200/70 text-[11px] text-stone-600 leading-relaxed font-light flex items-start gap-2">
-                <span className="text-amber-700 font-bold">🔒</span>
-                <span>
-                  보내주신 사진은 다른 하객에게 일체 공개되지 않으며, <strong>신랑·신부에게만 안전하게 전달</strong>됩니다.
-                </span>
-              </div>
-
-              {/* 보내는 사람 성함 */}
+            /* 기본 입력 폼 (Figma 스크린샷 1:1 매칭) */
+            <form onSubmit={handleSubmit} className="space-y-[18px] text-left">
+              {/* 1. 보내시는 분 성함 * (Figma: 30px -> 1x 15px, #333333, 인풋 h-[52px], rounded-[11.5px]) */}
               <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1">
-                  보내시는 분 성함 <span className="text-amber-700">*</span>
+                <label className="font-nanumsquare font-normal text-[15px] text-[#333333] leading-none mb-[8px] block">
+                  보내시는 분 성함 <span className="text-[#FF5A5A]">*</span>
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="성함 또는 애칭 (예: 신부 친구 지은)"
+                  placeholder="성함 또는 애칭 ( 예: 신부 친구 민지)"
                   value={senderName}
                   onChange={(e) => setSenderName(e.target.value)}
                   disabled={uploading}
-                  className="w-full px-3.5 py-2.5 bg-white border border-stone-300 rounded-xl text-xs text-stone-900 focus:outline-hidden focus:ring-1 focus:ring-stone-900 focus:border-stone-900 transition-all placeholder:text-stone-400"
+                  style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.08)' }}
+                  className="w-full h-[52px] px-4 bg-white border border-[#DAD1D1] rounded-[11.5px] text-[#333333] placeholder:text-[#C5C5C5] font-nanumsquare text-[12px] focus:outline-none focus:border-[#393939] transition-colors"
                 />
               </div>
 
-              {/* 축하 한마디 (선택) */}
+              {/* 2. 축하 메시지 (선택) (Figma: h-[52px], rounded-[11.5px]) */}
               <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1">
-                  축하 메시지 <span className="text-stone-400 font-normal">(선택)</span>
+                <label className="font-nanumsquare font-normal text-[15px] text-[#333333] leading-none mb-[8px] flex items-center">
+                  <span>축하 메시지</span>
+                  <span className="text-[#999999] text-[13px] font-normal ml-1">(선택)</span>
                 </label>
                 <input
                   type="text"
@@ -296,122 +307,134 @@ export default function GuestPhotoUploadModal({ invitation, onClose, onSuccess }
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   disabled={uploading}
-                  className="w-full px-3.5 py-2.5 bg-white border border-stone-300 rounded-xl text-xs text-stone-900 focus:outline-hidden focus:ring-1 focus:ring-stone-900 focus:border-stone-900 transition-all placeholder:text-stone-400"
+                  style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.08)' }}
+                  className="w-full h-[52px] px-4 bg-white border border-[#DAD1D1] rounded-[11.5px] text-[#333333] placeholder:text-[#C5C5C5] font-nanumsquare text-[12px] focus:outline-none focus:border-[#393939] transition-colors"
                 />
               </div>
 
-              {/* 사진 첨부 영역 */}
+              {/* 3. 전달할 사진 선택 * (Figma: h-[159px], dashed #DAD1D1, rounded-[11.5px], 카메라 #B8B8B8) */}
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-bold text-stone-800">
-                    선물할 사진 선택 <span className="text-amber-700">*</span>
-                  </label>
-                  <span className="text-[11px] font-mono text-stone-500">
-                    {selectedFiles.length} / 최대 {remainingSlots}장
-                  </span>
+                <div className="flex items-center justify-between mb-[8px]">
+                  <label className="font-nanumsquare font-normal text-[15px] text-[#333333] leading-none">
+                      전달할 사진 선택 <span className="text-[#FF5A5A]">*</span>
+                    </label>
+                    <span className="font-nanumsquare text-[12px] text-[#999999]">
+                      {selectedFiles.length} / 최대 {remainingSlots}장
+                    </span>
+                  </div>
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleFileChange}
+                    disabled={uploading}
+                    className="hidden"
+                  />
+
+                  {previews.length === 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
+                      style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.08)' }}
+                      className="w-full h-[159px] bg-white border-[1.5px] border-dashed border-[#DAD1D1] rounded-[11.5px] flex flex-col items-center justify-center text-center cursor-pointer hover:border-[#393939] transition-colors group px-4 select-none"
+                    >
+                      <div className="flex items-center justify-center gap-1.5">
+                        <span className="font-nanumsquare font-normal text-[13px] text-[#333333]">
+                          스마트폰 앨범에서 사진 선택하기
+                        </span>
+                        {/* 카메라 아이콘 (Figma: #B8B8B8) */}
+                        <svg width="16" height="14" viewBox="0 0 16 14" fill="none" className="shrink-0">
+                          <path d="M5.5 1.5L4.5 3H2C1.17157 3 0.5 3.67157 0.5 4.5V11.5C0.5 12.3284 1.17157 13 2 13H14C14.8284 13 15.5 12.3284 15.5 11.5V4.5C15.5 3.67157 14.8284 3 14 3H11.5L10.5 1.5H5.5Z" fill="#B8B8B8"/>
+                          <circle cx="8" cy="8" r="2.8" fill="white"/>
+                          <circle cx="8" cy="8" r="1.8" fill="#B8B8B8"/>
+                        </svg>
+                      </div>
+                      <span className="font-nanumsquare font-normal text-[11px] text-[#999999] mt-2">
+                        1회 최대 {remainingSlots}장까지 한 번에 선택 가능
+                      </span>
+                    </button>
+                  ) : (
+                    <div 
+                      style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.08)' }}
+                      className="w-full min-h-[159px] bg-white border-[1.5px] border-dashed border-[#DAD1D1] rounded-[11.5px] p-3 flex flex-col justify-between"
+                    >
+                      {/* 선택된 사진 썸네일 그리드 */}
+                      <div className="grid grid-cols-4 gap-2 mb-2">
+                        {previews.map((src, idx) => (
+                          <div key={idx} className="relative aspect-square rounded-[8px] overflow-hidden border border-[#DAD1D1] group">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={src} alt="preview" className="w-full h-full object-cover" />
+                            {!uploading && (
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveFile(idx)}
+                                className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 text-white text-[10px] flex items-center justify-center hover:bg-black transition-colors cursor-pointer"
+                                aria-label="사진 삭제"
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      {selectedFiles.length < remainingSlots && !uploading && (
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="w-full py-2 bg-[#F6F6F6] hover:bg-[#EBEBEB] border border-[#DAD1D1] rounded-[8px] text-[11px] font-nanumsquare text-[#333333] transition-colors text-center cursor-pointer select-none"
+                        >
+                          + 사진 추가하기 (최대 {remainingSlots}장)
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleFileChange}
-                  disabled={uploading}
-                  className="hidden"
-                />
+                {/* 오류 메시지 */}
+                {errorMessage && (
+                  <p className="font-nanumsquare text-[11px] text-red-600 font-medium text-center">
+                    {errorMessage}
+                  </p>
+                )}
 
-                {previews.length === 0 ? (
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading}
-                    className="w-full py-8 border-2 border-dashed border-stone-300 hover:border-stone-400 bg-white rounded-2xl flex flex-col items-center justify-center gap-1.5 text-stone-500 hover:text-stone-800 transition-all cursor-pointer group"
-                  >
-                    <span className="text-2xl group-hover:scale-110 transition-transform">📷</span>
-                    <span className="text-xs font-semibold text-stone-800">
-                      스마트폰 앨범에서 사진 선택하기
-                    </span>
-                    <span className="text-[10px] text-stone-400">
-                      1회 최대 {remainingSlots}장까지 한 번에 선택 가능
-                    </span>
-                  </button>
-                ) : (
-                  <div>
-                    {/* 선택된 사진 썸네일 그리드 */}
-                    <div className="grid grid-cols-4 gap-2 mb-2">
-                      {previews.map((src, idx) => (
-                        <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-stone-200 group">
-                          <img src={src} alt="preview" className="w-full h-full object-cover" />
-                          {!uploading && (
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveFile(idx)}
-                              className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 text-white text-[10px] flex items-center justify-center hover:bg-black transition-colors"
-                            >
-                              ✕
-                            </button>
-                          )}
-                        </div>
-                      ))}
+                {/* 진행률 표시기 */}
+                {uploading && (
+                  <div className="py-2 space-y-1.5">
+                    <div className="flex items-center justify-between text-xs text-[#666666] font-nanumsquare">
+                      <span>사진 압축 및 안전 전송 중...</span>
+                      <span className="font-mono text-[#393939] font-bold">
+                        {uploadProgress.current} / {uploadProgress.total}
+                      </span>
                     </div>
-
-                    {selectedFiles.length < remainingSlots && !uploading && (
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="w-full py-2 bg-stone-100 hover:bg-stone-200 rounded-xl text-[11px] font-medium text-stone-700 transition-colors text-center cursor-pointer"
-                      >
-                        + 사진 추가하기 (최대 {remainingSlots}장)
-                      </button>
-                    )}
+                    <div className="w-full h-1.5 bg-[#E5E5E5] rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-[#393939] transition-all duration-300"
+                        style={{
+                          width: `${uploadProgress.total > 0 ? (uploadProgress.current / uploadProgress.total) * 100 : 0}%`
+                        }}
+                      />
+                    </div>
                   </div>
                 )}
-              </div>
 
-              {/* 오류 메시지 */}
-              {errorMessage && (
-                <p className="text-[11px] text-red-600 font-medium text-center">
-                  {errorMessage}
-                </p>
-              )}
-
-              {/* 진행률 표시기 */}
-              {uploading && (
-                <div className="py-2 space-y-1.5">
-                  <div className="flex items-center justify-between text-xs text-stone-600 font-medium">
-                    <span>사진 압축 및 안전 전송 중...</span>
-                    <span className="font-mono text-amber-700">
-                      {uploadProgress.current} / {uploadProgress.total}
-                    </span>
-                  </div>
-                  <div className="w-full h-1.5 bg-stone-200 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-stone-900 transition-all duration-300"
-                      style={{
-                        width: `${uploadProgress.total > 0 ? (uploadProgress.current / uploadProgress.total) * 100 : 0}%`
-                      }}
-                    />
-                  </div>
+                {/* 4. 제출 버튼 (Figma: top: 15978px -> 사진 박스 하단 간격 82px / 2 = 41px, h-[53.5px], bg #393939, rounded-[13px], NanumSquare Neo 700 30px -> 1x 15px #FFFFFF) */}
+                <div className="pt-[41px]">
+                  <button
+                    type="submit"
+                    disabled={uploading}
+                    className="w-full h-[53.5px] bg-[#393939] hover:bg-[#2c2c2c] active:scale-[0.99] disabled:opacity-70 text-white font-nanumsquare font-bold text-[15px] rounded-[13px] transition-all cursor-pointer shadow-sm flex items-center justify-center select-none"
+                  >
+                    {uploading
+                      ? `사진 전송 중 (${uploadProgress.current}/${uploadProgress.total})...`
+                      : `신랑·신부에게 사진 선물하기 (${selectedFiles.length}장)`}
+                  </button>
                 </div>
-              )}
-
-              {/* 전송 버튼 */}
-              <button
-                type="submit"
-                disabled={uploading || selectedFiles.length === 0}
-                className={`w-full py-3.5 rounded-xl text-xs font-bold tracking-wide transition-all cursor-pointer shadow-sm ${
-                  uploading || selectedFiles.length === 0
-                    ? 'bg-stone-300 text-stone-500 cursor-not-allowed'
-                    : 'bg-stone-900 hover:bg-black text-white active:scale-98'
-                }`}
-              >
-                {uploading
-                  ? `사진 전송 중 (${uploadProgress.current}/${uploadProgress.total})...`
-                  : `신랑·신부에게 사진 선물하기 (${selectedFiles.length}장)`}
-              </button>
-            </form>
-          )}
+              </form>
+            )}
         </div>
       </div>
     </div>

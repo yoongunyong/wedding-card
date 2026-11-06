@@ -165,21 +165,22 @@
   - `Ellipse 749` 등 피그마 타원 도구로 그려진 요소는 `rounded-full` 대신 반드시 `style={{ borderRadius: '50%' }}`를 사용합니다.
 - **섹션별 피그마 1:1 반영 완료 현황**:
   - 오프닝 커버 (`EditorialIntro.jsx`): We are getting married(40px), 중앙 액자(309.5x499), OPEN THE LOOKBOOK 타원 버튼
-  - 섹션 1 (인트로 메인): image 736(333x415), 성함/일시/장소(NanumSquare Neo), SCROLL TO OPEN 타원, **바닥선 138**
+  - 섹션 1 (인트로 메인): image 736(333x415), 성함/일시/장소(NanumSquare Neo), 구분선(257px 0.5px solid #999999 실선 mt-[22px]), SCROLL TO OPEN 타원 버튼(116.2x27.65, top 1303px 실측 mt-[79px]), **바닥선 138**
   - 섹션 2 (프로필 & 혼주): Welcome to(27.5px), 신부/신랑 2단 액자 카드, 혼주 3열 정렬, **바닥선 139**
   - 섹션 3 (초대합니다): 풀 와이드 커플 화보(390x288), 초대글(14px leading-1.75), 알약형 연락하기 버튼, **바닥선 140**
-  - 연락처 모달 (`EditorialContactModal.jsx`): 피그마 Group 1113 규격(322px 모달, Line 127, 블루/핑크 테마, 48x48 원형 버튼)
+  - 연락처 모달 (`EditorialContactModal.jsx`): 피그마 Group 1113 규격(322px 모달, Line 127 273px 1px solid #D3D3D3 실선, 성함 #333333 font-normal, 신랑 라벨 #4C62A2, 신부 라벨 #D25C8D, 48x48 원형 버튼)
   - 섹션 4 (캘린더 & 디데이): Wedding Day(35px), Line 127(319.5px), 301.3px 그리드, 4개 카운트 박스(69.3x69.3), **바닥선**
   - 섹션 5 (사진 갤러리): gallery(35px), 사진 갤러리(18px 400), 4컷 썸네일(72.9x72.9), 룩북 타원 버튼, 룩북 모달(배경 스크롤 잠금, z-9999), **바닥선**
   - 섹션 6 (식장 위치 & 길안내): location(35px), 식장 위치(18px), 웨딩홀(15px), 주소 복사, 지도(303.5x216.5), 네이버/카카오 버튼(143.5x38), 노선 자동 컬러링(renderTransitText), **바닥선**
   - 섹션 7 (마음 전하실 곳 / 계좌): Account(35px), 마음 전하실 곳(18px), 안내글(14px), 315px 파일철 탭 카드(신랑측/신부측 탭 스위칭, 복사하기 80.5x26 알약 버튼), **바닥선**
-  - 섹션 8 (Notice 안내사항 / 식사 안내): Notice(35px), 안내 사항(18px 400), 미니멀 필름 스트립 프레임(퍼포레이션 펀칭 구멍 9개, FILM/번호 라벨), 식사 안내 화이트 카드(276px, 구분선 239px 0.5px #929292, 내용 12px leading-1.78), **바닥선**
+  - 섹션 8 (Notice 안내사항 / 식사 안내): Notice(35px), 안내 사항(18px 400), 파스텔 블루 필름 스트립 프레임(배경 #DDE7F3, 상단 바 'DESIGNED BY ATELIER DE MUKIRU' NanumSquare Neo 800 10px #FFFFFF, 상하 퍼포레이션 구멍 10개 19x23px #F5F5F5 rounded-[4px], 상단 번호 2/3, 하단 번호 6/7), 식사 안내 화이트 카드(276px, 구분선 239px 0.5px #929292, 내용 12px leading-1.78), **바닥선**
   - 섹션 9 (RSVP 참석 의사 전달): R·S·V·P(35px), 참석 의사 전달(18px 400), 안내글(14px leading-1.74), 참석 정보 전달하기 알약 버튼(164.5x39, bg #393939, text #F3F3F3 14px bold), **바닥선**
-  - RSVP 모달 (`EditorialRsvpModal.jsx`): 피그마 1:1 정밀 매칭 (모달 340px, rounded-20px, 헤더 17px/12px, 273px 구분선, 신랑/신부 및 참석/불참 토글 버튼 41.5px/rounded-11.5px/#393939 활성, 인풋창 41.5px/그림자, 참석인원 카운터 121.5x41.5px, 식사 3단버튼, 전세버스 버튼, 작성 완료 버튼 46px, 배경 스크롤 잠금 및 z-9999)
+  - RSVP 모달 (`EditorialRsvpModal.jsx`): 피그마 1:1 정밀 매칭 (모달 340px, 배경 `#FCFCFC`, rounded-[14.5px], 타이틀 '참석 의사 체크하기' 17px `#292929`, 서브 문구 12px `#666666`, 구분선 273px `1px solid #D3D3D3`, 라벨 전체 12px `#333333`, 신랑/신부 및 참석/불참/식사/버스 버튼 41.5px/rounded-11.5px/#393939 활성, 인풋창 41.5px/그림자/rounded-11.5px, 참석인원 카운터 121.5x41.5px/최소 1인 시작, 작성 완료 버튼 46px `#393939`, 배경 스크롤 잠금 및 z-9999)
   - 하객 현장 사진 공유 (`GuestPhotoSnapSection.jsx`): 피그마 1:1 정밀 매칭 (Photo Sharing 35px, 사진 공유 18px 400, 안내문 14px leading-1.74, 폴라로이드 액자 159x192.5px, 내부 사진 141.75x144.23, 내부 문구 9px #999999, 사진 업로드하기 알약 버튼 164.5x39 #393939, **바닥선 280.5px 0.5px solid #999999 mt-[70px] mb-[50px]**)
+  - 사진 선물하기 모달 (`GuestPhotoUploadModal.jsx`): 피그마 1:1 정밀 매칭 (모달 340px, 좌우 패딩 px-[20px] 확보로 인풋 밀착 해소, 배경 `#FCFCFC`, rounded-[14.5px], X버튼 top-5 right-5 `#3C3A3A`, 타이틀 '신랑·신부에게 사진 선물하기' 17px `#292929`, 서브 문구 12px `#666666`, 구분선 273px `1px solid #D3D3D3` mb-[24px], 성함/메시지 라벨 15px `#333333` mb-[8px], 인풋 박스 52px/rounded-11.5px/그림자, 사진 선택 대시 박스 159px/dashed #DAD1D1/카메라 #B8B8B8, 선물하기 버튼 53.5px/rounded-[13px]/#393939/텍스트 15px bold #FFFFFF)
   - 섹션 10 (방명록 4컷 그리드 & 매거진 프레임): Guestbook(35px), 방명록(18px 400), 안내문(14px leading-1.72), 350px 4컷 프레임(배경 #E6EDF5, 상하단 레터링 바 ▶ 32 DESIGNED BY ATELIER DE MUKIRU 32 ◀), 4컷 화이트 카드(각 154x158.5px, 본문 11.5px, 구분선 99.5px, 작성자 12px + 삭제 휴지통), 페이지네이션 도트(6px), 글 남기기 알약 버튼(134x39, bg #393939, text 14px bold), **바닥선 (버튼 하단 여백 mt-[65px] mb-[50px])**
-  - 방명록 작성 모달 (`EditorialGuestbookModal.jsx`): 피그마 1:1 정밀 매칭 (모달 340px, rounded-20px, 헤더 '축하 메시지 작성하기' 17px, Line 127 273px 1px solid #9C9C9C, 작성자/비밀번호/내용 15px bold #575757, 인풋 50px/rounded-11.5px/그림자, 작성 완료 버튼 46px #393939, 배경 스크롤 잠금 및 z-9999)
-  - 섹션 11 (엔딩 화보 & Thank you 푸터): 풀 와이드 엔딩 화보(aspect-[836/623]), Thank you(37.5px Weddingday), 함께해 주셔서 감사합니다(15px 400), 민준 · 지민 드림(15px #999999), DESIGNED BY ATELIER DE MUKIRU(12px Poppins, mt-[105px]), **피그마 시안 100% 동일 사양 (사업자 정보 및 구분선 없음)** (시안 2 전체 섹션 1:1 정밀 매칭 100% 완료 🎉)
+  - 방명록 작성 모달 (`EditorialGuestbookModal.jsx`): 피그마 1:1 정밀 매칭 (모달 340px, 좌우 패딩 px-[20px]로 우아한 여백 복원, 배경 `#FCFCFC`, rounded-[14.5px], X버튼 top-5 right-5 `#3C3A3A`, 헤더 '축하 메시지 작성하기' 17px `#292929`, 구분선 273px `1px solid #D3D3D3` mt-[18px] mb-[24px], 작성자/비밀번호/내용 라벨 15px `#333333` font-normal mb-[8px], 성함/비밀번호 인풋 52px/rounded-11.5px/placeholder `#B8B8B8`, 내용 textarea 160px/rounded-11.5px, 작성 완료 버튼 50px/rounded-[11.5px]/#393939/텍스트 15px bold #FFFFFF, 배경 스크롤 잠금 및 z-9999)
+  - 섹션 11 (엔딩 화보 & Thank you 푸터): 피그마 1:1 정밀 매칭 (섹션 780x1346 ➔ 390x673, 배경 `#FEFEFE`, 풀 와이드 엔딩 화보 780x581.27 ➔ 1x 390x290.64 `aspect-[780/581.27]`, Thank you 37.5px Weddingday, 함께해 주셔서 감사합니다 15px 400, 민준 · 지민 드림 15px `#999999`, DESIGNED BY ATELIER DE MUKIRU 12px Poppins line-height 162% mt-[95px] pb-[50px]), **피그마 시안 100% 동일 사양 (사업자 정보 및 구분선 없음)** (시안 2 전체 섹션 1:1 정밀 매칭 100% 완료 🎉)
 
 ---
 
@@ -471,7 +472,7 @@
 
 - **하객 현장 스냅 사진 (신규)**:
   - `components/GuestPhotoSnapSection.jsx` (하객 안내 및 모달 트리거 카드)
-  - `components/GuestPhotoUploadModal.jsx` (하객용 초경량 압축 업로드 모달)
+  - `components/GuestPhotoUploadModal.jsx` (하객용 초경량 압축 업로드 모달: 피그마 2x 실측 규격 #FCFCFC 배경, rounded-[14.5px], #292929 타이틀, #666666 서브, #D3D3D3 구분선, #333333 라벨, 55px 인풋, 159px 대시 박스, 53.5px 전송 버튼 완비)
   - `components/manage/GuestPhotoManager.jsx` (신랑·신부 전용 관리 및 ZIP 다운로더)
   - `scripts/setup-guest-photos.sql` (guest_photos DB 및 RLS 정책 SQL)
 - **랜딩 페이지 핵심 컴포넌트**:
@@ -490,7 +491,7 @@
   - `components/templates/scene/SceneTemplate.jsx` (시안 5 · 모던 씬: 계좌 아코디언 기본 펼침으로 전환 완비, 인페이지 RSVP 식사·전세버스 on/off 연동)
 - **RSVP 참석의사 조사 (전 시안 공통 표준화 & '본인 포함 1부터 시작' 인원 체계)**:
   - `components/templates/basic/BasicRsvpModal.jsx` (시안 1 전용: 신랑/신부측, 참석여부, 성함, 참석인원(본인포함 1부터 시작), 식사여부(식사가능/불가/미정), 전세버스(탑승/미탑승) 옵션 연동 완비)
-  - `components/templates/editorial/EditorialRsvpModal.jsx` (시안 2, 3, 4 공통: 참석인원(본인포함 1부터 시작, min 1), 에디토리얼 모던 고딕 규격 식사·전세버스 조사 완비)
+  - `components/templates/editorial/EditorialRsvpModal.jsx` (시안 2, 3, 4 공통: 참석인원(본인포함 1부터 시작, min 1), 에디토리얼 모던 고딕 규격 식사·전세버스 조사 완비, 피그마 실측 규격 #FCFCFC 배경, rounded-[14.5px], #292929 타이틀, #666666 서브, #D3D3D3 구분선, #333333 라벨 반영 완료)
   - `components/templates/scene/SceneTemplate.jsx` (시안 5 전용: 인페이지 RSVP 참석 인원(본인 포함) 카운터 1부터 시작, 식사·전세버스 on/off 연동)
   - 제작(`/create`) 및 수정(`/edit`) 옵션 체크박스: `참석 의사(show_rsvp)`, `식사 여부 조사(show_rsvp_meal)`, `전세버스 탑승 조사(show_rsvp_bus)` 독립 ON/OFF 완비
   - 하객 관리 화면(`app/manage/[slug]/page.js`): 상단 통계 카드 `신랑측/신부측 (참석 인원)` 명시, 식사(가능/불가/미정) 및 전세버스 탑승 현황 요약 바 신설, 테이블 컬럼 `참석 인원`(`${companion_count + 1}명`) 표시, CSV 다운로드 `참석인원(본인포함)` 표준화 (기존 DB 스키마 100% 무결성 유지)

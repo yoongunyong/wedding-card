@@ -56,17 +56,20 @@ export default function EditorialGuestbookModal({ invitationId, onClose, onSucce
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs select-none"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs select-none animate-in fade-in duration-200"
       onClick={onClose}
     >
+      {/* 모달 컨테이너 (Figma 1:1 시각적 매칭: 너비 340px, 좌우 패딩 px-[20px], 배경 #FCFCFC) */}
       <div
-        className="bg-white w-full max-w-[340px] rounded-[20px] shadow-2xl relative pt-[32px] pb-[28px] px-[20px] sm:px-[24px] animate-in fade-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto no-scrollbar"
+        className="bg-[#FCFCFC] w-full max-w-[340px] rounded-[14.5px] shadow-2xl relative pt-[36px] pb-[30px] px-[20px] sm:px-[24px] animate-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto no-scrollbar"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 닫기 버튼 (X표시) */}
+        {/* 닫기 버튼 (X표시, Figma color: #3C3A3A, top-5 right-5) */}
         <button
+          type="button"
           onClick={onClose}
-          className="absolute top-5 right-5 text-[#3C3A3A] hover:text-black transition-colors cursor-pointer w-8 h-8 flex items-center justify-center"
+          disabled={loading}
+          className="absolute top-5 right-5 text-[#3C3A3A] hover:text-black transition-colors cursor-pointer w-8 h-8 flex items-center justify-center z-10"
           aria-label="닫기"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -76,20 +79,23 @@ export default function EditorialGuestbookModal({ invitationId, onClose, onSucce
 
         {/* 헤더 */}
         <div className="text-center">
-          {/* 축하 메시지 작성하기 (Figma: NanumSquare Neo OTF 34px -> 1x 17px, #333333) */}
-          <h3 className="font-nanumsquare font-normal text-[17px] text-[#333333] leading-none text-center tracking-tight">
+          {/* 축하 메시지 작성하기 (Figma: NanumSquare Neo 34px -> 1x 17px, #292929) */}
+          <h3 className="font-nanumsquare font-normal text-[17px] text-[#292929] leading-none text-center tracking-tight">
             축하 메시지 작성하기
           </h3>
 
-          {/* 헤더 구분선 Line 127 (Figma: width 546px -> 1x 273px, border: 1px solid #9C9C9C) */}
-          <div style={{ borderTop: '1px solid #9C9C9C' }} className="w-full max-w-[273px] mx-auto mt-[18px] mb-[22px]" />
+          {/* 헤더 구분선 (Figma: width 546px -> 1x 273px, border: 1px solid #D3D3D3) */}
+          <div 
+            style={{ borderTop: '1px solid #D3D3D3' }} 
+            className="w-full max-w-[273px] mx-auto mt-[18px] mb-[24px]" 
+          />
         </div>
 
-        {/* 폼 */}
-        <form onSubmit={handleSubmit} className="space-y-[16px] text-left">
-          {/* 1. 작성자 */}
+        {/* 폼 본문 */}
+        <form onSubmit={handleSubmit} className="space-y-[18px] text-left">
+          {/* 1. 작성자 (Figma: NanumSquare Neo 30px -> 1x 15px, #333333 font-normal, 인풋 h-[52px], rounded-[11.5px]) */}
           <div>
-            <label className="font-nanumsquare font-bold text-[15px] text-[#575757] leading-none mb-[8px] block">
+            <label className="font-nanumsquare font-normal text-[15px] text-[#333333] leading-none mb-[8px] block">
               작성자
             </label>
             <input
@@ -99,13 +105,13 @@ export default function EditorialGuestbookModal({ invitationId, onClose, onSucce
               onChange={(e) => setAuthor(e.target.value)}
               placeholder="성함"
               style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.08)' }}
-              className="w-full h-[50px] px-4 bg-white border border-[#DAD1D1] rounded-[11.5px] text-[#333333] placeholder:text-[#B5B5B5] font-nanumsquare text-[13px] focus:outline-none focus:border-[#393939] transition-colors"
+              className="w-full h-[52px] px-4 bg-white border border-[#DAD1D1] rounded-[11.5px] text-[#333333] placeholder:text-[#B8B8B8] font-nanumsquare text-[13px] focus:outline-none focus:border-[#393939] transition-colors"
             />
           </div>
 
           {/* 2. 비밀번호 */}
           <div>
-            <label className="font-nanumsquare font-bold text-[15px] text-[#575757] leading-none mb-[8px] block">
+            <label className="font-nanumsquare font-normal text-[15px] text-[#333333] leading-none mb-[8px] block">
               비밀번호
             </label>
             <input
@@ -115,13 +121,13 @@ export default function EditorialGuestbookModal({ invitationId, onClose, onSucce
               onChange={(e) => setPassword(e.target.value)}
               placeholder="비밀번호 입력"
               style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.08)' }}
-              className="w-full h-[50px] px-4 bg-white border border-[#DAD1D1] rounded-[11.5px] text-[#333333] placeholder:text-[#B5B5B5] font-nanumsquare text-[13px] focus:outline-none focus:border-[#393939] transition-colors"
+              className="w-full h-[52px] px-4 bg-white border border-[#DAD1D1] rounded-[11.5px] text-[#333333] placeholder:text-[#B8B8B8] font-nanumsquare text-[13px] focus:outline-none focus:border-[#393939] transition-colors"
             />
           </div>
 
           {/* 3. 내용 */}
           <div>
-            <label className="font-nanumsquare font-bold text-[15px] text-[#575757] leading-none mb-[8px] block">
+            <label className="font-nanumsquare font-normal text-[15px] text-[#333333] leading-none mb-[8px] block">
               내용
             </label>
             <textarea
@@ -131,16 +137,16 @@ export default function EditorialGuestbookModal({ invitationId, onClose, onSucce
               onChange={(e) => setContent(e.target.value)}
               placeholder="내용 입력"
               style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.08)' }}
-              className="w-full h-[140px] p-4 bg-white border border-[#DAD1D1] rounded-[11.5px] text-[#333333] placeholder:text-[#B5B5B5] font-nanumsquare text-[13px] leading-relaxed focus:outline-none focus:border-[#393939] transition-colors resize-none"
+              className="w-full h-[160px] p-4 bg-white border border-[#DAD1D1] rounded-[11.5px] text-[#333333] placeholder:text-[#B8B8B8] font-nanumsquare text-[13px] leading-relaxed focus:outline-none focus:border-[#393939] transition-colors resize-none"
             />
           </div>
 
-          {/* 4. 작성 완료 버튼 */}
+          {/* 4. 작성 완료 버튼 (Figma: h-[50px], bg #393939, rounded-[11.5px], 텍스트 NanumSquare Neo 700 15px #FFFFFF) */}
           <div className="pt-2">
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-[46px] bg-[#393939] hover:bg-[#2c2c2c] active:scale-[0.99] disabled:bg-[#888888] text-[#F6F6F6] font-nanumsquare font-bold text-[14px] rounded-[11.5px] transition-all cursor-pointer shadow-sm flex items-center justify-center select-none"
+              className="w-full h-[50px] bg-[#393939] hover:bg-[#2c2c2c] active:scale-[0.99] disabled:opacity-70 text-white font-nanumsquare font-bold text-[15px] rounded-[11.5px] transition-all cursor-pointer shadow-sm flex items-center justify-center select-none"
             >
               {loading ? '등록 중...' : '작성 완료'}
             </button>

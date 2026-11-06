@@ -36,7 +36,7 @@ export default function EditorialContactModal({ invitation, onClose }) {
 
   // 피그마 실측 Group 1113 기준 6명 인물 순서 및 신랑측/신부측 테마 분기
   const contacts = [
-    // 1. 신랑측 (블루 테마: 라벨 & 아이콘 #4C62A2, 성함 #575757 Bold)
+    // 1. 신랑측 (블루 테마: 라벨 & 아이콘 #4C62A2, 성함 #333333 font-normal)
     {
       role: '신랑',
       side: 'groom',
@@ -55,7 +55,7 @@ export default function EditorialContactModal({ invitation, onClose }) {
       name: formatName(invitation?.groom_mother, isGroomMotherDeceased) || (isSample ? '이미자' : ''),
       phone: isGroomMotherDeceased ? '' : (invitation?.groom_mother_phone || (isSample ? '010-3456-7890' : '')),
     },
-    // 2. 신부측 (로즈 핑크 테마: 라벨 #DB84A8, 아이콘 #D25C8D, 성함 #575757 Bold)
+    // 2. 신부측 (로즈 핑크 테마: 라벨 & 아이콘 #D25C8D, 성함 #333333 font-normal)
     {
       role: '신부',
       side: 'bride',
@@ -99,29 +99,32 @@ export default function EditorialContactModal({ invitation, onClose }) {
           </svg>
         </button>
 
-        {/* 헤더: 타이틀 '연락처' (Figma: NanumSquare Neo OTF 34px -> 1x 17px, #333333, pt-[55.5px]) & 구분선 (Line 127: 너비 546px -> 1x 273px, mt-[28.5px], border: 1px solid #999999) */}
+        {/* 헤더: 타이틀 '연락처' (Figma: NanumSquare Neo OTF 34px -> 1x 17px, #333333, pt-[55.5px]) & 구분선 (Line 127: 너비 546px -> 1x 273px, mt-[28.5px], border: 1px solid #D3D3D3) */}
         <div className="pt-[55.5px] text-center">
           <h3 className="font-nanumsquare text-[17px] text-[#333333] font-normal tracking-tight leading-none">
             연락처
           </h3>
-          <div className="w-[273px] mx-auto border-t border-[#999999] mt-[28.5px]" />
+          <div 
+            style={{ borderTop: '1px solid #D3D3D3' }}
+            className="w-[273px] mx-auto mt-[28.5px]" 
+          />
         </div>
 
         {/* 인물 리스트 (Figma Group 1113: 너비 524px -> 1x 262px 중앙 정렬, mt-[37.5px], pb-[50px], space-y-[20px]) */}
         <div className="w-[262px] mx-auto mt-[37.5px] pb-[50px] space-y-[20px]">
           {contacts.map((person, idx) => {
             const isGroom = person.side === 'groom';
-            const roleColorClass = isGroom ? 'text-[#4C62A2]' : 'text-[#DB84A8]';
+            const roleColorClass = isGroom ? 'text-[#4C62A2]' : 'text-[#D25C8D]';
             const iconColorClass = isGroom ? 'text-[#4C62A2]' : 'text-[#D25C8D]';
 
             return (
               <div key={idx} className="h-[48px] flex items-center justify-between">
-                {/* 좌측: 역할(NanumSquare Neo 14px) + 성함(NanumSquare Neo Bold 17px #575757) */}
+                {/* 좌측: 역할(NanumSquare Neo 14px) + 성함(NanumSquare Neo 17px #333333 font-normal) */}
                 <div className="flex flex-col text-left justify-center">
-                  <span className={`text-[14px] font-nanumsquare font-normal ${roleColorClass} tracking-tight leading-none mb-[6px] select-none`}>
+                  <span className={`text-[14px] font-nanumsquare font-normal ${roleColorClass} tracking-tight leading-none mb-[5px] select-none`}>
                     {person.role}
                   </span>
-                  <span className="font-nanumsquare text-[17px] text-[#575757] font-bold tracking-tight leading-none">
+                  <span className="font-nanumsquare text-[17px] text-[#333333] font-normal tracking-tight leading-none">
                     {person.name}
                   </span>
                 </div>

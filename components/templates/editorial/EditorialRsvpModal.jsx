@@ -126,7 +126,7 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
       onClick={onClose}
     >
       <div
-        className="bg-white w-full max-w-[340px] rounded-[20px] shadow-2xl relative pt-[32px] pb-[28px] px-[20px] sm:px-[24px] animate-in fade-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto no-scrollbar"
+        className="bg-[#FCFCFC] w-full max-w-[340px] rounded-[14.5px] shadow-2xl relative pt-[32px] pb-[28px] px-[20px] sm:px-[24px] animate-in fade-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto no-scrollbar"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 닫기 버튼 (X표시) */}
@@ -142,13 +142,13 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
 
         {/* 헤더 */}
         <div className="text-center">
-          {/* 참석 의사 체크하기 (Figma: NanumSquare Neo OTF 34px -> 1x 17px, #333333) */}
-          <h3 className="font-nanumsquare font-normal text-[17px] text-[#333333] leading-none text-center tracking-tight">
+          {/* 참석 의사 체크하기 (Figma: NanumSquare Neo OTF 34px -> 1x 17px, #292929) */}
+          <h3 className="font-nanumsquare font-normal text-[17px] text-[#292929] leading-none text-center tracking-tight">
             참석 의사 체크하기
           </h3>
 
-          {/* 서브 안내 문구 (Figma: NanumSquare Neo OTF 24px -> 1x 12px, leading-150%, #575757) */}
-          <p className="font-nanumsquare font-normal text-[12px] text-[#575757] leading-[1.5] text-center mt-[14px] tracking-tight whitespace-pre-line">
+          {/* 서브 안내 문구 (Figma: NanumSquare Neo OTF 24px -> 1x 12px, leading-150%, #666666) */}
+          <p className="font-nanumsquare font-normal text-[12px] text-[#666666] leading-[1.5] text-center mt-[14px] tracking-tight whitespace-pre-line">
             한 분 한 분을 소중히 모실 수 있도록{'\n'}
             참석 의사를 전해주시면 감사하겠습니다.
           </p>
@@ -159,9 +159,9 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
 
         {/* 폼 본문 */}
         <form onSubmit={handleSubmit} className="space-y-[18px] text-left">
-          {/* 1. 어느 분의 하객이신가요? */}
+          {/* 1. 어느 분의 하객이신가요? (Figma: NanumSquare Neo 24px -> 1x 12px, #333333) */}
           <div>
-            <label className="font-nanumsquare font-normal text-[12px] text-[#575757] leading-none mb-[8px] block">
+            <label className="font-nanumsquare font-normal text-[12px] text-[#333333] leading-none mb-[8px] block">
               어느 분의 하객이신가요?
             </label>
             <div className="grid grid-cols-2 gap-[10px]">
@@ -195,9 +195,9 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
             </div>
           </div>
 
-          {/* 2. 참석하실 수 있나요? */}
+          {/* 2. 참석하실 수 있나요? (Figma: #333333) */}
           <div>
-            <label className="font-nanumsquare font-normal text-[12px] text-[#575757] leading-none mb-[8px] block">
+            <label className="font-nanumsquare font-normal text-[12px] text-[#333333] leading-none mb-[8px] block">
               참석하실 수 있나요?
             </label>
             <div className="grid grid-cols-2 gap-[10px]">
@@ -231,9 +231,9 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
             </div>
           </div>
 
-          {/* 3. 성함이 어떻게 되시나요? */}
+          {/* 3. 성함이 어떻게 되시나요? (Figma: #333333) */}
           <div>
-            <label className="font-nanumsquare font-normal text-[12px] text-[#575757] leading-none mb-[8px] block">
+            <label className="font-nanumsquare font-normal text-[12px] text-[#333333] leading-none mb-[8px] block">
               성함이 어떻게 되시나요?
             </label>
             <input
@@ -247,10 +247,10 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
             />
           </div>
 
-          {/* 4. 참석 인원 (참석 시 노출) */}
+          {/* 4. 참석 인원 (참석 시 노출, Figma: #333333) */}
           {attend && (
             <div className="flex items-center justify-between">
-              <label className="font-nanumsquare font-normal text-[12px] text-[#575757] leading-none">
+              <label className="font-nanumsquare font-normal text-[12px] text-[#333333] leading-none">
                 참석 인원
               </label>
               {/* 카운트 박스 */}
@@ -261,17 +261,17 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
                 <button
                   type="button"
                   onClick={() => setAttendeeCount((prev) => Math.max(1, prev - 1))}
-                  className="w-6 h-full flex items-center justify-center font-nanumsquare text-[15px] text-[#575757] hover:text-black cursor-pointer select-none"
+                  className="w-6 h-full flex items-center justify-center font-nanumsquare text-[15px] text-[#333333] hover:text-black cursor-pointer select-none"
                 >
                   -
                 </button>
-                <span className="font-nanumsquare font-normal text-[12px] text-[#575757] select-none">
+                <span className="font-nanumsquare font-normal text-[12px] text-[#333333] select-none">
                   {attendeeCount}
                 </span>
                 <button
                   type="button"
                   onClick={() => setAttendeeCount((prev) => prev + 1)}
-                  className="w-6 h-full flex items-center justify-center font-nanumsquare text-[15px] text-[#575757] hover:text-black cursor-pointer select-none"
+                  className="w-6 h-full flex items-center justify-center font-nanumsquare text-[15px] text-[#333333] hover:text-black cursor-pointer select-none"
                 >
                   +
                 </button>
@@ -279,10 +279,10 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
             </div>
           )}
 
-          {/* 5. 식사 여부를 알려주세요. (참석 시 활성) */}
+          {/* 5. 식사 여부를 알려주세요. (참석 시 활성, Figma: #333333) */}
           {attend && showMealOption && (
             <div>
-              <label className="font-nanumsquare font-normal text-[12px] text-[#575757] leading-none mb-[8px] block">
+              <label className="font-nanumsquare font-normal text-[12px] text-[#333333] leading-none mb-[8px] block">
                 식사 여부를 알려주세요.
               </label>
               <div className="grid grid-cols-3 gap-[8px]">
@@ -305,10 +305,10 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
             </div>
           )}
 
-          {/* 6. 전세버스 탑승 여부 (참석 시 & 버스 옵션 활성화 시) */}
+          {/* 6. 전세버스 탑승 여부 (참석 시 & 버스 옵션 활성화 시, Figma: #333333) */}
           {attend && showBusOption && (
             <div>
-              <label className="font-nanumsquare font-normal text-[12px] text-[#575757] leading-none mb-[8px] block">
+              <label className="font-nanumsquare font-normal text-[12px] text-[#333333] leading-none mb-[8px] block">
                 전세버스 탑승 여부
               </label>
               <div className="grid grid-cols-2 gap-[10px]">
@@ -331,9 +331,9 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
             </div>
           )}
 
-          {/* 7. 동명이인 체크를 위한 번호를 알려주세요. */}
+          {/* 7. 동명이인 체크를 위한 번호를 알려주세요. (Figma: #333333) */}
           <div>
-            <label className="font-nanumsquare font-normal text-[12px] text-[#575757] leading-none mb-[8px] block">
+            <label className="font-nanumsquare font-normal text-[12px] text-[#333333] leading-none mb-[8px] block">
               동명이인 체크를 위한 번호를 알려주세요.
             </label>
             <input

@@ -498,8 +498,11 @@ export default function EditorialTemplate({ invitation }) {
           {coupleKo ? `${coupleKo} 저희 결혼합니다.` : (isSample ? '강민준 · 박지민 저희 결혼합니다.' : '저희 결혼합니다.')}
         </h1>
 
-        {/* 가로 구분선 (Figma Line 138: 너비 514px -> 1x 257px, 성함 아래 간격 44px -> 1x 22px, border: 0.5px solid #999999) */}
-        <div className="w-[257px] max-w-[70%] border-t border-[#999999]/60 mt-[22px] shrink-0" />
+        {/* 가로 구분선 (Figma Line: 너비 514px -> 1x 257px, 성함 아래 간격 44px -> 1x 22px, border: 0.5px solid #999999) */}
+        <div 
+          style={{ borderTop: '0.5px solid #999999' }}
+          className="w-[257px] max-w-[70%] mt-[22px] shrink-0" 
+        />
 
         {/* 예식 일시 (Figma: NanumSquare Neo OTF 24px -> 1x 12px #333333, 구분선 아래 간격 45px -> 1x 22.5px) */}
         {formattedDates.fullKo && (
@@ -515,8 +518,8 @@ export default function EditorialTemplate({ invitation }) {
           </p>
         )}
 
-        {/* 하단: SCROLL TO OPEN 버튼 (Figma: 232.4x55.3 -> 1x 116.2x27.65, 장소 아래 간격 108px -> 1x 54px) */}
-        <div className="mt-[54px] shrink-0">
+        {/* 하단: SCROLL TO OPEN 버튼 (Figma: 232.4x55.3 -> 1x 116.2x27.65, top 1303px, 장소 아래 간격 158px -> 1x 79px) */}
+        <div className="mt-[79px] shrink-0">
           <button
             type="button"
             onClick={() => {
@@ -525,8 +528,8 @@ export default function EditorialTemplate({ invitation }) {
                 nextEl.scrollIntoView({ behavior: 'smooth' });
               }
             }}
-            className="w-[116.2px] h-[27.65px] border border-[#999999]/80 hover:border-stone-500 bg-white hover:bg-stone-50 active:bg-stone-100 transition-colors cursor-pointer group shadow-2xs flex items-center justify-center gap-1 select-none"
-            style={{ borderRadius: '50%' }}
+            className="w-[116.2px] h-[27.65px] bg-white hover:bg-stone-50 active:bg-stone-100 transition-colors cursor-pointer group shadow-2xs flex items-center justify-center gap-1 select-none"
+            style={{ borderRadius: '50%', border: '0.5px solid #999999' }}
           >
             {/* Figma SCROLL TO OPEN: Bodoni 72 Bold 15.4px -> 1x 7.7px, tracking: 0.09em, #333333 */}
             <span className="font-bodoni font-bold text-[7.7px] tracking-[0.09em] text-[#333333] uppercase leading-none">
@@ -538,10 +541,10 @@ export default function EditorialTemplate({ invitation }) {
           </button>
         </div>
 
-        {/* 섹션 1 바닥 구분선 (Figma Line 138: 너비 561px -> 1x 280.5px, 버튼 아래 간격 75.7px -> 1x 37.85px, border: 0.5px solid #999999) */}
+        {/* 섹션 1 바닥 구분선 (Figma Line 138: 너비 561px -> 1x 280.5px, border: 0.5px solid #999999) */}
         <div 
           style={{ borderTop: '0.5px solid #999999' }}
-          className="w-[280.5px] max-w-[75%] mt-[37.85px] mb-[37.85px] mx-auto shrink-0" 
+          className="w-[280.5px] max-w-[75%] mt-[38px] mb-[38px] mx-auto shrink-0" 
         />
       </section>
 
@@ -1292,24 +1295,26 @@ export default function EditorialTemplate({ invitation }) {
                 안내 사항
               </p>
 
-              {/* 중앙: 필름 스트립 프레임 영역 (Figma: 10684px, mt-[39px], 실버그레이 필름 프레임) */}
-              <div className="w-full bg-[#D9D9D9] py-[16px] mt-[39px] relative overflow-hidden flex flex-col items-center">
-                {/* 상단 필름 바 */}
-                <div className="w-full max-w-[390px] px-8 flex justify-between items-center text-[10.5px] text-white font-mono font-bold leading-none mb-2 tracking-[0.15em] select-none">
-                  <span>2</span>
-                  <span>FILM</span>
-                  <span>3</span>
+              {/* 중앙: 필름 스트립 프레임 영역 (Figma: 10822px, bg #DDE7F3, mt-[39px], 실측 1x 305px 파스텔 블루 필름) */}
+              <div className="w-full bg-[#DDE7F3] pt-[12px] pb-[14px] mt-[39px] relative overflow-hidden flex flex-col items-center select-none">
+                {/* 상단 필름 바: 2, DESIGNED BY ATELIER DE MUKIRU (Figma: NanumSquare Neo 800 10px #FFFFFF), 3 */}
+                <div className="w-full max-w-[390px] px-6 flex justify-between items-center text-white select-none mb-[8px]">
+                  <span className="font-nanumsquare text-[11px] font-extrabold w-[24px] text-center">2</span>
+                  <span className="font-nanumsquare font-extrabold text-[10px] text-white tracking-[0.05em] leading-none uppercase text-center">
+                    DESIGNED BY ATELIER DE MUKIRU
+                  </span>
+                  <span className="font-nanumsquare text-[11px] font-extrabold w-[24px] text-center">3</span>
                 </div>
 
-                {/* 상단 퍼포레이션 구멍 열 */}
+                {/* 상단 퍼포레이션 구멍 열 (Figma: 너비 38px 높이 46px -> 1x 19x23px, #F5F5F5, radius 8.1px -> 4.05px) */}
                 <div className="w-full max-w-[390px] px-3 flex justify-between items-center select-none">
-                  {[...Array(9)].map((_, i) => (
-                    <div key={i} className="w-[18px] h-[24px] bg-white rounded-[3px] shrink-0" />
+                  {[...Array(10)].map((_, i) => (
+                    <div key={i} className="w-[19px] h-[23px] bg-[#F5F5F5] rounded-[4px] shrink-0" />
                   ))}
                 </div>
 
                 {/* 중앙 프레임 영역 (좌측 잘린 프레임 + 중앙 메인 카드 + 우측 잘린 프레임) */}
-                <div className="w-full max-w-[390px] flex items-center justify-center gap-[12px] my-[14px] select-none">
+                <div className="w-full max-w-[390px] flex items-center justify-center gap-[12px] my-[13px] select-none">
                   {/* 좌측 프레임 가장자리 (여러 장일 땐 클릭 시 이전 카드로 이동) */}
                   <div
                     onClick={() => {
@@ -1317,12 +1322,12 @@ export default function EditorialTemplate({ invitation }) {
                         setActiveNoticeIndex((prev) => (prev - 1 + displayNotices.length) % displayNotices.length);
                       }
                     }}
-                    className={`w-[24px] h-[220px] bg-white rounded-r-[8px] opacity-80 shrink-0 ${hasMultiple ? 'cursor-pointer hover:opacity-100 transition-opacity' : ''}`}
+                    className={`w-[24px] h-[210px] bg-white rounded-r-[8px] opacity-90 shrink-0 ${hasMultiple ? 'cursor-pointer hover:opacity-100 transition-opacity' : ''}`}
                     title={hasMultiple ? '이전 안내' : undefined}
                   />
 
                   {/* 중앙 메인 안내 카드 (Figma: 식사안내, 구분선 239px, 내용 NanumSquare Neo 12px leading-[1.78]) */}
-                  <div className="w-[276px] min-h-[220px] bg-white rounded-[10px] py-[30px] px-[18px] flex flex-col items-center justify-center text-center shrink-0 shadow-xs">
+                  <div className="w-[276px] min-h-[210px] bg-white rounded-[10px] py-[28px] px-[18px] flex flex-col items-center justify-center text-center shrink-0 shadow-xs">
                     {/* 카드 제목 */}
                     <h3 className="font-nanumsquare font-normal text-[14px] text-[#333333] leading-none text-center tracking-tight">
                       {currentNotice.title || '식사 안내'}
@@ -1331,7 +1336,7 @@ export default function EditorialTemplate({ invitation }) {
                     {/* 식사안내 제목과 내용 사이 구분선 (Figma: width 478px -> 1x 239px, border: 0.5px solid #929292) */}
                     <div 
                       style={{ borderTop: '0.5px solid #929292' }} 
-                      className="w-[239px] max-w-full my-[18px]" 
+                      className="w-[239px] max-w-full my-[17px]" 
                     />
 
                     {/* 카드 내용 */}
@@ -1366,23 +1371,22 @@ export default function EditorialTemplate({ invitation }) {
                         setActiveNoticeIndex((prev) => (prev + 1) % displayNotices.length);
                       }
                     }}
-                    className={`w-[24px] h-[220px] bg-white rounded-l-[8px] opacity-80 shrink-0 ${hasMultiple ? 'cursor-pointer hover:opacity-100 transition-opacity' : ''}`}
+                    className={`w-[24px] h-[210px] bg-white rounded-l-[8px] opacity-90 shrink-0 ${hasMultiple ? 'cursor-pointer hover:opacity-100 transition-opacity' : ''}`}
                     title={hasMultiple ? '다음 안내' : undefined}
                   />
                 </div>
 
-                {/* 하단 퍼포레이션 구멍 열 */}
+                {/* 하단 퍼포레이션 구멍 열 (10개, #F5F5F5) */}
                 <div className="w-full max-w-[390px] px-3 flex justify-between items-center select-none">
-                  {[...Array(9)].map((_, i) => (
-                    <div key={i} className="w-[18px] h-[24px] bg-white rounded-[3px] shrink-0" />
+                  {[...Array(10)].map((_, i) => (
+                    <div key={i} className="w-[19px] h-[23px] bg-[#F5F5F5] rounded-[4px] shrink-0" />
                   ))}
                 </div>
 
-                {/* 하단 필름 바 */}
-                <div className="w-full max-w-[390px] px-8 flex justify-between items-center text-[10.5px] text-white font-mono font-bold leading-none mt-2 tracking-[0.15em] select-none">
-                  <span>▶ 1</span>
-                  <span>2</span>
-                  <span>▶ 2</span>
+                {/* 하단 필름 바: 6, 7 */}
+                <div className="w-full max-w-[390px] px-6 flex justify-between items-center text-white select-none mt-[8px]">
+                  <span className="font-nanumsquare text-[11px] font-extrabold w-[24px] text-center">6</span>
+                  <span className="font-nanumsquare text-[11px] font-extrabold w-[24px] text-center">7</span>
                 </div>
               </div>
 
@@ -1632,11 +1636,12 @@ export default function EditorialTemplate({ invitation }) {
         );
       })()}
 
-      {/* 11. 엔딩 사진 & 감사 인사 (Figma 섹션 15279px~16696px: 780x1417 -> 1x 390x708.5 1:1 정밀 매칭) */}
-      <section className="w-full bg-[#FEFEFE] pt-0 pb-[120px] text-center select-none overflow-hidden relative">
+      {/* 11. 엔딩 사진 & 감사 인사 (Figma 섹션 15350px~16696px: 780x1346 -> 1x 390x673, bg #FEFEFE) */}
+      <section className="w-full bg-[#FEFEFE] pt-0 pb-[50px] text-center select-none overflow-hidden relative">
         <ScrollReveal duration={1000}>
-          {/* 상단: 풀 와이드 엔딩 화보 사진 (Figma Group 1207: 836x623 -> 1x 418x311.5, aspect-[836/623]) */}
-          <div className="w-full aspect-[836/623] overflow-hidden bg-stone-100 select-none">
+          {/* 상단: 풀 와이드 엔딩 화보 사진 (Figma: width 780px, height 581.27px -> 1x 390x290.64, aspect-[780/581.27]) */}
+          <div className="w-full aspect-[780/581.27] overflow-hidden bg-stone-100 select-none">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={endingImage || couplePhoto || mainImage}
               alt="Wedding Ending"
@@ -1666,12 +1671,10 @@ export default function EditorialTemplate({ invitation }) {
               : (groomName && brideName ? `${groomName} · ${brideName} 드림` : (isSample ? '민준 · 지민 드림' : '신랑 · 신부 드림'))}
           </p>
 
-          {/* 하단 브랜드 로고: DESIGNED BY ATELIER DE MUKIRU (Figma: Poppins 24px -> 1x 12px, #999999, mt-[105px]) */}
-          <p className="font-sans font-normal text-[12px] text-[#999999] tracking-[0.05em] uppercase text-center mt-[105px] select-none">
+          {/* 하단 브랜드 로고: DESIGNED BY ATELIER DE MUKIRU (Figma top: 16557px -> Poppins 24px -> 1x 12px, line-height: 162%, #999999, mt-[95px]) */}
+          <p className="font-sans font-normal text-[12px] leading-[1.62] text-[#999999] tracking-[0.05em] uppercase text-center mt-[95px] select-none">
             DESIGNED BY ATELIER DE MUKIRU
           </p>
-
-
         </ScrollReveal>
       </section>
 

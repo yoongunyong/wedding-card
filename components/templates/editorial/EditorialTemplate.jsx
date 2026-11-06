@@ -287,12 +287,12 @@ export default function EditorialTemplate({ invitation }) {
   const displayGroomParents = groomParents || (isSample ? '강오진 · 류창희' : '');
   const displayGroomRelation = groomRelation || (isSample ? '아들' : (groomParents ? '장남' : ''));
   const displayGroomName = groomName || (isSample ? '강민준' : '');
-  const hasGroomFamily = Boolean(displayGroomParents || displayGroomName);
+  const hasGroomFamily = Boolean(displayGroomParents && displayGroomName);
 
   const displayBrideParents = brideParents || (isSample ? '장철규 · 이정자' : '');
   const displayBrideRelation = brideRelation || (isSample ? '딸' : (brideParents ? '장녀' : ''));
   const displayBrideName = brideName || (isSample ? '박지민' : '');
-  const hasBrideFamily = Boolean(displayBrideParents || displayBrideName);
+  const hasBrideFamily = Boolean(displayBrideParents && displayBrideName);
 
   // 세로 타이포그래피용 성함 (3글자면 성 제외한 이름, 그 외는 전체)
   const groomShort = invitation?.groom_name && invitation.groom_name.length === 3 ? invitation.groom_name.slice(1) : (invitation?.groom_name || '');
@@ -325,9 +325,44 @@ export default function EditorialTemplate({ invitation }) {
     return () => clearInterval(timer);
   }, [guestbookList.length]);
 
-  // 계좌 데이터
-  const groomAccounts = (invitation?.accounts || []).filter((a) => a.group === '신랑측' || a.side === 'groom');
-  const brideAccounts = (invitation?.accounts || []).filter((a) => a.group === '신부측' || a.side === 'bride');
+  // 계좌 데이터 (JSON 문자열 안전 파싱 및 신랑/신부측 유연한 매칭)
+  const allParsedAccounts = useMemo(() => {
+    const raw = invitation?.accounts;
+    if (Array.isArray(raw)) return raw;
+    if (typeof raw === 'string') {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {}
+    }
+    return [];
+  }, [invitation?.accounts]);
+
+  const groomAccounts = useMemo(() => {
+    return allParsedAccounts.filter(
+      (a) =>
+        a.group === '신랑측' ||
+        a.group === '신랑' ||
+        a.side === 'groom' ||
+        a.title === '신랑' ||
+        a.relation === '신랑' ||
+        a.title?.includes('신랑') ||
+        a.relation?.includes('신랑')
+    );
+  }, [allParsedAccounts]);
+
+  const brideAccounts = useMemo(() => {
+    return allParsedAccounts.filter(
+      (a) =>
+        a.group === '신부측' ||
+        a.group === '신부' ||
+        a.side === 'bride' ||
+        a.title === '신부' ||
+        a.relation === '신부' ||
+        a.title?.includes('신부') ||
+        a.relation?.includes('신부')
+    );
+  }, [allParsedAccounts]);
 
   // 정보 카드 목록 (동적 배열 및 레거시 extra_data 완벽 호환)
   const infoCards = useMemo(() => {
@@ -481,17 +516,24 @@ export default function EditorialTemplate({ invitation }) {
       <section className="relative w-full flex flex-col items-center justify-start bg-[#FEFEFE] px-6 sm:px-7 pt-[28.5px] pb-[2px] select-none overflow-hidden">
         
         {/* 상단: 대표 화보 사진 (Figma image 736: 666x830 -> 1x 333x415, aspect-[666/830], top 57px -> 28.5px) */}
-        <div className="w-full max-w-[333px] aspect-[666/830] bg-stone-100 overflow-hidden shrink-0">
-          <img
-            src={mainImage}
-            alt="Wedding Editorial Main"
-            className="w-full h-full object-cover select-none"
-            onError={(e) => {
-              if (isSample && e.currentTarget.src !== '/samples/main-02-editorial.jpg') {
-                e.currentTarget.src = '/samples/main-02-editorial.jpg';
-              }
-            }}
-          />
+        <div className="w-full max-w-[333px] aspect-[666/830] bg-stone-100 overflow-hidden shrink-0 flex items-center justify-center">
+          {mainImage ? (
+            <img
+              src={mainImage}
+              alt="Wedding Editorial Main"
+              className="w-full h-full object-cover select-none"
+              onError={(e) => {
+                if (isSample && e.currentTarget.src !== '/samples/main-02-editorial.jpg') {
+                  e.currentTarget.src = '/samples/main-02-editorial.jpg';
+                }
+              }}
+            />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center text-stone-400 p-6 text-center select-none bg-stone-50">
+              <span className="font-weddingday text-[36px] text-stone-400 mb-1">Our Wedding</span>
+              <span className="font-nanumsquare text-[11px] text-stone-400 tracking-wider">REPRESENTATIVE PHOTO</span>
+            </div>
+          )}
         </div>
 
         {/* 신랑 · 신부 성함 및 결혼 안내 (Figma: NanumSquare Neo OTF 30px -> 1x 15px #292929, 간격 71px -> 1x 35.5px) */}
@@ -896,7 +938,7 @@ export default function EditorialTemplate({ invitation }) {
                 alt="Selected wedding photo"
                 className="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.01]"
                 onError={(e) => {
-                  if (e.currentTarget.src !== '/samples/main-02-editorial.jpg') {
+                  if (isSample && e.currentTarget.src !== '/samples/main-02-editorial.jpg') {
                     e.currentTarget.src = '/samples/main-02-editorial.jpg';
                   }
                 }}
@@ -922,7 +964,7 @@ export default function EditorialTemplate({ invitation }) {
                     alt={`Thumbnail ${idx + 1}`}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      if (e.currentTarget.src !== '/samples/main-02-editorial.jpg') {
+                      if (isSample && e.currentTarget.src !== '/samples/main-02-editorial.jpg') {
                         e.currentTarget.src = '/samples/main-02-editorial.jpg';
                       }
                     }}

@@ -1,6 +1,6 @@
 # 💍 모바일 청첩장 프로젝트 인수인계 현황 (PROJECT_STATUS.md)
 
-> **최종 업데이트 일시**: 2026-10-31  
+> **최종 업데이트 일시**: 2026-11-06  
 > **프로젝트 경로**: `c:\Users\YOONGUNYONG\wedding-card`  
 > **현재 작업 브랜치**: `dev`  
 > **핵심 프레임워크**: Next.js 16 (App Router, Turbopack) / Tailwind CSS / Supabase (PostgreSQL)  
@@ -465,6 +465,12 @@
       - 필수 항목 누락 시 친절한 안내 alert를 표시하고 해당 미입력 단계로 부드럽게 스크롤 이동.
       - 이전 단계(`targetStep < currentStep`)로 돌아가는 탐색은 수정 편의를 위해 언제나 100% 자유롭게 허용.
       - 하단 "다음 단계로" 버튼과 상단 스텝 탭 클릭 모두 완벽하게 동일한 단일 검증 로직 공유.
+15. **[시안 2 전수 검증 및 동적 데이터 무결성 보강] `EditorialTemplate.jsx` (2026-11-06)**:
+    - **더미 데이터 유출 방어**: 갤러리 메인 컷 및 썸네일 `onError` 핸들러에 `isSample` 가드를 적용하여 고객 사진 로딩 실패 시 샘플 모델 사진이 대체 노출되는 버그를 원천 차단.
+    - **혼주 소개 영역 공백 방어**: 부모님 성함을 미입력한 고객의 경우 빈 공백과 신랑 성함만 우측에 노출되던 문제를 `hasGroomFamily = Boolean(displayGroomParents && displayGroomName)`으로 보강하여, 부모님 성함이 등록된 고객에게만 예쁘게 노출되고 없으면 혼주 소개 행이 깔끔하게 숨겨지도록 처리.
+    - **계좌 목록(accounts) 안전 파서 탑재**: DB 반환 형태(배열 또는 JSON 문자열)에 구애받지 않도록 `allParsedAccounts` `useMemo`를 도입하고, `group`, `side`, `title`, `relation` 키워드를 유연하게 지원.
+    - **대표 화보 사진 미등록 시 엑스박스 방어**: 고객이 대표 사진을 등록하지 않았을 때 브라우저 깨진 이미지 대신 감성적인 `Our Wedding` 플레이스홀더 제공.
+    - **인수인계 체크리스트 10대 포인트 전수 검토**: 하객 라우터(`app/[slug]/page.js`), 데모 목업(`sampleInvitations.js`), 제작/수정 폼(`create`, `edit`), 랜딩 스와이퍼/쇼케이스, 관리자 페이지(`admin`), 바닥 구분선(280.5px 실선) 전수 일치 확인 완료.
 
 ---
 

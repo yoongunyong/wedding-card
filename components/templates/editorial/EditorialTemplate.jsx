@@ -79,6 +79,7 @@ export default function EditorialTemplate({ invitation }) {
   const [guestbookList, setGuestbookList] = useState([]);
   const [guestbookIndex, setGuestbookIndex] = useState(0);
   const [guestbookPageIndex, setGuestbookPageIndex] = useState(0);
+  const guestbookTouchStartX = useRef(null);
 
   // 5. 갤러리 탭/인덱스 상태
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
@@ -1476,7 +1477,9 @@ export default function EditorialTemplate({ invitation }) {
 
         const displayList = guestbookList.length > 0 ? guestbookList : (isSample ? sampleGuestbooks : []);
         const totalPages = Math.max(isSample ? 3 : 1, Math.ceil(displayList.length / 4));
-        const currentFour = displayList.slice(guestbookPageIndex * 4, guestbookPageIndex * 4 + 4);
+        // 삭제 등으로 인해 페이지가 초과되었을 때 빈 화면에 갇히지 않도록 안전 보정
+        const safePageIndex = Math.min(guestbookPageIndex, Math.max(0, totalPages - 1));
+        const currentFour = displayList.slice(safePageIndex * 4, safePageIndex * 4 + 4);
 
         return (
           <section className="w-full bg-[#FEFEFE] pt-[91px] pb-0 text-center select-none overflow-hidden">
@@ -1498,7 +1501,22 @@ export default function EditorialTemplate({ invitation }) {
               </p>
 
               {/* 중앙: 방명록 4컷 프레임 영역 (Figma: 너비 700px -> 1x 350px, 배경 #E6EDF5, rounded-[14px], mt-[29px]) */}
-              <div className="w-[350px] max-w-[92%] mx-auto bg-[#E6EDF5] rounded-[14px] pt-[9px] pb-[9px] px-[10px] mt-[29px] flex flex-col justify-between select-none">
+              <div 
+                onTouchStart={(e) => {
+                  guestbookTouchStartX.current = e.touches[0].clientX;
+                }}
+                onTouchEnd={(e) => {
+                  if (guestbookTouchStartX.current === null) return;
+                  const deltaX = e.changedTouches[0].clientX - guestbookTouchStartX.current;
+                  guestbookTouchStartX.current = null;
+                  if (deltaX < -40 && safePageIndex < totalPages - 1) {
+                    setGuestbookPageIndex(safePageIndex + 1);
+                  } else if (deltaX > 40 && safePageIndex > 0) {
+                    setGuestbookPageIndex(safePageIndex - 1);
+                  }
+                }}
+                className="w-[350px] max-w-[92%] mx-auto bg-[#E6EDF5] rounded-[14px] pt-[9px] pb-[9px] px-[10px] mt-[29px] flex flex-col justify-between select-none touch-pan-y"
+              >
                 {/* 프레임 상단 레터링 바 (Figma: DESIGNED BY ATELIER DE MUKIRU & 화살표 + 32) */}
                 <div className="w-full px-2 flex items-center justify-between text-[#999999] text-[8.5px] font-nanumsquare leading-none mb-[8px] select-none">
                   <div className="flex items-center gap-1.5">
@@ -1561,17 +1579,19 @@ export default function EditorialTemplate({ invitation }) {
                     </div>
                   ))}
 
-                  {/* 메시지가 4개 미만일 때 빈 카드 채우기 (피그마 4컷 그리드 대칭 유지) */}
+                  {/* 메시지가 4개 미만일 때 빈 카드 채우기 (피그마 4컷 그리드 대칭 유지 + 클릭 시 작성 모달 오픈 유도) */}
                   {currentFour.length < 4 && [...Array(4 - currentFour.length)].map((_, i) => (
                     <div
                       key={`empty-${i}`}
-                      className="w-full min-h-[155px] bg-[#FEFEFE]/80 border border-dashed border-[#D5DCE5] rounded-[10px] p-[16px] flex flex-col justify-center items-center text-center select-none"
+                      onClick={() => setShowGuestbookModal(true)}
+                      className="w-full min-h-[155px] bg-[#FEFEFE]/80 hover:bg-[#FEFEFE] border border-dashed border-[#D5DCE5] hover:border-[#999999] rounded-[10px] p-[16px] flex flex-col justify-center items-center text-center cursor-pointer transition-all active:scale-[0.99] select-none group"
+                      title="클릭하여 축하 메시지 남기기"
                     >
-                      <span className="font-weddingday text-[18px] text-[#B0B8C2] block mb-1">
+                      <span className="font-weddingday text-[18px] text-[#B0B8C2] group-hover:text-[#393939] block mb-1 transition-colors">
                         Best Wishes
                       </span>
-                      <p className="font-nanumsquare text-[10.5px] text-[#A0A8B2] tracking-tight">
-                        따뜻한 축하를 남겨주세요
+                      <p className="font-nanumsquare text-[10.5px] text-[#A0A8B2] group-hover:text-[#666666] tracking-tight transition-colors">
+                        따뜻한 축하를 남겨주세요 ✍️
                       </p>
                     </div>
                   ))}
@@ -1593,20 +1613,24 @@ export default function EditorialTemplate({ invitation }) {
                 </div>
               </div>
 
-              {/* 페이지네이션 도트 (Figma: 12x12 -> 1x 6px, active #999999, mt-[12px]) */}
-              <div className="flex items-center justify-center gap-2 mt-[12px] select-none">
+              {/* 페이지네이션 도트 (모바일 터치 영역 24px 확장 및 스케일 애니메이션) */}
+              <div className="flex items-center justify-center gap-0.5 mt-[10px] select-none">
                 {[...Array(totalPages)].map((_, pIdx) => (
                   <button
                     key={pIdx}
                     type="button"
                     onClick={() => setGuestbookPageIndex(pIdx)}
-                    className={`w-[6px] h-[6px] rounded-full transition-all cursor-pointer ${
-                      pIdx === (guestbookPageIndex % totalPages)
-                        ? 'bg-[#999999]'
-                        : 'bg-[#D9D9D9] hover:bg-[#B0B0B0]'
-                    }`}
+                    className="w-6 h-6 flex items-center justify-center cursor-pointer p-0 bg-transparent border-none"
                     aria-label={`방명록 페이지 ${pIdx + 1}`}
-                  />
+                  >
+                    <span
+                      className={`w-[6px] h-[6px] rounded-full transition-all ${
+                        pIdx === (safePageIndex % totalPages)
+                          ? 'bg-[#999999] scale-125'
+                          : 'bg-[#D9D9D9] hover:bg-[#B0B0B0]'
+                      }`}
+                    />
+                  </button>
                 ))}
               </div>
 

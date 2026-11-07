@@ -97,7 +97,7 @@ export default function ManageRsvpPage({ params }) {
       // 세션 스토리지 기반 2차 인증 상태 확인 (브라우저 세션 유지)
       const sessionKey = `manage_auth_${slug}`;
       const savedAuthToken = typeof window !== 'undefined' ? sessionStorage.getItem(sessionKey) : null;
-      const registeredPin = inv.template_config?.manage_password;
+      const registeredPin = inv.template_config?.manage_password || inv.manage_password;
 
       if (savedAuthToken === token) {
         // 이미 본 브라우저 세션에서 PIN 인증을 통과한 경우 즉시 해제
@@ -124,7 +124,7 @@ export default function ManageRsvpPage({ params }) {
     if (e) e.preventDefault();
     if (!invitation) return;
 
-    const registeredPin = invitation.template_config?.manage_password;
+    const registeredPin = invitation.template_config?.manage_password || invitation.manage_password;
 
     if (!pinInput || pinInput.length !== 4) {
       setPinError('4자리 숫자를 모두 입력해 주세요.');
@@ -198,7 +198,7 @@ export default function ManageRsvpPage({ params }) {
     if (e) e.preventDefault();
     if (!invitation) return;
 
-    const registeredPin = invitation.template_config?.manage_password;
+    const registeredPin = invitation.template_config?.manage_password || invitation.manage_password;
     if (registeredPin && currentPinInput !== registeredPin) {
       setChangePinError('현재 비밀번호가 일치하지 않습니다.');
       return;

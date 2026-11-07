@@ -325,7 +325,7 @@ export default function EditInvitationPage({ params }) {
       // 2차 보안 세션 검증
       const sessionKey = `manage_auth_${slug}`;
       const savedAuthToken = typeof window !== 'undefined' ? sessionStorage.getItem(sessionKey) : null;
-      if (config.manage_password && savedAuthToken !== token) {
+      if ((config.manage_password || card.manage_password) && savedAuthToken !== token) {
         alert('보안을 위해 2차 인증(4자리 비밀번호)이 필요합니다.');
         router.replace(`/manage/${slug}?token=${token}`);
         return;
@@ -368,7 +368,7 @@ export default function EditInvitationPage({ params }) {
         venue_address: card.venue_address || '',
         venue_detail: card.venue_detail || '',
 
-        message_title: card.message_title || '새로운 시작의 날',
+        message_title: card.message_title || config.message_title || '새로운 시작의 날',
         message: card.message || GREETING_PRESETS[0].content,
 
         show_quote_section: config.show_quote_section !== false,
@@ -387,7 +387,7 @@ export default function EditInvitationPage({ params }) {
         show_rsvp_bus: Boolean(config.show_rsvp_bus),
         show_guestbook: config.show_guestbook !== false,
         show_guest_photos: config.show_guest_photos !== false,
-        manage_password: config.manage_password || '',
+        manage_password: config.manage_password || card.manage_password || '',
       });
 
       // 계좌 분리
@@ -457,12 +457,12 @@ export default function EditInvitationPage({ params }) {
       // 이미지 프리뷰 초기화
       const imgs = card.images || {};
       setMainImagePreview(imgs.main || card.main_image || '');
-      setCoverImagePreview(imgs.cover || '');
-      setCoupleImagePreview(imgs.couple_profile || '');
+      setCoverImagePreview(imgs.cover || card.cover_image || card.extra_data?.cover_image || '');
+      setCoupleImagePreview(imgs.couple_profile || imgs.couple || card.couple_image || '');
       setEndingImagePreview(imgs.ending || card.ending_image || '');
-      setPhotoSharingImagePreview(imgs.photo_sharing || '');
-      setBridePhotoPreview(imgs.bride_profile || card.bride_photo || '');
-      setGroomPhotoPreview(imgs.groom_profile || card.groom_photo || '');
+      setPhotoSharingImagePreview(imgs.photo_sharing || imgs.snap_photo || card.extra_data?.photo_sharing_image || '');
+      setBridePhotoPreview(imgs.bride_profile || imgs.bride || card.bride_photo || '');
+      setGroomPhotoPreview(imgs.groom_profile || imgs.groom || card.groom_photo || '');
 
       // 갤러리 이미지
       const rawGallery = card.gallery_images || [];
@@ -483,7 +483,7 @@ export default function EditInvitationPage({ params }) {
     }
 
     fetchInvitationData();
-  }, [slug, token]);
+  }, [slug, token, router]);
 
   // 실시간 미리보기 모달 열기 (히스토리 푸시 및 최상단 스크롤 리셋)
   const openPreviewModal = () => {
@@ -873,6 +873,7 @@ export default function EditInvitationPage({ params }) {
       venue_hall: formData.venue_hall,
       venue_address: formData.venue_address,
       venue_detail: formData.venue_detail,
+      message_title: (formData.message_title || '').trim() || '새로운 시작의 날',
       message: formData.message,
       quote_content: formData.show_quote_section ? formData.quote_content : '',
       quote_source: formData.show_quote_section ? formData.quote_source : '',
@@ -901,7 +902,8 @@ export default function EditInvitationPage({ params }) {
         show_rsvp_bus: Boolean(formData.show_rsvp_bus),
         show_guestbook: formData.show_guestbook,
         show_guest_photos: formData.show_guest_photos,
-          manage_password: formData.manage_password || originalCard?.template_config?.manage_password || '',
+        manage_password: (formData.manage_password || '').trim(),
+        message_title: (formData.message_title || '').trim() || '새로운 시작의 날',
         show_quote_section: formData.show_quote_section,
         groom_relation: formData.groom_relation,
         bride_relation: formData.bride_relation,
@@ -915,7 +917,7 @@ export default function EditInvitationPage({ params }) {
         bgmMode === 'preset'
           ? bgmPresetUrl || ''
           : bgmMode === 'file'
-          ? customBgmPreviewUrl || ''
+          ? customBgmPreviewUrl || formData.bgm_url || ''
           : bgmMode === 'url'
           ? customBgmUrl.trim()
           : '',
@@ -1060,6 +1062,9 @@ export default function EditInvitationPage({ params }) {
             finalBgmUrl = uploadedBgm;
             finalBgmMode = 'custom';
           }
+        } else if (formData.bgm_url) {
+          finalBgmUrl = formData.bgm_url;
+          finalBgmMode = 'custom';
         }
       } else if (bgmMode === 'url') {
         finalBgmUrl = customBgmUrl.trim();
@@ -1131,12 +1136,13 @@ export default function EditInvitationPage({ params }) {
         bride_father_deceased: Boolean(formData.bride_father_deceased),
         bride_mother_deceased: Boolean(formData.bride_mother_deceased),
 
-        wedding_date: `${formData.wedding_date}T${formData.wedding_time}:00`,
+        wedding_date: `${formData.wedding_date}T${formData.wedding_time || '12:00'}:00`,
         venue_name: formData.venue_name.trim(),
         venue_hall: formData.venue_hall ? formData.venue_hall.trim() : '',
         venue_address: formData.venue_address.trim(),
         venue_detail: formData.venue_detail.trim(),
 
+        message_title: (formData.message_title || '').trim(),
         message: formData.message.trim(),
         quote_content: formData.show_quote_section ? formData.quote_content.trim() : '',
         quote_source: formData.show_quote_section ? formData.quote_source.trim() : '',
@@ -1166,6 +1172,18 @@ export default function EditInvitationPage({ params }) {
         bgm_url: finalBgmUrl,
         bgm_mode: finalBgmMode,
         template_type: formData.template_type || 'basic',
+        manage_password: (formData.manage_password || '').trim() || null,
+        service_expired_at: (() => {
+          try {
+            const wDate = new Date(`${formData.wedding_date}T${formData.wedding_time || '12:00'}:00`);
+            if (!isNaN(wDate.getTime())) {
+              const exp = new Date(wDate);
+              exp.setFullYear(exp.getFullYear() + 1);
+              return exp.toISOString();
+            }
+          } catch {}
+          return originalCard?.service_expired_at || null;
+        })(),
 
         template_config: {
           ...(originalCard?.template_config || {}),
@@ -1178,8 +1196,9 @@ export default function EditInvitationPage({ params }) {
           show_rsvp_meal: formData.show_rsvp_meal !== false,
           show_rsvp_bus: Boolean(formData.show_rsvp_bus),
           show_guestbook: formData.show_guestbook,
-        show_guest_photos: formData.show_guest_photos,
+          show_guest_photos: formData.show_guest_photos,
           manage_password: (formData.manage_password || '').trim(),
+          message_title: (formData.message_title || '').trim(),
           show_quote_section: formData.show_quote_section,
           groom_relation: formData.groom_relation,
           bride_relation: formData.bride_relation,
@@ -1188,6 +1207,17 @@ export default function EditInvitationPage({ params }) {
           bride_father_deceased: formData.bride_father_deceased,
           bride_mother_deceased: formData.bride_mother_deceased,
           venue_hall: formData.venue_hall,
+          service_expired_at: (() => {
+            try {
+              const wDate = new Date(`${formData.wedding_date}T${formData.wedding_time || '12:00'}:00`);
+              if (!isNaN(wDate.getTime())) {
+                const exp = new Date(wDate);
+                exp.setFullYear(exp.getFullYear() + 1);
+                return exp.toISOString();
+              }
+            } catch {}
+            return originalCard?.template_config?.service_expired_at || originalCard?.service_expired_at || null;
+          })(),
         },
       };
 

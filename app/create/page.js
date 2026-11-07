@@ -606,6 +606,7 @@ function CreateInvitationContent() {
       setCoverImageFile(null); setCoverImagePreview('');
       setCoupleImageFile(null); setCoupleImagePreview('');
       setEndingImageFile(null); setEndingImagePreview('');
+      setPhotoSharingImageFile(null); setPhotoSharingImagePreview('');
       setGroomPhotoFile(null); setGroomPhotoPreview('');
       setBridePhotoFile(null); setBridePhotoPreview('');
       setGalleryFiles([]); setGalleryPreviews([]);
@@ -614,6 +615,7 @@ function CreateInvitationContent() {
       if (coverImageInputRef.current) coverImageInputRef.current.value = '';
       if (coupleImageInputRef.current) coupleImageInputRef.current.value = '';
       if (endingImageInputRef.current) endingImageInputRef.current.value = '';
+      if (photoSharingInputRef.current) photoSharingInputRef.current.value = '';
       if (groomPhotoInputRef.current) groomPhotoInputRef.current.value = '';
       if (bridePhotoInputRef.current) bridePhotoInputRef.current.value = '';
       if (galleryInputRef.current) galleryInputRef.current.value = '';
@@ -941,6 +943,7 @@ function CreateInvitationContent() {
       venue_hall: effectiveVenueHall,
       venue_address: effectiveVenueAddress,
       venue_detail: effectiveVenueDetail,
+      message_title: (formData.message_title || '').trim() || '새로운 시작의 날',
       message: formData.message || GREETING_PRESETS[0].content,
       quote_content: formData.show_quote_section ? (formData.quote_content || QUOTE_PRESETS[0].content) : '',
       quote_source: formData.show_quote_section ? (formData.quote_source || QUOTE_PRESETS[0].source) : '',
@@ -966,10 +969,12 @@ function CreateInvitationContent() {
         show_gallery: formData.show_gallery,
         show_accounts: formData.show_accounts,
         show_rsvp: formData.show_rsvp,
+        show_rsvp_meal: formData.show_rsvp_meal !== false,
         show_rsvp_bus: Boolean(formData.show_rsvp_bus),
         show_guestbook: formData.show_guestbook,
         show_guest_photos: formData.show_guest_photos,
-          manage_password: (formData.manage_password || '').trim(),
+        manage_password: (formData.manage_password || '').trim(),
+        message_title: (formData.message_title || '').trim() || '새로운 시작의 날',
         show_quote_section: formData.show_quote_section,
         groom_relation: formData.groom_relation || PREVIEW_FALLBACK.groom_relation,
         bride_relation: formData.bride_relation || PREVIEW_FALLBACK.bride_relation,
@@ -1259,7 +1264,7 @@ function CreateInvitationContent() {
         bride_father_deceased: Boolean(formData.bride_father_deceased),
         bride_mother_deceased: Boolean(formData.bride_mother_deceased),
 
-        wedding_date: `${formData.wedding_date}T${formData.wedding_time}:00`,
+        wedding_date: `${formData.wedding_date}T${formData.wedding_time || '12:00'}:00`,
         venue_name: formData.venue_name.trim(),
         venue_hall: formData.venue_hall ? formData.venue_hall.trim() : '',
         venue_address: formData.venue_address.trim(),
@@ -1277,6 +1282,7 @@ function CreateInvitationContent() {
         bride_first_name_en: formData.bride_first_name_en.trim() || formData.bride_name_en.trim().split(' ')[0] || formData.bride_name_en.trim(),
         bride_last_name_en: formData.bride_last_name_en.trim() || formData.bride_name_en.trim().split(' ').slice(1).join(' ') || '',
 
+        message_title: (formData.message_title || '').trim(),
         message: formData.message.trim(),
         quote_content: formData.show_quote_section ? formData.quote_content.trim() : '',
         quote_source: formData.show_quote_section ? formData.quote_source.trim() : '',
@@ -1306,7 +1312,7 @@ function CreateInvitationContent() {
         manage_password: formData.manage_password || null,
         service_expired_at: (() => {
           try {
-            const wDate = new Date(`${formData.wedding_date}T${formData.wedding_time}:00`);
+            const wDate = new Date(`${formData.wedding_date}T${formData.wedding_time || '12:00'}:00`);
             if (!isNaN(wDate.getTime())) {
               const exp = new Date(wDate);
               exp.setFullYear(exp.getFullYear() + 1);
@@ -1329,6 +1335,8 @@ function CreateInvitationContent() {
           show_rsvp_bus: Boolean(formData.show_rsvp_bus),
           show_guestbook: formData.show_guestbook,
           show_guest_photos: formData.show_guest_photos,
+          manage_password: (formData.manage_password || '').trim(),
+          message_title: (formData.message_title || '').trim(),
           show_quote_section: formData.show_quote_section,
           groom_relation: formData.groom_relation,
           bride_relation: formData.bride_relation,
@@ -1341,7 +1349,7 @@ function CreateInvitationContent() {
           order_code: inputCode || null,
           service_expired_at: (() => {
             try {
-              const wDate = new Date(`${formData.wedding_date}T${formData.wedding_time}:00`);
+              const wDate = new Date(`${formData.wedding_date}T${formData.wedding_time || '12:00'}:00`);
               if (!isNaN(wDate.getTime())) {
                 const exp = new Date(wDate);
                 exp.setFullYear(exp.getFullYear() + 1);
@@ -1384,11 +1392,16 @@ function CreateInvitationContent() {
         }
       }
 
+      if (typeof window !== 'undefined' && formData.manage_password) {
+        sessionStorage.setItem(`manage_auth_${cleanSlug}`, data.manage_token);
+      }
+
       setCreatedResult({
         slug: data.slug,
         manage_token: data.manage_token,
         is_active: willBeActive,
         order_code: inputCode || null,
+        manage_password: (formData.manage_password || '').trim(),
       });
       window.scrollTo(0, 0);
     } catch (err) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import ScrollReveal from './ScrollReveal';
 import GuestPhotoUploadModal from './GuestPhotoUploadModal';
 
@@ -33,37 +33,55 @@ export default function GuestPhotoSnapSection({
   const extra = { ...(invitation?.template_config || {}), ...(invitation?.extra_data || {}) };
   const photoSharingImage = images.photo_sharing || images.snap_photo || extra.photo_sharing_image || '';
 
-  // D-Day 판별 로직
-  const isDDayOrAfter = useMemo(() => {
+  // 한국 표준시(KST, UTC+9) 기준 예식 당일(00:00:00) 여부 판별 및 모달 열기 핸들러
+  const handleUploadClick = () => {
+    // 1. URL 쿼리 파라미터 테스트 모드
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       if (params.get('preview_today') === 'true' || params.get('today') === 'true' || params.get('preview_snap') === 'true') {
-        return true;
+        setShowModal(true);
+        return;
       }
     }
 
-    // 샘플 미리보기인 경우 관리자 및 사용자가 바로 업로드 모달을 체험해볼 수 있도록 허용
-    if (isSample) return true;
+    // 2. 샘플 미리보기인 경우 관리자 및 사용자가 바로 업로드 모달을 체험해볼 수 있도록 허용
+    if (isSample) {
+      setShowModal(true);
+      return;
+    }
 
     const weddingDateStr = invitation?.wedding_date;
-    if (!weddingDateStr) return false;
+    if (!weddingDateStr) {
+      alert('예식 당일부터 사진을 등록하실 수 있습니다 🤍');
+      return;
+    }
 
     try {
       const normalized = typeof weddingDateStr === 'string' ? weddingDateStr.replace(' ', 'T') : '';
       const match = normalized.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
-      if (!match) return false;
+      if (!match) {
+        alert('예식 당일부터 사진을 등록하실 수 있습니다 🤍');
+        return;
+      }
 
       const year = parseInt(match[1], 10);
       const month = parseInt(match[2], 10) - 1;
       const day = parseInt(match[3], 10);
 
-      // 예식 당일 00:00:00 KST
-      const weddingStartOfDay = new Date(year, month, day, 0, 0, 0, 0);
-      return new Date() >= weddingStartOfDay;
+      // 한국 표준시(KST, UTC+9) 기준 예식 당일 00:00:00 정밀 계산
+      // 접속 기기의 로컬 타임존(해외 접속자 등)과 무관하게 한국 시간 기준 00:00:00에 정확히 오픈
+      const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+      const weddingStartOfDayKstUtc = Date.UTC(year, month, day, 0, 0, 0, 0) - KST_OFFSET_MS;
+
+      if (Date.now() >= weddingStartOfDayKstUtc) {
+        setShowModal(true);
+      } else {
+        alert('예식 당일부터 사진을 등록하실 수 있습니다 🤍');
+      }
     } catch {
-      return false;
+      alert('예식 당일부터 사진을 등록하실 수 있습니다 🤍');
     }
-  }, [invitation?.wedding_date, isSample]);
+  };
 
   if (!isEnabled || (!invitation?.id && !invitation?.slug)) return null;
 
@@ -137,13 +155,7 @@ export default function GuestPhotoSnapSection({
           <div className="mt-[26.5px] flex items-center justify-center">
             <button
               type="button"
-              onClick={() => {
-                if (isDDayOrAfter) {
-                  setShowModal(true);
-                } else {
-                  alert('예식 당일부터 사진을 등록하실 수 있습니다 🤍');
-                }
-              }}
+              onClick={handleUploadClick}
               style={{
                 boxShadow: '0px 4px 14.2px rgba(0, 0, 0, 0.09)',
               }}
@@ -254,13 +266,7 @@ export default function GuestPhotoSnapSection({
         <div>
           <button
             type="button"
-            onClick={() => {
-              if (isDDayOrAfter) {
-                setShowModal(true);
-              } else {
-                alert('예식 당일부터 사진을 등록하실 수 있습니다 🤍');
-              }
-            }}
+            onClick={handleUploadClick}
             className={`inline-flex items-center justify-center w-[165px] h-[40px] text-[13.5px] sm:text-[14px] font-sans font-medium rounded-xl transition-colors shadow-xs cursor-pointer select-none ${
               isNightMode
                 ? 'bg-white hover:bg-stone-200 text-stone-900'

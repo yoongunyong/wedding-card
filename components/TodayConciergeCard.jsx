@@ -51,18 +51,23 @@ export default function TodayConciergeCard({ invitation, forceShow = false }) {
     const hours = match[4] !== undefined ? parseInt(match[4], 10) : 13;
     const minutes = match[5] !== undefined ? parseInt(match[5], 10) : 0;
 
-    // 브라우저 로컬 타임존 기준 정밀 Date 생성
-    return new Date(year, month, day, hours, minutes, 0, 0);
+    // 한국 표준시(KST, UTC+9) 기준 정확한 타임스탬프 계산
+    const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+    const targetUtcMs = Date.UTC(year, month, day, hours, minutes, 0, 0) - KST_OFFSET_MS;
+    return new Date(targetUtcMs);
   }, [weddingDateStr]);
 
-  // 당일 여부 확인
+  // 당일 여부 확인 (접속 기기 위치와 무관하게 한국 표준시 KST 기준 당일 여부 판별)
   const isToday = useMemo(() => {
     if (isPreviewMode) return true; // 테스트 모드 시 무조건 활성화
     if (!targetDateTime) return false;
+    const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+    const nowKst = new Date(now.getTime() + KST_OFFSET_MS);
+    const targetKst = new Date(targetDateTime.getTime() + KST_OFFSET_MS);
     return (
-      targetDateTime.getFullYear() === now.getFullYear() &&
-      targetDateTime.getMonth() === now.getMonth() &&
-      targetDateTime.getDate() === now.getDate()
+      targetKst.getUTCFullYear() === nowKst.getUTCFullYear() &&
+      targetKst.getUTCMonth() === nowKst.getUTCMonth() &&
+      targetKst.getUTCDate() === nowKst.getUTCDate()
     );
   }, [targetDateTime, now, isPreviewMode]);
 

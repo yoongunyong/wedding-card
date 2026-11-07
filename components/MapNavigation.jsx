@@ -1,38 +1,47 @@
 'use client';
 
-export default function MapNavigation({ venueName, venueAddress }) {
-  // 주소 또는 식장 이름 URL 인코딩
-  const encodedVenue = encodeURIComponent(venueName);
-  const encodedAddress = encodeURIComponent(venueAddress);
+export default function MapNavigation({ venueName = '', venueAddress = '' }) {
+  // 주소 또는 식장 이름 URL 인코딩 (undefined 방지)
+  const searchQuery = venueName || venueAddress || '';
+  const encodedVenue = encodeURIComponent(searchQuery);
+  const encodedAddress = encodeURIComponent(venueAddress || venueName || '');
 
   // 1. 네이버 지도 웹/앱 링크
   const openNaverMap = () => {
+    if (!searchQuery) return alert('장소 정보가 등록되지 않았습니다.');
     window.open(`https://map.naver.com/p/search/${encodedVenue}`, '_blank');
   };
 
   // 2. 카카오맵 웹/앱 링크
   const openKakaoMap = () => {
+    if (!searchQuery) return alert('장소 정보가 등록되지 않았습니다.');
     window.open(`https://map.kakao.com/link/search/${encodedVenue}`, '_blank');
   };
 
   // 3. 티맵 (모바일 앱 바로 열기 scheme)
   const openTmap = () => {
+    if (!searchQuery) return alert('장소 정보가 등록되지 않았습니다.');
     window.open(`tmap://search?name=${encodedVenue}`, '_blank');
   };
 
   // 주소 복사하기 기능
   const handleCopyAddress = async () => {
+    const textToCopy = venueAddress || venueName || '';
+    if (!textToCopy) {
+      alert('복사할 주소 정보가 없습니다.');
+      return;
+    }
     let ok = false;
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       try {
-        await navigator.clipboard.writeText(venueAddress);
+        await navigator.clipboard.writeText(textToCopy);
         ok = true;
       } catch {}
     }
     if (!ok && typeof document !== 'undefined') {
       try {
         const ta = document.createElement('textarea');
-        ta.value = venueAddress;
+        ta.value = textToCopy;
         ta.style.position = 'fixed';
         ta.style.opacity = '0';
         document.body.appendChild(ta);

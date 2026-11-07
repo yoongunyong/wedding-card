@@ -764,7 +764,7 @@ export default function SceneTemplate({ invitation }) {
           - 사용자 전달 캡처 이미지 및 영상 1:1 일치
           - 둥근 흰색 카드 제거 -> 투명 그리드 테이블로 전면 변경
           ======================================================== */}
-      {dateDetails && (
+      {config.show_countdown !== false && dateDetails && (
       <section 
         ref={calendarRef}
         className="relative py-20 px-4 sm:px-6 text-center overflow-hidden border-t border-stone-200/60"
@@ -919,7 +919,7 @@ export default function SceneTemplate({ invitation }) {
           - 사진들 간의 간격/빈틈 0px(no-gap) 및 화면 가로폭 100% 밀착 룩
           - 더보기 클릭 시 숨겨진 사진들이 스르륵 아래로 펼쳐지는 확장 모션
           ======================================================== */}
-      {galleryImages.length > 0 && (
+      {config.show_gallery !== false && galleryImages.length > 0 && (
         <section className="py-20 px-0 bg-white border-t border-stone-100">
           <ScrollReveal>
             {/* 상단 와이드 화보 2장 (영상 frame_018, frame_019: 간격 0px로 위아래 밀착) */}
@@ -1067,7 +1067,7 @@ export default function SceneTemplate({ invitation }) {
           - 순백 화이트 베이스 + 영상 00:56 ~ 01:00 1:1 일치
           - 기본은 접힘 상태이며 누르면 화살표 회전과 함께 부드럽게 펼쳐집니다.
           ======================================================== */}
-      {(groomAccounts.length > 0 || brideAccounts.length > 0) && (
+      {config.show_accounts !== false && (groomAccounts.length > 0 || brideAccounts.length > 0) && (
         <section className="py-20 px-6 bg-white border-t border-stone-100">
           <ScrollReveal>
             <div className="text-center mb-8">
@@ -1201,7 +1201,8 @@ export default function SceneTemplate({ invitation }) {
           - 순백 화이트 배경 & 영상 속 라디오 체크 스타일
           - 참석 가능/불가 전환 시 부드러운 아코디언 확장 모션
           ======================================================== */}
-      <section className="py-20 px-6 bg-white border-t border-stone-100">
+      {config.show_rsvp !== false && (
+        <section className="py-20 px-6 bg-white border-t border-stone-100">
         <ScrollReveal>
           <div className="text-center mb-8">
             <span className="font-cormorant italic text-3xl sm:text-4xl text-[#222222] block mb-2 font-light tracking-wide">
@@ -1444,6 +1445,7 @@ export default function SceneTemplate({ invitation }) {
           </form>
         </ScrollReveal>
       </section>
+      )}
 
       {/* ========================================================
           09. INFORMATION (안내 카드 슬라이더)

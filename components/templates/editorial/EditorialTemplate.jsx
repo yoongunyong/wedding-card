@@ -745,29 +745,31 @@ export default function EditorialTemplate({ invitation }) {
           <div className="pt-[89px] pb-0 px-6 text-center flex flex-col items-center">
             {/* 제목: 초대합니다 (Figma: NanumSquare Neo OTF 36px -> 1x 18px, line-height 26px -> 13px, #292929) */}
             <h2 className="font-nanumsquare text-[18px] text-[#292929] font-normal leading-none tracking-tight">
-              초대합니다
+              {invitation?.message_title || config?.message_title || '초대합니다'}
             </h2>
 
             {/* 본문 초대글 (Figma: NanumSquare Neo OTF 28px -> 1x 14px, 너비 512px -> 1x 256px, line-height 175% -> leading-[1.75], #333333, 간격 43px) */}
-            <div className="mt-[43px] w-[256px] max-w-full mx-auto font-nanumsquare text-[14px] text-[#333333] font-normal leading-[1.75] tracking-tight break-keep whitespace-pre-line text-center">
-              {invitation?.message ? (
-                invitation.message
-              ) : (
-                <>
-                  <p className="mb-6">
-                    서로를 만나 평범했던 하루가<br />
-                    조금 더 따뜻하고 특별해졌습니다.<br />
-                    이제 두 사람이 한마음으로<br />
-                    새로운 계절을 시작하려 합니다.
-                  </p>
-                  <p>
-                    소중한 분들과 함께<br />
-                    그 순간을 나누고 싶습니다.<br />
-                    저희의 첫걸음에 따뜻한 축복을 보내주세요.
-                  </p>
-                </>
-              )}
-            </div>
+            {(invitation?.message || isSample) && (
+              <div className="mt-[43px] w-[256px] max-w-full mx-auto font-nanumsquare text-[14px] text-[#333333] font-normal leading-[1.75] tracking-tight break-keep whitespace-pre-line text-center">
+                {invitation?.message ? (
+                  invitation.message
+                ) : isSample ? (
+                  <>
+                    <p className="mb-6">
+                      서로를 만나 평범했던 하루가<br />
+                      조금 더 따뜻하고 특별해졌습니다.<br />
+                      이제 두 사람이 한마음으로<br />
+                      새로운 계절을 시작하려 합니다.
+                    </p>
+                    <p>
+                      소중한 분들과 함께<br />
+                      그 순간을 나누고 싶습니다.<br />
+                      저희의 첫걸음에 따뜻한 축복을 보내주세요.
+                    </p>
+                  </>
+                ) : null}
+              </div>
+            )}
 
             {/* 연락하기 버튼 (Figma: 너비 327px -> 1x 163.5px, 높이 76px -> 1x 38px, bg #F4F3F1, border 1px #D3D3D3, rounded-full, mt 95px -> 1x 47.5px) */}
             <button

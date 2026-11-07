@@ -108,7 +108,7 @@ export default function TodayConciergeCard({ invitation, forceShow = false }) {
       const found = list.find((item) => item.title?.includes('주차') || item.content?.includes('주차'));
       if (found) return found.title || found.content?.slice(0, 15);
     }
-    return '주차 무료 안내';
+    return '';
   }, [invitation?.transportation]);
 
   // 당일이 아니거나 예식 일시가 설정되지 않았으면 렌더링하지 않음
@@ -225,9 +225,11 @@ export default function TodayConciergeCard({ invitation, forceShow = false }) {
         {/* 편의시설 안내 태그 & 청첩장 본문 보러가기 */}
         <div className="flex items-center justify-between pt-2 border-t border-stone-100 text-[11px] text-stone-500">
           <div className="flex items-center gap-1.5 truncate max-w-[200px]">
-            <span className="px-2 py-0.5 bg-stone-100 rounded-md text-[10px] text-stone-700 font-medium">
-              🅿️ {parkingInfo}
-            </span>
+            {parkingInfo ? (
+              <span className="px-2 py-0.5 bg-stone-100 rounded-md text-[10px] text-stone-700 font-medium truncate">
+                🅿️ {parkingInfo}
+              </span>
+            ) : null}
             {invitation?.template_config?.show_guest_photos !== false && (
               <button
                 type="button"

@@ -123,13 +123,6 @@ export default function AdminDashboardPage() {
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
 
-  // 현재 페이지가 전체 페이지 범위를 벗어나면 자동 보정
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
-
   const paginatedInvitations = useMemo(() => {
     const start = (safeCurrentPage - 1) * pageSize;
     return filteredInvitations.slice(start, start + pageSize);
@@ -1316,10 +1309,10 @@ ATELIER DE MUKIRU 드림`;
 
                               {/* 6. 2차 보안 PIN */}
                               <td className="py-4 px-4 whitespace-nowrap font-mono">
-                                {inv.template_config?.manage_password ? (
+                                {(inv.template_config?.manage_password || inv.manage_password) ? (
                                   <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 bg-stone-100 text-stone-800 rounded border border-stone-200">
                                     <span>🔒</span>
-                                    <span>{inv.template_config.manage_password}</span>
+                                    <span>{inv.template_config?.manage_password || inv.manage_password}</span>
                                   </span>
                                 ) : (
                                   <span className="text-[11px] text-stone-400">미설정</span>
@@ -1662,7 +1655,7 @@ ATELIER DE MUKIRU 드림`;
             {Boolean(deleteTarget.is_active ?? deleteTarget.template_config?.is_active ?? false) ? (
               <div className="mb-5">
                 <label className="block text-xs font-medium text-stone-700 mb-1.5">
-                  안전을 위해 영문 주소 <strong className="text-rose-600 font-mono">"{deleteTarget.slug}"</strong>을 아래에 똑같이 입력하세요:
+                  안전을 위해 영문 주소 <strong className="text-rose-600 font-mono">&quot;{deleteTarget.slug}&quot;</strong>을 아래에 똑같이 입력하세요:
                 </label>
                 <input
                   type="text"

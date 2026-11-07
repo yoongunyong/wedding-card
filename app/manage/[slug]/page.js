@@ -346,7 +346,11 @@ export default function ManageRsvpPage({ params }) {
       new Date(r.created_at).toLocaleString('ko-KR'),
     ]);
 
-    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+    const escapeCsv = (val) => `"${String(val ?? '').replace(/"/g, '""')}"`;
+    const csvContent = '\uFEFF' + [
+      headers.map(escapeCsv).join(','),
+      ...rows.map((row) => row.map(escapeCsv).join(',')),
+    ].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');

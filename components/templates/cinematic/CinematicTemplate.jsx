@@ -513,7 +513,7 @@ export default function CinematicTemplate({ invitation }) {
             <div className={`text-xs sm:text-[13px] leading-[2.6] font-light max-w-[320px] mx-auto whitespace-pre-line break-keep mb-12 ${
               isNightMode ? 'text-stone-300' : 'text-stone-700'
             }`}>
-              {invitation?.message || `서로에게 행복을 주는 사람을 만났습니다.
+              {invitation?.message || (isSample ? `서로에게 행복을 주는 사람을 만났습니다.
 웃는 모습이 너무나 예쁜 그 사람을 만났습니다.
 운명처럼 만나게 된 우리의 인연
 그 인연에 이끌려 이제 영원을 함께 약속하려 합니다.
@@ -522,7 +522,7 @@ export default function CinematicTemplate({ invitation }) {
 
 둘이 함께 맞이하는 3번째 겨울,
 저희 두 사람 여러분 앞에 결혼합니다.
-앞으로 맞이할 저희의 봄날을 축복해 주세요.`}
+앞으로 맞이할 저희의 봄날을 축복해 주세요.` : '')}
             </div>
           )}
 
@@ -997,7 +997,7 @@ export default function CinematicTemplate({ invitation }) {
                     <div className="flex items-center gap-4">
                       <div className="min-w-[65px]">
                         <span className={`text-xs font-medium ${isNightMode ? 'text-white' : 'text-stone-900'}`}>
-                          {acc.title || '신랑'}
+                          {acc.title || (acc.group === '신부측' || acc.side === 'bride' || activeTab === 'bride' ? '신부' : '신랑')}
                         </span>
                         <span className="text-[11px] text-stone-400 ml-1">
                           | {acc.holder || acc.name || ''}

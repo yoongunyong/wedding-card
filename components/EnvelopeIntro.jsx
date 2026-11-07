@@ -15,17 +15,22 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
     invitation?.images?.couple_profile ||
     invitation?.images?.main;
 
-  // DB에 유효한 커버 사진이 없을 때(또는 배경/더미 링크일 때)만 기본 피켓 커플 화보로 안전하게 fallback
+  const isSample = Boolean(
+    invitation?.is_sample_preview || 
+    ['basic', 'editorial', 'playlist', 'cinematic', 'scene'].includes(invitation?.slug)
+  );
+
+  // DB에 유효한 커버 사진이 없을 때(또는 배경/더미 링크일 때)만 기본 피켓 커플 화보로 안전하게 fallback (샘플일 때만)
   const isInvalidCover = 
     !rawCover || 
     typeof rawCover !== 'string' ||
     rawCover.includes('airdrop-bg') || 
     rawCover.includes('photo-1519741497674-611481863552');
 
-  const couplePhoto = !isInvalidCover ? rawCover : '/airdrop-couple.png';
+  const couplePhoto = !isInvalidCover ? rawCover : (isSample ? '/airdrop-couple.png' : '');
 
-  // 뒷배경: 원본 스크린샷 특유의 고급스러운 웜 브라운 아치 시그니처 블러 배경 고정 (옵션 B)
-  const bgImage = invitation?.extra_data?.bg_image || '/airdrop-bg.jpg';
+  // 뒷배경: 고객 업로드 사진 또는 샘플 배경
+  const bgImage = invitation?.extra_data?.bg_image || (!isInvalidCover ? rawCover : (isSample ? '/airdrop-bg.jpg' : ''));
 
   useEffect(() => {
     // 인트로 표시 중 스크롤 방지 & 최상단 고정
@@ -134,16 +139,20 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
 
         {/* 원본 스크린샷 기반 시그니처 웜 브라운 아치 햇살 배경 (고정 레이어) */}
         <div className="fixed inset-0 -z-10 bg-[#2D2018] overflow-hidden pointer-events-none">
-          <img
-            src={bgImage}
-            alt="Wedding Signature Background"
-            className="w-full h-full object-cover object-center pointer-events-none"
-            onError={(e) => {
-              if (e.currentTarget.src !== '/airdrop-bg.jpg') {
-                e.currentTarget.src = '/airdrop-bg.jpg';
-              }
-            }}
-          />
+          {bgImage && (
+            <img
+              src={bgImage}
+              alt="Wedding Signature Background"
+              className="w-full h-full object-cover object-center pointer-events-none"
+              onError={(e) => {
+                if (isSample && e.currentTarget.src !== '/airdrop-bg.jpg') {
+                  e.currentTarget.src = '/airdrop-bg.jpg';
+                } else {
+                  e.currentTarget.style.display = 'none';
+                }
+              }}
+            />
+          )}
           {/* 원본의 따뜻한 감성을 그대로 보존하기 위한 미세 비네팅 */}
           <div className="absolute inset-0 bg-black/5 pointer-events-none" />
         </div>
@@ -168,17 +177,31 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
           </div>
 
           {/* 중앙 사진: 카드 좌우 폭에 100% 꽉 찬 직사각형 (aspect-[419/440]) */}
-          <div className="relative w-full aspect-[419/440] bg-[#E5E5EA] overflow-hidden shrink-0">
-            <img
-              src={couplePhoto}
-              alt="Our Wedding Day"
-              className="w-full h-full object-cover object-center pointer-events-none"
-              onError={(e) => {
-                if (e.currentTarget.src !== '/airdrop-couple.png') {
-                  e.currentTarget.src = '/airdrop-couple.png';
-                }
-              }}
-            />
+          <div className="relative w-full aspect-[419/440] bg-[#E5E5EA] overflow-hidden shrink-0 flex items-center justify-center">
+            {couplePhoto ? (
+              <img
+                src={couplePhoto}
+                alt="Our Wedding Day"
+                className="w-full h-full object-cover object-center pointer-events-none"
+                onError={(e) => {
+                  if (isSample && e.currentTarget.src !== '/airdrop-couple.png') {
+                    e.currentTarget.src = '/airdrop-couple.png';
+                  } else {
+                    e.currentTarget.style.display = 'none';
+                  }
+                }}
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center p-6 text-center text-stone-500">
+                <div className="w-14 h-14 rounded-full bg-stone-300/70 flex items-center justify-center mb-2.5 text-stone-600">
+                  <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <p className="text-[12px] font-sans font-medium tracking-wider text-stone-600">WEDDING INVITATION</p>
+                <p className="text-[11px] text-stone-500 mt-1">소중한 분들을 초대합니다</p>
+              </div>
+            )}
           </div>
 
           {/* 거절 시 나타나는 위트있는 토스트 알림 */}

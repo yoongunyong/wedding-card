@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import WeAreGettingMarriedSvg from './WeAreGettingMarriedSvg';
+import EditorialTitleTypewriter from './EditorialTitleTypewriter';
 
 export default function EditorialIntro({ invitation, onOpen }) {
   // 'idle' | 'darkening' | 'revealing'
@@ -138,9 +138,9 @@ export default function EditorialIntro({ invitation, onOpen }) {
         {/* 1-2. 중앙 클러스터: 상단 손글씨 타이틀 + 중앙 화이트 카드 + 하단 날짜 (Figma 프레임 1:1 매칭) */}
         <div className="relative z-10 w-full max-w-[310px] flex flex-col items-center py-1">
           
-          {/* 상단: We are getting married 손글씨 드로잉 벡터 (Figma 2832:2131) */}
+          {/* 상단: We are getting married 타이핑 타이틀 (Figma 2832:2131: Weddingday Personal Use 80px -> 1x 40px) */}
           <div className="w-full text-center mb-[24px] shrink-0 flex justify-center items-center">
-            <WeAreGettingMarriedSvg className="w-full" />
+            <EditorialTitleTypewriter />
           </div>
 
           {/* 중앙: 피그마 화이트 프레임 카드 (Figma Rectangle 6219: 619x998 -> 1x 309.5x499, background: #FEFEFE) */}

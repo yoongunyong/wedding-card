@@ -149,25 +149,24 @@ export default function BasicTemplate({ invitation }) {
       const now = new Date();
       const diff = targetDate.getTime() - now.getTime();
 
-      const isSameDay =
-        targetDate.getFullYear() === now.getFullYear() &&
-        targetDate.getMonth() === now.getMonth() &&
-        targetDate.getDate() === now.getDate();
+      const targetMidnight = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate()).getTime();
+      const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      const diffDayCount = Math.round((targetMidnight - nowMidnight) / (1000 * 60 * 60 * 24));
+      const isSameDay = diffDayCount === 0;
 
-      if (diff > 0) {
-        // 예식 전: 실시간 카운트다운
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-        const minutes = Math.floor((diff / 1000 / 60) % 60);
-        const seconds = Math.floor((diff / 1000) % 60);
-        setTimeLeft({ days, hours, minutes, seconds, totalDays: days, isPast: false, isToday: isSameDay });
+      if (diffDayCount > 0) {
+        // 예식 전: 실시간 시/분/초 카운트다운 & 정확한 잔여 일수
+        const totalSec = Math.max(0, Math.floor(diff / 1000));
+        const hours = Math.floor((totalSec / 3600) % 24);
+        const minutes = Math.floor((totalSec / 60) % 60);
+        const seconds = totalSec % 60;
+        setTimeLeft({ days: diffDayCount, hours, minutes, seconds, totalDays: diffDayCount, isPast: false, isToday: false });
       } else if (isSameDay) {
-        // 당일 예식 시간 경과
+        // 당일 예식
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, totalDays: 0, isPast: false, isToday: true });
       } else {
         // 예식일 경과
-        const pastDiff = Math.abs(diff);
-        const pastDays = Math.floor(pastDiff / (1000 * 60 * 60 * 24));
+        const pastDays = Math.abs(diffDayCount);
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, totalDays: pastDays, isPast: true, isToday: false });
       }
     };

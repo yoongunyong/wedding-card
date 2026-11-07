@@ -104,17 +104,14 @@ export default function PlaylistTemplate({ invitation }) {
   const dayEn = isValidDate ? (DAYS_EN[dateObj.getDay()] || '') : '';
   const monthEn = isValidDate ? (MONTHS_EN[month - 1] || '') : '';
 
-  // D-Day 계산
-  const [dDay, setDDay] = useState(0);
-  useEffect(() => {
-    if (!weddingDateStr) return;
-    const id = requestAnimationFrame(() => {
-      const now = new Date();
-      const target = new Date(weddingDateStr);
-      setDDay(Math.ceil((target - now) / (1000 * 60 * 60 * 24)));
-    });
-    return () => cancelAnimationFrame(id);
-  }, [weddingDateStr]);
+  // D-Day 계산 (단순 파생 값으로 직접 계산)
+  const dDay = (() => {
+    if (!isValidDate || !dateObj) return 0;
+    const now = new Date();
+    const targetMidnight = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()).getTime();
+    const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    return Math.round((targetMidnight - nowMidnight) / (1000 * 60 * 60 * 24));
+  })();
 
   // 전역 오디오 상태 동기화 및 제어 (상단 BgmPlayer와 100% 실시간 양방향 이벤트 동기화)
   useEffect(() => {
@@ -221,6 +218,7 @@ export default function PlaylistTemplate({ invitation }) {
 
   // 클립보드 복사
   const handleCopy = (text, label) => {
+    if (!text) return;
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(text).then(() => {
         alert(`${label}이(가) 복사되었습니다.`);

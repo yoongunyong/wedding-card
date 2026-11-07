@@ -182,6 +182,18 @@ export default async function WeddingCardPage({ params }) {
   // 오프닝 커버가 없는 경우(시안 3,4,5): 하객의 첫 화면 터치(click/touchstart) 시 BGM 자동 시작
   const hasActualIntro = ['basic', 'editorial'].includes(templateType) && invitation?.template_config?.show_intro !== false;
 
+  // 하객 화면에는 관리자 비밀번호, 토큰, 주문 코드가 절대 노출되지 않도록 철저히 제거
+  const safeConfig = { ...(invitation.template_config || {}) };
+  delete safeConfig.manage_password;
+
+  const sanitizedInvitation = {
+    ...invitation,
+    manage_token: undefined,
+    order_code: undefined,
+    manage_password: undefined,
+    template_config: safeConfig,
+  };
+
   return (
     <main className={`min-h-screen ${isCinematic ? 'bg-neutral-100' : 'bg-stone-100'} sm:py-8 flex justify-center p-0 m-0 relative`}>
       {!isActive && <SampleWatermark />}
@@ -190,7 +202,7 @@ export default async function WeddingCardPage({ params }) {
         hasIntro={hasActualIntro} 
         template={invitation.template_type}
       />
-      <CurrentTemplate invitation={{ ...invitation, manage_token: undefined, order_code: undefined }} />
+      <CurrentTemplate invitation={sanitizedInvitation} />
     </main>
   );
 }

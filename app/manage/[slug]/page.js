@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState, use, useCallback } from 'react';
+import { useEffect, useState, use, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useSearchParams } from 'next/navigation';
 import QrCodeModal from '@/components/QrCodeModal';
 import GuestPhotoManager from '@/components/manage/GuestPhotoManager';
 
-export default function ManageRsvpPage({ params }) {
+function ManageRsvpContent({ params }) {
   const resolvedParams = use(params);
   const slug = resolvedParams.slug;
   const searchParams = useSearchParams();
@@ -1128,5 +1128,22 @@ export default function ManageRsvpPage({ params }) {
       </div>
     </div>
     </div>
+  );
+}
+
+export default function ManageRsvpPage(props) {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-stone-800 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-xs font-mono tracking-widest text-[#64748B] uppercase">Loading Management...</p>
+          </div>
+        </div>
+      }
+    >
+      <ManageRsvpContent {...props} />
+    </Suspense>
   );
 }

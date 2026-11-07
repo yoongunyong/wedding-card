@@ -129,20 +129,17 @@ export default function CinematicTemplate({ invitation }) {
     return isNaN(d.getTime()) ? null : d;
   }, [weddingDateStr]);
 
-  // D-Day 계산
-  const [timeLeft, setTimeLeft] = useState({ totalDays: 0, isPast: false });
-  useEffect(() => {
-    if (!targetDate) return;
-    const calc = () => {
-      const now = new Date();
-      const diffMs = targetDate.getTime() - now.getTime();
-      const isPast = diffMs < 0;
-      const totalDays = Math.abs(Math.floor(diffMs / (1000 * 60 * 60 * 24)));
-      setTimeLeft({ totalDays, isPast });
-    };
-    calc();
-    const timer = setInterval(calc, 60000);
-    return () => clearInterval(timer);
+  // D-Day 계산 (useMemo를 통한 즉각적 파생 상태 계산)
+  const timeLeft = useMemo(() => {
+    if (!targetDate) return { totalDays: 0, isPast: false, isToday: false };
+    const now = new Date();
+    const targetMidnight = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate()).getTime();
+    const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const diffDayCount = Math.round((targetMidnight - nowMidnight) / (1000 * 60 * 60 * 24));
+    const isPast = diffDayCount < 0;
+    const isToday = diffDayCount === 0;
+    const totalDays = Math.abs(diffDayCount);
+    return { totalDays, isPast, isToday };
   }, [targetDate]);
 
   // 캘린더 데이터 생성 (숫자만 7열)
@@ -748,7 +745,7 @@ export default function CinematicTemplate({ invitation }) {
             <div className={`inline-flex items-center gap-1 px-4 py-1.5 rounded-full font-mono text-xs font-medium shadow-2xs ${
               isNightMode ? 'bg-stone-900 text-stone-200 border border-stone-800' : 'bg-stone-100 text-stone-800'
             }`}>
-              <span>D-{timeLeft.isPast ? `+${timeLeft.totalDays}` : timeLeft.totalDays}일</span>
+              <span>{timeLeft.isToday ? 'D-DAY' : timeLeft.isPast ? `D+${timeLeft.totalDays}` : `D-${timeLeft.totalDays}`}</span>
               <span className="text-rose-500">♡</span>
             </div>
           </ScrollReveal>

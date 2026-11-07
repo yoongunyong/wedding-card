@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo, use } from 'react';
+import { useState, useEffect, useRef, useMemo, use, Suspense } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -84,7 +84,7 @@ const BGM_OPTIONS = [
   },
 ];
 
-export default function EditInvitationPage({ params }) {
+function EditInvitationContent({ params }) {
   const resolvedParams = use(params);
   const slug = resolvedParams.slug;
   const searchParams = useSearchParams();
@@ -3273,5 +3273,22 @@ export default function EditInvitationPage({ params }) {
       )}
 
     </div>
+  );
+}
+
+export default function EditInvitationPage(props) {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-stone-800 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-xs font-mono tracking-widest text-[#64748B] uppercase">Loading Editor...</p>
+          </div>
+        </div>
+      }
+    >
+      <EditInvitationContent {...props} />
+    </Suspense>
   );
 }

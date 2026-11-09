@@ -175,7 +175,7 @@ export default function SceneTemplate({ invitation }) {
 
   // 날짜 계산 (실제 고객 미입력 시 캘린더 미노출, 샘플 모드일 때만 예시 날짜 제공)
   const weddingDateStr = invitation?.wedding_date 
-    ? invitation.wedding_date.replace(' ', 'T') 
+    ? (typeof invitation.wedding_date === 'string' ? invitation.wedding_date.replace(' ', 'T') : String(invitation.wedding_date))
     : (isSample ? '2035-10-20T12:00:00' : '');
   const hasWeddingDate = Boolean(weddingDateStr);
   const targetDate = useMemo(() => {

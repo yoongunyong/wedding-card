@@ -281,7 +281,12 @@ export default function CinematicTemplate({ invitation }) {
   // 카카오톡 공유
   const handleKakaoShare = async () => {
     const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
-    const shareTitle = `${displayNamesEn || `${groomName} ♥ ${brideName}`} 결혼식에 초대합니다`;
+    const coupleKo = [groomName, brideName].filter(Boolean).join(' ♥ ');
+    const shareTitle = displayNamesEn
+      ? `${displayNamesEn} 결혼식에 초대합니다`
+      : coupleKo
+      ? `${coupleKo} 결혼식에 초대합니다`
+      : '소중한 결혼식에 초대합니다';
     const shareDesc = [formattedDates.fullDateDot, venueFullName].filter(Boolean).join(' | ');
     const shareImg = getSafeKakaoShareImageUrl(
       images.cover || mainImage,

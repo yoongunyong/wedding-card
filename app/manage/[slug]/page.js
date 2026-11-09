@@ -170,7 +170,10 @@ function ManageRsvpContent({ params }) {
 
       const { error } = await supabase
         .from('invitations')
-        .update({ template_config: updatedConfig })
+        .update({ 
+          template_config: updatedConfig,
+          manage_password: newPin,
+        })
         .eq('id', invitation.id);
 
       if (error) {
@@ -180,7 +183,7 @@ function ManageRsvpContent({ params }) {
       }
 
       // 등록 성공 시 상태 및 세션 갱신
-      setInvitation((prev) => ({ ...prev, template_config: updatedConfig }));
+      setInvitation((prev) => ({ ...prev, template_config: updatedConfig, manage_password: newPin }));
       if (typeof window !== 'undefined') {
         sessionStorage.setItem(`manage_auth_${slug}`, token);
       }
@@ -224,7 +227,10 @@ function ManageRsvpContent({ params }) {
 
       const { error } = await supabase
         .from('invitations')
-        .update({ template_config: updatedConfig })
+        .update({ 
+          template_config: updatedConfig,
+          manage_password: changeNewPin,
+        })
         .eq('id', invitation.id);
 
       if (error) {
@@ -232,7 +238,7 @@ function ManageRsvpContent({ params }) {
         return;
       }
 
-      setInvitation((prev) => ({ ...prev, template_config: updatedConfig }));
+      setInvitation((prev) => ({ ...prev, template_config: updatedConfig, manage_password: changeNewPin }));
       setChangePinSuccess('비밀번호가 성공적으로 변경되었습니다!');
       setTimeout(() => {
         setShowChangePinModal(false);

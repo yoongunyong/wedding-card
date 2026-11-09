@@ -26,6 +26,24 @@ export default function GuestPhotoUploadModal({ invitation, onClose, onSuccess }
   const MAX_PER_BATCH = 10;
   const MAX_TOTAL = 100;
 
+  // 모달 마운트 시 배경 스크롤 잠금 및 ESC 키 닫기 이벤트 핸들링
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && !uploading) {
+        onClose?.();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClose, uploading]);
+
   // 1. 현재 저장된 하객 사진 개수 조회
   useEffect(() => {
     async function checkPhotoCount() {

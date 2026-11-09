@@ -787,9 +787,16 @@ export default function BasicTemplate({ invitation }) {
                             <strong className="text-[#2C2C2C] font-medium mx-1">{groomShort}</strong>
                             <span className="text-[#EB6558] mx-0.5">♥</span>
                             <strong className="text-[#2C2C2C] font-medium mr-1">{brideShort}</strong>
+                            <span>님의 결혼식이 시작됩니다.</span>
                           </>
-                        ) : null}
-                        <span>님의 결혼식이 시작됩니다.</span>
+                        ) : (groomName || brideName) ? (
+                          <>
+                            <strong className="text-[#2C2C2C] font-medium mx-1">{groomName || brideName}</strong>
+                            <span>님의 결혼식이 시작됩니다.</span>
+                          </>
+                        ) : (
+                          <span>두 사람의 결혼식이 시작됩니다.</span>
+                        )}
                       </>
                     ) : (
                       <>

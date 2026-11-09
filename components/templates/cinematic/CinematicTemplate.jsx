@@ -106,16 +106,34 @@ export default function CinematicTemplate({ invitation }) {
   const brideFirstEn = invitation?.bride_first_name_en || (invitation?.bride_name_en || '').split(' ')[0] || '';
   const displayNamesEn = invitation?.main_names_en || (groomFirstEn && brideFirstEn ? `${groomFirstEn} & ${brideFirstEn}` : '');
 
-  // 부모님 성함 (하드코딩 더미 완전 제거)
-  const groomParents = [
-    invitation?.groom_father && `${invitation.groom_father}${config.groom_father_deceased ? ' (故)' : ''}`,
-    invitation?.groom_mother && `${invitation.groom_mother}${config.groom_mother_deceased ? ' (故)' : ''}`,
-  ].filter(Boolean).join(' · ');
+  // 부모님 성함 & 故 / 국화꽃 표기 포맷팅
+  const deceasedMarker = config.deceased_marker || invitation?.deceased_marker || 'hanja';
+  const isGroomFatherDeceased = invitation?.groom_father_deceased ?? config.groom_father_deceased ?? false;
+  const isGroomMotherDeceased = invitation?.groom_mother_deceased ?? config.groom_mother_deceased ?? false;
+  const isBrideFatherDeceased = invitation?.bride_father_deceased ?? config.bride_father_deceased ?? false;
+  const isBrideMotherDeceased = invitation?.bride_mother_deceased ?? config.bride_mother_deceased ?? false;
 
-  const brideParents = [
-    invitation?.bride_father && `${invitation.bride_father}${config.bride_father_deceased ? ' (故)' : ''}`,
-    invitation?.bride_mother && `${invitation.bride_mother}${config.bride_mother_deceased ? ' (故)' : ''}`,
-  ].filter(Boolean).join(' · ');
+  const groomParentsNode = renderParentPair({
+    father: invitation?.groom_father,
+    isFatherDeceased: isGroomFatherDeceased,
+    mother: invitation?.groom_mother,
+    isMotherDeceased: isGroomMotherDeceased,
+    markerType: deceasedMarker,
+    separator: ' · ',
+    iconClassName: 'w-[13px] h-[15px] inline-block align-[-2px] mr-1 text-stone-400 shrink-0',
+  });
+  const hasGroomParents = Boolean(invitation?.groom_father || invitation?.groom_mother);
+
+  const brideParentsNode = renderParentPair({
+    father: invitation?.bride_father,
+    isFatherDeceased: isBrideFatherDeceased,
+    mother: invitation?.bride_mother,
+    isMotherDeceased: isBrideMotherDeceased,
+    markerType: deceasedMarker,
+    separator: ' · ',
+    iconClassName: 'w-[13px] h-[15px] inline-block align-[-2px] mr-1 text-stone-400 shrink-0',
+  });
+  const hasBrideParents = Boolean(invitation?.bride_father || invitation?.bride_mother);
 
   const groomRelation = config.groom_relation || invitation?.groom_relation || '';
   const brideRelation = config.bride_relation || invitation?.bride_relation || '';

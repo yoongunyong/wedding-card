@@ -7,6 +7,7 @@ import { getSafeKakaoShareImageUrl } from '@/lib/kakaoShare';
 import KakaoMap from '@/components/KakaoMap';
 import EnvelopeIntro from '@/components/EnvelopeIntro';
 import BasicContactModal from './BasicContactModal';
+import { renderParentPair } from '@/components/ParentDeceasedName';
 import BasicRsvpModal from './BasicRsvpModal';
 import BasicGuestbookModal from './BasicGuestbookModal';
 import BasicGuestbookDeleteModal from './BasicGuestbookDeleteModal';
@@ -380,23 +381,34 @@ export default function BasicTemplate({ invitation }) {
   };
 
   // 혼주 및 신랑신부 정보 (초대합니다 섹션)
-  const formatParentName = (name, isDeceased) => {
-    if (!name) return '';
-    return isDeceased ? `故 ${name}` : name;
-  };
+  const deceasedMarker = config.deceased_marker || invitation?.deceased_marker || extra.deceased_marker || 'hanja';
   const isGroomFatherDeceased = invitation?.groom_father_deceased ?? config.groom_father_deceased ?? false;
   const isGroomMotherDeceased = invitation?.groom_mother_deceased ?? config.groom_mother_deceased ?? false;
-  const groomFatherText = formatParentName(invitation?.groom_father, isGroomFatherDeceased);
-  const groomMotherText = formatParentName(invitation?.groom_mother, isGroomMotherDeceased);
-  const groomParents = [groomFatherText, groomMotherText].filter(Boolean).join(' · ');
+  const groomParentsNode = renderParentPair({
+    father: invitation?.groom_father,
+    isFatherDeceased: isGroomFatherDeceased,
+    mother: invitation?.groom_mother,
+    isMotherDeceased: isGroomMotherDeceased,
+    markerType: deceasedMarker,
+    separator: ' · ',
+    iconClassName: 'w-[13px] h-[15px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0',
+  });
+  const hasGroomParents = Boolean(invitation?.groom_father || invitation?.groom_mother);
   const groomRelation = invitation?.groom_relation || config.groom_relation || extra.groom_relation || '';
   const groomName = invitation?.groom_name || '';
 
   const isBrideFatherDeceased = invitation?.bride_father_deceased ?? config.bride_father_deceased ?? false;
   const isBrideMotherDeceased = invitation?.bride_mother_deceased ?? config.bride_mother_deceased ?? false;
-  const brideFatherText = formatParentName(invitation?.bride_father, isBrideFatherDeceased);
-  const brideMotherText = formatParentName(invitation?.bride_mother, isBrideMotherDeceased);
-  const brideParents = [brideFatherText, brideMotherText].filter(Boolean).join(' · ');
+  const brideParentsNode = renderParentPair({
+    father: invitation?.bride_father,
+    isFatherDeceased: isBrideFatherDeceased,
+    mother: invitation?.bride_mother,
+    isMotherDeceased: isBrideMotherDeceased,
+    markerType: deceasedMarker,
+    separator: ' · ',
+    iconClassName: 'w-[13px] h-[15px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0',
+  });
+  const hasBrideParents = Boolean(invitation?.bride_father || invitation?.bride_mother);
   const brideRelation = invitation?.bride_relation || config.bride_relation || extra.bride_relation || '';
   const brideName = invitation?.bride_name || '';
 

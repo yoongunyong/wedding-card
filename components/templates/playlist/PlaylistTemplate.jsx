@@ -485,37 +485,60 @@ export default function PlaylistTemplate({ invitation }) {
             )}
 
             {/* 양가 혼주 & 신랑 신부 정보 (음반 크레딧 스타일) */}
-            {(groomName || brideName || invitation?.groom_father || invitation?.bride_father) && (
-              <div className="mt-10 pt-8 border-t border-stone-200/60 space-y-3 text-xs sm:text-[13px]">
-                {(invitation?.groom_father || invitation?.groom_mother || groomName) && (
-                  <div className="flex items-center justify-center gap-2 text-stone-700">
-                    <span className="text-stone-500">
-                      {invitation?.groom_father && `${invitation.groom_father}${config.groom_father_deceased ? ' 故' : ''}`}
-                      {invitation?.groom_father && invitation?.groom_mother && ' · '}
-                      {invitation?.groom_mother && `${invitation.groom_mother}${config.groom_mother_deceased ? ' 故' : ''}`}
-                    </span>
-                    {(config.groom_relation || invitation?.groom_relation) && (
-                      <span className="text-emerald-700 text-[11px] font-medium">의 {config.groom_relation || invitation?.groom_relation}</span>
-                    )}
-                    {groomName && <span className="font-semibold text-stone-900 ml-1">{groomName}</span>}
-                  </div>
-                )}
+            {(() => {
+              const deceasedMarker = config.deceased_marker || invitation?.deceased_marker || 'hanja';
+              const isGroomFatherDeceased = invitation?.groom_father_deceased ?? config.groom_father_deceased ?? false;
+              const isGroomMotherDeceased = invitation?.groom_mother_deceased ?? config.groom_mother_deceased ?? false;
+              const isBrideFatherDeceased = invitation?.bride_father_deceased ?? config.bride_father_deceased ?? false;
+              const isBrideMotherDeceased = invitation?.bride_mother_deceased ?? config.bride_mother_deceased ?? false;
 
-                {(invitation?.bride_father || invitation?.bride_mother || brideName) && (
-                  <div className="flex items-center justify-center gap-2 text-stone-700">
-                    <span className="text-stone-500">
-                      {invitation?.bride_father && `${invitation.bride_father}${config.bride_father_deceased ? ' 故' : ''}`}
-                      {invitation?.bride_father && invitation?.bride_mother && ' · '}
-                      {invitation?.bride_mother && `${invitation.bride_mother}${config.bride_mother_deceased ? ' 故' : ''}`}
-                    </span>
-                    {(config.bride_relation || invitation?.bride_relation) && (
-                      <span className="text-emerald-700 text-[11px] font-medium">의 {config.bride_relation || invitation?.bride_relation}</span>
-                    )}
-                    {brideName && <span className="font-semibold text-stone-900 ml-1">{brideName}</span>}
-                  </div>
-                )}
-              </div>
-            )}
+              const groomParentsNode = renderParentPair({
+                father: invitation?.groom_father,
+                isFatherDeceased: isGroomFatherDeceased,
+                mother: invitation?.groom_mother,
+                isMotherDeceased: isGroomMotherDeceased,
+                markerType: deceasedMarker,
+                separator: ' · ',
+                iconClassName: 'w-[13px] h-[15px] inline-block align-[-2px] mr-1 text-stone-400 shrink-0',
+              });
+
+              const brideParentsNode = renderParentPair({
+                father: invitation?.bride_father,
+                isFatherDeceased: isBrideFatherDeceased,
+                mother: invitation?.bride_mother,
+                isMotherDeceased: isBrideMotherDeceased,
+                markerType: deceasedMarker,
+                separator: ' · ',
+                iconClassName: 'w-[13px] h-[15px] inline-block align-[-2px] mr-1 text-stone-400 shrink-0',
+              });
+
+              const hasGroomParents = Boolean(invitation?.groom_father || invitation?.groom_mother);
+              const hasBrideParents = Boolean(invitation?.bride_father || invitation?.bride_mother);
+
+              return (groomName || brideName || hasGroomParents || hasBrideParents) && (
+                <div className="mt-10 pt-8 border-t border-stone-200/60 space-y-3 text-xs sm:text-[13px]">
+                  {(hasGroomParents || groomName) && (
+                    <div className="flex items-center justify-center gap-1.5 text-stone-700 flex-wrap">
+                      <span className="text-stone-500">{groomParentsNode}</span>
+                      {(config.groom_relation || invitation?.groom_relation) && (
+                        <span className="text-emerald-700 text-[11px] font-medium">의 {config.groom_relation || invitation?.groom_relation}</span>
+                      )}
+                      {groomName && <span className="font-semibold text-stone-900 ml-1">{groomName}</span>}
+                    </div>
+                  )}
+
+                  {(hasBrideParents || brideName) && (
+                    <div className="flex items-center justify-center gap-1.5 text-stone-700 flex-wrap">
+                      <span className="text-stone-500">{brideParentsNode}</span>
+                      {(config.bride_relation || invitation?.bride_relation) && (
+                        <span className="text-emerald-700 text-[11px] font-medium">의 {config.bride_relation || invitation?.bride_relation}</span>
+                      )}
+                      {brideName && <span className="font-semibold text-stone-900 ml-1">{brideName}</span>}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
 
             {/* 축하 연락하기 버튼 */}

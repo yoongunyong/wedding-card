@@ -1,11 +1,14 @@
 'use client';
 
+import ParentDeceasedName from '@/components/ParentDeceasedName';
+
 export default function BasicContactModal({ invitation, onClose }) {
   const config = invitation?.template_config || {};
   const isGroomFatherDeceased = invitation?.groom_father_deceased ?? config.groom_father_deceased ?? false;
   const isGroomMotherDeceased = invitation?.groom_mother_deceased ?? config.groom_mother_deceased ?? false;
   const isBrideFatherDeceased = invitation?.bride_father_deceased ?? config.bride_father_deceased ?? false;
   const isBrideMotherDeceased = invitation?.bride_mother_deceased ?? config.bride_mother_deceased ?? false;
+  const deceasedMarker = config.deceased_marker || invitation?.deceased_marker || 'hanja';
 
   const formatName = (name, isDeceased) => {
     if (!name) return '';
@@ -19,12 +22,26 @@ export default function BasicContactModal({ invitation, onClose }) {
   };
   const groomFather = {
     role: '신랑 아버지',
-    name: formatName(invitation?.groom_father, isGroomFatherDeceased),
+    name: invitation?.groom_father ? (
+      <ParentDeceasedName
+        name={invitation.groom_father}
+        isDeceased={isGroomFatherDeceased}
+        markerType={deceasedMarker}
+        iconClassName="w-[14px] h-[16px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0"
+      />
+    ) : '',
     phone: isGroomFatherDeceased ? '' : (invitation?.groom_father_phone || ''),
   };
   const groomMother = {
     role: '신랑 어머니',
-    name: formatName(invitation?.groom_mother, isGroomMotherDeceased),
+    name: invitation?.groom_mother ? (
+      <ParentDeceasedName
+        name={invitation.groom_mother}
+        isDeceased={isGroomMotherDeceased}
+        markerType={deceasedMarker}
+        iconClassName="w-[14px] h-[16px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0"
+      />
+    ) : '',
     phone: isGroomMotherDeceased ? '' : (invitation?.groom_mother_phone || ''),
   };
 
@@ -35,12 +52,26 @@ export default function BasicContactModal({ invitation, onClose }) {
   };
   const brideFather = {
     role: '신부 아버지',
-    name: formatName(invitation?.bride_father, isBrideFatherDeceased),
+    name: invitation?.bride_father ? (
+      <ParentDeceasedName
+        name={invitation.bride_father}
+        isDeceased={isBrideFatherDeceased}
+        markerType={deceasedMarker}
+        iconClassName="w-[14px] h-[16px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0"
+      />
+    ) : '',
     phone: isBrideFatherDeceased ? '' : (invitation?.bride_father_phone || ''),
   };
   const brideMother = {
     role: '신부 어머니',
-    name: formatName(invitation?.bride_mother, isBrideMotherDeceased),
+    name: invitation?.bride_mother ? (
+      <ParentDeceasedName
+        name={invitation.bride_mother}
+        isDeceased={isBrideMotherDeceased}
+        markerType={deceasedMarker}
+        iconClassName="w-[14px] h-[16px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0"
+      />
+    ) : '',
     phone: isBrideMotherDeceased ? '' : (invitation?.bride_mother_phone || ''),
   };
 
@@ -89,7 +120,7 @@ export default function BasicContactModal({ invitation, onClose }) {
                   <div className="flex items-center gap-2.5">
                     <a
                       href={`tel:${(person.phone || '').replace(/[^0-9+]/g, '')}`}
-                      aria-label={`${person.name} 전화걸기`}
+                      aria-label={`${typeof person.name === 'string' ? person.name : person.role} 전화걸기`}
                       className="w-10 h-10 rounded-full bg-[#EFF5F9] hover:bg-[#E2ECF3] text-[#3B698A] flex items-center justify-center transition-colors shadow-2xs"
                     >
                       <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -98,7 +129,7 @@ export default function BasicContactModal({ invitation, onClose }) {
                     </a>
                     <a
                       href={`sms:${(person.phone || '').replace(/[^0-9+]/g, '')}`}
-                      aria-label={`${person.name} 문자보내기`}
+                      aria-label={`${typeof person.name === 'string' ? person.name : person.role} 문자보내기`}
                       className="w-10 h-10 rounded-full bg-[#EFF5F9] hover:bg-[#E2ECF3] text-[#3B698A] flex items-center justify-center transition-colors shadow-2xs"
                     >
                       <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">

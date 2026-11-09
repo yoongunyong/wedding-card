@@ -6,6 +6,7 @@ import ScrollReveal from '@/components/ScrollReveal';
 import TodayConciergeCard from '@/components/TodayConciergeCard';
 import GuestPhotoSnapSection from '@/components/GuestPhotoSnapSection';
 import EditorialContactModal from './EditorialContactModal';
+import { renderParentPair } from '@/components/ParentDeceasedName';
 import EditorialRsvpModal from './EditorialRsvpModal';
 import EditorialGuestbookModal from './EditorialGuestbookModal';
 import EditorialGuestbookDeleteModal from './EditorialGuestbookDeleteModal';
@@ -263,33 +264,44 @@ export default function EditorialTemplate({ invitation }) {
   // 하단 푸터 등에서 사용하는 영문/한글 복합 네임
   const displayNamesEn = fullNamesEn;
 
-  // 부모님 성함 & 故 표기 포맷팅
-  const formatParentName = (name, isDeceased) => {
-    if (!name) return '';
-    return isDeceased ? `故 ${name}` : name;
-  };
+  // 부모님 성함 & 故 / 국화꽃 표기 포맷팅
+  const deceasedMarker = config.deceased_marker || invitation?.deceased_marker || 'hanja';
   const isGroomFatherDeceased = invitation?.groom_father_deceased ?? config.groom_father_deceased ?? false;
   const isGroomMotherDeceased = invitation?.groom_mother_deceased ?? config.groom_mother_deceased ?? false;
-  const groomFatherText = formatParentName(invitation?.groom_father, isGroomFatherDeceased);
-  const groomMotherText = formatParentName(invitation?.groom_mother, isGroomMotherDeceased);
-  const groomParents = [groomFatherText, groomMotherText].filter(Boolean).join(' · ');
-  const groomRelation = invitation?.groom_relation || config.groom_relation || '';
-
   const isBrideFatherDeceased = invitation?.bride_father_deceased ?? config.bride_father_deceased ?? false;
   const isBrideMotherDeceased = invitation?.bride_mother_deceased ?? config.bride_mother_deceased ?? false;
-  const brideFatherText = formatParentName(invitation?.bride_father, isBrideFatherDeceased);
-  const brideMotherText = formatParentName(invitation?.bride_mother, isBrideMotherDeceased);
-  const brideParents = [brideFatherText, brideMotherText].filter(Boolean).join(' · ');
+
+  const groomRelation = invitation?.groom_relation || config.groom_relation || '';
   const brideRelation = invitation?.bride_relation || config.bride_relation || '';
 
+  const groomParentsNode = renderParentPair({
+    father: invitation?.groom_father || (isSample && !invitation?.groom_mother ? '강오진' : ''),
+    isFatherDeceased: isGroomFatherDeceased,
+    mother: invitation?.groom_mother || (isSample && !invitation?.groom_father ? '류창희' : ''),
+    isMotherDeceased: isGroomMotherDeceased,
+    markerType: deceasedMarker,
+    separator: ' · ',
+    iconClassName: 'w-[13px] h-[15px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0',
+  });
+
+  const brideParentsNode = renderParentPair({
+    father: invitation?.bride_father || (isSample && !invitation?.bride_mother ? '장철규' : ''),
+    isFatherDeceased: isBrideFatherDeceased,
+    mother: invitation?.bride_mother || (isSample && !invitation?.bride_father ? '이정자' : ''),
+    isMotherDeceased: isBrideMotherDeceased,
+    markerType: deceasedMarker,
+    separator: ' · ',
+    iconClassName: 'w-[13px] h-[15px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0',
+  });
+
   // 안전한 혼주 및 성함 표시 (실제 고객 미입력 시 가짜 샘플 노출 차단)
-  const displayGroomParents = groomParents || (isSample ? '강오진 · 류창희' : '');
-  const displayGroomRelation = groomRelation || (isSample ? '아들' : (groomParents ? '장남' : ''));
+  const displayGroomParents = groomParentsNode || (isSample ? '강오진 · 류창희' : null);
+  const displayGroomRelation = groomRelation || (isSample ? '아들' : (groomParentsNode ? '장남' : ''));
   const displayGroomName = groomName || (isSample ? '강민준' : '');
   const hasGroomFamily = Boolean(displayGroomParents && displayGroomName);
 
-  const displayBrideParents = brideParents || (isSample ? '장철규 · 이정자' : '');
-  const displayBrideRelation = brideRelation || (isSample ? '딸' : (brideParents ? '장녀' : ''));
+  const displayBrideParents = brideParentsNode || (isSample ? '장철규 · 이정자' : null);
+  const displayBrideRelation = brideRelation || (isSample ? '딸' : (brideParentsNode ? '장녀' : ''));
   const displayBrideName = brideName || (isSample ? '박지민' : '');
   const hasBrideFamily = Boolean(displayBrideParents && displayBrideName);
 
@@ -676,37 +688,41 @@ export default function EditorialTemplate({ invitation }) {
             </div>
           </div>
 
-          {/* 혼주 정보 (Figma: 너비 447px -> 1x 223.5px, 카드 아래 간격 87.11px -> 1x 43.55px, NanumSquare Neo OTF) */}
+          {/* 혼주 정보 (Figma 시안 2 단아한 정렬 최적화: 국화/故 심볼 포함 시에도 줄바꿈 없이 한 줄로 단정하게 유지) */}
           {(hasGroomFamily || hasBrideFamily) && (
-            <div className="mt-[43.55px] w-[223.5px] max-w-full mx-auto font-nanumsquare text-[14px] leading-none">
-              <div className="space-y-[14px]">
-                {/* 1행: 신랑측 부모님 & 아들 & 신랑 (Figma 2849:2726: 부모 14px #333333, 아들 13px #999999, 자녀 14px #333333) */}
+            <div className="mt-[43.55px] w-[255px] max-w-full mx-auto font-nanumsquare text-[14px]">
+              <div className="space-y-[13px]">
+                {/* 1행: 신랑측 부모님 & 관계 & 신랑 */}
                 {hasGroomFamily && (
-                  <div className="flex items-center justify-between">
-                    <span className="w-[90.5px] text-left text-[#333333] tracking-tight font-normal shrink-0">
+                  <div className="flex items-center justify-between gap-2 leading-tight">
+                    <span className="text-left text-[#333333] tracking-tight font-normal shrink-0 whitespace-nowrap">
                       {displayGroomParents}
                     </span>
-                    <span className="w-[25px] text-center text-[#999999] text-[13px] tracking-tight font-normal shrink-0">
-                      {displayGroomRelation}
-                    </span>
-                    <span className="w-[40px] text-right text-[#333333] tracking-tight font-normal shrink-0">
-                      {displayGroomName}
-                    </span>
+                    <div className="flex items-center gap-2.5 shrink-0 ml-auto">
+                      <span className="w-[26px] text-center text-[#999999] text-[13px] tracking-tight font-normal">
+                        {displayGroomRelation}
+                      </span>
+                      <span className="w-[42px] text-right text-[#333333] tracking-tight font-normal">
+                        {displayGroomName}
+                      </span>
+                    </div>
                   </div>
                 )}
 
-                {/* 2행: 신부측 부모님 & 딸 & 신부 (Figma 2849:2730: 부모 14px #333333, 딸 13px #999999, 자녀 14px #333333) */}
+                {/* 2행: 신부측 부모님 & 관계 & 신부 */}
                 {hasBrideFamily && (
-                  <div className="flex items-center justify-between">
-                    <span className="w-[90.5px] text-left text-[#333333] tracking-tight font-normal shrink-0">
+                  <div className="flex items-center justify-between gap-2 leading-tight">
+                    <span className="text-left text-[#333333] tracking-tight font-normal shrink-0 whitespace-nowrap">
                       {displayBrideParents}
                     </span>
-                    <span className="w-[25px] text-center text-[#999999] text-[13px] tracking-tight font-normal shrink-0">
-                      {displayBrideRelation}
-                    </span>
-                    <span className="w-[40px] text-right text-[#333333] tracking-tight font-normal shrink-0">
-                      {displayBrideName}
-                    </span>
+                    <div className="flex items-center gap-2.5 shrink-0 ml-auto">
+                      <span className="w-[26px] text-center text-[#999999] text-[13px] tracking-tight font-normal">
+                        {displayBrideRelation}
+                      </span>
+                      <span className="w-[42px] text-right text-[#333333] tracking-tight font-normal">
+                        {displayBrideName}
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>

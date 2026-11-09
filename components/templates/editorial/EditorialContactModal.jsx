@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import ParentDeceasedName from '@/components/ParentDeceasedName';
 
 export default function EditorialContactModal({ invitation, onClose }) {
   const config = invitation?.template_config || {};
@@ -10,6 +11,7 @@ export default function EditorialContactModal({ invitation, onClose }) {
   const isGroomMotherDeceased = invitation?.groom_mother_deceased ?? config.groom_mother_deceased ?? false;
   const isBrideFatherDeceased = invitation?.bride_father_deceased ?? config.bride_father_deceased ?? false;
   const isBrideMotherDeceased = invitation?.bride_mother_deceased ?? config.bride_mother_deceased ?? false;
+  const deceasedMarker = config.deceased_marker || invitation?.deceased_marker || 'hanja';
 
   const formatName = (name, isDeceased) => {
     if (!name) return '';
@@ -46,13 +48,27 @@ export default function EditorialContactModal({ invitation, onClose }) {
     {
       role: '신랑 아버지',
       side: 'groom',
-      name: formatName(invitation?.groom_father, isGroomFatherDeceased) || (isSample ? '권순민' : ''),
+      name: (invitation?.groom_father || isSample) ? (
+        <ParentDeceasedName
+          name={invitation?.groom_father || (isSample ? '권순민' : '')}
+          isDeceased={isGroomFatherDeceased}
+          markerType={deceasedMarker}
+          iconClassName="w-[14px] h-[16px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0"
+        />
+      ) : '',
       phone: isGroomFatherDeceased ? '' : (invitation?.groom_father_phone || (isSample ? '010-2345-6789' : '')),
     },
     {
       role: '신랑 어머니',
       side: 'groom',
-      name: formatName(invitation?.groom_mother, isGroomMotherDeceased) || (isSample ? '이미자' : ''),
+      name: (invitation?.groom_mother || isSample) ? (
+        <ParentDeceasedName
+          name={invitation?.groom_mother || (isSample ? '이미자' : '')}
+          isDeceased={isGroomMotherDeceased}
+          markerType={deceasedMarker}
+          iconClassName="w-[14px] h-[16px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0"
+        />
+      ) : '',
       phone: isGroomMotherDeceased ? '' : (invitation?.groom_mother_phone || (isSample ? '010-3456-7890' : '')),
     },
     // 2. 신부측 (로즈 핑크 테마: 라벨 & 아이콘 #D25C8D, 성함 #333333 font-normal)
@@ -136,7 +152,7 @@ export default function EditorialContactModal({ invitation, onClose }) {
                       {/* 전화 걸기 원형 버튼 (피그마 솔리드 수화기 아이콘) */}
                       <a
                         href={`tel:${person.phone.replace(/[^0-9+]/g, '')}`}
-                        aria-label={`${person.name} 전화걸기`}
+                        aria-label={`${typeof person.name === 'string' ? person.name : person.role} 전화걸기`}
                         title="전화 걸기"
                         className={`w-[48px] h-[48px] rounded-full bg-[#F4F3F1] ${iconColorClass} flex items-center justify-center transition-all duration-200 cursor-pointer hover:opacity-85 active:scale-95`}
                       >
@@ -148,7 +164,7 @@ export default function EditorialContactModal({ invitation, onClose }) {
                       {/* 문자 보내기 원형 버튼 (피그마 솔리드 2줄 말풍선 아이콘) */}
                       <a
                         href={`sms:${person.phone.replace(/[^0-9+]/g, '')}`}
-                        aria-label={`${person.name} 문자보내기`}
+                        aria-label={`${typeof person.name === 'string' ? person.name : person.role} 문자보내기`}
                         title="문자 보내기"
                         className={`w-[48px] h-[48px] rounded-full bg-[#F4F3F1] ${iconColorClass} flex items-center justify-center transition-all duration-200 cursor-pointer hover:opacity-85 active:scale-95`}
                       >

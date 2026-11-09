@@ -126,21 +126,39 @@ export default function SceneTemplate({ invitation }) {
   const brideName = invitation?.bride_name || '';
   const coupleTitle = [groomName, brideName].filter(Boolean).join(' & ');
 
-  // 부모님 정보
+  // 부모님 정보 & 故 / 국화꽃 표기 포맷팅
+  const deceasedMarker = config.deceased_marker || invitation?.deceased_marker || 'hanja';
   const groomFather = invitation?.groom_father || '';
   const groomMother = invitation?.groom_mother || '';
   const brideFather = invitation?.bride_father || '';
   const brideMother = invitation?.bride_mother || '';
 
-  const groomParents = [
-    invitation?.groom_father_deceased ? `故 ${groomFather}` : groomFather,
-    invitation?.groom_mother_deceased ? `故 ${groomMother}` : groomMother,
-  ].filter(Boolean).join(' · ');
+  const isGroomFatherDeceased = Boolean(invitation?.groom_father_deceased ?? config.groom_father_deceased);
+  const isGroomMotherDeceased = Boolean(invitation?.groom_mother_deceased ?? config.groom_mother_deceased);
+  const isBrideFatherDeceased = Boolean(invitation?.bride_father_deceased ?? config.bride_father_deceased);
+  const isBrideMotherDeceased = Boolean(invitation?.bride_mother_deceased ?? config.bride_mother_deceased);
 
-  const brideParents = [
-    invitation?.bride_father_deceased ? `故 ${brideFather}` : brideFather,
-    invitation?.bride_mother_deceased ? `故 ${brideMother}` : brideMother,
-  ].filter(Boolean).join(' · ');
+  const groomParentsNode = renderParentPair({
+    father: groomFather,
+    isFatherDeceased: isGroomFatherDeceased,
+    mother: groomMother,
+    isMotherDeceased: isGroomMotherDeceased,
+    markerType: deceasedMarker,
+    separator: ' · ',
+    iconClassName: 'w-[13px] h-[15px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0',
+  });
+  const hasGroomParents = Boolean(groomFather || groomMother);
+
+  const brideParentsNode = renderParentPair({
+    father: brideFather,
+    isFatherDeceased: isBrideFatherDeceased,
+    mother: brideMother,
+    isMotherDeceased: isBrideMotherDeceased,
+    markerType: deceasedMarker,
+    separator: ' · ',
+    iconClassName: 'w-[13px] h-[15px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0',
+  });
+  const hasBrideParents = Boolean(brideFather || brideMother);
 
   const groomRelation = config.groom_relation || invitation?.groom_relation || '';
   const brideRelation = config.bride_relation || invitation?.bride_relation || '';
@@ -705,12 +723,12 @@ export default function SceneTemplate({ invitation }) {
           )}
 
           {/* 부모님 & 신랑신부 성함 (영상과 동일하게 '세희', '지호' 이름만 굵고 크게 강조, 미입력 시 방어 처리) */}
-          {(groomParents || brideParents) ? (
+          {(hasGroomParents || hasBrideParents) ? (
             <div className="inline-grid grid-cols-[auto_auto_auto] items-center gap-x-5 gap-y-3.5 text-xs sm:text-[13px] text-stone-800 mx-auto select-none">
-              {groomParents ? (
+              {hasGroomParents ? (
                 <>
                   <div className="text-right text-stone-600 font-normal">
-                    {groomParents}
+                    {groomParentsNode}
                   </div>
                   <div className="text-center text-stone-400 font-light text-[11px] px-1">
                     {groomRelation}
@@ -729,10 +747,10 @@ export default function SceneTemplate({ invitation }) {
                 </>
               )}
 
-              {brideParents ? (
+              {hasBrideParents ? (
                 <>
                   <div className="text-right text-stone-600 font-normal">
-                    {brideParents}
+                    {brideParentsNode}
                   </div>
                   <div className="text-center text-stone-400 font-light text-[11px] px-1">
                     {brideRelation}

@@ -11,6 +11,7 @@ import CinematicTemplate from '@/components/templates/cinematic/CinematicTemplat
 import SceneTemplate from '@/components/templates/scene/SceneTemplate';
 import BgmPlayer from '@/components/BgmPlayer';
 import { compressImage } from '@/lib/imageCompressor';
+import ChrysanthemumIcon from '@/components/ChrysanthemumIcon';
 
 // 시안 5 (Scene) 신랑 & 신부 인터뷰 (우리의 이야기) 기본 질문-답변 프리셋
 const DEFAULT_INTERVIEWS = [
@@ -125,6 +126,7 @@ function EditInvitationContent({ params }) {
     bride_mother: '',
     bride_mother_phone: '',
     bride_mother_deceased: false,
+    deceased_marker: 'hanja',
 
     wedding_date: '2026-11-14',
     wedding_time: '14:00',
@@ -360,6 +362,7 @@ function EditInvitationContent({ params }) {
         bride_mother: card.bride_mother || '',
         bride_mother_phone: card.bride_mother_phone || '',
         bride_mother_deceased: Boolean(card.bride_mother_deceased ?? config.bride_mother_deceased),
+        deceased_marker: config.deceased_marker || card.deceased_marker || 'hanja',
 
         wedding_date: wDate,
         wedding_time: wTime,
@@ -858,6 +861,7 @@ function EditInvitationContent({ params }) {
       groom_mother_deceased: formData.groom_mother_deceased,
       bride_father_deceased: formData.bride_father_deceased,
       bride_mother_deceased: formData.bride_mother_deceased,
+      deceased_marker: formData.deceased_marker || 'hanja',
       groom_phone: formData.groom_phone,
       groom_father_phone: formData.groom_father_phone,
       groom_mother_phone: formData.groom_mother_phone,
@@ -1206,6 +1210,7 @@ function EditInvitationContent({ params }) {
           groom_mother_deceased: formData.groom_mother_deceased,
           bride_father_deceased: formData.bride_father_deceased,
           bride_mother_deceased: formData.bride_mother_deceased,
+          deceased_marker: formData.deceased_marker || 'hanja',
           venue_hall: formData.venue_hall,
           service_expired_at: (() => {
             try {
@@ -1603,7 +1608,7 @@ function EditInvitationContent({ params }) {
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="text-xs font-medium text-[#334155]">아버지 성함</label>
-                      <label className="flex items-center gap-1 text-[11px] text-[#64748B] cursor-pointer">
+                      <label className="flex items-center gap-1.5 text-[11px] text-[#64748B] cursor-pointer select-none hover:text-[#0F172A]">
                         <input
                           type="checkbox"
                           name="groom_father_deceased"
@@ -1611,7 +1616,7 @@ function EditInvitationContent({ params }) {
                           onChange={handleChange}
                           className="rounded text-[#0F172A]"
                         />
-                        <span>故 (작고)</span>
+                        <span>고인 표기</span>
                       </label>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
@@ -1638,7 +1643,7 @@ function EditInvitationContent({ params }) {
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="text-xs font-medium text-[#334155]">어머니 성함</label>
-                      <label className="flex items-center gap-1 text-[11px] text-[#64748B] cursor-pointer">
+                      <label className="flex items-center gap-1.5 text-[11px] text-[#64748B] cursor-pointer select-none hover:text-[#0F172A]">
                         <input
                           type="checkbox"
                           name="groom_mother_deceased"
@@ -1646,7 +1651,7 @@ function EditInvitationContent({ params }) {
                           onChange={handleChange}
                           className="rounded text-[#0F172A]"
                         />
-                        <span>故 (작고)</span>
+                        <span>고인 표기</span>
                       </label>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
@@ -1723,7 +1728,7 @@ function EditInvitationContent({ params }) {
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="text-xs font-medium text-[#334155]">아버지 성함</label>
-                      <label className="flex items-center gap-1 text-[11px] text-[#64748B] cursor-pointer">
+                      <label className="flex items-center gap-1.5 text-[11px] text-[#64748B] cursor-pointer select-none hover:text-[#0F172A]">
                         <input
                           type="checkbox"
                           name="bride_father_deceased"
@@ -1731,7 +1736,7 @@ function EditInvitationContent({ params }) {
                           onChange={handleChange}
                           className="rounded text-[#0F172A]"
                         />
-                        <span>故 (작고)</span>
+                        <span>고인 표기</span>
                       </label>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
@@ -1758,7 +1763,7 @@ function EditInvitationContent({ params }) {
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="text-xs font-medium text-[#334155]">어머니 성함</label>
-                      <label className="flex items-center gap-1 text-[11px] text-[#64748B] cursor-pointer">
+                      <label className="flex items-center gap-1.5 text-[11px] text-[#64748B] cursor-pointer select-none hover:text-[#0F172A]">
                         <input
                           type="checkbox"
                           name="bride_mother_deceased"
@@ -1766,7 +1771,7 @@ function EditInvitationContent({ params }) {
                           onChange={handleChange}
                           className="rounded text-[#0F172A]"
                         />
-                        <span>故 (작고)</span>
+                        <span>고인 표기</span>
                       </label>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
@@ -1789,6 +1794,52 @@ function EditInvitationContent({ params }) {
                       />
                     </div>
                   </div>
+                </div>
+              </div>
+                
+            </div>
+
+            {/* 작고하신 혼주(고인) 표기 방식 선택 카드 (그리드 밖 100% 전체 너비) */}
+            <div className="p-4 sm:p-5 bg-white rounded-2xl border border-[#E5E8EB] shadow-xs mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs sm:text-sm font-semibold text-stone-800">
+                      작고하신 혼주(고인) 표기 방식
+                    </span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 font-medium border border-stone-200">
+                      선택
+                    </span>
+                  </div>
+                  <p className="text-[11px] sm:text-xs text-stone-500 mt-1">
+                    혼주 성함 앞에 표시될 방식을 선택해 주세요. (한자 故 또는 단아한 국화꽃 심볼)
+                  </p>
+                </div>
+                <div className="inline-flex p-1 bg-stone-100/80 rounded-xl border border-stone-200 shrink-0 self-start sm:self-auto shadow-2xs">
+                  <button
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, deceased_marker: 'hanja' }))}
+                    className={`px-3.5 py-1.5 text-xs rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                      (formData.deceased_marker || 'hanja') === 'hanja'
+                        ? 'bg-stone-900 text-white shadow-xs'
+                        : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50'
+                    }`}
+                  >
+                    <span className="font-serif font-bold text-[13px]">故</span>
+                    <span>한자 '故'</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, deceased_marker: 'flower' }))}
+                    className={`px-3.5 py-1.5 text-xs rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                      formData.deceased_marker === 'flower'
+                        ? 'bg-stone-900 text-white shadow-xs'
+                        : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50'
+                    }`}
+                  >
+                    <ChrysanthemumIcon className="w-3.5 h-3.5 text-current" />
+                    <span>국화꽃 심볼</span>
+                  </button>
                 </div>
               </div>
             </div>

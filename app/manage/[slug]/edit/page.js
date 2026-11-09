@@ -915,6 +915,7 @@ function EditInvitationContent({ params }) {
         groom_mother_deceased: formData.groom_mother_deceased,
         bride_father_deceased: formData.bride_father_deceased,
         bride_mother_deceased: formData.bride_mother_deceased,
+        deceased_marker: formData.deceased_marker || 'hanja',
         venue_hall: formData.venue_hall,
       },
       bgm_url:

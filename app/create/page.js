@@ -4248,8 +4248,8 @@ function CreateInvitationContent() {
           {/* 고객 상담 안내 배너 */}
           
 
-            {/* STEP 5 하단 이전 버튼 */}
-            <div className="pt-4 flex items-center justify-between gap-3">
+            {/* STEP 5 하단 액션 바: 이전 단계 + 실시간 미리보기 + 청첩장 제작 신청하기 */}
+            <div className="pt-4 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={() => handleStepChange(4)}
@@ -4258,9 +4258,43 @@ function CreateInvitationContent() {
                 <span className="font-mono text-xs">←</span>
                 <span>이전 단계</span>
               </button>
+
+              <div className="flex items-center gap-2.5 flex-1 justify-end">
+                <button
+                  type="button"
+                  onClick={openPreviewModal}
+                  className="py-3.5 px-4 bg-[#FFFFFF] hover:bg-[#F1F5F9] text-[#1E293B] border border-[#CBD5E1] rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 shadow-2xs"
+                >
+                  <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                  <span>실시간 미리보기</span>
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="py-3.5 sm:py-4 px-5 sm:px-7 bg-[#191F28] hover:bg-black disabled:bg-[#CBD0D6] text-white rounded-xl text-xs sm:text-sm font-semibold tracking-wide transition-all shadow-sm hover:shadow-md cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap"
+                >
+                  <span>{submitting ? '청첩장 생성 처리 중...' : '청첩장 제작 신청하기'}</span>
+                  <span className="text-xs font-mono opacity-60">→</span>
+                </button>
+              </div>
             </div>
+
+            <p className="text-center text-[11px] text-[#64748B] pt-2">
+              청첩장 제작 신청 시 아틀리에 드 무키루의{' '}
+              <Link href="/terms" target="_blank" className="underline hover:text-stone-900 font-medium">
+                이용약관
+              </Link>
+              {' '}및{' '}
+              <Link href="/privacy" target="_blank" className="underline hover:text-stone-900 font-medium">
+                개인정보처리방침
+              </Link>
+              에 동의하는 것으로 간주됩니다.
+            </p>
           </div>
-<div className="mt-8 p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+
+          {/* 고객 상담 안내 배너 (카카오톡 1:1 문의) */}
+          <div className="mt-8 p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
             <div>
               <p className="text-xs font-semibold text-[#1E293B]">
                 제작 중 궁금한 점이나 도움이 필요하신가요?
@@ -4281,38 +4315,6 @@ function CreateInvitationContent() {
               <span>카카오톡 1:1 문의</span>
             </a>
           </div>
-
-          <div className="sticky bottom-4 z-40 bg-white/95 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.08)] border border-[#E5E8EB] flex gap-3 items-center">
-            <button
-              type="button"
-              onClick={openPreviewModal}
-              className="flex-1 py-4 px-4 bg-[#FFFFFF] hover:bg-[#F1F5F9] text-[#1E293B] border border-[#CBD5E1] rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-2xs"
-            >
-              <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-              <span>실시간 미리보기</span>
-            </button>
-
-            <button
-              type="submit"
-              disabled={submitting}
-              className="flex-2 py-3.5 sm:py-4 px-4 sm:px-6 bg-[#191F28] hover:bg-black disabled:bg-[#CBD0D6] text-white rounded-xl text-xs sm:text-sm font-semibold tracking-wide transition-all shadow-sm hover:shadow-md cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap"
-            >
-              <span>{submitting ? '청첩장 생성 처리 중...' : '청첩장 제작 신청하기'}</span>
-              <span className="text-xs font-mono opacity-60">→</span>
-            </button>
-          </div>
-
-          <p className="text-center text-[11px] text-[#64748B] pt-1">
-            청첩장 제작 신청 시 아틀리에 드 무키루의{' '}
-            <Link href="/terms" target="_blank" className="underline hover:text-stone-900 font-medium">
-              이용약관
-            </Link>
-            {' '}및{' '}
-            <Link href="/privacy" target="_blank" className="underline hover:text-stone-900 font-medium">
-              개인정보처리방침
-            </Link>
-            에 동의하는 것으로 간주됩니다.
-          </p>
 
           {uploadStatus && (
             <p className="text-center text-xs font-mono text-[#64748B] animate-pulse py-2">

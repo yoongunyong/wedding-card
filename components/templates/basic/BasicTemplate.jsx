@@ -78,8 +78,8 @@ export default function BasicTemplate({ invitation }) {
   // 3. 갤러리 선택 인덱스
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
 
-  // 4. 계좌 탭 상태 ('groom' | 'bride')
-  const [activeAccountTab, setActiveAccountTab] = useState('groom');
+  // 4. 계좌 탭 상태 ('groom' | 'bride' | null)
+  const [userAccountTab, setUserAccountTab] = useState(null);
 
   // 5. 공지사항 인덱스
   const [activeNoticeIndex, setActiveNoticeIndex] = useState(0);
@@ -426,12 +426,9 @@ export default function BasicTemplate({ invitation }) {
     );
   }, [allParsedAccounts]);
 
-  // 신랑측 계좌가 없고 신부측 계좌만 등록된 경우 신부측 탭 자동 우선 선택
-  useEffect(() => {
-    if (groomAccounts.length === 0 && brideAccounts.length > 0) {
-      setActiveAccountTab('bride');
-    }
-  }, [groomAccounts.length, brideAccounts.length]);
+  // 신랑측 계좌가 없고 신부측 계좌만 등록된 경우 신부측 탭 자동 우선 선택 (파생 상태)
+  const activeAccountTab = userAccountTab || (groomAccounts.length === 0 && brideAccounts.length > 0 ? 'bride' : 'groom');
+  const setActiveAccountTab = setUserAccountTab;
 
   // 정보 카드 목록
   const infoCards = useMemo(() => {

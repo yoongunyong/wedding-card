@@ -396,22 +396,44 @@ function EditInvitationContent({ params }) {
         manage_password: config.manage_password || card.manage_password || '',
       });
 
-      // 계좌 분리
+      // 계좌 분리 (신랑/신부측 키워드 유연 매칭으로 데이터 누락 완벽 차단)
       const rawAccounts = card.accounts || [];
       const gAccounts = rawAccounts
-        .filter((a) => a.group === '신랑측' || a.side === 'groom')
+        .filter(
+          (a) =>
+            a.group === '신랑측' ||
+            a.group === '신랑' ||
+            a.side === 'groom' ||
+            a.title === '신랑' ||
+            a.relation === '신랑' ||
+            a.title?.includes('신랑') ||
+            a.relation?.includes('신랑') ||
+            a.name?.includes('신랑') ||
+            a.holder?.includes('신랑')
+        )
         .map((a) => ({
           group: '신랑측',
-          title: a.title || '신랑',
+          title: a.title || a.relation || '신랑',
           bank: a.bank || '국민',
           number: a.account_number || a.number || '',
           holder: a.holder || '',
         }));
       const bAccounts = rawAccounts
-        .filter((a) => a.group === '신부측' || a.side === 'bride')
+        .filter(
+          (a) =>
+            a.group === '신부측' ||
+            a.group === '신부' ||
+            a.side === 'bride' ||
+            a.title === '신부' ||
+            a.relation === '신부' ||
+            a.title?.includes('신부') ||
+            a.relation?.includes('신부') ||
+            a.name?.includes('신부') ||
+            a.holder?.includes('신부')
+        )
         .map((a) => ({
           group: '신부측',
-          title: a.title || '신부',
+          title: a.title || a.relation || '신부',
           bank: a.bank || '카카오뱅크',
           number: a.account_number || a.number || '',
           holder: a.holder || '',

@@ -27,7 +27,7 @@ export default function CinematicTemplate({ invitation }) {
   const [galleryTab, setGalleryTab] = useState('story');
 
   // 4. 축의금 계좌 탭 (신랑측에게 vs 신부측에게)
-  const [accountTab, setAccountTab] = useState('groom');
+  const [userAccountTab, setUserAccountTab] = useState(null);
 
 
 
@@ -288,12 +288,9 @@ export default function CinematicTemplate({ invitation }) {
       a.holder?.includes('신부')
   );
 
-  // 신랑측 계좌가 없고 신부측 계좌만 등록된 경우 신부측 탭 자동 우선 선택
-  useEffect(() => {
-    if (groomAccounts.length === 0 && brideAccounts.length > 0) {
-      setAccountTab('bride');
-    }
-  }, [groomAccounts.length, brideAccounts.length]);
+  // 신랑측 계좌가 없고 신부측 계좌만 등록된 경우 신부측 탭 자동 우선 선택 (파생 상태)
+  const accountTab = userAccountTab || (groomAccounts.length === 0 && brideAccounts.length > 0 ? 'bride' : 'groom');
+  const setAccountTab = setUserAccountTab;
   const currentAccounts = accountTab === 'groom' ? groomAccounts : brideAccounts;
 
   // 교통편 리스트 (미등록 시 실제 고객 청첩장에서는 미노출)

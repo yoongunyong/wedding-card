@@ -20,15 +20,27 @@ export default function EditorialGuestbookDeleteModal({ targetMsg, onClose, onDe
     e.preventDefault();
     if (!password.trim()) return alert('비밀번호를 입력해 주세요.');
 
-    if (targetMsg.password !== password.trim()) {
+    setLoading(true);
+    const trimmedPw = password.trim();
+
+    // targetMsg에 password가 클라이언트에 있고 불일치하면 즉시 방어
+    if (targetMsg.password && targetMsg.password !== trimmedPw) {
+      setLoading(false);
       return alert('비밀번호가 일치하지 않습니다.');
     }
 
-    setLoading(true);
-    const { error } = await supabase
+    // DB 차원에서 password 일치 여부 검증 및 삭제
+    const { data, error } = await supabase
       .from('guestbook')
       .delete()
-      .eq('id', targetMsg.id);
+      .eq('id', targetMsg.id)
+      .eq('password', trimmedPw)
+      .select();
+
+    if (!error && (!data || data.length === 0)) {
+      setLoading(false);
+      return alert('비밀번호가 일치하지 않습니다.');
+    }
 
     setLoading(false);
     if (error) {

@@ -39,7 +39,8 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!invitationId) {
+    const targetInvitationId = invitationId || invitation?.id;
+    if (!targetInvitationId) {
       alert('실시간 미리보기 모드입니다.\n청첩장 제작 신청 완료 후 실제 발급된 링크에서 참석 정보를 전달하실 수 있습니다.');
       if (onClose) onClose();
       return;
@@ -56,7 +57,7 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
     const { data: existingRows } = await supabase
       .from('rsvp')
       .select('id, name, phone')
-      .eq('invitation_id', invitationId)
+      .eq('invitation_id', targetInvitationId)
       .eq('name', cleanName);
 
     let matchedId = null;
@@ -77,7 +78,7 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
     const companionCountVal = attend ? Math.max(0, totalAttendees - 1) : 0;
 
     const payload = {
-      invitation_id: invitationId,
+      invitation_id: targetInvitationId,
       side,
       attend,
       name: cleanName,

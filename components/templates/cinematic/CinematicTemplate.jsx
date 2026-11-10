@@ -603,19 +603,19 @@ export default function CinematicTemplate({ invitation }) {
           )}
 
           {/* 양가 부모님 정보 (부모님 정보가 입력된 경우에만 깔끔하게 노출) */}
-          {(groomParents || brideParents) && (
+          {(hasGroomParents || hasBrideParents) && (
             <div className={`space-y-2.5 text-xs sm:text-[13px] font-light max-w-[280px] mx-auto ${
               isNightMode ? 'text-stone-400' : 'text-stone-600'
             }`}>
-              {groomParents && (
+              {hasGroomParents && (
                 <div className="flex items-center justify-between">
-                  <span>{groomParents} {groomRelation && `의 ${groomRelation}`}</span>
+                  <span>{groomParentsNode} {groomRelation && `의 ${groomRelation}`}</span>
                   <strong className={`font-medium ${isNightMode ? 'text-white' : 'text-stone-900'}`}>{groomName}</strong>
                 </div>
               )}
-              {brideParents && (
+              {hasBrideParents && (
                 <div className="flex items-center justify-between">
-                  <span>{brideParents} {brideRelation && `의 ${brideRelation}`}</span>
+                  <span>{brideParentsNode} {brideRelation && `의 ${brideRelation}`}</span>
                   <strong className={`font-medium ${isNightMode ? 'text-white' : 'text-stone-900'}`}>{brideName}</strong>
                 </div>
               )}

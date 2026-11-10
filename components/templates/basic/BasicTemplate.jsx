@@ -606,23 +606,23 @@ export default function BasicTemplate({ invitation }) {
           <div className="w-px h-[60px] bg-[#d3d3d3] mx-auto mb-10 sm:mb-12" />
 
           {/* 부모님 & 신랑신부 성함 (Figma 2705:2600 Pretendard #303030 & #707070) */}
-          {(groomName || brideName || groomParents || brideParents) && (
+          {(groomName || brideName || hasGroomParents || hasBrideParents) && (
             <div className="inline-grid grid-cols-[auto_auto_auto] items-center gap-x-5 gap-y-3.5 text-[15px] sm:text-[15.5px] font-sans mx-auto mb-10 sm:mb-12">
               <div className="text-right text-[#303030] font-normal">
-                {groomParents}
+                {groomParentsNode}
               </div>
               <div className="text-center text-[#707070] font-normal text-[13px] px-1">
-                {groomParents ? groomRelation : ''}
+                {hasGroomParents ? groomRelation : ''}
               </div>
               <div className="text-left text-[#303030] font-normal">
                 {groomName}
               </div>
 
               <div className="text-right text-[#303030] font-normal">
-                {brideParents}
+                {brideParentsNode}
               </div>
               <div className="text-center text-[#707070] font-normal text-[13px] px-1">
-                {brideParents ? brideRelation : ''}
+                {hasBrideParents ? brideRelation : ''}
               </div>
               <div className="text-left text-[#303030] font-normal">
                 {brideName}
@@ -1496,6 +1496,7 @@ export default function BasicTemplate({ invitation }) {
 
       {showRsvpModal && (
         <BasicRsvpModal
+          invitation={invitation}
           invitationId={invitation?.id}
           onClose={() => setShowRsvpModal(false)}
         />

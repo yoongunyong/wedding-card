@@ -453,14 +453,34 @@ export default function EditorialTemplate({ invitation }) {
     }
   };
 
-  const handleCopyAccount = async (accountNum, label) => {
-    if (!accountNum) return;
+  const handleCopyText = async (text, successMsg = '복사되었습니다.') => {
+    if (!text) return;
     try {
-      await navigator.clipboard.writeText(accountNum);
-      alert(`${label} 계좌번호가 복사되었습니다.`);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        alert(successMsg);
+        return;
+      }
+      throw new Error('Clipboard API not available');
     } catch {
-      alert('복사에 실패했습니다.');
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert(successMsg);
+      } catch {
+        alert('복사에 실패했습니다.');
+      }
     }
+  };
+
+  const handleCopyAccount = (accountNum, label) => {
+    handleCopyText(accountNum, `${label} 계좌번호가 복사되었습니다.`);
   };
 
   return (
@@ -1046,9 +1066,7 @@ export default function EditorialTemplate({ invitation }) {
                 type="button"
                 onClick={() => {
                   const addr = invitation?.venue_address || (isSample ? '경북 구미시 금오산로 400' : '');
-                  if (!addr) return;
-                  navigator.clipboard.writeText(addr);
-                  alert('식장 주소가 복사되었습니다.');
+                  handleCopyText(addr, '식장 주소가 복사되었습니다.');
                 }}
                 className="inline-flex items-center justify-center p-0.5 text-[#999999] hover:text-[#333333] transition-colors cursor-pointer select-none"
                 title="주소 복사"
@@ -1290,9 +1308,7 @@ export default function EditorialTemplate({ invitation }) {
                               <button
                                 type="button"
                                 onClick={() => {
-                                  if (!numText) return;
-                                  navigator.clipboard.writeText(numText);
-                                  alert('계좌번호가 복사되었습니다.');
+                                  handleCopyText(numText, '계좌번호가 복사되었습니다.');
                                 }}
                                 className="w-[80.5px] h-[26px] bg-white hover:bg-stone-50 active:scale-95 border border-[#CCCCCC] rounded-full flex items-center justify-center transition-all cursor-pointer shrink-0 select-none shadow-2xs"
                               >

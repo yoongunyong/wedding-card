@@ -518,6 +518,18 @@
     - **Supabase 6대 테이블 바인딩 무결성**: `invitations`, `order_codes`, `guestbook`, `rsvp`, `guest_photos`, `site_settings` 정상 연동.
     - **Turbopack 빌드**: Next.js 16.3.8 빌드 0 errors 완료 (Exit Code: 0).
 
+21. **[전방위 딥-다이브 전수 점검 및 결함 발굴·해결 완료] (2026-11-10)**:
+    - **더미데이터 / 샘플 누출(Fallback Leakage) 전수 검증**:
+      - 5대 공식 시안(`basic`, `editorial`, `playlist`, `cinematic`, `scene`)에서 `isSample` 분기 로직 정밀 확인.
+      - 실제 고객 청첩장(`!isSample`)에서는 미등록된 이름, 사진(프로필/화보/엔딩), 계좌, 교통편, 인터뷰, 공지사항 등에 가짜 샘플이 절대 하객에게 누출되지 않고 **순수 공백/숨김(null)** 처리됨을 100% 보증.
+    - **React 19 Cascading Render (린트 에러 3건) 완벽 해결**:
+      - `BasicTemplate`, `EditorialTemplate`, `CinematicTemplate`에서 `useEffect` 내 동기 `setState`(`setActiveAccountTab('bride')`)로 인해 발생하던 React 19 cascading render 린트 에러 3건을 발견.
+      - `useEffect`를 완전히 제거하고 React 공식 권장 패턴인 **파생 상태(derived state)** 로 전환하여 렌더링 폭포 현상을 원천 차단하고 **ESLint 0 errors** 달성.
+    - **수정 페이지(`app/manage/[slug]/edit/page.js`) 계좌 로드 누락 결함 보강**:
+      - 기존에 `group === '신랑측' || side === 'groom'`만 검사하여 구버전이나 다른 필드로 저장된 계좌가 누락될 수 있던 로직을 5대 템플릿과 동일하게 유연한 키워드 매칭(`relation`, `title`, `name`, `holder` 등)으로 확장하여 데이터 무결성 100% 확보.
+    - **비즈니스 플로우 및 관리자 보안 확인**:
+      - 2FA PIN 4자리 인증, 관리 링크 원클릭 재발급 시 기존 링크 즉시 403 차단, CSV 다운로드 한글 인코딩(`\uFEFF` BOM) 보존, 어드민 권한 체계 검증 완료.
+
 ---
 
 ## 6. 주요 파일 경로 모음

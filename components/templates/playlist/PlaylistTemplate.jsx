@@ -1068,7 +1068,7 @@ export default function PlaylistTemplate({ invitation }) {
           )}
 
           {/* 공유 버튼 2종 (카카오톡 공유 & 링크 복사) */}
-          <div className="flex items-center justify-center gap-3 mt-8 mb-8 max-w-[320px] mx-auto">
+          <div id="share-section" className="flex items-center justify-center gap-3 mt-8 mb-8 max-w-[320px] mx-auto">
             <button
               type="button"
               onClick={handleKakaoShare}

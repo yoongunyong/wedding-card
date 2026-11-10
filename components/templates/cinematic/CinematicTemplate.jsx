@@ -1115,7 +1115,7 @@ export default function CinematicTemplate({ invitation }) {
             </button>
 
             {/* 공유 2종 링크 */}
-            <div className="flex flex-col items-center gap-3 text-xs font-sans text-stone-500 mb-14">
+            <div id="share-section" className="flex flex-col items-center gap-3 text-xs font-sans text-stone-500 mb-14">
               <button
                 type="button"
                 onClick={handleKakaoShare}

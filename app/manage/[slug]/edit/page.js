@@ -3362,7 +3362,7 @@ function EditInvitationContent({ params }) {
                   (previewInvitation?.bride_accounts?.length > 0) ||
                   previewInvitation?.account_number
                 )}
-                className="!absolute !bottom-16 !right-3"
+                className="!absolute !bottom-4 !right-3"
               />
             )}
           </div>

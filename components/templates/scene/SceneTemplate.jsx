@@ -1696,7 +1696,7 @@ export default function SceneTemplate({ invitation }) {
           ======================================================== */}
       <footer className="py-16 px-6 bg-white border-t border-stone-100 text-center select-none">
         <ScrollReveal>
-          <div className="max-w-[370px] mx-auto space-y-3 mb-12">
+          <div id="share-section" className="max-w-[370px] mx-auto space-y-3 mb-12">
             <button
               type="button"
               onClick={handleKakaoShare}

@@ -1822,32 +1822,34 @@ export default function EditorialTemplate({ invitation }) {
           </p>
 
           {/* 하단 브랜드 로고: DESIGNED BY ATELIER DE MUKIRU (Figma top: 16557px -> Poppins 24px -> 1x 12px, line-height: 162%, #999999, mt-[95px]) */}
-          <p className="font-sans font-normal text-[12px] leading-[1.62] text-[#999999] tracking-[0.05em] uppercase text-center mt-[95px] select-none">
+          {/* 12. 감성 인라인 공유 섹션 (카카오톡 공유 & 링크 복사) */}
+          <div id="share-section" className="mt-14 mb-2 flex items-center justify-center gap-2.5 max-w-[340px] mx-auto px-4 select-none">
+            <button
+              type="button"
+              onClick={handleKakaoShare}
+              className="flex-1 py-3 px-4 bg-[#FEE500] hover:bg-[#FADA0A] text-[#191919] text-[12px] font-sans font-medium rounded-full flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs active:scale-95"
+            >
+              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                <path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.557 1.708 4.8 4.27 6.054-.187.698-.675 2.528-.773 2.915-.121.482.177.476.372.346.154-.102 2.45-1.666 3.442-2.344.56.082 1.127.129 1.689.129 4.97 0 9-3.185 9-7.115S16.97 3 12 3z" />
+              </svg>
+              <span>카카오톡 공유하기</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              className="py-3 px-5 border border-stone-200 hover:border-stone-400 bg-white text-stone-700 text-[12px] font-sans font-medium rounded-full hover:bg-stone-50 transition-all cursor-pointer shadow-2xs active:scale-95"
+            >
+              링크 복사
+            </button>
+          </div>
+
+          <p className="font-sans font-normal text-[12px] leading-[1.62] text-[#999999] tracking-[0.05em] uppercase text-center mt-[48px] select-none">
             DESIGNED BY ATELIER DE MUKIRU
           </p>
         </ScrollReveal>
       </section>
 
-      {/* 12. 하단 고정 공유 바 (카카오톡 공유 & 링크 복사) */}
-      <div className="sticky bottom-0 z-40 w-full max-w-[430px] mx-auto bg-white/95 backdrop-blur-md border-t border-stone-200 px-5 py-3.5 flex items-center justify-between gap-3 shadow-lg">
-        <button
-          type="button"
-          onClick={handleKakaoShare}
-          className="flex-1 py-3 px-4 bg-[#FEE500] hover:bg-[#FADA0A] text-[#191919] text-[12px] font-serif font-medium rounded-full flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-2xs"
-        >
-          <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-            <path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.557 1.708 4.8 4.27 6.054-.187.698-.675 2.528-.773 2.915-.121.482.177.476.372.346.154-.102 2.45-1.666 3.442-2.344.56.082 1.127.129 1.689.129 4.97 0 9-3.185 9-7.115S16.97 3 12 3z" />
-          </svg>
-          <span>카카오톡 공유하기</span>
-        </button>
-        <button
-          type="button"
-          onClick={handleCopyLink}
-          className="py-3 px-5 border border-stone-300 hover:border-stone-900 text-stone-800 text-[12px] font-serif font-medium rounded-full hover:bg-stone-50 transition-colors cursor-pointer shadow-2xs"
-        >
-          링크 복사
-        </button>
-      </div>
+      
 
       {/* 시안 2 전용 에디토리얼 팝업 모달 */}
       {showContactModal && (

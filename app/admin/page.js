@@ -425,11 +425,15 @@ export default function AdminDashboardPage() {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (!error && data) {
+      if (error) {
+        console.error('order_codes load error:', error);
+        alert(`1회용 발급 코드 로드 실패: ${error.message}`);
+      } else if (data) {
         setCodes(data);
       }
     } catch (err) {
-      console.warn('order_codes load error:', err);
+      console.error('order_codes load error:', err);
+      alert(`1회용 발급 코드 로드 오류: ${err.message || err}`);
     } finally {
       setLoadingCodes(false);
     }
@@ -444,11 +448,15 @@ export default function AdminDashboardPage() {
         .select('id, slug, groom_name, bride_name, groom_phone, bride_phone, groom_father_phone, bride_father_phone, groom_mother_phone, bride_mother_phone, wedding_date, template_type, is_active, template_config, order_code, created_at, manage_token, service_expired_at, images, gallery_images, bgm_url')
         .order('created_at', { ascending: false });
 
-      if (!error && data) {
+      if (error) {
+        console.error('invitations load error:', error);
+        alert(`청첩장 목록 로드 실패: ${error.message}`);
+      } else if (data) {
         setInvitations(data);
       }
     } catch (err) {
-      console.warn('invitations load error:', err);
+      console.error('invitations load error:', err);
+      alert(`청첩장 목록 로드 오류: ${err.message || err}`);
     } finally {
       setLoadingInvs(false);
     }
@@ -467,11 +475,23 @@ export default function AdminDashboardPage() {
         ]);
 
         if (isMounted) {
-          if (codesRes.data) setCodes(codesRes.data);
-          if (invsRes.data) setInvitations(invsRes.data);
+          if (codesRes.error) {
+            console.error('Initial codes load error:', codesRes.error);
+            alert(`1회용 발급 코드 초기 로드 실패: ${codesRes.error.message}`);
+          } else if (codesRes.data) {
+            setCodes(codesRes.data);
+          }
+
+          if (invsRes.error) {
+            console.error('Initial invitations load error:', invsRes.error);
+            alert(`청첩장 목록 초기 로드 실패: ${invsRes.error.message}`);
+          } else if (invsRes.data) {
+            setInvitations(invsRes.data);
+          }
         }
       } catch (err) {
-        console.warn('Admin load error:', err);
+        console.error('Admin initial load error:', err);
+        alert(`관리자 초기 데이터 로드 오류: ${err.message || err}`);
       }
     };
 

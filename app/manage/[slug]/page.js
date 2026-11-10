@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, use, useCallback, Suspense } from 'react';
+import { useEffect, useState, use, useCallback, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useSearchParams } from 'next/navigation';
@@ -22,6 +22,8 @@ function ManageRsvpContent({ params }) {
   const [guestbookList, setGuestbookList] = useState([]);
   const [showQrModal, setShowQrModal] = useState(false);
   const [activeTab, setActiveTab] = useState('rsvp');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sideFilter, setSideFilter] = useState('all'); // 'all' | 'groom' | 'bride' | 'attending' | 'absent'
 
   // 2차 보안 PIN 상태
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -317,11 +319,29 @@ function ManageRsvpContent({ params }) {
     }
   };
 
-  // 통계 계산
+  // 통계 계산 (문자열 접합 방지 Number 래핑)
   const attendingList = rsvpList.filter((r) => r.attend);
-  const totalGuests = attendingList.reduce((acc, cur) => acc + 1 + (cur.companion_count || 0), 0);
-  const groomGuests = attendingList.filter((r) => r.side === 'groom').reduce((acc, cur) => acc + 1 + (cur.companion_count || 0), 0);
-  const brideGuests = attendingList.filter((r) => r.side === 'bride').reduce((acc, cur) => acc + 1 + (cur.companion_count || 0), 0);
+  const totalGuests = attendingList.reduce((acc, cur) => acc + 1 + (Number(cur.companion_count) || 0), 0);
+  const groomGuests = attendingList.filter((r) => r.side === 'groom').reduce((acc, cur) => acc + 1 + (Number(cur.companion_count) || 0), 0);
+  const brideGuests = attendingList.filter((r) => r.side === 'bride').reduce((acc, cur) => acc + 1 + (Number(cur.companion_count) || 0), 0);
+
+  // 실시간 검색 및 필터링된 하객 목록
+  const filteredRsvpList = useMemo(() => {
+    return rsvpList.filter((item) => {
+      if (sideFilter === 'groom' && item.side !== 'groom') return false;
+      if (sideFilter === 'bride' && item.side !== 'bride') return false;
+      if (sideFilter === 'attending' && !item.attend) return false;
+      if (sideFilter === 'absent' && item.attend) return false;
+
+      if (searchTerm.trim()) {
+        const q = searchTerm.trim().toLowerCase();
+        const matchName = (item.name || '').toLowerCase().includes(q);
+        const matchPhone = (item.phone || '').replace(/\D/g, '').includes(q.replace(/\D/g, ''));
+        return matchName || matchPhone;
+      }
+      return true;
+    });
+  }, [rsvpList, sideFilter, searchTerm]);
 
   // 한국 시간 포맷팅 헬퍼 (YYYY.MM.DD HH:mm)
   const formatDate = (isoString) => {
@@ -346,7 +366,7 @@ function ManageRsvpContent({ params }) {
       r.name,
       r.phone || '-',
       r.attend ? '참석' : '불참',
-      r.attend ? (r.companion_count || 0) + 1 : '-',
+      r.attend ? (Number(r.companion_count) || 0) + 1 : '-',
       r.attend ? (r.meal || '-') : '-',
       r.attend ? (r.bus || '-') : '-',
       r.created_at ? new Date(r.created_at).toLocaleString('ko-KR') : '-',
@@ -361,7 +381,9 @@ function ManageRsvpContent({ params }) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `${invitation.groom_name}_${invitation.bride_name}_하객명단.csv`);
+    const safeGroom = (invitation.groom_name || '신랑').replace(/[^\w\s가-힣]/g, '').trim() || '신랑';
+    const safeBride = (invitation.bride_name || '신부').replace(/[^\w\s가-힣]/g, '').trim() || '신부';
+    link.setAttribute('download', `${safeGroom}_${safeBride}_하객명단.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -826,10 +848,81 @@ function ManageRsvpContent({ params }) {
               </div>
             )}
 
+            {/* 검색 및 필터 컨트롤 바 */}
+            <div className="mb-4 space-y-2.5">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+                {/* 검색 인풋 */}
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-xs">
+                    🔍
+                  </span>
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="하객 성함 또는 연락처 뒤 4자리 검색..."
+                    className="w-full pl-8 pr-8 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-800 placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:bg-white transition-colors"
+                  />
+                  {searchTerm && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchTerm('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 text-xs cursor-pointer p-0.5"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                {/* 필터 칩 버튼군 */}
+                <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+                  {[
+                    { key: 'all', label: `전체 (${rsvpList.length})` },
+                    { key: 'groom', label: `신랑측 (${rsvpList.filter(r => r.side === 'groom').length})` },
+                    { key: 'bride', label: `신부측 (${rsvpList.filter(r => r.side === 'bride').length})` },
+                    { key: 'attending', label: `참석만 (${attendingList.length})` },
+                    { key: 'absent', label: `불참 (${rsvpList.length - attendingList.length})` },
+                  ].map((btn) => (
+                    <button
+                      key={btn.key}
+                      type="button"
+                      onClick={() => setSideFilter(btn.key)}
+                      className={`px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
+                        sideFilter === btn.key
+                          ? 'bg-stone-900 text-white shadow-2xs'
+                          : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                      }`}
+                    >
+                      {btn.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 검색/필터 적용 시 결과 카운트 안내 */}
+              {(searchTerm || sideFilter !== 'all') && (
+                <div className="flex items-center justify-between text-[11px] text-stone-500 px-1">
+                  <span>
+                    검색 결과: <strong className="text-stone-800 font-semibold">{filteredRsvpList.length}명</strong>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchTerm('');
+                      setSideFilter('all');
+                    }}
+                    className="text-stone-500 hover:text-stone-800 underline cursor-pointer"
+                  >
+                    필터 초기화
+                  </button>
+                </div>
+              )}
+            </div>
+
             {/* 참석자 테이블 */}
-            {rsvpList.length === 0 ? (
+            {filteredRsvpList.length === 0 ? (
               <div className="py-12 text-center text-xs text-stone-400 bg-stone-50/50 rounded-xl border border-dashed border-stone-200">
-                아직 등록된 참석 정보가 없습니다.
+                {rsvpList.length === 0 ? '아직 등록된 참석 정보가 없습니다.' : '검색 조건과 일치하는 하객이 없습니다.'}
               </div>
             ) : (
               <div className="overflow-x-auto border border-stone-200 rounded-xl">
@@ -848,7 +941,7 @@ function ManageRsvpContent({ params }) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-100">
-                    {rsvpList.map((row) => (
+                    {filteredRsvpList.map((row) => (
                       <tr key={row.id} className="hover:bg-stone-50/80 transition-colors">
                         <td className="py-3 px-3 whitespace-nowrap">
                           <span
@@ -869,7 +962,7 @@ function ManageRsvpContent({ params }) {
                           )}
                         </td>
                         <td className="py-3 px-3 text-center whitespace-nowrap font-medium text-stone-900">
-                          {row.attend ? `${(row.companion_count || 0) + 1}명` : '-'}
+                          {row.attend ? `${(Number(row.companion_count) || 0) + 1}명` : '-'}
                         </td>
                         <td className="py-3 px-3 text-center whitespace-nowrap">
                           {row.attend ? row.meal || '-' : '-'}
@@ -883,7 +976,7 @@ function ManageRsvpContent({ params }) {
                         <td className="py-3 px-3 text-center whitespace-nowrap">
                           <button
                             type="button"
-                            onClick={() => handleDeleteRsvp(row.id, row.name)}
+                            onClick={() => handleDeleteRsvp(row.id, row.name || '해당 하객')}
                             className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 font-medium rounded text-[11px] transition-colors cursor-pointer"
                           >
                             삭제
@@ -929,7 +1022,7 @@ function ManageRsvpContent({ params }) {
                           {row.author}
                         </td>
                         <td className="py-3 px-3 text-stone-700 leading-relaxed max-w-xs sm:max-w-md break-words align-top">
-                          {row.message}
+                          {row.content || row.message || ''}
                         </td>
                         <td className="py-3 px-3 text-right text-stone-400 text-[11px] whitespace-nowrap align-top">
                           {formatDate(row.created_at)}

@@ -46,6 +46,8 @@ export default function GuestPhotoManager({ invitation }) {
     }
 
     try {
+      const targetPhoto = photos.find((p) => p.id === photoId);
+
       // [대형사고 방지] 본인 청첩장 소속의 하객 사진만 삭제되도록 invitation_id 이중 검증
       const { error } = await supabase
         .from('guest_photos')
@@ -56,6 +58,24 @@ export default function GuestPhotoManager({ invitation }) {
       if (error) {
         alert('삭제에 실패했습니다. 다시 시도해 주세요.');
         return;
+      }
+
+      // Storage 실제 파일 삭제 (스토리지 용량 누수 방지 및 공용 파일 보호 격리)
+      if (targetPhoto?.photo_url) {
+        try {
+          const urlObj = new URL(targetPhoto.photo_url);
+          const pathParts = urlObj.pathname.split('/wedding-images/');
+          if (pathParts[1]) {
+            const rawFilePath = decodeURIComponent(pathParts[1]);
+            const cleanSlug = (invitation.slug || '').trim().toLowerCase();
+            // 본인 청첩장의 guest-snaps 격리 폴더 파일인지 철저 대조 후 삭제
+            if (rawFilePath.startsWith(`guest-snaps/${cleanSlug}/`)) {
+              await supabase.storage.from('wedding-images').remove([rawFilePath]);
+            }
+          }
+        } catch (storageErr) {
+          console.warn('Storage file remove warning:', storageErr);
+        }
       }
 
       setPhotos((prev) => prev.filter((p) => p.id !== photoId));

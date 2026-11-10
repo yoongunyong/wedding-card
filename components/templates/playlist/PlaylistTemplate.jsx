@@ -13,6 +13,7 @@ import EditorialGalleryModal from '../editorial/EditorialGalleryModal';
 import KakaoMap from '@/components/KakaoMap';
 import { supabase } from '@/lib/supabase';
 import { getSafeKakaoShareImageUrl } from '@/lib/kakaoShare';
+import { renderParentPair } from '@/components/ParentDeceasedName';
 
 export default function PlaylistTemplate({ invitation }) {
   // 1. 모달 상태 (조건부 렌더링 철저 유지)

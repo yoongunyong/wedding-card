@@ -6,8 +6,8 @@ import { useState, useEffect } from 'react';
  * 영화 인트로 / 레트로 컴퓨터 문서 스타일의 시네마틱 키스트로크 타이핑
  * - 영화 속 타자기처럼 "타탁... 타다탁... 타다다닥" 빠르고 불규칙한 타건감
  * - 글자가 칼같이 즉시 찍히는 선명한 즉발성(Instant Reveal)
- * - 타이핑 선두를 따라 달리는 시네마틱 깜빡임 커서 (Blinking Caret)
- * - 완성 후 2~3회 깜빡이다 자연스럽게 사라지는 영화적 마무리
+ * - 타이핑 진행 중에만 선두를 따라 달리는 시네마틱 커서
+ * - 마지막 글자 완성 즉시 커서가 깜빡이지 않고 깔끔하게 사라짐
  */
 export default function EditorialTitleTypewriter({
   text = 'We are getting married',
@@ -16,7 +16,6 @@ export default function EditorialTitleTypewriter({
 }) {
   const [displayedCount, setDisplayedCount] = useState(0);
   const [showCursor, setShowCursor] = useState(true);
-  const [cursorFading, setCursorFading] = useState(false);
 
   useEffect(() => {
     // 1. 모션 최소화(접근성) 설정 시 즉시 전체 표시
@@ -29,7 +28,6 @@ export default function EditorialTitleTypewriter({
     }
 
     // 2. 영화/다큐멘터리 인트로 특유의 "타탁... 타다타탁..." 실제 타건 리듬
-    // - 단어 내 빠른 연타(40~65ms), 연타 쌍자음(tt, rr: 40ms), 단어 사이 생각/호흡 멈춤(240~280ms)
     const keystrokeIntervals = [
       // W, e -> "타탁!"
       70, 50,
@@ -61,16 +59,12 @@ export default function EditorialTitleTypewriter({
       timeouts.push(t);
     });
 
-    // 3. 타이핑 완료 후 약 1.6초 동안 커서가 2~3회 깜빡인 뒤 부드럽게 퇴장
-    const fadeTimer = setTimeout(() => {
-      setCursorFading(true);
-      const hideTimer = setTimeout(() => {
-        setShowCursor(false);
-      }, 500);
-      timeouts.push(hideTimer);
-    }, accumulatedDelay + 1600);
+    // 3. 타이핑 완료 즉시 커서 제거 (끝났을 때 깜빡이지 않고 깔끔하게 사라짐)
+    const endTimer = setTimeout(() => {
+      setShowCursor(false);
+    }, accumulatedDelay + 50);
 
-    timeouts.push(fadeTimer);
+    timeouts.push(endTimer);
 
     return () => {
       timeouts.forEach((t) => clearTimeout(t));
@@ -98,13 +92,9 @@ export default function EditorialTitleTypewriter({
                 {char === ' ' ? '\u00A0' : char}
               </span>
 
-              {/* 현재 타이핑되고 있는 글자 바로 뒤에 붙는 영화 커서 */}
-              {isCurrentTip && showCursor && (
-                <span
-                  className={`cinema-caret ${
-                    cursorFading ? 'opacity-0 transition-opacity duration-500' : ''
-                  }`}
-                />
+              {/* 현재 타이핑되고 있는 글자 바로 뒤에 붙는 영화 커서 (완료 시 즉시 제거) */}
+              {isCurrentTip && showCursor && displayedCount < text.length && (
+                <span className="cinema-caret" />
               )}
             </span>
           );

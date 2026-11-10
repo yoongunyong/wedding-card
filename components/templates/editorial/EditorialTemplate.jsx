@@ -86,12 +86,7 @@ export default function EditorialTemplate({ invitation }) {
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
   const [activeAccountTab, setActiveAccountTab] = useState('groom'); // 'groom' | 'bride'
 
-  // 신랑측 계좌가 없고 신부측 계좌만 등록된 경우 신부측 탭 자동 우선 선택
-  useEffect(() => {
-    if (groomAccounts.length === 0 && brideAccounts.length > 0) {
-      setActiveAccountTab('bride');
-    }
-  }, [groomAccounts.length, brideAccounts.length]);
+
   const [activeNoticeIndex, setActiveNoticeIndex] = useState(0);
 
   // 6. 데이터 언패킹 & fallback
@@ -381,6 +376,13 @@ export default function EditorialTemplate({ invitation }) {
         a.relation?.includes('신부')
     );
   }, [allParsedAccounts]);
+
+  // 신랑측 계좌가 없고 신부측 계좌만 등록된 경우 신부측 탭 자동 우선 선택
+  useEffect(() => {
+    if (groomAccounts.length === 0 && brideAccounts.length > 0) {
+      setActiveAccountTab('bride');
+    }
+  }, [groomAccounts.length, brideAccounts.length]);
 
   // 정보 카드 목록 (동적 배열 및 레거시 extra_data 완벽 호환)
   const infoCards = useMemo(() => {

@@ -11,6 +11,7 @@ import EditorialGuestbookModal from '../editorial/EditorialGuestbookModal';
 import EditorialGalleryModal from '../editorial/EditorialGalleryModal';
 import { supabase } from '@/lib/supabase';
 import { getSafeKakaoShareImageUrl } from '@/lib/kakaoShare';
+import { renderParentPair } from '@/components/ParentDeceasedName';
 
 export default function CinematicTemplate({ invitation }) {
   // 1. ☀️ Brightly (Day) ↔ 🌙 Midnight (Night) 듀얼 테마 스위처
@@ -28,12 +29,7 @@ export default function CinematicTemplate({ invitation }) {
   // 4. 축의금 계좌 탭 (신랑측에게 vs 신부측에게)
   const [accountTab, setAccountTab] = useState('groom');
 
-  // 신랑측 계좌가 없고 신부측 계좌만 등록된 경우 신부측 탭 자동 우선 선택
-  useEffect(() => {
-    if (groomAccounts.length === 0 && brideAccounts.length > 0) {
-      setAccountTab('bride');
-    }
-  }, [groomAccounts.length, brideAccounts.length]);
+
 
   // 5. 정보(Information) 캐러셀 인덱스
   const [activeInfoIdx, setActiveInfoIdx] = useState(0);
@@ -291,6 +287,13 @@ export default function CinematicTemplate({ invitation }) {
       a.name?.includes('신부') ||
       a.holder?.includes('신부')
   );
+
+  // 신랑측 계좌가 없고 신부측 계좌만 등록된 경우 신부측 탭 자동 우선 선택
+  useEffect(() => {
+    if (groomAccounts.length === 0 && brideAccounts.length > 0) {
+      setAccountTab('bride');
+    }
+  }, [groomAccounts.length, brideAccounts.length]);
   const currentAccounts = accountTab === 'groom' ? groomAccounts : brideAccounts;
 
   // 교통편 리스트 (미등록 시 실제 고객 청첩장에서는 미노출)

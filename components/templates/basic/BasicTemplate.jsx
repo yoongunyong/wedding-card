@@ -10,6 +10,7 @@ import KakaoMap from '@/components/KakaoMap';
 import { supabase } from '@/lib/supabase';
 import { getSafeKakaoShareImageUrl } from '@/lib/kakaoShare';
 import { renderParentPair } from '@/components/ParentDeceasedName';
+import BasicTitleTypewriter from './BasicTitleTypewriter';
 
 // 시안 2 프리미엄 에디토리얼 모달 컴포넌트
 import EditorialContactModal from '@/components/templates/editorial/EditorialContactModal';
@@ -583,12 +584,12 @@ export default function BasicTemplate({ invitation }) {
           <>
             {/* 상단: We are getting married (Bodoni 72 Book Italic 40px) & 날짜 */}
             <div className="relative z-10 pt-[calc(env(safe-area-inset-top,0px)+3.8rem)] sm:pt-16 px-6 text-center">
-              <h1 
-                className="font-bodoni italic font-normal text-[36px] sm:text-[40px] leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)] tracking-normal"
-                style={{ color: titleColor }}
-              >
-                We are getting married
-              </h1>
+              <BasicTitleTypewriter
+                text="We are getting married"
+                titleColor={titleColor}
+                isTriggered={!showIntro || !showIntroSection}
+                startDelay={300}
+              />
               {mainDateEn && (
                 <p 
                   className="mt-3 sm:mt-3.5 text-[16px] sm:text-[18px] font-sans font-normal tracking-[0.05em] drop-shadow-[0_1px_3px_rgba(0,0,0,0.45)]"

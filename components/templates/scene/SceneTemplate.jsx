@@ -11,6 +11,7 @@ import SceneGalleryModal from './SceneGalleryModal';
 import SceneGuestbookDeleteModal from './SceneGuestbookDeleteModal';
 import { supabase } from '@/lib/supabase';
 import { getSafeKakaoShareImageUrl } from '@/lib/kakaoShare';
+import { renderParentPair } from '@/components/ParentDeceasedName';
 
 export default function SceneTemplate({ invitation }) {
   const config = invitation?.template_config || {};

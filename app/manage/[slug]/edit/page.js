@@ -302,7 +302,7 @@ function EditInvitationContent({ params }) {
         .select('*')
         .eq('slug', slug)
         .eq('manage_token', token)
-        .single();
+        .maybeSingle();
 
       if (err || !card) {
         setAuthorized(false);

@@ -3,32 +3,42 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 export default function SceneGalleryModal({ isOpen, images = [], initialIndex = 0, onClose }) {
-  const [rendered, setRendered] = useState(isOpen);
   const [active, setActive] = useState(false);
+  const [rendered, setRendered] = useState(isOpen);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    if (isOpen) {
+      setRendered(true);
+    } else {
+      setActive(false);
+    }
+  }
+
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [prevInitialIndex, setPrevInitialIndex] = useState(initialIndex);
+  if (initialIndex !== prevInitialIndex) {
+    setPrevInitialIndex(initialIndex);
+    setCurrentIndex(initialIndex);
+  }
+
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
   const isSwiping = useRef(false);
 
   useEffect(() => {
     if (isOpen) {
-      setRendered(true);
       const raf = requestAnimationFrame(() => {
         setActive(true);
       });
       return () => cancelAnimationFrame(raf);
     } else {
-      setActive(false);
       const timer = setTimeout(() => {
         setRendered(false);
       }, 300);
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
-
-  useEffect(() => {
-    setCurrentIndex(initialIndex);
-  }, [initialIndex]);
 
   const prevImage = useCallback(() => {
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
@@ -64,12 +74,12 @@ export default function SceneGalleryModal({ isOpen, images = [], initialIndex = 
     touchEndX.current = 0;
   };
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setActive(false);
     setTimeout(() => {
       onClose();
     }, 300);
-  };
+  }, [onClose]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -80,7 +90,7 @@ export default function SceneGalleryModal({ isOpen, images = [], initialIndex = 
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, prevImage, nextImage]);
+  }, [isOpen, prevImage, nextImage, handleClose]);
 
   if (!rendered) return null;
   if (!images || images.length === 0) return null;

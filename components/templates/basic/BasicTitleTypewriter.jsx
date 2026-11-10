@@ -17,19 +17,19 @@ export default function BasicTitleTypewriter({
   className = '',
 }) {
   const [displayedCount, setDisplayedCount] = useState(0);
-  const [showCursor, setShowCursor] = useState(false);
+  const [showCursor, setShowCursor] = useState(isTriggered);
 
   useEffect(() => {
     if (!isTriggered) return;
 
     // 모션 최소화(접근성) 설정 시 즉시 전체 표시
     if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setDisplayedCount(text.length);
-      setShowCursor(false);
-      return;
+      const immediate = setTimeout(() => {
+        setDisplayedCount(text.length);
+        setShowCursor(false);
+      }, 0);
+      return () => clearTimeout(immediate);
     }
-
-    setShowCursor(true);
 
     // 영화 인트로 특유의 "타탁... 타다타탁..." 실제 타건 리듬
     const keystrokeIntervals = [

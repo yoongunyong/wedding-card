@@ -101,6 +101,7 @@ export default function HeroCardSwiper() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [containerWidth, setContainerWidth] = useState(1200);
   const [isMounted, setIsMounted] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   // 드래그 & 스와이프 제어
   const containerRef = useRef(null);
@@ -133,10 +134,15 @@ export default function HeroCardSwiper() {
   }, []);
 
   useEffect(() => {
-    setIsMounted(true);
-    updateWidth();
+    const raf = requestAnimationFrame(() => {
+      setIsMounted(true);
+      updateWidth();
+    });
     window.addEventListener('resize', updateWidth);
-    return () => window.removeEventListener('resize', updateWidth);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', updateWidth);
+    };
   }, [updateWidth]);
 
   // 카드 치수 (모바일 / 데스크톱 분기)
@@ -214,6 +220,7 @@ export default function HeroCardSwiper() {
   // 터치 & 마우스 드래그 핸들러
   const handleTouchStart = (e) => {
     isDraggingRef.current = true;
+    setIsDragging(true);
     hasDraggedFarRef.current = false;
     startXRef.current = e.touches ? e.touches[0].clientX : e.clientX;
     currentDragDeltaRef.current = 0;
@@ -233,6 +240,7 @@ export default function HeroCardSwiper() {
   const handleTouchEnd = () => {
     if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
+    setIsDragging(false);
     const delta = currentDragDeltaRef.current;
     setDragOffset(0);
 
@@ -364,7 +372,7 @@ export default function HeroCardSwiper() {
             className="flex items-center"
             style={{
               transform: `translateX(${totalOffset}px)`,
-              transition: isDraggingRef.current || !isTransitioning
+              transition: isDragging || !isTransitioning
                 ? 'none'
                 : 'transform 0.48s cubic-bezier(0.25, 1, 0.5, 1)',
               gap: `${cardGap}px`,

@@ -83,12 +83,13 @@ export default function SignatureShowcase() {
   // 시안 5 전환 시 실제 템플릿의 단계별 타이머 재현
   useEffect(() => {
     if (activeOpeningId === 'scene') {
-      setSceneStep(0);
+      const t0 = setTimeout(() => setSceneStep(0), 0);
       const t1 = setTimeout(() => setSceneStep(1), 300);
       const t2 = setTimeout(() => setSceneStep(2), 1100);
       const t3 = setTimeout(() => setSceneStep(3), 1900);
       const t4 = setTimeout(() => setSceneStep(4), 2800);
       return () => {
+        clearTimeout(t0);
         clearTimeout(t1);
         clearTimeout(t2);
         clearTimeout(t3);
@@ -104,6 +105,7 @@ export default function SignatureShowcase() {
   };
 
   const handleReplayOpening = () => {
+    setSceneStep(0);
     setOpeningKey((prev) => prev + 1);
   };
 

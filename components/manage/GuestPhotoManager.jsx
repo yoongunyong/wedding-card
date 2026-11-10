@@ -13,29 +13,35 @@ export default function GuestPhotoManager({ invitation }) {
 
   const MAX_PHOTOS = 100;
 
-  // 하객 사진 목록 불러오기
-  const fetchPhotos = async () => {
-    if (!invitation?.id) return;
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('guest_photos')
-        .select('*')
-        .eq('invitation_id', invitation.id)
-        .order('created_at', { ascending: false });
-
-      if (!error && data) {
-        setPhotos(data);
-      }
-    } catch (err) {
-      console.warn('guest_photos fetch error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchPhotos();
+    if (!invitation?.id) return;
+    let ignore = false;
+
+    async function loadPhotos() {
+      try {
+        const { data, error } = await supabase
+          .from('guest_photos')
+          .select('*')
+          .eq('invitation_id', invitation.id)
+          .order('created_at', { ascending: false });
+
+        if (!ignore && !error && data) {
+          setPhotos(data);
+        }
+      } catch (err) {
+        console.warn('guest_photos fetch error:', err);
+      } finally {
+        if (!ignore) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadPhotos();
+
+    return () => {
+      ignore = true;
+    };
   }, [invitation?.id]);
 
   // 개별 사진 삭제
@@ -97,7 +103,8 @@ export default function GuestPhotoManager({ invitation }) {
       const a = document.createElement('a');
       a.href = url;
       const safeName = (photo.sender_name || '하객').replace(/[^\w\s가-힣]/g, '_');
-      a.download = `하객스냅_${safeName}_${Date.now()}.jpg`;
+      const fileId = photo.id ? String(photo.id).slice(0, 8) : 'snap';
+      a.download = `하객스냅_${safeName}_${fileId}.jpg`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

@@ -85,7 +85,7 @@ function ManageRsvpContent({ params }) {
         .select('*')
         .eq('slug', slug)
         .eq('manage_token', token)
-        .single();
+        .maybeSingle();
 
       if (invError || !inv) {
         setAuthorized(false);

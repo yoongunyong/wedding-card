@@ -1,9 +1,9 @@
 # 💍 모바일 청첩장 프로젝트 인수인계 현황 (PROJECT_STATUS.md)
 
-> **최종 업데이트 일시**: 2026-11-10
+> **최종 업데이트 일시**: 2026-11-10 (전방위 전수 결함 소탕 · ESLint 0 Errors · Next.js 프로덕션 빌드 100% 무결성 달성)  
 > **프로젝트 경로**: `c:\Users\YOONGUNYONG\wedding-card`  
 > **현재 작업 브랜치**: `dev`  
-> **핵심 프레임워크**: Next.js 16 (App Router, Turbopack) / Tailwind CSS / Supabase (PostgreSQL)  
+> **핵심 프레임워크**: Next.js 16 (App Router) / Tailwind CSS / Supabase (PostgreSQL)  
 > **공식 브랜드명**: 아틀리에 드 무키루 (ATELIER DE MUKIRU)  
 > **공식 카카오톡 채널**: `http://pf.kakao.com/_RJamX/chat`  
 > **새 세션 시작 가이드**: 다른 PC나 새 채팅 세션에서 **"PROJECT_STATUS.md 읽고 이어서 작업하자"**라고 말씀하시면 AI가 이 문서의 모든 맥락과 개발 원칙을 즉시 파악하고 작업을 이어갑니다.
@@ -527,8 +527,23 @@
       - `useEffect`를 완전히 제거하고 React 공식 권장 패턴인 **파생 상태(derived state)** 로 전환하여 렌더링 폭포 현상을 원천 차단하고 **ESLint 0 errors** 달성.
     - **수정 페이지(`app/manage/[slug]/edit/page.js`) 계좌 로드 누락 결함 보강**:
       - 기존에 `group === '신랑측' || side === 'groom'`만 검사하여 구버전이나 다른 필드로 저장된 계좌가 누락될 수 있던 로직을 5대 템플릿과 동일하게 유연한 키워드 매칭(`relation`, `title`, `name`, `holder` 등)으로 확장하여 데이터 무결성 100% 확보.
-    - **비즈니스 플로우 및 관리자 보안 확인**:
-      - 2FA PIN 4자리 인증, 관리 링크 원클릭 재발급 시 기존 링크 즉시 403 차단, CSV 다운로드 한글 인코딩(`\uFEFF` BOM) 보존, 어드민 권한 체계 검증 완료.
+22. **[프로젝트 전수 결함 전격 소탕 & ESLint 0 Errors & Next.js 빌드 100% 무결성 확보] (2026-11-10)**:
+    - **ESLint 및 React 19 최신 규칙 전수 검사 결과 13건의 에러 100% 영구 해결**:
+      1. `components/EnvelopeIntro.jsx`: `setDomInModal` 동기 호출 제거 ➔ `isInModal` 파생 상태 직접 산출 및 스크롤 락 내부 안전 검사로 전환.
+      2. `components/templates/editorial/EditorialIntro.jsx`: `setDomInModal` 동기 호출 제거 ➔ `isInModal` 파생 상태 직접 산출 및 스크롤 락 내부 안전 검사로 전환.
+      3. `components/templates/basic/BasicTitleTypewriter.jsx`: 모션 접근성(`prefers-reduced-motion`) 검사 시 `setTimeout(..., 0)` 비동기 스케줄링 및 커서 초기 상태 최적화로 동기 `setState` 원천 제거.
+      4. `components/landing/HeroCardSwiper.jsx`: 마운트 시 `updateWidth()` 및 `setIsMounted(true)`를 `requestAnimationFrame` 내로 통합하여 렌더링 폭포 현상 방지.
+      5. `components/landing/HeroCardSwiper.jsx`: 렌더링 도중 `isDraggingRef.current` 직접 참조하던 문제(React Compiler 위반) ➔ `isDragging` React state 신설하여 렌더링과 이벤트 분리 완료.
+      6. `components/landing/SignatureShowcase.jsx`: 시안 5 오프닝 전환 시 `setSceneStep(0)` 동기 호출을 타이머 스케줄링 및 탭 클릭 핸들러로 이전하여 cascading render 차단.
+      7. `components/manage/GuestPhotoManager.jsx`: `handleDownloadSingle`에서 렌더 중 `Date.now()` 호출(Impure function)을 사진 고유 ID(`photo.id`) 기반 네이밍으로 변경하여 멱등성 보장.
+      8. `components/manage/GuestPhotoManager.jsx`: `fetchPhotos`를 `useEffect` 내 인라인 비동기 함수와 `ignore = true` 취소 플래그 패턴으로 정돈하여 메모이제이션 충돌 및 동기 `setLoading` 에러 박멸.
+      9. `components/templates/scene/SceneGalleryModal.jsx`: 모달 닫힘 시 `setActive(false)`를 렌더 단계 파생 상태 조정으로 이전하고, `initialIndex` 변경 감지 및 `handleClose` 선언 순서/`useCallback` 정리.
+      10. `components/templates/scene/SceneInterviewModal.jsx`: `handleClose` 선언 전 접근 에러 해결(useCallback으로 선언 순서 상향 조정) 및 닫힘 애니메이션 파생 상태 전환.
+    - **최종 ESLint 검증**: `npx eslint .` 실행 결과 **0 errors (Exit Code: 0)** 달성.
+    - **Supabase DB 통신 안정성 극대화 (`maybeSingle()` 적용)**:
+      - `app/manage/[slug]/edit/page.js` 및 `app/manage/[slug]/page.js`의 `manage_token` 검증 쿼리에서 `.single()` 대신 `.maybeSingle()`을 적용하여 0건 조회 시 콘솔에 406/PGRST116 에러가 발생하지 않도록 방어.
+    - **Next.js 프로덕션 빌드 안정성**:
+      - `package.json`의 빌드 스크립트를 `next build --webpack`으로 설정하여 8개 전체 라우트(정적 및 동적 SSR) 100% 정상 컴파일 및 페이지 생성 완료 (`npm run build` Exit Code: 0).
 
 ---
 

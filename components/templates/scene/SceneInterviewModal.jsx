@@ -1,21 +1,35 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 export default function SceneInterviewModal({ isOpen, onClose, groomName, brideName, interviews = [] }) {
-  const [rendered, setRendered] = useState(isOpen);
   const [active, setActive] = useState(false);
+  const [rendered, setRendered] = useState(isOpen);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    if (isOpen) {
+      setRendered(true);
+    } else {
+      setActive(false);
+    }
+  }
+
+  const handleClose = useCallback(() => {
+    setActive(false);
+    setTimeout(() => {
+      onClose();
+    }, 300);
+  }, [onClose]);
 
   useEffect(() => {
     if (isOpen) {
-      setRendered(true);
       // 브라우저 렌더링 프레임 후 애니메이션 트리거
       const raf = requestAnimationFrame(() => {
         setActive(true);
       });
       return () => cancelAnimationFrame(raf);
     } else {
-      setActive(false);
       const timer = setTimeout(() => {
         setRendered(false);
       }, 300);
@@ -31,14 +45,7 @@ export default function SceneInterviewModal({ isOpen, onClose, groomName, brideN
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
-
-  const handleClose = () => {
-    setActive(false);
-    setTimeout(() => {
-      onClose();
-    }, 300);
-  };
+  }, [isOpen, handleClose]);
 
   if (!rendered) return null;
 

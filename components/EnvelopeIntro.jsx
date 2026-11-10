@@ -7,15 +7,7 @@ export default function EnvelopeIntro({ invitation, onOpen, isInModal: propIsInM
   const [transitionStep, setTransitionStep] = useState('idle');
   const [isShaking, setIsShaking] = useState(false);
   const [declineMsg, setDeclineMsg] = useState('');
-  const [domInModal, setDomInModal] = useState(false);
-
-  useEffect(() => {
-    if (typeof document !== 'undefined') {
-      setDomInModal(Boolean(document.getElementById('preview-scroll-container')));
-    }
-  }, []);
-
-  const isInModal = propIsInModal ?? Boolean(invitation?.is_modal_preview) ?? domInModal;
+  const isInModal = Boolean(propIsInModal ?? invitation?.is_modal_preview);
 
   // DB images.cover 최우선 매핑 (고객이 업로드한 대표 커버 사진)
   const rawCover = 
@@ -43,7 +35,8 @@ export default function EnvelopeIntro({ invitation, onOpen, isInModal: propIsInM
 
   useEffect(() => {
     // 모달 미리보기 중에는 부모 페이지의 전체 창 스크롤 및 overflow를 방해하지 않음
-    if (isInModal) return;
+    const isInsideModal = isInModal || (typeof document !== 'undefined' && Boolean(document.getElementById('preview-scroll-container')));
+    if (isInsideModal) return;
 
     // 하객용 실제 청첩장 화면에서만 스크롤 방지 & 최상단 고정
     if (typeof window !== 'undefined') {
@@ -56,7 +49,7 @@ export default function EnvelopeIntro({ invitation, onOpen, isInModal: propIsInM
     }
 
     return () => {
-      if (typeof window !== 'undefined' && !isInModal) {
+      if (typeof window !== 'undefined' && !isInsideModal) {
         document.body.style.overflow = '';
         document.documentElement.style.overflow = '';
         if ('scrollRestoration' in window.history) {

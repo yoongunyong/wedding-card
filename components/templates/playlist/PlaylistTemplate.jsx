@@ -12,6 +12,7 @@ import EditorialGuestbookDeleteModal from '../editorial/EditorialGuestbookDelete
 import EditorialGalleryModal from '../editorial/EditorialGalleryModal';
 import KakaoMap from '@/components/KakaoMap';
 import { supabase } from '@/lib/supabase';
+import { getSafeKakaoShareImageUrl } from '@/lib/kakaoShare';
 
 export default function PlaylistTemplate({ invitation }) {
   // 1. 모달 상태 (조건부 렌더링 철저 유지)
@@ -78,7 +79,7 @@ export default function PlaylistTemplate({ invitation }) {
   const brideName = invitation?.bride_name || '';
   const groomFirstEn = invitation?.groom_first_name_en || (invitation?.groom_name_en || '').split(' ')[0] || '';
   const brideFirstEn = invitation?.bride_first_name_en || (invitation?.bride_name_en || '').split(' ')[0] || '';
-  const coupleNamesEn = invitation?.main_names_en || [groomFirstEn, brideFirstEn].filter(Boolean).join(' & ');
+  const coupleNamesEn = invitation?.main_names_en || [groomFirstEn, brideFirstEn].filter(Boolean).join(' & ') || [groomName, brideName].filter(Boolean).join(' & ') || '';
 
   // 날짜 파싱 (실제 고객 청첩장에서는 미입력 시 날짜 섹션 미노출, 샘플 모드일 때만 예시 날짜 제공)
   const weddingDateStr = invitation?.wedding_date 
@@ -234,8 +235,72 @@ export default function PlaylistTemplate({ invitation }) {
     }
   };
 
+  // 카카오톡 공유
+  const handleKakaoShare = () => {
+    const isActive = invitation?.is_active ?? config?.is_active ?? true;
+    if (!isActive) {
+      alert('이 청첩장은 [체험용 미리보기] 모드입니다.\n정식 신청 및 활성화 완료 후 하객분들께 공유해 주세요.');
+      return;
+    }
+
+    if (typeof window === 'undefined') return;
+    const currentUrl = window.location.href;
+    const coupleKo = [groomName, brideName].filter(Boolean).join(' ♥ ');
+    const shareTitle = coupleNamesEn ? `${coupleNamesEn} 결혼합니다` : (coupleKo ? `${coupleKo} 결혼합니다` : '모바일 청첩장');
+    const shareDesc = [
+      invitation?.wedding_date,
+      [invitation?.venue_name, invitation?.venue_hall].filter(Boolean).join(' '),
+    ].filter(Boolean).join(' | ') || '소중한 분들을 초대합니다';
+
+    if (window.Kakao && window.Kakao.isInitialized()) {
+      const rawImg = images.cover || images.main || (isSample ? '/samples/main-03-playlist.jpg' : '');
+      const shareImageUrl = getSafeKakaoShareImageUrl(rawImg, 'playlist');
+
+      try {
+        window.Kakao.Share.sendDefault({
+          objectType: 'feed',
+          content: {
+            title: shareTitle,
+            description: shareDesc,
+            imageUrl: shareImageUrl,
+            link: {
+              mobileWebUrl: currentUrl,
+              webUrl: currentUrl,
+            },
+          },
+          buttons: [
+            {
+              title: '모바일 청첩장 보기',
+              link: {
+                mobileWebUrl: currentUrl,
+                webUrl: currentUrl,
+              },
+            },
+          ],
+        });
+        return;
+      } catch (err) {
+        console.warn('Kakao share error, fallback to copy:', err);
+      }
+    }
+
+    // Fallback: 클립보드 복사
+    handleCopy(currentUrl, '청첩장 링크');
+  };
+
   return (
     <div className="w-full max-w-[440px] min-h-screen bg-[#FBF9F5] text-[#222E26] font-sans mx-auto shadow-2xl relative overflow-hidden select-none">
+      {/* 카카오 SDK */}
+      <Script
+        src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"
+        strategy="afterInteractive"
+        onLoad={() => {
+          if (window.Kakao && !window.Kakao.isInitialized()) {
+            const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;
+            if (kakaoKey) window.Kakao.init(kakaoKey);
+          }
+        }}
+      />
       
       {/* 예식 당일 안내 데스크 (당일 자동 전환) */}
       <TodayConciergeCard invitation={invitation} />
@@ -971,6 +1036,31 @@ export default function PlaylistTemplate({ invitation }) {
               </div>
             </div>
           )}
+
+          {/* 공유 버튼 2종 (카카오톡 공유 & 링크 복사) */}
+          <div className="flex items-center justify-center gap-3 mt-8 mb-8 max-w-[320px] mx-auto">
+            <button
+              type="button"
+              onClick={handleKakaoShare}
+              className="flex-1 py-3 px-4 bg-[#FEE500] hover:bg-[#FADA0A] text-[#191919] text-xs font-medium rounded-full flex items-center justify-center gap-2 transition-transform active:scale-95 cursor-pointer shadow-xs"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="#191919">
+                <path d="M12 3C6.48 3 2 6.58 2 11c0 2.8 1.8 5.27 4.54 6.64l-.92 3.42c-.08.31.25.56.52.4l4.08-2.69c.58.08 1.17.13 1.78.13 5.52 0 10-3.58 10-8s-4.48-8-10-8z"/>
+              </svg>
+              <span>카카오톡 공유</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleCopy(typeof window !== 'undefined' ? window.location.href : '', '청첩장 링크')}
+              className="flex-1 py-3 px-4 bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 text-xs font-medium rounded-full flex items-center justify-center gap-2 transition-transform active:scale-95 cursor-pointer shadow-xs"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg>
+              <span>링크 복사</span>
+            </button>
+          </div>
 
           <p className="font-mono text-[10px] tracking-widest text-stone-400 uppercase">
             &copy; {year} {coupleNamesEn}. ALL RIGHTS RESERVED.

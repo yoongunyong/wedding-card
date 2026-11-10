@@ -3306,7 +3306,8 @@ function EditInvitationContent({ params }) {
             >
               <BgmPlayer
                 bgmUrl={previewInvitation.bgm_url}
-                hasIntro={previewInvitation?.template_config?.show_intro !== false}
+                hasIntro={['basic', 'editorial'].includes(previewInvitation?.template_type) && previewInvitation?.template_config?.show_intro !== false}
+                template={previewInvitation?.template_type}
               />
               {previewInvitation?.template_type === 'scene' ? (
                 <SceneTemplate invitation={previewInvitation} />

@@ -3269,7 +3269,7 @@ function EditInvitationContent({ params }) {
             onClick={(e) => e.stopPropagation()}
           >
             {/* 미리보기 상단 헤더 */}
-            <div className="py-2.5 px-3 sm:px-4 bg-stone-950 text-white flex items-center justify-between shrink-0 border-b border-stone-800 z-10 gap-2">
+            <div className="py-2.5 px-3 sm:px-4 bg-stone-950 text-white flex items-center justify-between shrink-0 border-b border-stone-800 relative z-[70] gap-2">
               <div className="hidden sm:flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
                 <span className="text-[11px] sm:text-xs font-mono tracking-wider sm:tracking-widest uppercase text-[#CBD5E1]">

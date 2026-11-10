@@ -6,6 +6,13 @@ import EditorialTitleTypewriter from './EditorialTitleTypewriter';
 export default function EditorialIntro({ invitation, onOpen }) {
   // 'idle' | 'darkening' | 'revealing'
   const [transitionStep, setTransitionStep] = useState('idle');
+  const [isInModal, setIsInModal] = useState(false);
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      setIsInModal(Boolean(document.getElementById('preview-scroll-container')));
+    }
+  }, []);
 
   const isSample = Boolean(invitation?.is_sample_preview || invitation?.slug === 'editorial');
 
@@ -115,7 +122,7 @@ export default function EditorialIntro({ invitation, onOpen }) {
     <>
       {/* 1. 에디토리얼 인트로 전체 컨테이너 */}
       <div
-        className={`fixed inset-0 z-50 flex flex-col justify-start items-center px-4 pt-[calc(env(safe-area-inset-top,0px)+2.5rem)] sm:pt-12 pb-8 select-none overflow-y-auto transition-opacity duration-300 ${
+        className={`${isInModal ? 'absolute inset-0 z-20' : 'fixed inset-0 z-50'} flex flex-col justify-start items-center px-4 pt-[calc(env(safe-area-inset-top,0px)+2.5rem)] sm:pt-12 pb-8 select-none overflow-y-auto transition-opacity duration-300 ${
           transitionStep === 'revealing' 
             ? 'hidden pointer-events-none' 
             : transitionStep === 'darkening'
@@ -125,7 +132,7 @@ export default function EditorialIntro({ invitation, onOpen }) {
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {/* 1-1. 백그라운드 텍스처 (피그마 원본 image 735 + rgba(0,0,0,0.49) 틴트) */}
-        <div className="fixed inset-0 pointer-events-none select-none overflow-hidden -z-10 bg-[#1c1c1c]">
+        <div className={`${isInModal ? 'absolute inset-0' : 'fixed inset-0'} pointer-events-none select-none overflow-hidden -z-10 bg-[#1c1c1c]`}>
           <img
             src={coverBgImage}
             alt="Editorial Background"
@@ -212,7 +219,7 @@ export default function EditorialIntro({ invitation, onOpen }) {
 
       {/* 2. 시네마틱 껌뻑(Blink / Fade to black) 암전 오버레이 */}
       <div
-        className={`fixed inset-0 z-[60] bg-black pointer-events-none transition-opacity ${
+        className={`${isInModal ? 'absolute inset-0 z-30' : 'fixed inset-0 z-[60]'} bg-black pointer-events-none transition-opacity ${
           transitionStep === 'darkening'
             ? 'opacity-100 duration-[800ms] ease-in-out'
             : transitionStep === 'revealing'

@@ -4373,7 +4373,7 @@ function CreateInvitationContent() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* 미리보기 상단 헤더 */}
-            <div className="py-2.5 px-3 sm:px-4 bg-stone-950 text-white flex items-center justify-between shrink-0 border-b border-stone-800 z-10 gap-2">
+            <div className="py-2.5 px-3 sm:px-4 bg-stone-950 text-white flex items-center justify-between shrink-0 border-b border-stone-800 relative z-[70] gap-2">
               <div className="flex items-center gap-1.5 shrink-0">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse hidden sm:inline-block" />
                 <span className="text-[10px] sm:text-xs font-mono tracking-wider uppercase text-[#CBD5E1] hidden sm:inline-block">
@@ -4429,7 +4429,7 @@ function CreateInvitationContent() {
               <>
                 {/* 미입력 시 스마트 샘플 Fallback 안내 띠배너 */}
                 {(!formData.groom_name.trim() || !formData.bride_name.trim() || !mainImagePreview || galleryPreviews.length === 0) && (
-                  <div className="py-2.5 px-4 bg-stone-900 text-amber-300 text-[11px] font-sans border-b border-stone-800 flex items-center justify-center text-center gap-1.5 shrink-0 select-none">
+                  <div className="py-2.5 px-4 bg-stone-900 text-amber-300 text-[11px] font-sans border-b border-stone-800 flex items-center justify-center text-center gap-1.5 shrink-0 select-none relative z-[65]">
                     <span>💡</span>
                     <span>아직 등록하지 않은 사진/항목은 <strong>예시 샘플</strong>로 표시되며, 실제 생성 시에는 직접 입력하신 내용만 깔끔하게 반영됩니다.</span>
                   </div>

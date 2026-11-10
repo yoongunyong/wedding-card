@@ -7,6 +7,13 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
   const [transitionStep, setTransitionStep] = useState('idle');
   const [isShaking, setIsShaking] = useState(false);
   const [declineMsg, setDeclineMsg] = useState('');
+  const [isInModal, setIsInModal] = useState(false);
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      setIsInModal(Boolean(document.getElementById('preview-scroll-container')));
+    }
+  }, []);
 
   // DB images.cover 최우선 매핑 (고객이 업로드한 대표 커버 사진)
   const rawCover = 
@@ -115,7 +122,7 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
     <>
       {/* 1. iOS 정통 AirDrop 오프닝 인트로 레이어 (스크롤 가능 및 반응형 핏) */}
       <div
-        className={`fixed inset-0 z-50 flex items-center justify-center p-4 select-none overflow-y-auto ${
+        className={`${isInModal ? 'absolute inset-0 z-20' : 'fixed inset-0 z-50'} flex items-center justify-center p-4 select-none overflow-y-auto ${
           transitionStep === 'revealing'
             ? 'hidden pointer-events-none'
             : transitionStep === 'darkening'
@@ -138,7 +145,7 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
         `}</style>
 
         {/* 원본 스크린샷 기반 시그니처 웜 브라운 아치 햇살 배경 (고정 레이어) */}
-        <div className="fixed inset-0 -z-10 bg-[#2D2018] overflow-hidden pointer-events-none">
+        <div className={`${isInModal ? 'absolute inset-0' : 'fixed inset-0'} -z-10 bg-[#2D2018] overflow-hidden pointer-events-none`}>
           {bgImage && (
             <img
               src={bgImage}
@@ -235,7 +242,7 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
 
       {/* 2. 시네마틱 페이드 암전 오버레이 */}
       <div
-        className={`fixed inset-0 z-[60] bg-black pointer-events-none transition-opacity ${
+        className={`${isInModal ? 'absolute inset-0 z-30' : 'fixed inset-0 z-[60]'} bg-black pointer-events-none transition-opacity ${
           transitionStep === 'darkening'
             ? 'opacity-100 duration-[700ms] ease-in-out'
             : transitionStep === 'revealing'

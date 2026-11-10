@@ -416,15 +416,33 @@ export default function BasicTemplate({ invitation }) {
   const groomShort = invitation?.groom_name && invitation.groom_name.length === 3 ? invitation.groom_name.slice(1) : (invitation?.groom_name || '');
   const brideShort = invitation?.bride_name && invitation.bride_name.length === 3 ? invitation.bride_name.slice(1) : (invitation?.bride_name || '');
 
-  // 클립보드 복사 함수
+  // 클립보드 복사 함수 (인앱 브라우저 / Safari 호환 textarea fallback 포함)
   const handleCopy = async (text, label) => {
     if (!text) return;
+    let ok = false;
     try {
-      await navigator.clipboard.writeText(text);
-      alert(`${label} 복사되었습니다.`);
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        ok = true;
+      } else {
+        throw new Error('Clipboard API unavailable');
+      }
     } catch {
-      alert('복사에 실패했습니다.');
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+      } catch {
+        ok = false;
+      }
     }
+    alert(ok ? `${label} 복사되었습니다.` : '복사에 실패했습니다. 번호를 직접 복사해 주세요.');
   };
 
   // 카카오톡 공유

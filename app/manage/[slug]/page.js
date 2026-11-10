@@ -131,8 +131,8 @@ function ManageRsvpContent({ params }) {
       return;
     }
 
-    if (pinInput === registeredPin) {
-      // 인증 성공
+    if (String(pinInput).trim() === String(registeredPin).trim()) {
+      // 인증 성공 (타입 안전 대조)
       setPinError('');
       if (typeof window !== 'undefined') {
         sessionStorage.setItem(`manage_auth_${slug}`, token);
@@ -349,7 +349,7 @@ function ManageRsvpContent({ params }) {
       r.attend ? (r.companion_count || 0) + 1 : '-',
       r.attend ? (r.meal || '-') : '-',
       r.attend ? (r.bus || '-') : '-',
-      new Date(r.created_at).toLocaleString('ko-KR'),
+      r.created_at ? new Date(r.created_at).toLocaleString('ko-KR') : '-',
     ]);
 
     const escapeCsv = (val) => `"${String(val ?? '').replace(/"/g, '""')}"`;
@@ -365,6 +365,9 @@ function ManageRsvpContent({ params }) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 1500);
   };
 
   // 관리자 RSVP 참석 정보 삭제

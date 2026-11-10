@@ -97,6 +97,7 @@ export default function BasicTemplate({ invitation }) {
   const extra = { ...(invitation?.template_config || {}), ...(invitation?.extra_data || {}) };
 
   const isSample = Boolean(invitation?.is_sample_preview || invitation?.slug === 'basic');
+  const isModalPreview = Boolean(invitation?.is_modal_preview);
 
   // 섹션별 ON/OFF 제어
   const showIntroSection = config.show_intro !== false;
@@ -150,15 +151,38 @@ export default function BasicTemplate({ invitation }) {
     return [];
   }, [invitation?.gallery_images]);
 
-  // 브라우저 새로고침 시 캐시된 스크롤 복원 방지 & 최상단 리셋
+  // 브라우저 새로고침 시 캐시된 스크롤 복원 방지 & 최상단 리셋 (모달 미리보기 중에는 부모 스크롤 방해 금지)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && !isModalPreview) {
       if ('scrollRestoration' in window.history) {
         window.history.scrollRestoration = 'manual';
       }
       window.scrollTo(0, 0);
     }
-  }, []);
+  }, [isModalPreview]);
+
+  // 모달 미리보기 중 인트로 활성화 시 모달 스크롤 컨테이너를 잠그고(수락 전 본문 노출 방지), 수락 시 스크롤 복원
+  useEffect(() => {
+    if (isModalPreview && typeof document !== 'undefined') {
+      const container = document.getElementById('preview-scroll-container');
+      if (container) {
+        if (showIntro && showIntroSection) {
+          container.style.overflowY = 'hidden';
+          container.scrollTop = 0;
+        } else {
+          container.style.overflowY = 'auto';
+        }
+      }
+    }
+    return () => {
+      if (isModalPreview && typeof document !== 'undefined') {
+        const container = document.getElementById('preview-scroll-container');
+        if (container) {
+          container.style.overflowY = 'auto';
+        }
+      }
+    };
+  }, [isModalPreview, showIntro, showIntroSection]);
 
   // 날짜 및 시간 계산
   const weddingDateStr = invitation?.wedding_date;
@@ -514,7 +538,13 @@ export default function BasicTemplate({ invitation }) {
   };
 
   return (
-    <div className="w-full max-w-[430px] bg-white text-[#191919] min-h-screen flex flex-col font-sans antialiased selection:bg-stone-300 relative mx-auto shadow-2xl">
+    <div 
+      className={`w-full max-w-[430px] bg-white text-[#191919] flex flex-col font-sans antialiased selection:bg-stone-300 relative mx-auto shadow-2xl ${
+        isModalPreview && showIntro && showIntroSection
+          ? 'h-full max-h-full overflow-hidden'
+          : 'min-h-screen'
+      }`}
+    >
       {/* 카카오 SDK */}
       <Script
         src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"
@@ -567,15 +597,20 @@ export default function BasicTemplate({ invitation }) {
       {showIntro && showIntroSection && (
         <EnvelopeIntro 
           invitation={invitation} 
+          isInModal={isModalPreview}
           onOpen={() => {
             setShowIntro(false);
           }} 
         />
       )}
 
-      {/* 1. [시안 1 유지] 메인 풀스크린 커버 사진 (Image 1 - Figma 고딕 계열 390x693 1:1) */}
+      {/* 본문 콘텐츠: 모달 미리보기 중 인트로 활성화 시에는 노출 및 높이 차지 방지 */}
+      <div className={isModalPreview && showIntro && showIntroSection ? 'hidden' : 'contents'}>
+        {/* 1. [시안 1 유지] 메인 풀스크린 커버 사진 (Image 1 - Figma 고딕 계열 390x693 1:1) */}
       <section 
-        className="relative w-full h-[100lvh] min-h-[100vh] flex flex-col justify-between bg-cover bg-center select-none"
+        className={`relative w-full ${
+          isModalPreview ? 'h-[640px] min-h-[560px]' : 'h-[100lvh] min-h-[100vh]'
+        } flex flex-col justify-between bg-cover bg-center select-none`}
         style={{ backgroundImage: `url(${mainImage})` }}
       >
         {/* 그라데이션 오버레이 */}
@@ -584,7 +619,7 @@ export default function BasicTemplate({ invitation }) {
         {!hasBakedInText && (
           <>
             {/* 상단: We are getting married (Bodoni 72 Book Italic 40px) & 날짜 */}
-            <div className="relative z-10 pt-[calc(env(safe-area-inset-top,0px)+3.8rem)] sm:pt-16 px-6 text-center">
+            <div className={`relative z-10 ${isModalPreview ? 'pt-12' : 'pt-[calc(env(safe-area-inset-top,0px)+3.8rem)] sm:pt-16'} px-6 text-center`}>
               <BasicTitleTypewriter
                 text="We are getting married"
                 titleColor={titleColor}
@@ -602,7 +637,7 @@ export default function BasicTemplate({ invitation }) {
             </div>
 
             {/* 하단: Welcome to & 신랑 신부 영문 이름 */}
-            <div className="relative z-10 pb-[calc(env(safe-area-inset-bottom,0px)+3.8rem)] sm:pb-16 px-6 text-center">
+            <div className={`relative z-10 ${isModalPreview ? 'pb-12' : 'pb-[calc(env(safe-area-inset-bottom,0px)+3.8rem)] sm:pb-16'} px-6 text-center`}>
               <p 
                 className="font-sans font-light text-[21px] sm:text-[23px] tracking-normal drop-shadow-[0_2px_8px_rgba(0,0,0,0.55)] leading-tight"
                 style={{ color: titleColor }}
@@ -1827,8 +1862,7 @@ export default function BasicTemplate({ invitation }) {
           </p>
         </ScrollReveal>
       </section>
-
-      
+      </div>
 
       {/* 프리미엄 에디토리얼 모달 일체 */}
       {showContactModal && (

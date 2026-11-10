@@ -2,18 +2,20 @@
 
 import { useState, useEffect } from 'react';
 
-export default function EnvelopeIntro({ invitation, onOpen }) {
+export default function EnvelopeIntro({ invitation, onOpen, isInModal: propIsInModal }) {
   // 'idle' | 'darkening' | 'revealing'
   const [transitionStep, setTransitionStep] = useState('idle');
   const [isShaking, setIsShaking] = useState(false);
   const [declineMsg, setDeclineMsg] = useState('');
-  const [isInModal, setIsInModal] = useState(false);
+  const [domInModal, setDomInModal] = useState(false);
 
   useEffect(() => {
     if (typeof document !== 'undefined') {
-      setIsInModal(Boolean(document.getElementById('preview-scroll-container')));
+      setDomInModal(Boolean(document.getElementById('preview-scroll-container')));
     }
   }, []);
+
+  const isInModal = propIsInModal ?? Boolean(invitation?.is_modal_preview) ?? domInModal;
 
   // DB images.cover 최우선 매핑 (고객이 업로드한 대표 커버 사진)
   const rawCover = 
@@ -40,7 +42,10 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
   const bgImage = invitation?.extra_data?.bg_image || (!isInvalidCover ? rawCover : (isSample ? '/airdrop-bg.jpg' : ''));
 
   useEffect(() => {
-    // 인트로 표시 중 스크롤 방지 & 최상단 고정
+    // 모달 미리보기 중에는 부모 페이지의 전체 창 스크롤 및 overflow를 방해하지 않음
+    if (isInModal) return;
+
+    // 하객용 실제 청첩장 화면에서만 스크롤 방지 & 최상단 고정
     if (typeof window !== 'undefined') {
       if ('scrollRestoration' in window.history) {
         window.history.scrollRestoration = 'manual';
@@ -51,7 +56,7 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
     }
 
     return () => {
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && !isInModal) {
         document.body.style.overflow = '';
         document.documentElement.style.overflow = '';
         if ('scrollRestoration' in window.history) {
@@ -59,7 +64,7 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
         }
       }
     };
-  }, []);
+  }, [isInModal]);
 
   // 거절 클릭 시 위트 있는 셰이크 애니메이션 & 안내 토스트
   const handleDecline = (e) => {
@@ -122,7 +127,9 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
     <>
       {/* 1. iOS 정통 AirDrop 오프닝 인트로 레이어 (스크롤 가능 및 반응형 핏) */}
       <div
-        className={`${isInModal ? 'absolute inset-0 z-20' : 'fixed inset-0 z-50'} flex items-center justify-center p-4 select-none overflow-y-auto ${
+        className={`${
+          isInModal ? 'absolute inset-0 z-20 w-full h-full min-h-full' : 'fixed inset-0 z-50'
+        } flex items-center justify-center p-4 select-none overflow-y-auto ${
           transitionStep === 'revealing'
             ? 'hidden pointer-events-none'
             : transitionStep === 'darkening'
@@ -242,7 +249,9 @@ export default function EnvelopeIntro({ invitation, onOpen }) {
 
       {/* 2. 시네마틱 페이드 암전 오버레이 */}
       <div
-        className={`${isInModal ? 'absolute inset-0 z-30' : 'fixed inset-0 z-[60]'} bg-black pointer-events-none transition-opacity ${
+        className={`${
+          isInModal ? 'absolute inset-0 z-30 w-full h-full' : 'fixed inset-0 z-[60]'
+        } bg-black pointer-events-none transition-opacity ${
           transitionStep === 'darkening'
             ? 'opacity-100 duration-[700ms] ease-in-out'
             : transitionStep === 'revealing'

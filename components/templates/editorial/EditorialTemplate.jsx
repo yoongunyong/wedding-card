@@ -136,6 +136,31 @@ export default function EditorialTemplate({ invitation }) {
     return [];
   }, [invitation?.gallery_images]);
 
+  const isModalPreview = Boolean(invitation?.is_modal_preview);
+
+  // 모달 미리보기 중 인트로 활성화 시 모달 스크롤 컨테이너를 잠그고(수락 전 본문 노출 방지), 수락 시 스크롤 복원
+  useEffect(() => {
+    if (isModalPreview && typeof document !== 'undefined') {
+      const container = document.getElementById('preview-scroll-container');
+      if (container) {
+        if (showIntro && showIntroSection) {
+          container.style.overflowY = 'hidden';
+          container.scrollTop = 0;
+        } else {
+          container.style.overflowY = 'auto';
+        }
+      }
+    }
+    return () => {
+      if (isModalPreview && typeof document !== 'undefined') {
+        const container = document.getElementById('preview-scroll-container');
+        if (container) {
+          container.style.overflowY = 'auto';
+        }
+      }
+    };
+  }, [isModalPreview, showIntro, showIntroSection]);
+
   // 날짜 계산
   const weddingDateStr = invitation?.wedding_date;
   const hasWeddingDate = Boolean(weddingDateStr);
@@ -494,7 +519,13 @@ export default function EditorialTemplate({ invitation }) {
   };
 
   return (
-    <div className="w-full max-w-[430px] bg-white text-[#191919] min-h-screen flex flex-col font-sans antialiased selection:bg-stone-300 relative mx-auto shadow-2xl">
+    <div 
+      className={`w-full max-w-[430px] bg-white text-[#191919] flex flex-col font-sans antialiased selection:bg-stone-300 relative mx-auto shadow-2xl ${
+        isModalPreview && showIntro && showIntroSection
+          ? 'h-full max-h-full overflow-hidden'
+          : 'min-h-screen'
+      }`}
+    >
       {/* 카카오 SDK */}
       <Script
         src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"
@@ -547,13 +578,16 @@ export default function EditorialTemplate({ invitation }) {
       {showIntro && showIntroSection && (
         <EditorialIntro
           invitation={invitation}
+          isInModal={isModalPreview}
           onOpen={() => {
             setShowIntro(false);
           }}
         />
       )}
 
-      {/* 1. 에디토리얼 본문 첫 화면 (Figma 프레임 390 / 섹션1 780x1386 -> 1x 390x693 1:1 정밀 매칭) */}
+      {/* 본문 콘텐츠: 모달 미리보기 중 인트로 활성화 시에는 노출 및 높이 차지 방지 */}
+      <div className={isModalPreview && showIntro && showIntroSection ? 'hidden' : 'contents'}>
+        {/* 1. 에디토리얼 본문 첫 화면 (Figma 프레임 390 / 섹션1 780x1386 -> 1x 390x693 1:1 정밀 매칭) */}
       <section className="relative w-full flex flex-col items-center justify-start bg-[#FEFEFE] px-6 sm:px-7 pt-[28.5px] pb-[2px] select-none overflow-hidden">
         
         {/* 상단: 대표 화보 사진 (Figma image 736: 666x830 -> 1x 333x415, aspect-[666/830], top 57px -> 28.5px) */}
@@ -1848,8 +1882,7 @@ export default function EditorialTemplate({ invitation }) {
           </p>
         </ScrollReveal>
       </section>
-
-      
+      </div>
 
       {/* 시안 2 전용 에디토리얼 팝업 모달 */}
       {showContactModal && (

@@ -198,7 +198,7 @@ function CreateInvitationContent() {
     quote_source: QUOTE_PRESETS[0].source,
 
     bgm_url: BGM_OPTIONS[0].url,
-    title_color: '#3B82F6',
+    title_color: '#ffbe68',
 
     show_intro: true,
     show_countdown: true,
@@ -1008,6 +1008,7 @@ function CreateInvitationContent() {
           ? 'custom'
           : 'none',
       template_type: formData.template_type || 'editorial',
+      is_modal_preview: true,
     };
   }, [
     formData,
@@ -1723,22 +1724,22 @@ function CreateInvitationContent() {
           </div>
 
           {/* 디얼디어 & 토스 감성의 슬릭 5단계 스텝퍼 네비게이션 */}
-          <div className="sticky top-2 z-40 mb-8 bg-white/95 backdrop-blur-md py-3.5 px-3 sm:px-5 rounded-2xl border border-[#E5E8EB] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+          <div className="sticky top-[53px] sm:top-[57px] z-40 mb-8 bg-white/95 backdrop-blur-md py-3.5 px-3 sm:px-5 rounded-2xl border border-[#E5E8EB] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
             {/* 상단 스텝 라벨 & 진행률 게이지 바 */}
             <div className="flex items-center justify-between mb-2 px-0.5">
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-mono tracking-wider text-[#3182F6] font-bold uppercase">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-[11px] font-mono tracking-wider text-[#3182F6] font-bold uppercase shrink-0">
                   STEP 0{currentStep} / 05
                 </span>
-                <span className="text-xs font-semibold text-[#191F28]">
-                  {currentStep === 1 && '기본 정보 (시안 · 신랑신부 · 예식일시)'}
-                  {currentStep === 2 && '모시는 글 (초대 인사말 · 감성 글귀)'}
-                  {currentStep === 3 && '갤러리 & BGM (웨딩 사진 · 배경음악)'}
-                  {currentStep === 4 && '편의 안내 & 계좌 (축의금 · 교통 · 안내)'}
-                  {currentStep === 5 && '완성 & 보안 설정 (2차 PIN · URL 생성)'}
+                <span className="text-xs font-semibold text-[#191F28] truncate">
+                  {currentStep === 1 && (<>기본 정보<span className="hidden sm:inline text-[#8B95A1] font-normal"> (시안 · 신랑신부 · 예식일시)</span></>)}
+                  {currentStep === 2 && (<>모시는 글<span className="hidden sm:inline text-[#8B95A1] font-normal"> (초대 인사말 · 감성 글귀)</span></>)}
+                  {currentStep === 3 && (<>갤러리 & BGM<span className="hidden sm:inline text-[#8B95A1] font-normal"> (웨딩 사진 · 배경음악)</span></>)}
+                  {currentStep === 4 && (<>편의 안내 & 계좌<span className="hidden sm:inline text-[#8B95A1] font-normal"> (축의금 · 교통 · 안내)</span></>)}
+                  {currentStep === 5 && (<>완성 & 보안 설정<span className="hidden sm:inline text-[#8B95A1] font-normal"> (2차 PIN · URL 생성)</span></>)}
                 </span>
               </div>
-              <span className="text-[11px] font-mono font-bold text-[#3182F6]">
+              <span className="text-[11px] font-mono font-bold text-[#3182F6] shrink-0 ml-2">
                 {Math.round((currentStep / 5) * 100)}%
               </span>
             </div>
@@ -1794,8 +1795,8 @@ function CreateInvitationContent() {
           {/* STEP 1: 기본 정보 (시안 선택 + 신랑&신부 + 예식일시) */}
           <div className={currentStep === 1 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
             {/* 00. 디자인 템플릿 선택 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">00</span>
                 <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
@@ -1805,7 +1806,7 @@ function CreateInvitationContent() {
                   DESIGN TEMPLATE
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1 bg-sky-50 text-sky-700 border border-[#CBD0D6] rounded-full text-xs font-medium shadow-2xs">
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-sky-50 text-sky-700 border border-[#CBD0D6] rounded-full text-xs font-medium shadow-2xs self-start sm:self-auto">
                 <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
                 <span>
                   {formData.template_type === 'basic' ? 'OPTION 01 · 모던 클래식' :
@@ -1957,7 +1958,7 @@ function CreateInvitationContent() {
 
           
             {/* 01. 신랑 & 신부 정보 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">01</span>
@@ -1972,14 +1973,14 @@ function CreateInvitationContent() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
               {/* 신랑 */}
-              <div className="p-5 bg-white rounded-2xl border border-[#E5E8EB] space-y-4">
+              <div className="p-3.5 sm:p-5 bg-white rounded-2xl border border-[#E5E8EB] space-y-4">
                 <div className="flex items-center justify-between pb-2 border-b border-[#F1F5F9]">
                   <span className="text-[11px] font-mono tracking-widest uppercase font-semibold text-[#334155] bg-[#F1F5F9]/60 px-2.5 py-0.5 rounded-full">
                     GROOM · 신랑측
                   </span>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-[#334155] mb-1.5">한글 성함 *</label>
                     <input
@@ -2005,7 +2006,7 @@ function CreateInvitationContent() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-[#334155] mb-1.5">영문 이름 (First Name)</label>
                     <input
@@ -2081,7 +2082,7 @@ function CreateInvitationContent() {
                   </span>
                   
                   {/* 아버지 */}
-                  <div className="grid grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
                         <label className="text-xs font-medium text-[#475569]">아버지 성함</label>
@@ -2119,7 +2120,7 @@ function CreateInvitationContent() {
                   </div>
 
                   {/* 어머니 */}
-                  <div className="grid grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
                         <label className="text-xs font-medium text-[#475569]">어머니 성함</label>
@@ -2159,14 +2160,14 @@ function CreateInvitationContent() {
               </div>
 
               {/* 신부 */}
-              <div className="p-5 bg-white rounded-2xl border border-[#E5E8EB] space-y-4">
+              <div className="p-3.5 sm:p-5 bg-white rounded-2xl border border-[#E5E8EB] space-y-4">
                 <div className="flex items-center justify-between pb-2 border-b border-[#F1F5F9]">
                   <span className="text-[11px] font-mono tracking-widest uppercase font-semibold text-[#334155] bg-[#F1F5F9]/60 px-2.5 py-0.5 rounded-full">
                     BRIDE · 신부측
                   </span>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-[#334155] mb-1.5">한글 성함 *</label>
                     <input
@@ -2192,7 +2193,7 @@ function CreateInvitationContent() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-[#334155] mb-1.5">영문 이름 (First Name)</label>
                     <input
@@ -2268,7 +2269,7 @@ function CreateInvitationContent() {
                   </span>
                   
                   {/* 아버지 */}
-                  <div className="grid grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
                         <label className="text-xs font-medium text-[#475569]">아버지 성함</label>
@@ -2306,7 +2307,7 @@ function CreateInvitationContent() {
                   </div>
 
                   {/* 어머니 */}
-                  <div className="grid grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
                         <label className="text-xs font-medium text-[#475569]">어머니 성함</label>
@@ -2363,23 +2364,23 @@ function CreateInvitationContent() {
                     혼주 성함 앞에 표시될 방식을 선택해 주세요. (한자 故 또는 단아한 국화꽃 심볼)
                   </p>
                 </div>
-                <div className="inline-flex p-1 bg-stone-100/80 rounded-xl border border-stone-200 shrink-0 self-start sm:self-auto shadow-2xs">
+                <div className="grid grid-cols-2 sm:flex p-1 bg-stone-100/80 rounded-xl border border-stone-200 shrink-0 w-full sm:w-auto shadow-2xs">
                   <button
                     type="button"
                     onClick={() => setFormData((prev) => ({ ...prev, deceased_marker: 'hanja' }))}
-                    className={`px-3.5 py-1.5 text-xs rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                    className={`px-3.5 py-1.5 text-xs rounded-lg font-medium transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                       (formData.deceased_marker || 'hanja') === 'hanja'
                         ? 'bg-stone-900 text-white shadow-xs'
                         : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50'
                     }`}
                   >
                     <span className="font-serif font-bold text-[13px]">故</span>
-                    <span>한자 '故'</span>
+                    <span>한자 &apos;故&apos;</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setFormData((prev) => ({ ...prev, deceased_marker: 'flower' }))}
-                    className={`px-3.5 py-1.5 text-xs rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                    className={`px-3.5 py-1.5 text-xs rounded-lg font-medium transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                       formData.deceased_marker === 'flower'
                         ? 'bg-stone-900 text-white shadow-xs'
                         : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50'
@@ -2422,7 +2423,7 @@ function CreateInvitationContent() {
 
           
             {/* 02. 예식 일시 및 웨딩홀 위치 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">02</span>
@@ -2435,7 +2436,7 @@ function CreateInvitationContent() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 mb-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
               <div>
                 <label className="block text-xs font-medium text-[#334155] mb-1.5">예식 날짜 *</label>
                 <input
@@ -2524,7 +2525,7 @@ function CreateInvitationContent() {
               <button
                 type="button"
                 onClick={openPreviewModal}
-                className="py-3.5 px-4 bg-[#FFFFFF] hover:bg-[#F1F5F9] text-[#334155] border border-[#CBD5E1] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                className="py-3.5 px-3.5 sm:px-4 bg-[#FFFFFF] hover:bg-[#F1F5F9] text-[#334155] border border-[#CBD5E1] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs whitespace-nowrap"
               >
                 <span>👁️</span>
                 <span>실시간 미리보기</span>
@@ -2533,9 +2534,10 @@ function CreateInvitationContent() {
               <button
                 type="button"
                 onClick={() => handleNextStepWithValidation(1)}
-                className="flex-1 max-w-xs py-3.5 px-5 bg-[#191F28] hover:bg-black active:scale-98 text-white rounded-xl text-xs sm:text-sm font-medium tracking-wide transition-all shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap ml-auto"
+                className="flex-1 max-w-xs py-3.5 px-4 sm:px-5 bg-[#191F28] hover:bg-black active:scale-98 text-white rounded-xl text-xs sm:text-sm font-medium tracking-wide transition-all shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap ml-auto"
               >
-                <span>다음 단계 (모시는 글)</span>
+                <span>다음 단계</span>
+                <span className="hidden sm:inline">(모시는 글)</span>
                 <span className="font-mono text-xs">→</span>
               </button>
             </div>
@@ -2544,7 +2546,7 @@ function CreateInvitationContent() {
           {/* STEP 2: 모시는 글 & 스토리 (인사말 + 감성 글귀) */}
           <div className={currentStep === 2 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
             {/* 03. 모시는 글 (초대 인사말) */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">03</span>
@@ -2608,7 +2610,7 @@ function CreateInvitationContent() {
 
           {/* 시안 5 (모던 씬) 전용: 신랑 & 신부 인터뷰 (우리의 이야기) */}
           {formData.template_type === 'scene' && (
-            <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
               <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
                 <div className="flex items-baseline gap-2.5">
                   <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">03-1</span>
@@ -2775,7 +2777,7 @@ function CreateInvitationContent() {
 
           
             {/* 05. 감성 글귀 및 영화 대사 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">05</span>
@@ -2857,7 +2859,7 @@ function CreateInvitationContent() {
               <button
                 type="button"
                 onClick={() => handleStepChange(1)}
-                className="py-3.5 px-4 bg-white hover:bg-sky-50 text-sky-700 border border-[#CBD0D6] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                className="py-3.5 px-3.5 sm:px-4 bg-white hover:bg-sky-50 text-sky-700 border border-[#CBD0D6] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs whitespace-nowrap"
               >
                 <span className="font-mono text-xs">←</span>
                 <span>이전 단계</span>
@@ -2866,7 +2868,7 @@ function CreateInvitationContent() {
               <button
                 type="button"
                 onClick={openPreviewModal}
-                className="py-3.5 px-4 bg-[#FFFFFF] hover:bg-[#F1F5F9] text-[#334155] border border-[#CBD5E1] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer hidden sm:flex items-center gap-1.5 shadow-2xs"
+                className="py-3.5 px-3.5 sm:px-4 bg-[#FFFFFF] hover:bg-[#F1F5F9] text-[#334155] border border-[#CBD5E1] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs whitespace-nowrap"
               >
                 <span>👁️</span>
                 <span>실시간 미리보기</span>
@@ -2875,9 +2877,10 @@ function CreateInvitationContent() {
               <button
                 type="button"
                 onClick={() => handleNextStepWithValidation(2)}
-                className="flex-1 max-w-xs py-3.5 px-5 bg-[#191F28] hover:bg-black active:scale-98 text-white rounded-xl text-xs sm:text-sm font-medium tracking-wide transition-all shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap"
+                className="flex-1 max-w-xs py-3.5 px-4 sm:px-5 bg-[#191F28] hover:bg-black active:scale-98 text-white rounded-xl text-xs sm:text-sm font-medium tracking-wide transition-all shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap"
               >
-                <span>다음 단계 (사진 & BGM)</span>
+                <span>다음 단계</span>
+                <span className="hidden sm:inline">(사진 & BGM)</span>
                 <span className="font-mono text-xs">→</span>
               </button>
             </div>
@@ -2886,7 +2889,7 @@ function CreateInvitationContent() {
           {/* STEP 3: 갤러리 & 배경음악 (웨딩 사진 + BGM) */}
           <div className={currentStep === 3 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
             {/* 04. 웨딩 사진 등록 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">04</span>
@@ -3444,7 +3447,7 @@ function CreateInvitationContent() {
 
           
             {/* 09. 배경음악 및 디자인 설정 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">09</span>
@@ -3639,10 +3642,18 @@ function CreateInvitationContent() {
 
               {/* 커버 글자 색상 선택 */}
               <div className="pt-2">
-                <label className="block text-xs font-semibold text-[#1E293B] mb-2">메인 커버 타이포 컬러</label>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <label className="block text-xs font-semibold text-[#1E293B]">메인 커버 타이포 컬러</label>
+                  <span className="text-[10px] font-mono bg-stone-900 text-white px-2 py-0.5 rounded-full font-semibold">
+                    시안 1 전용
+                  </span>
+                </div>
+                <p className="text-[11px] text-[#64748B] mb-2.5 font-light">
+                  시안 1(모던 클래식) 풀스크린 커버 사진 위의 영문 타이틀 텍스트 색상입니다.
+                </p>
                 <div className="flex flex-wrap gap-2.5">
                   {[
-                    { label: '골드', color: '#3B82F6' },
+                    { label: '골드', color: '#ffbe68' },
                     { label: '로즈골드', color: '#D48B8B' },
                     { label: '화이트', color: '#FFFFFF' },
                     { label: '차콜 블랙', color: '#1C1917' },
@@ -3667,7 +3678,7 @@ function CreateInvitationContent() {
               {/* 섹션별 토글 스위치 */}
               <div className="pt-4 border-t border-[#F1F5F9]">
                 <span className="text-xs font-semibold text-[#1E293B] block mb-3">청첩장 주요 기능 노출 여부</span>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs text-[#334155]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 text-xs text-[#334155]">
                   <label className="flex items-center gap-2.5 cursor-pointer p-3 bg-white hover:bg-[#F1F5F9]/70 border border-[#F1F5F9] rounded-xl transition-colors select-none">
                     <input
                       type="checkbox"
@@ -3782,7 +3793,7 @@ function CreateInvitationContent() {
               <button
                 type="button"
                 onClick={() => handleStepChange(2)}
-                className="py-3.5 px-4 bg-white hover:bg-sky-50 text-sky-700 border border-[#CBD0D6] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                className="py-3.5 px-3.5 sm:px-4 bg-white hover:bg-sky-50 text-sky-700 border border-[#CBD0D6] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs whitespace-nowrap"
               >
                 <span className="font-mono text-xs">←</span>
                 <span>이전 단계</span>
@@ -3791,7 +3802,7 @@ function CreateInvitationContent() {
               <button
                 type="button"
                 onClick={openPreviewModal}
-                className="py-3.5 px-4 bg-[#FFFFFF] hover:bg-[#F1F5F9] text-[#334155] border border-[#CBD5E1] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer hidden sm:flex items-center gap-1.5 shadow-2xs"
+                className="py-3.5 px-3.5 sm:px-4 bg-[#FFFFFF] hover:bg-[#F1F5F9] text-[#334155] border border-[#CBD5E1] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs whitespace-nowrap"
               >
                 <span>👁️</span>
                 <span>실시간 미리보기</span>
@@ -3800,9 +3811,10 @@ function CreateInvitationContent() {
               <button
                 type="button"
                 onClick={() => handleNextStepWithValidation(3)}
-                className="flex-1 max-w-xs py-3.5 px-5 bg-[#191F28] hover:bg-black active:scale-98 text-white rounded-xl text-xs sm:text-sm font-medium tracking-wide transition-all shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap"
+                className="flex-1 max-w-xs py-3.5 px-4 sm:px-5 bg-[#191F28] hover:bg-black active:scale-98 text-white rounded-xl text-xs sm:text-sm font-medium tracking-wide transition-all shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap"
               >
-                <span>다음 단계 (편의 안내)</span>
+                <span>다음 단계</span>
+                <span className="hidden sm:inline">(편의 안내)</span>
                 <span className="font-mono text-xs">→</span>
               </button>
             </div>
@@ -3811,7 +3823,7 @@ function CreateInvitationContent() {
           {/* STEP 4: 편의 안내 & 계좌 (축의금 + 교통 + 카드) */}
           <div className={currentStep === 4 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
             {/* 06. 축의금 계좌번호 (다중 계좌 등록) */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">06</span>
@@ -3826,7 +3838,7 @@ function CreateInvitationContent() {
 
             <div className="space-y-6">
               {/* 신랑측 계좌 리스트 */}
-              <div className="p-5 bg-white rounded-2xl border border-[#E5E8EB] space-y-4">
+              <div className="p-3.5 sm:p-5 bg-white rounded-2xl border border-[#E5E8EB] space-y-4">
                 <div className="flex items-center justify-between pb-2 border-b border-[#F1F5F9]">
                   <span className="text-[11px] font-mono tracking-widest uppercase font-semibold text-[#334155] bg-[#F1F5F9]/60 px-2.5 py-0.5 rounded-full">
                     GROOM&apos;S ACCOUNT · 신랑측 계좌
@@ -3851,7 +3863,7 @@ function CreateInvitationContent() {
                         ✕ 삭제
                       </button>
                     )}
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       <div>
                         <label className="block text-xs font-medium text-[#334155] mb-1">구분 호칭</label>
                         <input
@@ -3875,8 +3887,8 @@ function CreateInvitationContent() {
                         </select>
                       </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="col-span-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                      <div className="sm:col-span-2">
                         <label className="block text-xs font-medium text-[#334155] mb-1">계좌번호</label>
                         <input
                           type="text"
@@ -3902,7 +3914,7 @@ function CreateInvitationContent() {
               </div>
 
               {/* 신부측 계좌 리스트 */}
-              <div className="p-5 bg-white rounded-2xl border border-[#E5E8EB] space-y-4">
+              <div className="p-3.5 sm:p-5 bg-white rounded-2xl border border-[#E5E8EB] space-y-4">
                 <div className="flex items-center justify-between pb-2 border-b border-[#F1F5F9]">
                   <span className="text-[11px] font-mono tracking-widest uppercase font-semibold text-[#334155] bg-[#F1F5F9]/60 px-2.5 py-0.5 rounded-full">
                     BRIDE&apos;S ACCOUNT · 신부측 계좌
@@ -3927,7 +3939,7 @@ function CreateInvitationContent() {
                         ✕ 삭제
                       </button>
                     )}
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       <div>
                         <label className="block text-xs font-medium text-[#334155] mb-1">구분 호칭</label>
                         <input
@@ -3951,8 +3963,8 @@ function CreateInvitationContent() {
                         </select>
                       </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="col-span-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                      <div className="sm:col-span-2">
                         <label className="block text-xs font-medium text-[#334155] mb-1">계좌번호</label>
                         <input
                           type="text"
@@ -3981,7 +3993,7 @@ function CreateInvitationContent() {
 
           
             {/* 07. 오시는 길 (교통편 안내) */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">07</span>
@@ -4004,12 +4016,12 @@ function CreateInvitationContent() {
             <div className="space-y-4">
               {transportationList.map((item, idx) => (
                 <div key={idx} className="p-4 bg-white rounded-2xl border border-[#E5E8EB] relative space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
+                  <div className="flex items-start sm:items-center justify-between gap-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 flex-1 min-w-0">
                       <select
                         value={item.type}
                         onChange={(e) => updateTransportation(idx, 'type', e.target.value)}
-                        className="px-3 py-1.5 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#1E293B] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-medium"
+                        className="px-3 py-1.5 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#1E293B] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-medium w-full sm:w-auto"
                       >
                         <option value="subway">지하철</option>
                         <option value="bus">버스</option>
@@ -4021,13 +4033,13 @@ function CreateInvitationContent() {
                         value={item.title}
                         onChange={(e) => updateTransportation(idx, 'title', e.target.value)}
                         placeholder="교통편 구분명 (예: 지하철)"
-                        className="px-3 py-1.5 bg-white border border-[#E5E8EB] rounded-xl text-xs sm:text-sm text-[#0F172A] placeholder:text-[#CBD5E1] font-semibold focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
+                        className="px-3 py-1.5 bg-white border border-[#E5E8EB] rounded-xl text-xs sm:text-sm text-[#0F172A] placeholder:text-[#CBD5E1] font-semibold focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 w-full sm:flex-1"
                       />
                     </div>
                     <button
                       type="button"
                       onClick={() => removeTransportation(idx)}
-                      className="text-[#94A3B8] hover:text-rose-500 text-xs cursor-pointer transition-colors"
+                      className="text-[#94A3B8] hover:text-rose-500 text-xs cursor-pointer transition-colors pt-1.5 sm:pt-0 shrink-0"
                     >
                       ✕ 삭제
                     </button>
@@ -4045,8 +4057,9 @@ function CreateInvitationContent() {
           </div>
 
           
+
             {/* 08. 안내 정보 (INFORMATION 카드) */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">08</span>
@@ -4069,8 +4082,8 @@ function CreateInvitationContent() {
             <div className="space-y-4">
               {infoCards.map((card, idx) => (
                 <div key={idx} className="p-4 bg-white rounded-2xl border border-[#E5E8EB] relative space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="grid grid-cols-2 gap-2.5 flex-1 mr-3">
+                  <div className="flex items-start sm:items-center justify-between gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 flex-1 min-w-0">
                       <input
                         type="text"
                         value={card.title}
@@ -4089,7 +4102,7 @@ function CreateInvitationContent() {
                     <button
                       type="button"
                       onClick={() => removeInfoCard(idx)}
-                      className="text-[#94A3B8] hover:text-rose-500 text-xs cursor-pointer transition-colors"
+                      className="text-[#94A3B8] hover:text-rose-500 text-xs cursor-pointer transition-colors pt-2 sm:pt-0 shrink-0"
                     >
                       ✕ 삭제
                     </button>
@@ -4113,7 +4126,7 @@ function CreateInvitationContent() {
               <button
                 type="button"
                 onClick={() => handleStepChange(3)}
-                className="py-3.5 px-4 bg-white hover:bg-sky-50 text-sky-700 border border-[#CBD0D6] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                className="py-3.5 px-3.5 sm:px-4 bg-white hover:bg-sky-50 text-sky-700 border border-[#CBD0D6] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs whitespace-nowrap"
               >
                 <span className="font-mono text-xs">←</span>
                 <span>이전 단계</span>
@@ -4122,7 +4135,7 @@ function CreateInvitationContent() {
               <button
                 type="button"
                 onClick={openPreviewModal}
-                className="py-3.5 px-4 bg-[#FFFFFF] hover:bg-[#F1F5F9] text-[#334155] border border-[#CBD5E1] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer hidden sm:flex items-center gap-1.5 shadow-2xs"
+                className="py-3.5 px-3.5 sm:px-4 bg-[#FFFFFF] hover:bg-[#F1F5F9] text-[#334155] border border-[#CBD5E1] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs whitespace-nowrap"
               >
                 <span>👁️</span>
                 <span>실시간 미리보기</span>
@@ -4131,9 +4144,10 @@ function CreateInvitationContent() {
               <button
                 type="button"
                 onClick={() => handleNextStepWithValidation(4)}
-                className="flex-1 max-w-xs py-3.5 px-5 bg-[#191F28] hover:bg-black active:scale-98 text-white rounded-xl text-xs sm:text-sm font-medium tracking-wide transition-all shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap"
+                className="flex-1 max-w-xs py-3.5 px-4 sm:px-5 bg-[#191F28] hover:bg-black active:scale-98 text-white rounded-xl text-xs sm:text-sm font-medium tracking-wide transition-all shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap"
               >
-                <span>다음 단계 (완성 & 보안)</span>
+                <span>다음 단계</span>
+                <span className="hidden sm:inline">(완성 & 보안)</span>
                 <span className="font-mono text-xs">→</span>
               </button>
             </div>
@@ -4142,7 +4156,7 @@ function CreateInvitationContent() {
           {/* STEP 5: 완성 및 보안 설정 (보안 PIN + 스마트스토어 코드 + URL 슬러그) */}
           <div className={currentStep === 5 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
             {/* 10. 신랑·신부 관리자 2차 보안 비밀번호 설정 섹션 */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E5E8EB] shadow-xs">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 border border-[#E5E8EB] shadow-xs">
             <div className="flex items-center justify-between pb-4 border-b border-[#F1F5F9] mb-6">
               <div className="flex items-center gap-2.5">
                 <span className="text-xl">🛡️</span>
@@ -4184,8 +4198,9 @@ function CreateInvitationContent() {
           </div>
 
           
+
             {/* 11. 스마트스토어 주문 인증코드 (선택) */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">10</span>
@@ -4249,32 +4264,32 @@ function CreateInvitationContent() {
           
 
             {/* STEP 5 하단 액션 바: 이전 단계 + 실시간 미리보기 + 청첩장 제작 신청하기 */}
-            <div className="pt-4 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3">
+            <div className="pt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={() => handleStepChange(4)}
-                className="py-3.5 px-4 bg-white hover:bg-sky-50 text-sky-700 border border-[#CBD0D6] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                className="py-3.5 px-4 bg-white hover:bg-sky-50 text-sky-700 border border-[#CBD0D6] rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs order-2 sm:order-1"
               >
                 <span className="font-mono text-xs">←</span>
                 <span>이전 단계</span>
               </button>
 
-              <div className="flex items-center gap-2.5 flex-1 justify-end">
+              <div className="flex items-center gap-2.5 flex-1 justify-end order-1 sm:order-2">
                 <button
                   type="button"
                   onClick={openPreviewModal}
-                  className="py-3.5 px-4 bg-[#FFFFFF] hover:bg-[#F1F5F9] text-[#1E293B] border border-[#CBD5E1] rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 shadow-2xs"
+                  className="flex-1 sm:flex-none py-3.5 px-3.5 sm:px-4 bg-[#FFFFFF] hover:bg-[#F1F5F9] text-[#1E293B] border border-[#CBD5E1] rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 sm:gap-2 shadow-2xs whitespace-nowrap"
                 >
                   <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                  <span>실시간 미리보기</span>
+                  <span>미리보기</span>
                 </button>
 
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="py-3.5 sm:py-4 px-5 sm:px-7 bg-[#191F28] hover:bg-black disabled:bg-[#CBD0D6] text-white rounded-xl text-xs sm:text-sm font-semibold tracking-wide transition-all shadow-sm hover:shadow-md cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap"
+                  className="flex-[2] sm:flex-none py-3.5 sm:py-4 px-4 sm:px-7 bg-[#191F28] hover:bg-black disabled:bg-[#CBD0D6] text-white rounded-xl text-xs sm:text-sm font-semibold tracking-wide transition-all shadow-sm hover:shadow-md cursor-pointer flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap"
                 >
-                  <span>{submitting ? '청첩장 생성 처리 중...' : '청첩장 제작 신청하기'}</span>
+                  <span>{submitting ? '생성 처리 중...' : '청첩장 제작 신청하기'}</span>
                   <span className="text-xs font-mono opacity-60">→</span>
                 </button>
               </div>
@@ -4439,7 +4454,7 @@ function CreateInvitationContent() {
 
                 <div 
                   id="preview-scroll-container"
-                  className={`flex-1 overflow-y-auto relative ${
+                  className={`flex-1 min-h-0 overflow-y-auto relative ${
                     previewInvitation?.template_type === 'scene'
                       ? 'bg-white'
                       : previewInvitation?.template_type === 'cinematic'

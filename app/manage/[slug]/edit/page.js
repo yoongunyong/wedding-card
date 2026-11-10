@@ -145,7 +145,7 @@ function EditInvitationContent({ params }) {
     quote_source: QUOTE_PRESETS[0].source,
 
     bgm_url: BGM_OPTIONS[0].url,
-    title_color: '#3B82F6',
+    title_color: '#ffbe68',
 
     show_intro: true,
     show_countdown: true,
@@ -382,7 +382,7 @@ function EditInvitationContent({ params }) {
         quote_source: card.quote_source || config.quote_source || QUOTE_PRESETS[0].source,
 
         bgm_url: card.bgm_url || BGM_OPTIONS[0].url,
-        title_color: config.title_color || '#3B82F6',
+        title_color: config.title_color || '#ffbe68',
 
         show_intro: config.show_intro !== false,
         show_countdown: config.show_countdown !== false,
@@ -936,6 +936,7 @@ function EditInvitationContent({ params }) {
           ? 'custom'
           : 'none',
       template_type: formData.template_type || 'basic',
+      is_modal_preview: true,
     };
   }, [
     formData,
@@ -1356,22 +1357,22 @@ function EditInvitationContent({ params }) {
         <form onSubmit={handleSubmit} noValidate className="space-y-8 pb-28 sm:pb-36">
 
           {/* 디얼디어 & 토스 감성의 슬릭 5단계 스텝퍼 네비게이션 */}
-          <div className="sticky top-2 z-40 mb-8 bg-white/95 backdrop-blur-md py-3.5 px-3 sm:px-5 rounded-2xl border border-[#E5E8EB] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+          <div className="sticky top-[53px] sm:top-[57px] z-40 mb-8 bg-white/95 backdrop-blur-md py-3.5 px-3 sm:px-5 rounded-2xl border border-[#E5E8EB] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
             {/* 상단 스텝 라벨 & 진행률 게이지 바 */}
             <div className="flex items-center justify-between mb-2 px-0.5">
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-mono tracking-wider text-[#3182F6] font-bold uppercase">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-[11px] font-mono tracking-wider text-[#3182F6] font-bold uppercase shrink-0">
                   STEP 0{currentStep} / 05
                 </span>
-                <span className="text-xs font-semibold text-[#191F28]">
-                  {currentStep === 1 && '기본 정보 (시안 변경 · 신랑신부 · 예식일시)'}
-                  {currentStep === 2 && '초대 문구 (인사말 · 인터뷰 문답)'}
-                  {currentStep === 3 && '갤러리 & BGM (웨딩 사진 · 배경음악)'}
-                  {currentStep === 4 && '편의 안내 & 옵션 (축의금 계좌 · 표시 제어)'}
-                  {currentStep === 5 && '보안 관리 & 수정 완료 (관리자 PIN 설정)'}
+                <span className="text-xs font-semibold text-[#191F28] truncate">
+                  {currentStep === 1 && (<>기본 정보<span className="hidden sm:inline text-[#8B95A1] font-normal"> (시안 변경 · 신랑신부 · 예식일시)</span></>)}
+                  {currentStep === 2 && (<>초대 문구<span className="hidden sm:inline text-[#8B95A1] font-normal"> (인사말 · 인터뷰 문답)</span></>)}
+                  {currentStep === 3 && (<>갤러리 & BGM<span className="hidden sm:inline text-[#8B95A1] font-normal"> (웨딩 사진 · 배경음악)</span></>)}
+                  {currentStep === 4 && (<>편의 안내 & 옵션<span className="hidden sm:inline text-[#8B95A1] font-normal"> (축의금 계좌 · 표시 제어)</span></>)}
+                  {currentStep === 5 && (<>보안 관리 & 수정 완료<span className="hidden sm:inline text-[#8B95A1] font-normal"> (관리자 PIN 설정)</span></>)}
                 </span>
               </div>
-              <span className="text-[11px] font-mono font-bold text-[#3182F6]">
+              <span className="text-[11px] font-mono font-bold text-[#3182F6] shrink-0 ml-2">
                 {Math.round((currentStep / 5) * 100)}%
               </span>
             </div>
@@ -1427,7 +1428,7 @@ function EditInvitationContent({ params }) {
           {/* STEP 1: 기본 정보 (시안 변경 + 신랑&신부 + 예식일시) */}
           <div className={currentStep === 1 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
             {/* 00. 디자인 템플릿 변경 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
             <div className="flex items-center justify-between pb-4 mb-4 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">00</span>
@@ -1548,7 +1549,7 @@ function EditInvitationContent({ params }) {
 
           
             {/* 01. 신랑 & 신부 인적사항 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">01</span>
@@ -1817,23 +1818,23 @@ function EditInvitationContent({ params }) {
                     혼주 성함 앞에 표시될 방식을 선택해 주세요. (한자 故 또는 단아한 국화꽃 심볼)
                   </p>
                 </div>
-                <div className="inline-flex p-1 bg-stone-100/80 rounded-xl border border-stone-200 shrink-0 self-start sm:self-auto shadow-2xs">
+                <div className="grid grid-cols-2 sm:flex p-1 bg-stone-100/80 rounded-xl border border-stone-200 shrink-0 w-full sm:w-auto shadow-2xs">
                   <button
                     type="button"
                     onClick={() => setFormData((prev) => ({ ...prev, deceased_marker: 'hanja' }))}
-                    className={`px-3.5 py-1.5 text-xs rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                    className={`px-3.5 py-1.5 text-xs rounded-lg font-medium transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                       (formData.deceased_marker || 'hanja') === 'hanja'
                         ? 'bg-stone-900 text-white shadow-xs'
                         : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50'
                     }`}
                   >
                     <span className="font-serif font-bold text-[13px]">故</span>
-                    <span>한자 '故'</span>
+                    <span>한자 &apos;故&apos;</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setFormData((prev) => ({ ...prev, deceased_marker: 'flower' }))}
-                    className={`px-3.5 py-1.5 text-xs rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                    className={`px-3.5 py-1.5 text-xs rounded-lg font-medium transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                       formData.deceased_marker === 'flower'
                         ? 'bg-stone-900 text-white shadow-xs'
                         : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50'
@@ -1849,7 +1850,7 @@ function EditInvitationContent({ params }) {
 
           
             {/* 02. 예식 일시 및 장소 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">02</span>
@@ -1965,7 +1966,7 @@ function EditInvitationContent({ params }) {
           {/* STEP 2: 초대 문구 & 스토리 (인사말 + 인터뷰 문답) */}
           <div className={currentStep === 2 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
             {/* 03. 초대 문구 & 영화 대사 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">03</span>
@@ -2028,7 +2029,7 @@ function EditInvitationContent({ params }) {
           
             {/* 시안 5 (모던 씬) 전용: 신랑 & 신부 인터뷰 (우리의 이야기) */}
           {formData.template_type === 'scene' && (
-            <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
               <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
                 <div className="flex items-baseline gap-2.5">
                   <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">03-1</span>
@@ -2229,7 +2230,7 @@ function EditInvitationContent({ params }) {
           {/* STEP 3: 웨딩 사진 & 배경음악 (갤러리 관리 + BGM) */}
           <div className={currentStep === 3 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
             {/* 04. 웨딩 사진 교체 및 갤러리 관리 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">04</span>
@@ -2797,7 +2798,7 @@ function EditInvitationContent({ params }) {
 
           
             {/* 06. 배경음악(BGM) 설정 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">06</span>
@@ -2904,7 +2905,7 @@ function EditInvitationContent({ params }) {
           {/* STEP 4: 편의 안내 & 계좌 (축의금 계좌 + 노출 옵션) */}
           <div className={currentStep === 4 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
             {/* 05. 축의금 계좌번호 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">05</span>
@@ -3035,9 +3036,48 @@ function EditInvitationContent({ params }) {
             </div>
           </div>
 
-          
-            {/* 07. 세부 섹션 표시 제어 */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          {/* 메인 커버 타이포 컬러 선택 */}
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="flex items-center justify-between pb-4 mb-4 border-b border-[#F1F5F9]">
+              <div className="flex items-baseline gap-2.5">
+                <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">06</span>
+                <h2 className="text-base sm:text-lg font-serif text-[#0F172A] tracking-tight font-medium">
+                  메인 커버 타이포 컬러
+                </h2>
+              </div>
+              <span className="text-[10px] font-mono bg-stone-900 text-white px-2 py-0.5 rounded-full font-semibold">
+                시안 1 전용
+              </span>
+            </div>
+            <p className="text-xs text-[#64748B] mb-3">
+              시안 1(모던 클래식) 풀스크린 커버 사진 위의 영문 타이틀 텍스트 색상을 선택합니다.
+            </p>
+            <div className="flex flex-wrap gap-2.5">
+              {[
+                { label: '골드', color: '#ffbe68' },
+                { label: '로즈골드', color: '#D48B8B' },
+                { label: '화이트', color: '#FFFFFF' },
+                { label: '차콜 블랙', color: '#1C1917' },
+              ].map((item, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setFormData((prev) => ({ ...prev, title_color: item.color }))}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-medium border flex items-center gap-2 cursor-pointer transition-all ${
+                    formData.title_color === item.color
+                      ? 'border-stone-900 bg-stone-900 text-white shadow-xs'
+                      : 'border-[#E5E8EB] bg-white text-[#334155] hover:border-stone-400'
+                  }`}
+                >
+                  <span className="w-3.5 h-3.5 rounded-full border border-black/15 inline-block shadow-2xs" style={{ backgroundColor: item.color }} />
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 07. 세부 섹션 표시 제어 */}
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">07</span>
@@ -3324,7 +3364,7 @@ function EditInvitationContent({ params }) {
             ) : (
               <div 
                 id="preview-scroll-container"
-                className={`flex-1 overflow-y-auto relative ${
+                className={`flex-1 min-h-0 overflow-y-auto relative ${
                   previewInvitation?.template_type === 'scene'
                     ? 'bg-white'
                     : previewInvitation?.template_type === 'cinematic'

@@ -3,16 +3,18 @@
 import { useState, useEffect } from 'react';
 import EditorialTitleTypewriter from './EditorialTitleTypewriter';
 
-export default function EditorialIntro({ invitation, onOpen }) {
+export default function EditorialIntro({ invitation, onOpen, isInModal: propIsInModal }) {
   // 'idle' | 'darkening' | 'revealing'
   const [transitionStep, setTransitionStep] = useState('idle');
-  const [isInModal, setIsInModal] = useState(false);
+  const [domInModal, setDomInModal] = useState(false);
 
   useEffect(() => {
     if (typeof document !== 'undefined') {
-      setIsInModal(Boolean(document.getElementById('preview-scroll-container')));
+      setDomInModal(Boolean(document.getElementById('preview-scroll-container')));
     }
   }, []);
+
+  const isInModal = propIsInModal ?? Boolean(invitation?.is_modal_preview) ?? domInModal;
 
   const isSample = Boolean(invitation?.is_sample_preview || invitation?.slug === 'editorial');
 
@@ -49,7 +51,10 @@ export default function EditorialIntro({ invitation, onOpen }) {
   })();
 
   useEffect(() => {
-    // 인트로 표시 중 스크롤 방지 & 최상단 고정
+    // 모달 미리보기 중에는 부모 페이지의 스크롤 및 overflow를 건드리지 않음
+    if (isInModal) return;
+
+    // 하객용 실제 청첩장 화면에서만 스크롤 방지 & 최상단 고정
     if (typeof window !== 'undefined') {
       if ('scrollRestoration' in window.history) {
         window.history.scrollRestoration = 'manual';
@@ -60,7 +65,7 @@ export default function EditorialIntro({ invitation, onOpen }) {
     }
 
     return () => {
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && !isInModal) {
         document.body.style.overflow = '';
         document.documentElement.style.overflow = '';
         if ('scrollRestoration' in window.history) {
@@ -68,7 +73,7 @@ export default function EditorialIntro({ invitation, onOpen }) {
         }
       }
     };
-  }, []);
+  }, [isInModal]);
 
   // 매거진 오픈 (OPEN THE LOOKBOOK) 클릭 시 시네마틱 페이드 & BGM 재생
   const handleOpen = (e) => {

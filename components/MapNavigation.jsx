@@ -18,10 +18,15 @@ export default function MapNavigation({ venueName = '', venueAddress = '' }) {
     window.open(`https://map.kakao.com/link/search/${encodedVenue}`, '_blank');
   };
 
-  // 3. 티맵 (모바일 앱 바로 열기 scheme)
+  // 3. 티맵 (모바일 앱 연동 및 PC 예외 방어)
   const openTmap = () => {
     if (!searchQuery) return alert('장소 정보가 등록되지 않았습니다.');
-    window.open(`tmap://search?name=${encodedVenue}`, '_blank');
+    const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent || '');
+    if (isMobile) {
+      window.location.href = `tmap://search?name=${encodedVenue}`;
+    } else {
+      alert('티맵 내비게이션은 스마트폰 모바일 환경에서만 지원됩니다.\nPC 환경에서는 네이버 지도 또는 카카오맵을 이용해 주세요.');
+    }
   };
 
   // 주소 복사하기 기능

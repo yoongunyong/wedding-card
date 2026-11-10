@@ -110,7 +110,7 @@ export default function BasicTemplate({ invitation }) {
   const hasBakedInText = Boolean(extra.has_baked_in_text);
 
   // 본문 메인 풀스크린 사진 (images.main 최우선)
-  const mainImage = images.main || images.cover || extra.main_image || invitation?.main_image || invitation?.cover_image || (isSample ? '/samples/main-01-basic.jpg' : '');
+  const mainImage = images.main || images.cover || extra.main_image || invitation?.main_image || invitation?.cover_image || (isSample ? '/samples/main-01-garden.jpg' : '');
 
   // 신랑/신부 프로필 사진
   const bridePhoto = images.bride_profile || images.bride || extra.bride_profile_image || invitation?.bride_photo || (isSample ? '/samples/bride-solo.jpg' : '');
@@ -1026,8 +1026,8 @@ export default function BasicTemplate({ invitation }) {
                 alt="Selected wedding photo"
                 className="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.01]"
                 onError={(e) => {
-                  if (isSample && e.currentTarget.src !== '/samples/main-01-basic.jpg') {
-                    e.currentTarget.src = '/samples/main-01-basic.jpg';
+                  if (isSample && e.currentTarget.src !== '/samples/main-01-garden.jpg') {
+                    e.currentTarget.src = '/samples/main-01-garden.jpg';
                   }
                 }}
               />
@@ -1052,8 +1052,8 @@ export default function BasicTemplate({ invitation }) {
                     alt={`Thumbnail ${idx + 1}`}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      if (isSample && e.currentTarget.src !== '/samples/main-01-basic.jpg') {
-                        e.currentTarget.src = '/samples/main-01-basic.jpg';
+                      if (isSample && e.currentTarget.src !== '/samples/main-01-garden.jpg') {
+                        e.currentTarget.src = '/samples/main-01-garden.jpg';
                       }
                     }}
                   />

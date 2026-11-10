@@ -12,6 +12,8 @@ import SceneTemplate from '@/components/templates/scene/SceneTemplate';
 import BgmPlayer from '@/components/BgmPlayer';
 import { compressImage } from '@/lib/imageCompressor';
 import ChrysanthemumIcon from '@/components/ChrysanthemumIcon';
+import KakaoSharePreviewCard from '@/components/KakaoSharePreviewCard';
+import QuickNavigationPill from '@/components/QuickNavigationPill';
 
 // 시안 5 (Scene) 신랑 & 신부 인터뷰 (우리의 이야기) 기본 질문-답변 프리셋
 const DEFAULT_INTERVIEWS = [
@@ -284,6 +286,7 @@ function EditInvitationContent({ params }) {
   const [submitting, setSubmitting] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewTab, setPreviewTab] = useState('web'); // 'web' | 'kakao'
   const isClosingRef = useRef(false);
 
   // 초기 DB 데이터 로드 및 폼 매핑
@@ -3266,20 +3269,48 @@ function EditInvitationContent({ params }) {
             onClick={(e) => e.stopPropagation()}
           >
             {/* 미리보기 상단 헤더 */}
-            <div className="py-3 px-4 sm:px-5 bg-stone-950 text-white flex items-center justify-between shrink-0 border-b border-stone-800 z-10">
-              <div className="flex items-center gap-2">
+            <div className="py-2.5 px-3 sm:px-4 bg-stone-950 text-white flex items-center justify-between shrink-0 border-b border-stone-800 z-10 gap-2">
+              <div className="hidden sm:flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
                 <span className="text-[11px] sm:text-xs font-mono tracking-wider sm:tracking-widest uppercase text-[#CBD5E1]">
                   LIVE PREVIEW — EDIT
                 </span>
               </div>
+
+              {/* 모바일 화면 vs 카카오톡 공유 탭 토글 */}
+              <div className="flex items-center bg-stone-900 rounded-full p-0.5 border border-stone-800 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setPreviewTab('web')}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer ${
+                    previewTab === 'web'
+                      ? 'bg-white text-stone-950 font-bold shadow-xs'
+                      : 'text-stone-400 hover:text-stone-200'
+                  }`}
+                >
+                  📱 모바일 화면
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewTab('kakao')}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer flex items-center gap-1 ${
+                    previewTab === 'kakao'
+                      ? 'bg-[#FEE500] text-stone-950 font-bold shadow-xs'
+                      : 'text-stone-400 hover:text-stone-200'
+                  }`}
+                >
+                  <span>💬</span>
+                  <span>카톡 공유 카드</span>
+                </button>
+              </div>
+
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   closePreviewModal(e);
                 }}
-                className="flex items-center gap-1.5 px-3 py-1 bg-stone-800 hover:bg-stone-700 text-stone-200 hover:text-white rounded-full text-xs font-medium transition-colors cursor-pointer border border-stone-700 active:scale-95 shadow-sm"
+                className="flex items-center gap-1 px-2.5 sm:px-3 py-1 bg-stone-800 hover:bg-stone-700 text-stone-200 hover:text-white rounded-full text-xs font-medium transition-colors cursor-pointer border border-stone-700 active:scale-95 shadow-sm shrink-0"
                 aria-label="미리보기 닫기"
               >
                 <span className="text-xs leading-none font-bold">✕</span>
@@ -3287,38 +3318,53 @@ function EditInvitationContent({ params }) {
               </button>
             </div>
 
-            {/* 실제 청첩장 템플릿 렌더링 */}
-            <div 
-              id="preview-scroll-container"
-              className={`flex-1 overflow-y-auto relative ${
-                previewInvitation?.template_type === 'scene'
-                  ? 'bg-white'
-                  : previewInvitation?.template_type === 'cinematic'
-                  ? 'bg-white'
-                  : previewInvitation?.template_type === 'playlist' 
-                  ? 'bg-[#FFFFFF]' 
-                  : previewInvitation?.template_type === 'editorial' 
-                  ? 'bg-white' 
-                  : 'bg-[#FFFFFF]'
-              }`}
-            >
-              <BgmPlayer
-                bgmUrl={previewInvitation.bgm_url}
-                hasIntro={['basic', 'editorial'].includes(previewInvitation?.template_type) && previewInvitation?.template_config?.show_intro !== false}
-                template={previewInvitation?.template_type}
+            {/* 실제 청첩장 템플릿 또는 카카오톡 공유 카드 렌더링 */}
+            {previewTab === 'kakao' ? (
+              <KakaoSharePreviewCard invitation={previewInvitation} />
+            ) : (
+              <div 
+                id="preview-scroll-container"
+                className={`flex-1 overflow-y-auto relative ${
+                  previewInvitation?.template_type === 'scene'
+                    ? 'bg-white'
+                    : previewInvitation?.template_type === 'cinematic'
+                    ? 'bg-white'
+                    : previewInvitation?.template_type === 'playlist' 
+                    ? 'bg-[#FFFFFF]' 
+                    : previewInvitation?.template_type === 'editorial' 
+                    ? 'bg-white' 
+                    : 'bg-[#FFFFFF]'
+                }`}
+              >
+                <BgmPlayer
+                  bgmUrl={previewInvitation.bgm_url}
+                  hasIntro={['basic', 'editorial'].includes(previewInvitation?.template_type) && previewInvitation?.template_config?.show_intro !== false}
+                  template={previewInvitation?.template_type}
+                />
+                {previewInvitation?.template_type === 'scene' ? (
+                  <SceneTemplate invitation={previewInvitation} />
+                ) : previewInvitation?.template_type === 'cinematic' ? (
+                  <CinematicTemplate invitation={previewInvitation} />
+                ) : previewInvitation?.template_type === 'playlist' ? (
+                  <PlaylistTemplate invitation={previewInvitation} />
+                ) : previewInvitation?.template_type === 'editorial' ? (
+                  <EditorialTemplate invitation={previewInvitation} />
+                ) : (
+                  <BasicTemplate invitation={previewInvitation} />
+                )}
+              </div>
+            )}
+            {previewTab === 'web' && (
+              <QuickNavigationPill
+                hasLocation={Boolean(previewInvitation?.venue_name || previewInvitation?.venue_address)}
+                hasAccounts={Boolean(
+                  (previewInvitation?.groom_accounts?.length > 0) ||
+                  (previewInvitation?.bride_accounts?.length > 0) ||
+                  previewInvitation?.account_number
+                )}
+                className="!absolute !bottom-16 !right-3"
               />
-              {previewInvitation?.template_type === 'scene' ? (
-                <SceneTemplate invitation={previewInvitation} />
-              ) : previewInvitation?.template_type === 'cinematic' ? (
-                <CinematicTemplate invitation={previewInvitation} />
-              ) : previewInvitation?.template_type === 'playlist' ? (
-                <PlaylistTemplate invitation={previewInvitation} />
-              ) : previewInvitation?.template_type === 'editorial' ? (
-                <EditorialTemplate invitation={previewInvitation} />
-              ) : (
-                <BasicTemplate invitation={previewInvitation} />
-              )}
-            </div>
+            )}
           </div>
         </div>
       )}

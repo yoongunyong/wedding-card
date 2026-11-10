@@ -792,7 +792,7 @@ export default function PlaylistTemplate({ invitation }) {
       {/* ========================================================
           05. LOCATION & MAP (오시는 길)
           ======================================================== */}
-      <section className="py-16 px-6 bg-[#FAF9F6] border-t border-stone-200/60">
+      <section id="location-section" className="py-16 px-6 bg-[#FAF9F6] border-t border-stone-200/60">
         <ScrollReveal>
           <div className="text-center mb-8">
             <span className="font-mono text-[11px] tracking-[0.25em] text-emerald-700 uppercase block mb-2 font-semibold">
@@ -860,7 +860,7 @@ export default function PlaylistTemplate({ invitation }) {
           06. ACCOUNTS: 마음 전하실 곳 (축의금 계좌)
           ======================================================== */}
       {showAccountsSection && (groomAccounts.length > 0 || brideAccounts.length > 0) && (
-        <section className="py-16 px-6 bg-white border-t border-stone-200/60">
+        <section id="accounts-section" className="py-16 px-6 bg-white border-t border-stone-200/60">
           <ScrollReveal>
             <div className="text-center mb-8">
               <span className="font-mono text-[11px] tracking-[0.25em] text-emerald-700 uppercase block mb-2 font-semibold">

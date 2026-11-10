@@ -1050,7 +1050,7 @@ export default function EditorialTemplate({ invitation }) {
 
       {/* 6. 식장 위치 및 오시는 길 안내 (Figma 7064px~8911px: 780x1847 -> 1x 390x923.5 1:1 정밀 매칭) */}
       {(invitation?.venue_name || invitation?.venue_address || isSample) && (
-        <section className="w-full bg-[#FEFEFE] pt-[64.5px] pb-0 px-6 text-center select-none overflow-hidden">
+        <section id="location-section" className="w-full bg-[#FEFEFE] pt-[64.5px] pb-0 px-6 text-center select-none overflow-hidden">
           <ScrollReveal>
             {/* 상단 1: location 필기체 (Figma: Weddingday Personal Use 70px -> 1x 35px, #292929, leading-[72%]) */}
             <h2 className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal">
@@ -1229,7 +1229,7 @@ export default function EditorialTemplate({ invitation }) {
         const displayAccounts = currentAccounts.length > 0 ? currentAccounts : (isSample ? sampleAccounts : []);
 
         return (
-          <section className="w-full bg-[#FEFEFE] pt-[89px] pb-0 px-6 text-center select-none overflow-hidden">
+          <section id="accounts-section" className="w-full bg-[#FEFEFE] pt-[89px] pb-0 px-6 text-center select-none overflow-hidden">
             <ScrollReveal>
               {/* 상단 1: Account 필기체 (Figma: Weddingday Personal Use 70px -> 1x 35px, #292929, leading-[72%]) */}
               <h2 className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal">

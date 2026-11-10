@@ -892,7 +892,7 @@ export default function CinematicTemplate({ invitation }) {
           07. WEDDING LOCATION (식장 위치 & 3대 내비게이션 - 정보가 있을 때만 노출)
           ======================================================== */}
       {(venueFullName || venueAddress) && (
-        <section className="py-18 sm:py-20 px-5 text-center border-t border-stone-200/60 dark:border-white/10">
+        <section id="location-section" className="py-18 sm:py-20 px-5 text-center border-t border-stone-200/60 dark:border-white/10">
           <ScrollReveal>
             <h2 
               style={serifItalic}
@@ -996,7 +996,7 @@ export default function CinematicTemplate({ invitation }) {
           08. WEDDING GIFT (등록된 계좌가 있을 때만 노출)
           ======================================================== */}
       {showAccountsSection && allAccounts.length > 0 && (
-        <section className="py-18 sm:py-20 px-5 text-center border-t border-stone-200/60 dark:border-white/10">
+        <section id="accounts-section" className="py-18 sm:py-20 px-5 text-center border-t border-stone-200/60 dark:border-white/10">
           <ScrollReveal>
             <h2 
               style={serifItalic}

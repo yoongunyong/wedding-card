@@ -3,6 +3,8 @@ import HeroCardSwiper from '@/components/landing/HeroCardSwiper';
 import TrustSection from '@/components/landing/TrustSection';
 import SignatureShowcase from '@/components/landing/SignatureShowcase';
 import FeatureTabs from '@/components/landing/FeatureTabs';
+import PricingSection from '@/components/landing/PricingSection';
+import ReviewsSection from '@/components/landing/ReviewsSection';
 import StickyBottomBar from '@/components/landing/StickyBottomBar';
 import ScrollReveal from '@/components/ScrollReveal';
 
@@ -187,6 +189,12 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* 7. 가격 정책 & 투명한 올인원 패키지 혜택 */}
+      <PricingSection />
+
+      {/* 8. 실제 신혼부부 제작 리뷰 (소셜 프루프) */}
+      <ReviewsSection />
+
       {/* 8. 하단 푸터 (아틀리에 무드에 맞춘 럭셔리 딥 차콜 & 샴페인 골드 에디토리얼 푸터) */}
       <footer className="py-14 sm:py-16 px-6 bg-[#16181f] text-stone-400 font-sans text-xs border-t border-white/10 selection:bg-amber-900 selection:text-amber-100">
         <div className="max-w-5xl mx-auto space-y-10">
@@ -242,11 +250,24 @@ export default function HomePage() {
                 <span className="text-stone-700">·</span>
                 <span><strong className="text-stone-300 font-normal">사업자등록번호</strong> 386-12-02981</span>
                 <span className="text-stone-700">·</span>
+                <span><strong className="text-stone-300 font-normal">통신판매업신고</strong> 제 2024-경기안양-0000호</span>
+                <span className="text-stone-700">·</span>
                 <span><strong className="text-stone-300 font-normal">서비스명</strong> 아틀리에 드 무키루 (ATELIER DE MUKIRU)</span>
               </div>
               <p>
                 <strong className="text-stone-300 font-normal">사업장 소재지</strong> 경기도 안양시 동안구 시민대로 190 (힐스테이트 범계역 모비우스) 102동 3008호 (우 : 14072)
               </p>
+
+              {/* 이용약관 및 개인정보처리방침 법적 링크 */}
+              <div className="pt-2 flex items-center gap-3 text-stone-400">
+                <Link href="/terms" className="hover:text-amber-300 underline font-medium transition-colors">
+                  서비스 이용약관
+                </Link>
+                <span className="text-stone-700">·</span>
+                <Link href="/privacy" className="hover:text-amber-300 underline font-medium transition-colors">
+                  개인정보처리방침
+                </Link>
+              </div>
             </div>
 
             {/* 우측 4열: 고객센터 카드 (상담시간 & 이메일) */}

@@ -1091,7 +1091,7 @@ export default function BasicTemplate({ invitation }) {
 
       {/* 6. 식장 위치 및 오시는 길 안내 */}
       {(invitation?.venue_name || invitation?.venue_address || isSample) && (
-        <section className="w-full bg-[#FEFEFE] pt-[64.5px] pb-0 px-6 text-center select-none overflow-hidden">
+        <section id="location-section" className="w-full bg-[#FEFEFE] pt-[64.5px] pb-0 px-6 text-center select-none overflow-hidden">
           <ScrollReveal>
             <h2 className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal">
               location
@@ -1257,7 +1257,7 @@ export default function BasicTemplate({ invitation }) {
         const displayAccounts = currentAccounts.length > 0 ? currentAccounts : (isSample ? sampleAccounts : []);
 
         return (
-          <section className="w-full bg-[#FEFEFE] pt-[89px] pb-0 px-6 text-center select-none overflow-hidden">
+          <section id="accounts-section" className="w-full bg-[#FEFEFE] pt-[89px] pb-0 px-6 text-center select-none overflow-hidden">
             <ScrollReveal>
               <h2 className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal">
                 Account

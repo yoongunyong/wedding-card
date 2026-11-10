@@ -5,6 +5,8 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import QrCodeModal from '@/components/QrCodeModal';
 import ExpiryAdjustModal from '@/components/ExpiryAdjustModal';
+import { DEFAULT_PRICING, SITE_SETTINGS_SQL, getPricingConfig, savePricingConfig } from '@/lib/pricingConfig';
+import { DEFAULT_REVIEWS_CONFIG, getReviewsConfig, saveReviewsConfig } from '@/lib/reviewsConfig';
 
 // 관리자 로그인 비밀번호 (Vercel 및 .env.local 환경변수로만 제어, 하드코딩 완전 제거)
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
@@ -32,7 +34,102 @@ export default function AdminDashboardPage() {
   const [copiedNoticeSlug, setCopiedNoticeSlug] = useState(null); // 톡톡 안내문 복사 상태 피드백
 
   // 3. 청첩장 필터 & 검색 & 페이지네이션 상태
-  const [searchCategory, setSearchCategory] = useState('all'); // 'all' | 'groom' | 'bride' | 'phone' | 'slug'
+  const [searchCategory, setSearchCategory] = useState('all');
+
+  // 4. 가격 & 프로모션 실시간 설정 상태
+  const [pricingForm, setPricingForm] = useState(DEFAULT_PRICING);
+  const [savingPricing, setSavingPricing] = useState(false);
+  const [pricingMessage, setPricingMessage] = useState('');
+
+  // 5. 베스트 후기 큐레이션 관리 상태
+  const [reviewsForm, setReviewsForm] = useState(DEFAULT_REVIEWS_CONFIG);
+  const [savingReviews, setSavingReviews] = useState(false);
+  const [reviewsMessage, setReviewsMessage] = useState('');
+
+  // 인증 후 최신 후기 설정 로드
+  useEffect(() => {
+    if (isAuthenticated) {
+      getReviewsConfig().then((cfg) => {
+        if (cfg) setReviewsForm(cfg);
+      });
+    }
+  }, [isAuthenticated]);
+
+  const handleSaveReviews = async (e) => {
+    e.preventDefault();
+    setSavingReviews(true);
+    setReviewsMessage('');
+
+    const res = await saveReviewsConfig(reviewsForm);
+    setSavingReviews(false);
+
+    if (res.success) {
+      setReviewsMessage('✅ 베스트 후기 설정이 Supabase DB에 성공적으로 저장되었습니다! 랜딩페이지에 실시간 반영되었습니다.');
+    } else {
+      setReviewsMessage('⚠️ 저장 중 오류가 발생했으나 임시 보관되었습니다: ' + res.error);
+    }
+
+    setTimeout(() => {
+      setReviewsMessage('');
+    }, 6000);
+  };
+
+  const handleUpdateReviewCard = (index, field, value) => {
+    const nextReviews = [...(reviewsForm.reviews || [])];
+    if (nextReviews[index]) {
+      nextReviews[index] = { ...nextReviews[index], [field]: value };
+      setReviewsForm({ ...reviewsForm, reviews: nextReviews });
+    }
+  };
+  const [copiedSql, setCopiedSql] = useState(false);
+
+  // 인증 후 최신 가격 설정 로드
+  useEffect(() => {
+    if (isAuthenticated) {
+      getPricingConfig().then((cfg) => {
+        if (cfg) setPricingForm(cfg);
+      });
+    }
+  }, [isAuthenticated]);
+
+  const calculatedDiscountRate = useMemo(() => {
+    const reg = Number(pricingForm.regular_price) || 0;
+    const disc = Number(pricingForm.discount_price) || 0;
+    if (reg <= 0 || disc >= reg) return 0;
+    return Math.round(((reg - disc) / reg) * 100);
+  }, [pricingForm.regular_price, pricingForm.discount_price]);
+
+  const handleSavePricing = async (e) => {
+    e.preventDefault();
+    setSavingPricing(true);
+    setPricingMessage('');
+
+    const toSave = {
+      ...pricingForm,
+      regular_price: Number(pricingForm.regular_price) || 0,
+      discount_price: Number(pricingForm.discount_price) || 0,
+      discount_rate: calculatedDiscountRate,
+    };
+
+    const res = await savePricingConfig(toSave);
+    setSavingPricing(false);
+
+    if (res.success) {
+      setPricingMessage('✅ 설정이 Supabase DB에 성공적으로 저장되었습니다! 랜딩페이지에 즉시 반영되었습니다.');
+    } else {
+      setPricingMessage('⚠️ DB 테이블이 아직 없어 임시 보관되었습니다. 하단의 Supabase SQL을 1회 실행해주시면 영구 저장됩니다.');
+    }
+
+    setTimeout(() => {
+      setPricingMessage('');
+    }, 6000);
+  };
+
+  const handleCopySql = () => {
+    navigator.clipboard.writeText(SITE_SETTINGS_SQL);
+    setCopiedSql(true);
+    setTimeout(() => setCopiedSql(false), 3000);
+  }; // 'all' | 'groom' | 'bride' | 'phone' | 'slug'
   const [searchKeyword, setSearchKeyword] = useState('');
   const [filterActiveStatus, setFilterActiveStatus] = useState('all'); // 'all' | 'active' | 'sample'
   const [filterTemplate, setFilterTemplate] = useState('all'); // 'all' | 'basic' | 'editorial' | 'playlist' | 'cinematic' | 'scene'
@@ -938,6 +1035,28 @@ ATELIER DE MUKIRU 드림`;
           >
             전체 청첩장 목록 및 활성화 관리 ({invitations.length})
           </button>
+          <button
+            onClick={() => setActiveTab('pricing')}
+            className={`py-3 px-5 text-xs font-semibold rounded-t-xl transition-all cursor-pointer border-b-2 flex items-center gap-1.5 ${
+              activeTab === 'pricing'
+                ? 'border-stone-900 text-stone-900 bg-white shadow-2xs'
+                : 'border-transparent text-stone-500 hover:text-stone-800'
+            }`}
+          >
+            <span>⚙️</span>
+            <span>가격 & 이벤트 프로모션 설정</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('reviews')}
+            className={`py-3 px-5 text-xs font-semibold rounded-t-xl transition-all cursor-pointer border-b-2 flex items-center gap-1.5 ${
+              activeTab === 'reviews'
+                ? 'border-stone-900 text-stone-900 bg-white shadow-2xs'
+                : 'border-transparent text-stone-500 hover:text-stone-800'
+            }`}
+          >
+            <span>💬</span>
+            <span>베스트 후기(리뷰) 큐레이션</span>
+          </button>
         </div>
 
         {/* ========================================================
@@ -1610,6 +1729,342 @@ ATELIER DE MUKIRU 드림`;
                 )}
               </>
             )}
+          </div>
+        )}
+
+        {/* ========================================================
+            TAB 3: 실시간 가격 & 이벤트 프로모션 설정
+           ======================================================== */}
+        {activeTab === 'pricing' && (
+          <div className="space-y-6">
+            
+            {/* 설정 폼 카드 */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200/80 shadow-2xs text-left">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-stone-200/80 gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <h2 className="text-base sm:text-lg font-serif font-bold text-stone-900">
+                      랜딩페이지 가격 & 이벤트 프로모션 실시간 설정
+                    </h2>
+                  </div>
+                  <p className="text-xs text-stone-500 font-light mt-1">
+                    코드 수정이나 재배포 없이, 여기서 금액과 문구를 변경하고 [설정 저장]을 누르면 0초 만에 랜딩페이지에 실시간 반영됩니다.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-mono px-3 py-1 bg-stone-100 rounded-full text-stone-600 font-semibold border border-stone-200">
+                    현재 할인율: {calculatedDiscountRate}% OFF
+                  </span>
+                </div>
+              </div>
+
+              {pricingMessage && (
+                <div className="mt-4 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium leading-relaxed">
+                  {pricingMessage}
+                </div>
+              )}
+
+              <form onSubmit={handleSavePricing} className="mt-6 space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  {/* 정상 판매가 */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-stone-700 block">
+                      정상 판매가 (원) <span className="text-stone-400 font-normal">(취소선 표시 금액)</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs font-mono">₩</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1000"
+                        value={pricingForm.regular_price}
+                        onChange={(e) => setPricingForm({ ...pricingForm, regular_price: e.target.value })}
+                        className="w-full pl-8 pr-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-mono font-bold text-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-900 transition-all"
+                        placeholder="59000"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* 실제 판매가 (이벤트 할인가) */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-stone-700 block">
+                      실제 판매가 / 이벤트 할인가 (원) <span className="text-amber-600 font-bold">*실제 결제 금액</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs font-mono">₩</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1000"
+                        value={pricingForm.discount_price}
+                        onChange={(e) => setPricingForm({ ...pricingForm, discount_price: e.target.value })}
+                        className="w-full pl-8 pr-4 py-2.5 bg-stone-50 border border-amber-300 rounded-xl text-xs font-mono font-black text-amber-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all"
+                        placeholder="39000"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  {/* 이벤트 뱃지 문구 */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-stone-700 block">
+                      이벤트 뱃지 타이틀 <span className="text-stone-400 font-normal">(가격표 상단 다크 바)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={pricingForm.badge_text}
+                      onChange={(e) => setPricingForm({ ...pricingForm, badge_text: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs text-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-900 transition-all"
+                      placeholder="아틀리에 드 무키루 런칭 기념 특가"
+                    />
+                  </div>
+
+                  {/* 기간 및 조건 안내 */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-stone-700 block">
+                      기간 및 조건 안내 문구 <span className="text-stone-400 font-normal">(가격표 서브 설명)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={pricingForm.period_text}
+                      onChange={(e) => setPricingForm({ ...pricingForm, period_text: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs text-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-900 transition-all"
+                      placeholder="제작은 100% 무료 · 완성된 청첩장이 마음에 쏙 들 때만 활성화"
+                    />
+                  </div>
+                </div>
+
+                {/* 네이버 스마트스토어 상품 URL */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-stone-700 block">
+                    네이버 스마트스토어 상품 링크 URL <span className="text-stone-400 font-normal">(스토어 개설 후 입력)</span>
+                  </label>
+                  <input
+                    type="url"
+                    value={pricingForm.naver_store_url}
+                    onChange={(e) => setPricingForm({ ...pricingForm, naver_store_url: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-mono text-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-900 transition-all"
+                    placeholder="https://smartstore.naver.com/your-store-name/products/12345"
+                  />
+                  <p className="text-[11px] text-stone-400">
+                    * 스토어 개설 후 해당 상품 페이지 주소를 입력하시면 결제/활성화 버튼이 즉시 스마트스토어로 연결됩니다.
+                  </p>
+                </div>
+
+                {/* 저장 버튼 */}
+                <div className="pt-4 border-t border-stone-100 flex items-center justify-between">
+                  <span className="text-xs text-stone-500">
+                    저장 시 랜딩페이지에 <strong>즉시 실시간 반영</strong>됩니다.
+                  </span>
+                  <button
+                    type="submit"
+                    disabled={savingPricing}
+                    className="px-6 py-3 bg-stone-900 hover:bg-black text-white text-xs font-bold rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {savingPricing ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>저장 중...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>💾</span>
+                        <span>실시간 가격 설정 저장하기</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+          </div>
+        )}
+
+        {/* ========================================================
+            TAB 4: 베스트 후기(리뷰) 큐레이션 실시간 관리
+           ======================================================== */}
+        {activeTab === 'reviews' && (
+          <div className="space-y-6">
+            
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200/80 shadow-2xs text-left">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-stone-200/80 gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+                    <h2 className="text-base sm:text-lg font-serif font-bold text-stone-900">
+                      랜딩페이지 베스트 후기 큐레이션 실시간 관리
+                    </h2>
+                  </div>
+                  <p className="text-xs text-stone-500 font-light mt-1">
+                    네이버 스마트스토어의 실제 감동 리뷰를 선별(큐레이션)하여 랜딩페이지에 노출합니다. 수정 후 [저장] 시 0초 만에 실시간 반영됩니다.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-mono px-3 py-1 bg-amber-50 text-amber-800 rounded-full font-semibold border border-amber-200">
+                    엄선된 베스트 {(reviewsForm.reviews || []).length}개 노출 중
+                  </span>
+                </div>
+              </div>
+
+              {reviewsMessage && (
+                <div className="mt-4 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium leading-relaxed">
+                  {reviewsMessage}
+                </div>
+              )}
+
+              <form onSubmit={handleSaveReviews} className="mt-6 space-y-8">
+                
+                {/* 상단 1: 스마트스토어 리뷰 페이지 바로가기 링크 */}
+                <div className="p-5 rounded-2xl bg-stone-50 border border-stone-200/80 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-4 h-4 rounded-full bg-[#03C75A] text-white font-black text-[9px] flex items-center justify-center">
+                      N
+                    </span>
+                    <label className="text-xs font-bold text-stone-800">
+                      네이버 스마트스토어 리뷰 전체보기 링크 URL
+                    </label>
+                  </div>
+                  <input
+                    type="url"
+                    value={reviewsForm.naver_reviews_url || ''}
+                    onChange={(e) => setReviewsForm({ ...reviewsForm, naver_reviews_url: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-white border border-stone-300 rounded-xl text-xs font-mono text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-all"
+                    placeholder="https://smartstore.naver.com/your-store-name/products/12345#REVIEW"
+                  />
+                  <p className="text-[11px] text-stone-500">
+                    * 랜딩페이지 후기 섹션 하단의 [네이버 스마트스토어 실구매평 전체보기] 버튼 클릭 시 연결될 URL입니다.
+                  </p>
+                </div>
+
+                {/* 베스트 후기 카드 4개 편집 그리드 */}
+                <div className="space-y-6">
+                  <h3 className="text-xs font-bold text-stone-900 uppercase font-mono tracking-wider">
+                    BEST REVIEW CARDS · 베스트 후기 카드 개별 편집
+                  </h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {(reviewsForm.reviews || []).map((rev, idx) => (
+                      <div
+                        key={idx}
+                        className="p-5 rounded-2xl bg-[#FAF9F6] border border-stone-200/80 shadow-2xs space-y-4 text-left"
+                      >
+                        <div className="flex items-center justify-between pb-3 border-b border-stone-200">
+                          <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200/80">
+                            후기 #{idx + 1} ({rev.template_name || rev.template || '시안'})
+                          </span>
+                          <span className="text-[11px] text-amber-500 font-bold">★★★★★</span>
+                        </div>
+
+                        {/* 부부명 & 예식일 */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-[11px] font-semibold text-stone-600 block">신랑·신부 닉네임</label>
+                            <input
+                              type="text"
+                              value={rev.names || rev.couple || ''}
+                              onChange={(e) => handleUpdateReviewCard(idx, 'names', e.target.value)}
+                              className="w-full px-3 py-1.5 bg-white border border-stone-300 rounded-lg text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900"
+                              placeholder="김*현 ♥ 이*연 부부"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[11px] font-semibold text-stone-600 block">예식 일시</label>
+                            <input
+                              type="text"
+                              value={rev.wedding_date || rev.date || ''}
+                              onChange={(e) => handleUpdateReviewCard(idx, 'wedding_date', e.target.value)}
+                              className="w-full px-3 py-1.5 bg-white border border-stone-300 rounded-lg text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900"
+                              placeholder="2024.11 예식"
+                            />
+                          </div>
+                        </div>
+
+                        {/* 선택 시안 & 핵심 만족 태그 */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-[11px] font-semibold text-stone-600 block">제작 시안 명칭</label>
+                            <input
+                              type="text"
+                              value={rev.template_name || rev.template || ''}
+                              onChange={(e) => handleUpdateReviewCard(idx, 'template_name', e.target.value)}
+                              className="w-full px-3 py-1.5 bg-white border border-stone-300 rounded-lg text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900"
+                              placeholder="시안 2. 에디토리얼"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[11px] font-semibold text-stone-600 block">핵심 만족 태그</label>
+                            <input
+                              type="text"
+                              value={rev.tag || rev.highlight || ''}
+                              onChange={(e) => handleUpdateReviewCard(idx, 'tag', e.target.value)}
+                              className="w-full px-3 py-1.5 bg-white border border-stone-300 rounded-lg text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900"
+                              placeholder="화보 퀄리티 · 트렌디한 감성"
+                            />
+                          </div>
+                        </div>
+
+                        {/* 후기 헤드라인 문구 */}
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-semibold text-stone-600 block">한 줄 헤드라인 (따옴표 문구)</label>
+                          <input
+                            type="text"
+                            value={rev.quote || ''}
+                            onChange={(e) => handleUpdateReviewCard(idx, 'quote', e.target.value)}
+                            className="w-full px-3 py-1.5 bg-white border border-stone-300 rounded-lg text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900 font-medium"
+                            placeholder="“하객들이 명품 잡지 화보인 줄 알았다고 난리였어요”"
+                          />
+                        </div>
+
+                        {/* 후기 본문 */}
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-semibold text-stone-600 block">상세 후기 내용</label>
+                          <textarea
+                            rows={3}
+                            value={rev.content || ''}
+                            onChange={(e) => handleUpdateReviewCard(idx, 'content', e.target.value)}
+                            className="w-full p-2.5 bg-white border border-stone-300 rounded-lg text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-stone-900 leading-relaxed resize-none"
+                            placeholder="스마트스토어에 달린 실제 감동 리뷰를 여기에 적어주세요."
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 저장 버튼 */}
+                <div className="pt-4 border-t border-stone-100 flex items-center justify-between">
+                  <span className="text-xs text-stone-500">
+                    저장 즉시 랜딩페이지의 후기 카드가 <strong>0초 만에 교체</strong>됩니다.
+                  </span>
+                  <button
+                    type="submit"
+                    disabled={savingReviews}
+                    className="px-6 py-3 bg-stone-900 hover:bg-black text-white text-xs font-bold rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {savingReviews ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>저장 중...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>💾</span>
+                        <span>베스트 후기 설정 저장하기</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+
           </div>
         )}
 

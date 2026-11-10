@@ -8,6 +8,7 @@ import EditorialTemplate from '@/components/templates/editorial/EditorialTemplat
 import PlaylistTemplate from '@/components/templates/playlist/PlaylistTemplate';
 import CinematicTemplate from '@/components/templates/cinematic/CinematicTemplate';
 import SceneTemplate from '@/components/templates/scene/SceneTemplate';
+import QuickNavigationPill from '@/components/QuickNavigationPill';
 import { SAMPLE_INVITATIONS } from '@/lib/sampleInvitations';
 import { getSafeKakaoShareImageUrl } from '@/lib/kakaoShare';
 
@@ -198,6 +199,23 @@ export default async function WeddingCardPage({ params }) {
   delete sanitizedInvitation.order_code;
   delete sanitizedInvitation.manage_password;
 
+  // 어르신/혼주 및 하객 퀵 내비게이션 (오시는 길 / 계좌) 유무 계산
+  const hasLocation = Boolean(invitation?.venue_name || invitation?.venue_address);
+  const rawAccounts = [
+    invitation?.groom_accounts,
+    invitation?.bride_accounts,
+    invitation?.account_number,
+  ];
+  const hasAccounts = (invitation?.template_config?.show_accounts !== false) && (
+    isSampleSlug ||
+    rawAccounts.some((acc) => {
+      if (!acc) return false;
+      if (Array.isArray(acc)) return acc.length > 0;
+      if (typeof acc === 'string') return acc.trim().length > 0;
+      return true;
+    })
+  );
+
   return (
     <main className={`min-h-screen ${isCinematic ? 'bg-neutral-100' : 'bg-stone-100'} sm:py-8 flex justify-center p-0 m-0 relative`}>
       {!isActive && <SampleWatermark />}
@@ -207,6 +225,7 @@ export default async function WeddingCardPage({ params }) {
         template={invitation.template_type}
       />
       <CurrentTemplate invitation={sanitizedInvitation} />
+      <QuickNavigationPill hasLocation={hasLocation} hasAccounts={hasAccounts} />
     </main>
   );
 }

@@ -1043,7 +1043,7 @@ export default function SceneTemplate({ invitation }) {
           06. LOCATION (오시는 길 & 카카오 지도 & 교통편 & 내비)
           - 영상 00:50 ~ 00:55 1:1 일치
           ======================================================== */}
-      <section className="py-20 bg-white border-t border-stone-100">
+      <section id="location-section" className="py-20 bg-white border-t border-stone-100">
         <ScrollReveal>
           {/* 상단 텍스트 정보 */}
           <div className="text-center mb-8 px-6">
@@ -1124,7 +1124,7 @@ export default function SceneTemplate({ invitation }) {
           - 기본은 접힘 상태이며 누르면 화살표 회전과 함께 부드럽게 펼쳐집니다.
           ======================================================== */}
       {config.show_accounts !== false && (groomAccounts.length > 0 || brideAccounts.length > 0) && (
-        <section className="py-20 px-6 bg-white border-t border-stone-100">
+        <section id="accounts-section" className="py-20 px-6 bg-white border-t border-stone-100">
           <ScrollReveal>
             <div className="text-center mb-8">
               <span className="font-cormorant italic text-3xl sm:text-4xl text-[#222222] block mb-2 font-light tracking-wide">

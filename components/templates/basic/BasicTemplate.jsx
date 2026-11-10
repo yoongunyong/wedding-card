@@ -367,9 +367,44 @@ export default function BasicTemplate({ invitation }) {
     return () => clearInterval(timer);
   }, [guestbookList.length]);
 
-  // 계좌 데이터
-  const groomAccounts = (invitation?.accounts || []).filter((a) => a.group === '신랑측' || a.side === 'groom');
-  const brideAccounts = (invitation?.accounts || []).filter((a) => a.group === '신부측' || a.side === 'bride');
+  // 계좌 데이터 (JSON 문자열 안전 파싱 및 혼주 계좌 유연한 매칭)
+  const allParsedAccounts = useMemo(() => {
+    const raw = invitation?.accounts;
+    if (Array.isArray(raw)) return raw;
+    if (typeof raw === 'string') {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {}
+    }
+    return [];
+  }, [invitation?.accounts]);
+
+  const groomAccounts = useMemo(() => {
+    return allParsedAccounts.filter(
+      (a) =>
+        a.group === '신랑측' ||
+        a.group === '신랑' ||
+        a.side === 'groom' ||
+        a.title === '신랑' ||
+        a.relation === '신랑' ||
+        a.title?.includes('신랑') ||
+        a.relation?.includes('신랑')
+    );
+  }, [allParsedAccounts]);
+
+  const brideAccounts = useMemo(() => {
+    return allParsedAccounts.filter(
+      (a) =>
+        a.group === '신부측' ||
+        a.group === '신부' ||
+        a.side === 'bride' ||
+        a.title === '신부' ||
+        a.relation === '신부' ||
+        a.title?.includes('신부') ||
+        a.relation?.includes('신부')
+    );
+  }, [allParsedAccounts]);
 
   const getAccountHolderText = (acc, fallbackTitle = '예금주') => {
     if (acc.title && acc.holder) return `${acc.title} ${acc.holder}`;
@@ -623,8 +658,8 @@ export default function BasicTemplate({ invitation }) {
           {/* 세로 구분선: Figma Line 126 height 60px #d3d3d3 */}
           <div className="w-px h-[60px] bg-[#d3d3d3] mx-auto mb-10 sm:mb-12" />
 
-          {/* 부모님 & 신랑신부 성함 (Figma 2705:2600 Pretendard #303030 & #707070) */}
-          {(groomName || brideName || hasGroomParents || hasBrideParents) && (
+          {/* 부모님 & 신랑신부 성함 (양친 미기입/편부모/고인 등 동적 경우의 수 완벽 지원) */}
+          {(hasGroomParents || hasBrideParents) ? (
             <div className="inline-grid grid-cols-[auto_auto_auto] items-center gap-x-5 gap-y-3.5 text-[15px] sm:text-[15.5px] font-sans mx-auto mb-10 sm:mb-12">
               <div className="text-right text-[#303030] font-normal">
                 {groomParentsNode}
@@ -646,7 +681,11 @@ export default function BasicTemplate({ invitation }) {
                 {brideName}
               </div>
             </div>
-          )}
+          ) : (groomName || brideName) ? (
+            <div className="text-center text-[16px] font-sans font-medium text-[#303030] tracking-wider mb-10 sm:mb-12">
+              {[groomName, brideName].filter(Boolean).join(' · ')}
+            </div>
+          ) : null}
 
           {/* 축하 연락하기 버튼 (Figma 2689:2113: 198x42px, bg-[#f4f3f1] border-[#d3d3d3] rounded-[20px]) */}
           <div>

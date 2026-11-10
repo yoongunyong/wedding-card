@@ -329,9 +329,44 @@ export default function SceneTemplate({ invitation }) {
 
   const showMealOption = config.show_rsvp_meal !== false;
 
-  // 계좌 목록
-  const groomAccounts = (invitation?.accounts || []).filter((a) => a.group === '신랑측' || a.side === 'groom');
-  const brideAccounts = (invitation?.accounts || []).filter((a) => a.group === '신부측' || a.side === 'bride');
+  // 계좌 목록 (문자열 안전 파싱 및 혼주 계좌 유연한 매칭)
+  const allParsedAccounts = useMemo(() => {
+    const raw = invitation?.accounts;
+    if (Array.isArray(raw)) return raw;
+    if (typeof raw === 'string') {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {}
+    }
+    return [];
+  }, [invitation?.accounts]);
+
+  const groomAccounts = useMemo(() => {
+    return allParsedAccounts.filter(
+      (a) =>
+        a.group === '신랑측' ||
+        a.group === '신랑' ||
+        a.side === 'groom' ||
+        a.title === '신랑' ||
+        a.relation === '신랑' ||
+        a.title?.includes('신랑') ||
+        a.relation?.includes('신랑')
+    );
+  }, [allParsedAccounts]);
+
+  const brideAccounts = useMemo(() => {
+    return allParsedAccounts.filter(
+      (a) =>
+        a.group === '신부측' ||
+        a.group === '신부' ||
+        a.side === 'bride' ||
+        a.title === '신부' ||
+        a.relation === '신부' ||
+        a.title?.includes('신부') ||
+        a.relation?.includes('신부')
+    );
+  }, [allParsedAccounts]);
 
   // 방명록 로드
   useEffect(() => {

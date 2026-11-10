@@ -81,13 +81,27 @@ export default function EditorialContactModal({ invitation, onClose }) {
     {
       role: '신부 아버지',
       side: 'bride',
-      name: formatName(invitation?.bride_father, isBrideFatherDeceased) || (isSample ? '장철규' : ''),
+      name: (invitation?.bride_father || isSample) ? (
+        <ParentDeceasedName
+          name={invitation?.bride_father || (isSample ? '장철규' : '')}
+          isDeceased={isBrideFatherDeceased}
+          markerType={deceasedMarker}
+          iconClassName="w-[14px] h-[16px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0"
+        />
+      ) : '',
       phone: isBrideFatherDeceased ? '' : (invitation?.bride_father_phone || (isSample ? '010-8765-4321' : '')),
     },
     {
       role: '신부 어머니',
       side: 'bride',
-      name: formatName(invitation?.bride_mother, isBrideMotherDeceased) || (isSample ? '이정자' : ''),
+      name: (invitation?.bride_mother || isSample) ? (
+        <ParentDeceasedName
+          name={invitation?.bride_mother || (isSample ? '이정자' : '')}
+          isDeceased={isBrideMotherDeceased}
+          markerType={deceasedMarker}
+          iconClassName="w-[14px] h-[16px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0"
+        />
+      ) : '',
       phone: isBrideMotherDeceased ? '' : (invitation?.bride_mother_phone || (isSample ? '010-7654-3210' : '')),
     },
   ].filter((p) => p.name || p.phone);

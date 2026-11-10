@@ -205,17 +205,44 @@ export default function PlaylistTemplate({ invitation }) {
     loadGuestbook();
   }, [invitation?.id]);
 
-  // 계좌번호 파싱
-  const rawAccounts = invitation?.accounts;
+  // 계좌번호 안전 파싱 (문자열 및 혼주 계좌 유연한 매칭)
+  const allParsedAccounts = useMemo(() => {
+    const raw = invitation?.accounts;
+    if (Array.isArray(raw)) return raw;
+    if (typeof raw === 'string') {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {}
+    }
+    return [];
+  }, [invitation?.accounts]);
+
   const groomAccounts = useMemo(() => {
-    if (!Array.isArray(rawAccounts)) return [];
-    return rawAccounts.filter((a) => a.group === '신랑측');
-  }, [rawAccounts]);
+    return allParsedAccounts.filter(
+      (a) =>
+        a.group === '신랑측' ||
+        a.group === '신랑' ||
+        a.side === 'groom' ||
+        a.title === '신랑' ||
+        a.relation === '신랑' ||
+        a.title?.includes('신랑') ||
+        a.relation?.includes('신랑')
+    );
+  }, [allParsedAccounts]);
 
   const brideAccounts = useMemo(() => {
-    if (!Array.isArray(rawAccounts)) return [];
-    return rawAccounts.filter((a) => a.group === '신부측');
-  }, [rawAccounts]);
+    return allParsedAccounts.filter(
+      (a) =>
+        a.group === '신부측' ||
+        a.group === '신부' ||
+        a.side === 'bride' ||
+        a.title === '신부' ||
+        a.relation === '신부' ||
+        a.title?.includes('신부') ||
+        a.relation?.includes('신부')
+    );
+  }, [allParsedAccounts]);
 
   // 클립보드 복사
   const handleCopy = (text, label) => {
@@ -585,7 +612,7 @@ export default function PlaylistTemplate({ invitation }) {
                   {(hasGroomParents || groomName) && (
                     <div className="flex items-center justify-center gap-1.5 text-stone-700 flex-wrap">
                       <span className="text-stone-500">{groomParentsNode}</span>
-                      {(config.groom_relation || invitation?.groom_relation) && (
+                      {hasGroomParents && (config.groom_relation || invitation?.groom_relation) && (
                         <span className="text-emerald-700 text-[11px] font-medium">의 {config.groom_relation || invitation?.groom_relation}</span>
                       )}
                       {groomName && <span className="font-semibold text-stone-900 ml-1">{groomName}</span>}
@@ -595,7 +622,7 @@ export default function PlaylistTemplate({ invitation }) {
                   {(hasBrideParents || brideName) && (
                     <div className="flex items-center justify-center gap-1.5 text-stone-700 flex-wrap">
                       <span className="text-stone-500">{brideParentsNode}</span>
-                      {(config.bride_relation || invitation?.bride_relation) && (
+                      {hasBrideParents && (config.bride_relation || invitation?.bride_relation) && (
                         <span className="text-emerald-700 text-[11px] font-medium">의 {config.bride_relation || invitation?.bride_relation}</span>
                       )}
                       {brideName && <span className="font-semibold text-stone-900 ml-1">{brideName}</span>}

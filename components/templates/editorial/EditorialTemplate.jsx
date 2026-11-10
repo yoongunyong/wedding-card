@@ -85,6 +85,13 @@ export default function EditorialTemplate({ invitation }) {
   // 5. 갤러리 탭/인덱스 상태
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
   const [activeAccountTab, setActiveAccountTab] = useState('groom'); // 'groom' | 'bride'
+
+  // 신랑측 계좌가 없고 신부측 계좌만 등록된 경우 신부측 탭 자동 우선 선택
+  useEffect(() => {
+    if (groomAccounts.length === 0 && brideAccounts.length > 0) {
+      setActiveAccountTab('bride');
+    }
+  }, [groomAccounts.length, brideAccounts.length]);
   const [activeNoticeIndex, setActiveNoticeIndex] = useState(0);
 
   // 6. 데이터 언패킹 & fallback

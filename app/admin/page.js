@@ -221,17 +221,41 @@ export default function AdminDashboardPage() {
       extractStoragePath(inv.bgm_url);
     }
 
-    // 4) slug 폴더 내 잔여 파일 전체 검색
-    if (inv.slug) {
+    // 4) slug 폴더 내 잔여 파일 검색 (공용/루트 폴더 절대 보호)
+    const cleanSlug = (inv.slug || '').trim().toLowerCase();
+    const PROTECTED_DIRS = ['presets', 'samples', 'common', 'shared', 'defaults', 'assets', 'fonts', 'images', 'storage', 'bgm', 'guest-snaps', 'public', 'static', 'admin', 'create', 'manage', 'api'];
+
+    const isSafeSlug = Boolean(
+      cleanSlug && 
+      cleanSlug.length >= 2 && 
+      !cleanSlug.includes('/') && 
+      !cleanSlug.includes('\\') && 
+      !cleanSlug.includes('..') && 
+      !PROTECTED_DIRS.includes(cleanSlug)
+    );
+
+    if (isSafeSlug) {
       try {
-        const { data: folderFiles } = await supabase.storage.from('wedding-images').list(inv.slug);
+        const { data: folderFiles } = await supabase.storage.from('wedding-images').list(cleanSlug);
         if (folderFiles && folderFiles.length > 0) {
           folderFiles.forEach((f) => {
-            if (f.name) storageFilesToDelete['wedding-images'].push(`${inv.slug}/${f.name}`);
+            if (f.name) storageFilesToDelete['wedding-images'].push(`${cleanSlug}/${f.name}`);
           });
         }
       } catch (e) {
         console.warn('Storage folder list warning:', e);
+      }
+
+      // 하객 스냅 폴더 잔여 파일 검색
+      try {
+        const { data: snapFiles } = await supabase.storage.from('wedding-images').list(`guest-snaps/${cleanSlug}`);
+        if (snapFiles && snapFiles.length > 0) {
+          snapFiles.forEach((f) => {
+            if (f.name) storageFilesToDelete['wedding-images'].push(`guest-snaps/${cleanSlug}/${f.name}`);
+          });
+        }
+      } catch (e) {
+        console.warn('Guest snaps folder list warning:', e);
       }
     }
 
@@ -285,15 +309,24 @@ export default function AdminDashboardPage() {
       const { error: invErr } = await supabase.from('invitations').delete().eq('id', inv.id);
       if (invErr) throw invErr;
 
-      // 4. 연결된 1회용 인증코드가 있었다면 '영구 폐기(삭제)'하여 환불/삭제 후 재사용 원천 차단
+      // 4. 연결된 1회용 인증코드가 있었다면 '영구 폐기(삭제)'하여 환불/삭제 후 재사용 원천 차단 (slug 및 code 이중 대조)
       const cleanInvSlug = (inv.slug || '').trim();
-      if (cleanInvSlug) {
+      const codeVal = (inv.order_code || inv.template_config?.order_code || '').trim();
+      if (cleanInvSlug || codeVal) {
         try {
-          await supabase
-            .from('order_codes')
-            .delete()
-            .eq('used_by_slug', cleanInvSlug);
-          setCodes((prev) => prev.filter((c) => c.used_by_slug !== cleanInvSlug));
+          if (cleanInvSlug) {
+            await supabase.from('order_codes').delete().eq('used_by_slug', cleanInvSlug);
+          }
+          if (codeVal) {
+            await supabase.from('order_codes').delete().eq('code', codeVal);
+          }
+          setCodes((prev) =>
+            prev.filter((c) => {
+              if (cleanInvSlug && c.used_by_slug === cleanInvSlug) return false;
+              if (codeVal && c.code === codeVal) return false;
+              return true;
+            })
+          );
         } catch (codeErr) {
           console.warn('order_codes purge warning:', codeErr);
         }

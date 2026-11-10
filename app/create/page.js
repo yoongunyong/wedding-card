@@ -1067,7 +1067,8 @@ function CreateInvitationContent() {
     const RESERVED_SLUGS = [
       'admin', 'create', 'manage', 'api', 'auth', 'login', 'logout', 'order',
       'basic', 'editorial', 'playlist', 'cinematic', 'scene',
-      'test', 'sample', 'preview', 'null', 'undefined', 'dashboard', 'static', 'public'
+      'test', 'sample', 'preview', 'null', 'undefined', 'dashboard', 'static', 'public',
+      'presets', 'samples', 'common', 'shared', 'defaults', 'assets', 'fonts', 'images', 'storage', 'guest-snaps', 'bgm', 'upload', 'uploads', 'favicon.ico', 'robots.txt', 'sitemap.xml'
     ];
     if (RESERVED_SLUGS.includes(cleanSlug)) {
       return alert(`'${cleanSlug}' 영문 주소는 시스템 예약어로 사용하실 수 없습니다. 다른 영문 주소를 입력해 주세요.`);

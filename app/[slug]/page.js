@@ -33,7 +33,9 @@ export async function generateMetadata({ params }) {
       .from('invitations')
       .select('groom_name, bride_name, wedding_date, venue_name, venue_hall, images')
       .eq('slug', slug)
-      .single();
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
     invitation = data;
   } catch (err) {
     console.warn('generateMetadata Supabase error:', err);
@@ -96,7 +98,9 @@ export default async function WeddingCardPage({ params }) {
       .from('invitations')
       .select('*')
       .eq('slug', slug)
-      .single();
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
     if (!error && data) {
       invitation = data;

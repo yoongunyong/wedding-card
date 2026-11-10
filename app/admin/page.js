@@ -75,7 +75,7 @@ export default function AdminDashboardPage() {
       const groomMatched = groomName.includes(keyword) || (noSpaceKeyword && noSpaceGroom.includes(noSpaceKeyword));
       const brideMatched = brideName.includes(keyword) || (noSpaceKeyword && noSpaceBride.includes(noSpaceKeyword));
 
-      // 모든 연락처 수집 (신랑, 신부, 혼주 연락처)
+      // 모든 연락처 수집 (신랑, 신부, 혼주 연락처 - template_config 포함)
       const phones = [
         inv.groom_phone,
         inv.bride_phone,
@@ -85,6 +85,10 @@ export default function AdminDashboardPage() {
         inv.bride_mother_phone,
         inv.template_config?.groom_phone,
         inv.template_config?.bride_phone,
+        inv.template_config?.groom_father_phone,
+        inv.template_config?.bride_father_phone,
+        inv.template_config?.groom_mother_phone,
+        inv.template_config?.bride_mother_phone,
       ].filter(Boolean);
 
       const phoneRawJoined = phones.join(' ').toLowerCase();
@@ -260,19 +264,20 @@ export default function AdminDashboardPage() {
       const { error: invErr } = await supabase.from('invitations').delete().eq('id', inv.id);
       if (invErr) throw invErr;
 
-      // 4. 연결된 1회용 인증코드가 있었다면 '사용 가능' 상태로 안전하게 자동 복원
+      // 4. 연결된 1회용 인증코드가 있었다면 '영구 폐기(삭제)'하여 환불/삭제 후 재사용 원천 차단
       if (inv.slug) {
         try {
           await supabase
             .from('order_codes')
-            .update({ is_used: false, used_at: null, used_by_slug: null })
+            .delete()
             .eq('used_by_slug', inv.slug);
+          setCodes((prev) => prev.filter((c) => c.used_by_slug !== inv.slug));
         } catch (codeErr) {
-          console.warn('order_codes restore warning:', codeErr);
+          console.warn('order_codes purge warning:', codeErr);
         }
       }
 
-      // 4. 로컬 상태 업데이트
+      // 5. 로컬 청첩장 목록 상태 업데이트
       setInvitations((prev) => prev.filter((item) => item.id !== inv.id));
       setDeleteTarget(null);
       setConfirmSlugInput('');
@@ -301,6 +306,19 @@ export default function AdminDashboardPage() {
             supabase.from('guest_photos').delete().eq('invitation_id', inv.id),
           ]);
           await supabase.from('invitations').delete().eq('id', inv.id);
+
+          // 연결된 1회용 인증코드가 있었다면 '영구 폐기(삭제)'하여 재사용 원천 차단
+          if (inv.slug) {
+            try {
+              await supabase
+                .from('order_codes')
+                .delete()
+                .eq('used_by_slug', inv.slug);
+            } catch (codeErr) {
+              console.warn('Batch purge order_codes purge warning:', codeErr);
+            }
+          }
+
           successCount++;
         } catch (subErr) {
           console.warn(`Batch purge item error (${inv.slug}):`, subErr);
@@ -367,7 +385,7 @@ export default function AdminDashboardPage() {
     try {
       const { data, error } = await supabase
         .from('invitations')
-        .select('id, slug, groom_name, bride_name, groom_phone, bride_phone, groom_father_phone, bride_father_phone, groom_mother_phone, bride_mother_phone, wedding_date, template_type, is_active, template_config, order_code, created_at, manage_token, service_expired_at, images, gallery_images, bgm_url')
+        .select('id, slug, groom_name, bride_name, groom_phone, bride_phone, groom_father_phone, bride_father_phone, groom_mother_phone, bride_mother_phone, wedding_date, template_type, is_active, template_config, order_code, created_at, manage_token, manage_password, service_expired_at, images, gallery_images, bgm_url')
         .order('created_at', { ascending: false });
 
       if (!error && data) {
@@ -389,7 +407,7 @@ export default function AdminDashboardPage() {
       try {
         const [codesRes, invsRes] = await Promise.all([
           supabase.from('order_codes').select('*').order('created_at', { ascending: false }),
-          supabase.from('invitations').select('id, slug, groom_name, bride_name, groom_phone, bride_phone, groom_father_phone, bride_father_phone, groom_mother_phone, bride_mother_phone, wedding_date, template_type, is_active, template_config, order_code, created_at, manage_token, service_expired_at, images, gallery_images, bgm_url').order('created_at', { ascending: false }),
+          supabase.from('invitations').select('id, slug, groom_name, bride_name, groom_phone, bride_phone, groom_father_phone, bride_father_phone, groom_mother_phone, bride_mother_phone, wedding_date, template_type, is_active, template_config, order_code, created_at, manage_token, manage_password, service_expired_at, images, gallery_images, bgm_url').order('created_at', { ascending: false }),
         ]);
 
         if (isMounted) {
@@ -492,7 +510,7 @@ export default function AdminDashboardPage() {
       } else {
         setCodes((prev) => [data, ...prev]);
         setNewCodeNote('');
-        navigator.clipboard.writeText(uniqueCode);
+        safeCopyText(uniqueCode);
         alert(`[${uniqueCode}] 코드가 안전하게 발급되어 클립보드에 복사되었습니다!\n고객이나 지인에게 바로 전달해 주세요.`);
       }
     } catch (err) {
@@ -519,11 +537,38 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // 범용 안전 클립보드 복사 헬퍼
+  const safeCopyText = (text) => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        navigator.clipboard.writeText(text);
+        return true;
+      }
+      throw new Error('Clipboard API not available');
+    } catch {
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+  };
+
   // 고객 전달용 안내문 원클릭 복사 (네이버 톡톡 / 카카오톡 전송용)
   const handleCopyCustomerNotice = (inv) => {
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
     const guestUrl = `${origin}/${inv.slug}`;
     const manageUrl = `${origin}/manage/${inv.slug}?token=${inv.manage_token}`;
+
+    const pin = inv.template_config?.manage_password || inv.manage_password;
+    const pinSection = pin ? `🔒 관리자 2차 인증 PIN: ${pin}
+` : '';
 
     const text = `[ATELIER DE MUKIRU] 모바일 청첩장 안내
 
@@ -535,7 +580,7 @@ ${guestUrl}
 
 ⚙️ 신랑·신부 전용 관리 페이지
 ${manageUrl}
-
+${pinSection}
 📌 전용 관리 페이지에서 하객 참석 여부(RSVP) 및 방명록을 실시간으로 확인하고, 사진이나 예식 정보를 언제든 수정하실 수 있습니다.
 📌 관리 링크는 분실되지 않도록 카카오톡 [나와의 채팅방] 또는 메모장에 꼭 보관해 두세요!
 
@@ -704,7 +749,7 @@ ATELIER DE MUKIRU 드림`;
 
   // 대시보드 화면
   const totalInvs = invitations.length;
-  const activeInvs = invitations.filter((i) => i.is_active ?? i.template_config?.is_active).length;
+  const activeInvs = invitations.filter((i) => Boolean(i.is_active ?? i.template_config?.is_active ?? false)).length;
   const pendingInvs = totalInvs - activeInvs;
   const unusedCodes = codes.filter((c) => !c.is_used).length;
 
@@ -897,7 +942,7 @@ ATELIER DE MUKIRU 드림`;
                           <td className="py-3.5 px-4 font-mono font-bold text-stone-900">
                             <span
                               onClick={() => {
-                                navigator.clipboard.writeText(c.code);
+                                safeCopyText(c.code);
                                 alert(`'${c.code}' 코드가 복사되었습니다!`);
                               }}
                               className="cursor-pointer hover:underline text-stone-900 bg-stone-100 px-2 py-1 rounded-md"

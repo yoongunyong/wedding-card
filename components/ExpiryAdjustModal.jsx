@@ -55,6 +55,10 @@ export default function ExpiryAdjustModal({ isOpen, onClose, invitation, onSave 
   };
 
   const handleConfirmSave = async () => {
+    if (mode === 'date' && !selectedDate) {
+      alert('만료일을 선택해 주세요.');
+      return;
+    }
     setSubmitting(true);
     try {
       if (mode === 'unlimited') {

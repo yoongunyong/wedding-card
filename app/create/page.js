@@ -1384,10 +1384,10 @@ function CreateInvitationContent() {
         return;
       }
 
-      // 1회용 인증코드 사용 완료 처리 (동시성 중복 선점 방지: eq is_used false)
+      // 1회용 인증코드 사용 완료 처리 (동시성 중복 선점 방지: eq is_used false 및 롤백 가드)
       if (matchedCodeId) {
         try {
-          await supabase
+          const { data: updatedCode, error: updateErr } = await supabase
             .from('order_codes')
             .update({
               is_used: true,
@@ -1395,7 +1395,19 @@ function CreateInvitationContent() {
               used_at: new Date().toISOString(),
             })
             .eq('id', matchedCodeId)
-            .eq('is_used', false);
+            .eq('is_used', false)
+            .select();
+
+          // 이미 다른 요청이 먼저 사용하여 0건 업데이트되었거나 오류 발생 시 롤백
+          if (updateErr || !updatedCode || updatedCode.length === 0) {
+            console.warn('동시 요청으로 이미 사용된 코드입니다. 청첩장을 샘플(무료) 모드로 자동 롤백합니다.');
+            willBeActive = false;
+            await supabase
+              .from('invitations')
+              .update({ is_active: false })
+              .eq('id', data.id);
+            alert('입력하신 인증코드가 등록 도중 다른 요청에 의해 이미 소진되었습니다. 청첩장은 안전하게 저장되었으나 무료 샘플 모드로 전환되었습니다. 관리 페이지에서 새 코드를 입력하여 정식 개통하실 수 있습니다.');
+          }
         } catch (codeUpdateErr) {
           console.warn('order_codes update error:', codeUpdateErr);
         }

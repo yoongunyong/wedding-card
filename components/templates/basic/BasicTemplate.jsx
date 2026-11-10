@@ -343,7 +343,7 @@ export default function BasicTemplate({ invitation }) {
     async function loadGuestbook() {
       const { data, error } = await supabase
         .from('guestbook')
-        .select('*')
+        .select('id, invitation_id, author, content, created_at')
         .eq('invitation_id', invitation.id)
         .order('created_at', { ascending: false });
 

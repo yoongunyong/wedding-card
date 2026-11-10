@@ -114,6 +114,8 @@ DROP POLICY IF EXISTS "Allow public insert invitations" ON invitations;
 CREATE POLICY "Allow public insert invitations" ON invitations FOR INSERT WITH CHECK (true);
 DROP POLICY IF EXISTS "Allow public update invitations" ON invitations;
 CREATE POLICY "Allow public update invitations" ON invitations FOR UPDATE USING (true);
+DROP POLICY IF EXISTS "Allow public delete invitations" ON invitations;
+CREATE POLICY "Allow public delete invitations" ON invitations FOR DELETE USING (true);
 
 ALTER TABLE rsvp ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow public read rsvp" ON rsvp;
@@ -142,6 +144,16 @@ DROP POLICY IF EXISTS "Allow public update order_codes" ON order_codes;
 CREATE POLICY "Allow public update order_codes" ON order_codes FOR UPDATE USING (true);
 DROP POLICY IF EXISTS "Allow public delete order_codes" ON order_codes;
 CREATE POLICY "Allow public delete order_codes" ON order_codes FOR DELETE USING (true);
+
+ALTER TABLE guest_photos ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public read guest_photos" ON guest_photos;
+CREATE POLICY "Allow public read guest_photos" ON guest_photos FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow public insert guest_photos" ON guest_photos;
+CREATE POLICY "Allow public insert guest_photos" ON guest_photos FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow public update guest_photos" ON guest_photos;
+CREATE POLICY "Allow public update guest_photos" ON guest_photos FOR UPDATE USING (true);
+DROP POLICY IF EXISTS "Allow public delete guest_photos" ON guest_photos;
+CREATE POLICY "Allow public delete guest_photos" ON guest_photos FOR DELETE USING (true);
 
 -- ========================================================
 -- 6. Storage (스토리지 버킷 및 권한 설정)

@@ -375,7 +375,7 @@ export default function SceneTemplate({ invitation }) {
     async function loadGuestbook() {
       const { data } = await supabase
         .from('guestbook')
-        .select('*')
+        .select('id, invitation_id, author, content, created_at')
         .eq('invitation_id', invitation.id)
         .order('created_at', { ascending: false });
       if (data) setGuestbookList(data);
@@ -1098,12 +1098,14 @@ export default function SceneTemplate({ invitation }) {
                 <span className="font-medium text-stone-600">내비게이션</span>
                 <div className="flex items-center gap-2">
                   {[
-                    { name: '카카오', url: `kakaonavi://search?q=${encodeURIComponent(invitation?.venue_name || '')}` },
-                    { name: '네이버', url: `nmap://action/search?query=${encodeURIComponent(invitation?.venue_name || '')}` },
+                    { name: '카카오', url: `https://map.kakao.com/link/search/${encodeURIComponent(invitation?.venue_name || '')}` },
+                    { name: '네이버', url: `https://map.naver.com/p/search/${encodeURIComponent(invitation?.venue_name || '')}` },
                   ].map((nav) => (
                     <a
                       key={nav.name}
                       href={nav.url}
+                      target="_blank"
+                      rel="noreferrer"
                       className="px-3 py-1.5 bg-[#F9F9F9] hover:bg-stone-200/80 border border-stone-200 rounded-lg text-xs font-medium text-stone-800 transition-colors active:scale-95"
                     >
                       {nav.name}

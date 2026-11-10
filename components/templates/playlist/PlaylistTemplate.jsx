@@ -198,7 +198,7 @@ export default function PlaylistTemplate({ invitation }) {
     async function loadGuestbook() {
       const { data } = await supabase
         .from('guestbook')
-        .select('*')
+        .select('id, invitation_id, author, content, created_at')
         .eq('invitation_id', invitation.id)
         .order('created_at', { ascending: false });
       if (data) setGuestbookList(data);
@@ -833,7 +833,9 @@ export default function PlaylistTemplate({ invitation }) {
               카카오맵
             </a>
             <a
-              href={`nmap://search?query=${encodeURIComponent(invitation?.venue_name || '')}&appname=wedding`}
+              href={`https://map.naver.com/p/search/${encodeURIComponent(invitation?.venue_name || '')}`}
+              target="_blank"
+              rel="noreferrer"
               className="py-2.5 rounded-xl bg-white hover:bg-stone-50 border border-stone-200/80 text-xs text-center text-stone-800 font-medium transition-colors shadow-2xs"
             >
               네이버지도
@@ -1120,7 +1122,7 @@ export default function PlaylistTemplate({ invitation }) {
             if (invitation?.id) {
               supabase
                 .from('guestbook')
-                .select('*')
+        .select('id, invitation_id, author, content, created_at')
                 .eq('invitation_id', invitation.id)
                 .order('created_at', { ascending: false })
                 .then(({ data }) => { if (data) setGuestbookList(data); });

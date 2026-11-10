@@ -23,12 +23,6 @@ export default function EditorialGuestbookDeleteModal({ targetMsg, onClose, onDe
     setLoading(true);
     const trimmedPw = password.trim();
 
-    // targetMsg에 password가 클라이언트에 있고 불일치하면 즉시 방어
-    if (targetMsg.password && targetMsg.password !== trimmedPw) {
-      setLoading(false);
-      return alert('비밀번호가 일치하지 않습니다.');
-    }
-
     // DB 차원에서 password 일치 여부 검증 및 삭제
     const { data, error } = await supabase
       .from('guestbook')

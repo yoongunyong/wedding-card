@@ -31,7 +31,7 @@ export async function generateMetadata({ params }) {
   try {
     const { data } = await supabase
       .from('invitations')
-      .select('groom_name, bride_name, wedding_date, venue_name, venue_hall, images')
+      .select('template_type, groom_name, bride_name, wedding_date, venue_name, venue_hall, images')
       .eq('slug', slug)
       .order('created_at', { ascending: false })
       .limit(1)

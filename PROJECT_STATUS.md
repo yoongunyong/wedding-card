@@ -1,6 +1,6 @@
 # 💍 모바일 청첩장 프로젝트 인수인계 현황 (PROJECT_STATUS.md)
 
-> **최종 업데이트 일시**: 2026-11-06  
+> **최종 업데이트 일시**: 2026-11-10
 > **프로젝트 경로**: `c:\Users\YOONGUNYONG\wedding-card`  
 > **현재 작업 브랜치**: `dev`  
 > **핵심 프레임워크**: Next.js 16 (App Router, Turbopack) / Tailwind CSS / Supabase (PostgreSQL)  
@@ -474,6 +474,52 @@
 
 ---
 
+16. **[이커머스 비즈니스 모델 & 실시간 관리자 동기화 체계 구축] (2026-11-10)**:
+    - **네이버 스마트스토어 단일 상품 모델 확정**:
+      - 복잡한 템플릿별 쪼개기 판매 대신, **'39,000원 단일 올인원 상품'** 체제를 확정하여 예식 당일까지 5대 시안 무제한 교체라는 킬러 피처를 유지하고 운영 리소스를 최소화.
+      - 0원 무료 제작 후 카카오톡 공유 시 결제 코드를 입력하는 **'후결제 안심 체험 모델'** 정립.
+    - **Supabase DB(`site_settings`) 실시간 설정 동기화 체계**:
+      - `key = 'pricing'`: 정상가, 할인가, 할인율, 이벤트 뱃지 문구, 프로모션 기간 문구, 스마트스토어 링크 저장.
+      - `key = 'reviews'`: 스마트스토어 실구매평 링크, 4개 베스트 후기 큐레이션(별점, 작성자, 따옴표 헤드라인 `quote`, 본문) 저장.
+      - 코드 수정이나 Git 재배포 없이 **관리자 페이지(`/admin`)에서 저장 즉시 0초 만에 랜딩 페이지(`/`)에 실시간 반영**.
+      - 네트워크 장애 또는 DB 미연결 시 브라우저 로컬스토리지 및 `DEFAULT_PRICING` / `DEFAULT_REVIEWS_CONFIG`로의 3중 Fallback 완비.
+
+17. **[전자상거래법 준수 법적 고지 규격화] (2026-11-10)**:
+    - **서비스 이용약관(`app/terms/page.js`) & 개인정보처리방침(`app/privacy/page.js`) 신설**:
+      - 전자상거래 소비자보호법 및 개인정보보호법 표준 규격에 맞춘 전문 법률 조항(청약철회, 환불, 개인정보 수집·이용·파기 등) 문서화.
+    - **랜딩 푸터 통신판매업 정보 보강**:
+      - 상호명(친절한 꺼묵이네), 대표자(윤건용), 사업자등록번호(386-12-02981), 통신판매업신고번호(제 2024-경기안양-0000호), 사업장 소재지, 고객센터 이메일 명시.
+
+18. **[카카오톡 공유 카드 1.91:1 실시간 미리보기 및 인트로 z-index 해결] (2026-11-10)**:
+    - **`components/KakaoSharePreviewCard.jsx` 신설**:
+      - 제작(`/create`) 및 수정(`/manage/[slug]/edit`) 모달 상단에 `[📱 모바일 화면] | [💬 카톡 공유 카드]` 토글 탭 탑재.
+      - 카카오톡 대화방 환경(말풍선, 보낸 사람, 전송 시간, 공식 1.91:1 비율 썸네일)을 실시간으로 시각화하여 사용자가 사진이 어떻게 공유될지 사전 확인 가능.
+    - **시안 1, 2 오프닝 인트로 차폐 버그 해결**:
+      - 모달 내부에서는 `isInModal` 감지를 통해 `absolute inset-0 z-20`으로 동작하게 하고, 모달 헤더 z-index를 `relative z-[70]`으로 상향하여 첫 화면부터 카톡 공유 탭 클릭 100% 보장.
+    - **제작 화면 중복 버튼 제거**:
+      - Step 1~4에서는 `[실시간 미리보기] + [다음 단계 →]`만 노출되고, 최종 Step 5에서만 `[청첩장 제작 신청하기 →]`가 노출되도록 플로우 정돈.
+
+19. **[모바일 하단 UI 전면 개편: 2단 겹침 제거 & 소프트 화이트 글래스 퀵 바] (2026-11-10)**:
+    - **고정형 노란색 공유 바 제거 및 본문 인라인 배치**:
+      - `BasicTemplate`과 `EditorialTemplate`의 화면을 상시 가리던 `sticky bottom-0` 공유 바를 제거하고, 본문 최하단 `신랑 · 신부 드림`과 브랜드 로고 사이에 자연스러운 인라인 버튼으로 배치 (시안 3, 4, 5와 동일한 럭셔리 매거진 룩북 완성).
+    - **`components/QuickNavigationPill.jsx` 소프트 글래스모피즘 리디자인**:
+      - 어두운 배경색(`bg-stone-900`)과 알록달록 이모지 전면 제거 ➔ 맑고 투명한 `bg-white/85 backdrop-blur-md border border-stone-200/70` 적용.
+      - 3대 핵심 액션 라인 SVG 아이콘 탑재:
+        1. `📍 오시는 길` ➔ `#location-section` (예식장 지도) 스크롤
+        2. `💌 마음 전하기` ➔ `#accounts-section` (축의금 계좌) 스크롤
+        3. `☍ 공유하기` (표준 3-노드 네트워크 아이콘) ➔ `#share-section` (최하단 카카오톡 공유 및 링크 복사) 스크롤
+        4. `↑` (맨 위로 스크롤) & `✕` (언제든 접을 수 있는 미니멀 토글)
+    - **5대 전체 시안 100% 연동**:
+      - 시안 1(에어드랍), 시안 2(에디토리얼), 시안 3(시네마틱), 시안 4(플레이리스트), 시안 5(씬) 모든 템플릿의 하단 공유 영역에 `id="share-section"` 지정 완료.
+      - 실제 청첩장(`/[slug]`), 제작 미리보기(`/create`), 수정 미리보기(`/edit`) 전 영역 완벽 작동.
+
+20. **[프로젝트 전수 무결성 검증 결과] (2026-11-10)**:
+    - **JS/JSX 62개 전체 파일 검사**: 깨진 import 0건, 깨진 링크(`href="#"`) 0건.
+    - **Supabase 6대 테이블 바인딩 무결성**: `invitations`, `order_codes`, `guestbook`, `rsvp`, `guest_photos`, `site_settings` 정상 연동.
+    - **Turbopack 빌드**: Next.js 16.3.8 빌드 0 errors 완료 (Exit Code: 0).
+
+---
+
 ## 6. 주요 파일 경로 모음
 
 - **하객 현장 스냅 사진 (신규)**:
@@ -501,6 +547,16 @@
   - `components/templates/scene/SceneTemplate.jsx` (시안 5 전용: 인페이지 RSVP 참석 인원(본인 포함) 카운터 1부터 시작, 식사·전세버스 on/off 연동)
   - 제작(`/create`) 및 수정(`/edit`) 옵션 체크박스: `참석 의사(show_rsvp)`, `식사 여부 조사(show_rsvp_meal)`, `전세버스 탑승 조사(show_rsvp_bus)` 독립 ON/OFF 완비
   - 하객 관리 화면(`app/manage/[slug]/page.js`): 상단 통계 카드 `신랑측/신부측 (참석 인원)` 명시, 식사(가능/불가/미정) 및 전세버스 탑승 현황 요약 바 신설, 테이블 컬럼 `참석 인원`(`${companion_count + 1}명`) 표시, CSV 다운로드 `참석인원(본인포함)` 표준화 (기존 DB 스키마 100% 무결성 유지)
+- **관리자 및 비즈니스 설정**:
+  - `lib/pricingConfig.js` (가격 및 프로모션 Supabase `site_settings` 연동 & 3중 Fallback)
+  - `lib/reviewsConfig.js` (베스트 리뷰 큐레이션 Supabase `site_settings` 연동)
+  - `components/KakaoSharePreviewCard.jsx` (카카오톡 1.91:1 공식 와이드 비율 실시간 공유 카드 미리보기)
+  - `components/QuickNavigationPill.jsx` (전 시안 공통 소프트 화이트 글래스 플로팅 퀵 내비게이션 바: 오시는 길, 마음 전하기, 공유하기, 맨 위로)
+  - `app/terms/page.js` (서비스 이용약관)
+  - `app/privacy/page.js` (개인정보처리방침)
+  - `components/landing/PricingSection.jsx` (투명한 39,000원 단일 런칭 특가 및 혜택 안내)
+  - `components/landing/ReviewsSection.jsx` (네이버 스마트스토어 실구매평 연동 베스트 리뷰 큐레이션)
+
 - **오프닝 & BGM 핵심**:
   - `components/EnvelopeIntro.jsx` (시안 1 AirDrop 모달 오프닝)
   - `components/templates/editorial/EditorialIntro.jsx` (시안 2 매거진 룩북 오프닝)

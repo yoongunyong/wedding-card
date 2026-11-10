@@ -369,14 +369,17 @@ function ManageRsvpContent({ params }) {
 
   // 관리자 RSVP 참석 정보 삭제
   const handleDeleteRsvp = async (id, name) => {
+    if (!invitation?.id) return;
     if (!confirm(`'${name}' 님의 참석 정보를 정말 삭제하시겠습니까?`)) {
       return;
     }
 
+    // [대형사고 방지] 본인 청첩장 소속의 참석 응답만 삭제되도록 invitation_id 이중 검증
     const { error } = await supabase
       .from('rsvp')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .eq('invitation_id', invitation.id);
 
     if (error) {
       console.error('RSVP 삭제 오류:', error);
@@ -389,14 +392,17 @@ function ManageRsvpContent({ params }) {
 
   // 관리자 방명록 삭제 (비밀번호 불필요)
   const handleDeleteGuestbook = async (id, author) => {
+    if (!invitation?.id) return;
     if (!confirm(`'${author}' 님의 방명록을 정말 삭제하시겠습니까?`)) {
       return;
     }
 
+    // [대형사고 방지] 본인 청첩장 소속의 방명록만 삭제되도록 invitation_id 이중 검증
     const { error } = await supabase
       .from('guestbook')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .eq('invitation_id', invitation.id);
 
     if (error) {
       console.error('방명록 삭제 오류:', error);

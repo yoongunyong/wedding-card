@@ -1383,7 +1383,7 @@ function CreateInvitationContent() {
         return;
       }
 
-      // 1회용 인증코드 사용 완료 처리
+      // 1회용 인증코드 사용 완료 처리 (동시성 중복 선점 방지: eq is_used false)
       if (matchedCodeId) {
         try {
           await supabase
@@ -1393,7 +1393,8 @@ function CreateInvitationContent() {
               used_by_slug: cleanSlug,
               used_at: new Date().toISOString(),
             })
-            .eq('id', matchedCodeId);
+            .eq('id', matchedCodeId)
+            .eq('is_used', false);
         } catch (codeUpdateErr) {
           console.warn('order_codes update error:', codeUpdateErr);
         }

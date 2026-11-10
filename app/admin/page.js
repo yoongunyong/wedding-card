@@ -148,6 +148,9 @@ export default function AdminDashboardPage() {
     return invitations.filter((inv) => {
       const isActive = Boolean(inv.is_active ?? inv.template_config?.is_active ?? false);
       if (isActive) return false;
+      // [대형사고 방지] 정식 결제/발급 인증코드가 존재하는 청첩장은 활성화 여부와 관계없이 일괄 삭제 대상에서 100% 영구 제외
+      const hasOrderCode = Boolean((inv.order_code || '').trim() || (inv.template_config?.order_code || '').trim());
+      if (hasOrderCode) return false;
       if (!inv.created_at) return false;
       const createdTime = new Date(inv.created_at).getTime();
       return (currentTimestamp - createdTime) > THIRTY_DAYS_MS;
@@ -169,6 +172,24 @@ export default function AdminDashboardPage() {
       if (match) {
         const bucket = match[1];
         const filePath = decodeURIComponent(match[2].split('?')[0]);
+
+        // [대형사고 방지] 본인 청첩장(inv.slug) 전용 파일인지 엄격히 검증
+        // 타 고객의 파일 경로이거나 공용 에셋인 경우 절대 삭제하지 않음
+        const cleanSlug = (inv.slug || '').trim();
+        if (cleanSlug) {
+          const isOwnFile =
+            filePath.startsWith(`${cleanSlug}/`) ||
+            filePath.startsWith(`guest-snaps/${cleanSlug}/`) ||
+            filePath.startsWith(`${cleanSlug}_`);
+
+          if (!isOwnFile) {
+            console.warn(`[안전 방어] 타 고객 또는 공용 파일(${filePath})은 삭제 대상에서 안전하게 제외되었습니다.`);
+            return;
+          }
+        } else {
+          return;
+        }
+
         if (storageFilesToDelete[bucket]) {
           storageFilesToDelete[bucket].push(filePath);
         } else {
@@ -265,13 +286,14 @@ export default function AdminDashboardPage() {
       if (invErr) throw invErr;
 
       // 4. 연결된 1회용 인증코드가 있었다면 '영구 폐기(삭제)'하여 환불/삭제 후 재사용 원천 차단
-      if (inv.slug) {
+      const cleanInvSlug = (inv.slug || '').trim();
+      if (cleanInvSlug) {
         try {
           await supabase
             .from('order_codes')
             .delete()
-            .eq('used_by_slug', inv.slug);
-          setCodes((prev) => prev.filter((c) => c.used_by_slug !== inv.slug));
+            .eq('used_by_slug', cleanInvSlug);
+          setCodes((prev) => prev.filter((c) => c.used_by_slug !== cleanInvSlug));
         } catch (codeErr) {
           console.warn('order_codes purge warning:', codeErr);
         }
@@ -308,12 +330,13 @@ export default function AdminDashboardPage() {
           await supabase.from('invitations').delete().eq('id', inv.id);
 
           // 연결된 1회용 인증코드가 있었다면 '영구 폐기(삭제)'하여 재사용 원천 차단
-          if (inv.slug) {
+          const cleanBatchSlug = (inv.slug || '').trim();
+          if (cleanBatchSlug) {
             try {
               await supabase
                 .from('order_codes')
                 .delete()
-                .eq('used_by_slug', inv.slug);
+                .eq('used_by_slug', cleanBatchSlug);
             } catch (codeErr) {
               console.warn('Batch purge order_codes purge warning:', codeErr);
             }

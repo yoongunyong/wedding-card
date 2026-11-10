@@ -40,15 +40,18 @@ export default function GuestPhotoManager({ invitation }) {
 
   // 개별 사진 삭제
   const handleDeletePhoto = async (photoId) => {
+    if (!invitation?.id) return;
     if (!confirm('이 사진을 보관함에서 삭제하시겠습니까? (삭제 후 복구할 수 없습니다)')) {
       return;
     }
 
     try {
+      // [대형사고 방지] 본인 청첩장 소속의 하객 사진만 삭제되도록 invitation_id 이중 검증
       const { error } = await supabase
         .from('guest_photos')
         .delete()
-        .eq('id', photoId);
+        .eq('id', photoId)
+        .eq('invitation_id', invitation.id);
 
       if (error) {
         alert('삭제에 실패했습니다. 다시 시도해 주세요.');

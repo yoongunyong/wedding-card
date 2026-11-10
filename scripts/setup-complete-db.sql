@@ -91,7 +91,20 @@ CREATE TABLE IF NOT EXISTS guestbook (
 );
 
 -- ========================================================
--- 4. order_codes (1회용 인증코드 테이블)
+-- 4. guest_photos (하객 포토스냅 테이블)
+-- ========================================================
+CREATE TABLE IF NOT EXISTS guest_photos (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  invitation_id UUID REFERENCES invitations(id) ON DELETE CASCADE,
+  sender_name TEXT NOT NULL,
+  message TEXT,
+  photo_url TEXT NOT NULL,
+  file_size BIGINT
+);
+
+-- ========================================================
+-- 5. order_codes (1회용 인증코드 테이블)
 -- ========================================================
 CREATE TABLE IF NOT EXISTS order_codes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

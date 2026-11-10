@@ -1289,7 +1289,6 @@ function CreateInvitationContent() {
         bride_first_name_en: formData.bride_first_name_en.trim() || formData.bride_name_en.trim().split(' ')[0] || formData.bride_name_en.trim(),
         bride_last_name_en: formData.bride_last_name_en.trim() || formData.bride_name_en.trim().split(' ').slice(1).join(' ') || '',
 
-        message_title: (formData.message_title || '').trim(),
         message: formData.message.trim(),
         quote_content: formData.show_quote_section ? formData.quote_content.trim() : '',
         quote_source: formData.show_quote_section ? formData.quote_source.trim() : '',
@@ -1316,7 +1315,6 @@ function CreateInvitationContent() {
         template_type: formData.template_type || 'editorial',
         is_active: willBeActive,
         order_code: inputCode || null,
-        manage_password: formData.manage_password || null,
         service_expired_at: (() => {
           try {
             const wDate = new Date(`${formData.wedding_date}T${formData.wedding_time || '12:00'}:00`);

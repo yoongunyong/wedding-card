@@ -1147,7 +1147,6 @@ function EditInvitationContent({ params }) {
         venue_address: formData.venue_address.trim(),
         venue_detail: formData.venue_detail.trim(),
 
-        message_title: (formData.message_title || '').trim(),
         message: formData.message.trim(),
         quote_content: formData.show_quote_section ? formData.quote_content.trim() : '',
         quote_source: formData.show_quote_section ? formData.quote_source.trim() : '',
@@ -1177,7 +1176,6 @@ function EditInvitationContent({ params }) {
         bgm_url: finalBgmUrl,
         bgm_mode: finalBgmMode,
         template_type: formData.template_type || 'basic',
-        manage_password: (formData.manage_password || '').trim() || null,
         service_expired_at: (() => {
           try {
             const wDate = new Date(`${formData.wedding_date}T${formData.wedding_time || '12:00'}:00`);

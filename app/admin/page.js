@@ -441,7 +441,7 @@ export default function AdminDashboardPage() {
     try {
       const { data, error } = await supabase
         .from('invitations')
-        .select('id, slug, groom_name, bride_name, groom_phone, bride_phone, groom_father_phone, bride_father_phone, groom_mother_phone, bride_mother_phone, wedding_date, template_type, is_active, template_config, order_code, created_at, manage_token, manage_password, service_expired_at, images, gallery_images, bgm_url')
+        .select('id, slug, groom_name, bride_name, groom_phone, bride_phone, groom_father_phone, bride_father_phone, groom_mother_phone, bride_mother_phone, wedding_date, template_type, is_active, template_config, order_code, created_at, manage_token, service_expired_at, images, gallery_images, bgm_url')
         .order('created_at', { ascending: false });
 
       if (!error && data) {
@@ -463,7 +463,7 @@ export default function AdminDashboardPage() {
       try {
         const [codesRes, invsRes] = await Promise.all([
           supabase.from('order_codes').select('*').order('created_at', { ascending: false }),
-          supabase.from('invitations').select('id, slug, groom_name, bride_name, groom_phone, bride_phone, groom_father_phone, bride_father_phone, groom_mother_phone, bride_mother_phone, wedding_date, template_type, is_active, template_config, order_code, created_at, manage_token, manage_password, service_expired_at, images, gallery_images, bgm_url').order('created_at', { ascending: false }),
+          supabase.from('invitations').select('id, slug, groom_name, bride_name, groom_phone, bride_phone, groom_father_phone, bride_father_phone, groom_mother_phone, bride_mother_phone, wedding_date, template_type, is_active, template_config, order_code, created_at, manage_token, service_expired_at, images, gallery_images, bgm_url').order('created_at', { ascending: false }),
         ]);
 
         if (isMounted) {

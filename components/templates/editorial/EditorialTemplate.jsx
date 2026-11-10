@@ -88,6 +88,7 @@ export default function EditorialTemplate({ invitation }) {
 
 
   const [activeNoticeIndex, setActiveNoticeIndex] = useState(0);
+  const noticeTouchStartX = useRef(null);
 
   // 6. 데이터 언패킹 & fallback
   const config = invitation?.template_config || {};
@@ -1381,7 +1382,24 @@ export default function EditorialTemplate({ invitation }) {
               </p>
 
               {/* 중앙: 필름 스트립 프레임 영역 (Figma: 10822px, bg #DDE7F3, mt-[39px], 실측 1x 305px 파스텔 블루 필름) */}
-              <div className="w-full bg-[#DDE7F3] pt-[12px] pb-[14px] mt-[39px] relative overflow-hidden flex flex-col items-center select-none">
+              <div 
+                className="w-full bg-[#DDE7F3] pt-[12px] pb-[14px] mt-[39px] relative overflow-hidden flex flex-col items-center select-none touch-pan-y"
+                onTouchStart={(e) => {
+                  noticeTouchStartX.current = e.touches[0].clientX;
+                }}
+                onTouchEnd={(e) => {
+                  if (noticeTouchStartX.current === null) return;
+                  const deltaX = e.changedTouches[0].clientX - noticeTouchStartX.current;
+                  noticeTouchStartX.current = null;
+                  if (hasMultiple) {
+                    if (deltaX < -35) {
+                      setActiveNoticeIndex((prev) => (prev + 1) % displayNotices.length);
+                    } else if (deltaX > 35) {
+                      setActiveNoticeIndex((prev) => (prev - 1 + displayNotices.length) % displayNotices.length);
+                    }
+                  }
+                }}
+              >
                 {/* 상단 필름 바: 2, DESIGNED BY ATELIER DE MUKIRU (Figma: NanumSquare Neo 800 10px #FFFFFF), 3 */}
                 <div className="w-full max-w-[390px] px-6 flex justify-between items-center text-white select-none mb-[8px]">
                   <span className="font-nanumsquare text-[11px] font-extrabold w-[24px] text-center">2</span>
@@ -1401,18 +1419,30 @@ export default function EditorialTemplate({ invitation }) {
                 {/* 중앙 프레임 영역 (좌측 잘린 프레임 + 중앙 메인 카드 + 우측 잘린 프레임) */}
                 <div className="w-full max-w-[390px] flex items-center justify-center gap-[12px] my-[13px] select-none">
                   {/* 좌측 프레임 가장자리 (여러 장일 땐 클릭 시 이전 카드로 이동) */}
-                  <div
+                  <button
+                    type="button"
                     onClick={() => {
                       if (hasMultiple) {
                         setActiveNoticeIndex((prev) => (prev - 1 + displayNotices.length) % displayNotices.length);
                       }
                     }}
-                    className={`w-[24px] h-[210px] bg-white rounded-r-[8px] opacity-90 shrink-0 ${hasMultiple ? 'cursor-pointer hover:opacity-100 transition-opacity' : ''}`}
-                    title={hasMultiple ? '이전 안내' : undefined}
-                  />
+                    aria-label="이전 안내사항 보기"
+                    className={`w-[24px] h-[210px] bg-white rounded-r-[8px] opacity-90 shrink-0 flex items-center justify-center transition-all ${
+                      hasMultiple
+                        ? 'cursor-pointer hover:opacity-100 hover:w-[26px] active:scale-95 text-[#999999] hover:text-[#333333]'
+                        : 'cursor-default pointer-events-none'
+                    }`}
+                  >
+                    {hasMultiple && (
+                      <span className="text-[12px] font-bold select-none opacity-60">‹</span>
+                    )}
+                  </button>
 
-                  {/* 중앙 메인 안내 카드 (Figma: 식사안내, 구분선 239px, 내용 NanumSquare Neo 12px leading-[1.78]) */}
-                  <div className="w-[276px] min-h-[210px] bg-white rounded-[10px] py-[28px] px-[18px] flex flex-col items-center justify-center text-center shrink-0 shadow-xs">
+                  {/* 중앙 메인 안내 카드 (터치 스와이프 지원 및 부드러운 전환) */}
+                  <div 
+                    key={activeNoticeIndex}
+                    className="w-[276px] min-h-[210px] bg-white rounded-[10px] py-[28px] px-[18px] flex flex-col items-center justify-center text-center shrink-0 shadow-xs transition-all duration-200 animate-in fade-in"
+                  >
                     {/* 카드 제목 */}
                     <h3 className="font-nanumsquare font-normal text-[14px] text-[#333333] leading-none text-center tracking-tight">
                       {currentNotice.title || '식사 안내'}
@@ -1436,8 +1466,11 @@ export default function EditorialTemplate({ invitation }) {
                           <button
                             key={i}
                             type="button"
-                            onClick={() => setActiveNoticeIndex(i)}
-                            className={`w-1.5 h-1.5 rounded-full transition-all ${
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveNoticeIndex(i);
+                            }}
+                            className={`w-1.5 h-1.5 rounded-full transition-all cursor-pointer ${
                               i === (activeNoticeIndex % displayNotices.length)
                                 ? 'w-4 bg-[#333333]'
                                 : 'bg-stone-300'
@@ -1450,15 +1483,24 @@ export default function EditorialTemplate({ invitation }) {
                   </div>
 
                   {/* 우측 프레임 가장자리 (여러 장일 땐 클릭 시 다음 카드로 이동) */}
-                  <div
+                  <button
+                    type="button"
                     onClick={() => {
                       if (hasMultiple) {
                         setActiveNoticeIndex((prev) => (prev + 1) % displayNotices.length);
                       }
                     }}
-                    className={`w-[24px] h-[210px] bg-white rounded-l-[8px] opacity-90 shrink-0 ${hasMultiple ? 'cursor-pointer hover:opacity-100 transition-opacity' : ''}`}
-                    title={hasMultiple ? '다음 안내' : undefined}
-                  />
+                    aria-label="다음 안내사항 보기"
+                    className={`w-[24px] h-[210px] bg-white rounded-l-[8px] opacity-90 shrink-0 flex items-center justify-center transition-all ${
+                      hasMultiple
+                        ? 'cursor-pointer hover:opacity-100 hover:w-[26px] active:scale-95 text-[#999999] hover:text-[#333333]'
+                        : 'cursor-default pointer-events-none'
+                    }`}
+                  >
+                    {hasMultiple && (
+                      <span className="text-[12px] font-bold select-none opacity-60">›</span>
+                    )}
+                  </button>
                 </div>
 
                 {/* 하단 퍼포레이션 구멍 열 (10개, #F5F5F5) */}

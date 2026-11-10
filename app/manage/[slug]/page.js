@@ -174,7 +174,6 @@ function ManageRsvpContent({ params }) {
         .from('invitations')
         .update({ 
           template_config: updatedConfig,
-          manage_password: newPin,
         })
         .eq('id', invitation.id);
 
@@ -231,7 +230,6 @@ function ManageRsvpContent({ params }) {
         .from('invitations')
         .update({ 
           template_config: updatedConfig,
-          manage_password: changeNewPin,
         })
         .eq('id', invitation.id);
 

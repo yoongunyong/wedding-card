@@ -27,6 +27,10 @@
    - `-webkit-appearance: none`, `box-sizing: border-box !important`, `min-w-0 !important`, 카드 `overflow-hidden`으로 인풋 박스가 우측으로 삐져나오던 문제 완전 해결.
 6. **[실시간 미리보기 필수값 사전 검증 및 카카오톡 웹뷰 튕김 해결]**:
    - 필수값 미입력 상태에서 미리보기 클릭 시 친절한 alert 안내 출력 및 안전한 `pushState(..., window.location.href)` 처리로 웹뷰 크래시 방지.
+7. **[검색엔진 개인정보 노출 방지 (`public/robots.txt` 신설 & `robots: { index: false }` 메타 태그)]**:
+   - 구글/네이버 등 검색엔진 로봇이 개인 청첩장을 무단 크롤링하여 신랑·신부 실명, 계좌번호, 혼주 성함을 검색창에 박제하는 프라이버시 침해 사고를 원천 방지 (SNS 카톡 공유 썸네일은 정상 작동).
+8. **[모바일 가상 키보드 가림 결함 해결 (`BasicGuestbookModal.jsx`)]**:
+   - 시안 1 축하 메시지 작성 모달에 `max-h-[90vh] overflow-y-auto`를 적용하여 소형 기기에서 가상 키보드가 올라올 때 등록 버튼이 잘려 터치 불가하던 현상 완벽 방어.
 
 ## 1. 프로젝트 핵심 개발 & 디자인 운영 원칙 (사용자 당부 절대 준수)
 

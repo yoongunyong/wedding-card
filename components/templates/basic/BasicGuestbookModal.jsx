@@ -49,7 +49,7 @@ export default function BasicGuestbookModal({ invitationId, onClose, onSuccess }
       onClick={onClose}
     >
       <div 
-        className="bg-white w-full max-w-[340px] rounded-3xl p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200"
+        className="bg-white w-full max-w-[340px] rounded-3xl p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 닫기 버튼 */}

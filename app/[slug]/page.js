@@ -85,6 +85,20 @@ export async function generateMetadata({ params }) {
       description,
       images: ogImage ? [ogImage] : [],
     },
+    // 신랑·신부 및 혼주 개인정보(실명, 계좌, 연락처) 검색엔진 노출 원천 차단 (SNS 카톡 공유 OG태그는 정상 작동)
+    robots: {
+      index: false,
+      follow: false,
+      nocache: true,
+      googleBot: {
+        index: false,
+        follow: false,
+        noimageindex: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'none',
+        'max-snippet': -1,
+      },
+    },
   };
 }
 

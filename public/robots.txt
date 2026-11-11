@@ -1,0 +1,11 @@
+# ATELIER DE MUKIRU (아틀리에 드 무키루) — 공식 robots.txt
+# 신랑·신부 및 하객의 사적인 개인정보(실명, 계좌번호, 연락처, 사진) 검색엔진 노출을 엄격히 차단합니다.
+
+User-agent: *
+Allow: /$
+Allow: /terms
+Allow: /privacy
+Disallow: /create
+Disallow: /admin
+Disallow: /manage/
+Disallow: /*

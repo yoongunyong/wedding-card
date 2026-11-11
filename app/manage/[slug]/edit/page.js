@@ -683,9 +683,9 @@ function EditInvitationContent({ params }) {
     });
 
     const currentTotal = existingGalleryUrls.length + newGalleryPreviews.length;
-    const totalAllowed = 20 - currentTotal;
+    const totalAllowed = 30 - currentTotal;
     if (validFiles.length > totalAllowed) {
-      alert(`갤러리 사진은 최대 20장까지 등록 가능합니다. (현재 등록된 사진 ${currentTotal}장)`);
+      alert(`갤러리 사진은 최대 30장까지 등록 가능합니다. (현재 등록된 사진 ${currentTotal}장)`);
     }
 
     const slicedFiles = validFiles.slice(0, Math.max(0, totalAllowed));
@@ -2781,14 +2781,14 @@ function EditInvitationContent({ params }) {
                 <div className="flex items-center justify-between mb-2">
                   <div>
                     <label className="block text-xs font-semibold text-[#1E293B]">
-                      웨딩 갤러리 화보 사진 (최대 20장)
+                      웨딩 갤러리 화보 사진 (최대 30장)
                     </label>
                     <p className="text-[11px] text-[#94A3B8] font-light mt-0.5">
                       여러 장을 한 번에 선택하여 등록하실 수 있습니다.
                     </p>
                   </div>
                   <span className="text-[11px] font-mono text-[#64748B] font-medium bg-[#F1F5F9]/60 px-2.5 py-0.5 rounded-full">
-                    현재 총 {existingGalleryUrls.length + newGalleryPreviews.length} / 20장
+                    현재 총 {existingGalleryUrls.length + newGalleryPreviews.length} / 30장
                   </span>
                 </div>
 

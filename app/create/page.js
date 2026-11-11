@@ -730,13 +730,13 @@ function CreateInvitationContent() {
     });
 
     if (validFiles.length > 0) {
-      const remainingSlots = 20 - galleryPreviews.length;
+      const remainingSlots = 30 - galleryPreviews.length;
       if (remainingSlots <= 0) {
-        return alert('웨딩 갤러리 화보 사진은 최대 20장까지 등록 가능합니다.');
+        return alert('웨딩 갤러리 화보 사진은 최대 30장까지 등록 가능합니다.');
       }
       const filesToProcess = validFiles.slice(0, remainingSlots);
       if (validFiles.length > remainingSlots) {
-        alert(`최대 20장까지만 등록 가능하여 초과된 ${validFiles.length - remainingSlots}장은 제외되었습니다.`);
+        alert(`최대 30장까지만 등록 가능하여 초과된 ${validFiles.length - remainingSlots}장은 제외되었습니다.`);
       }
 
       const optimizedFiles = await Promise.all(
@@ -3429,14 +3429,14 @@ function CreateInvitationContent() {
                 <div className="flex items-center justify-between mb-2">
                   <div>
                     <label className="block text-xs font-semibold text-[#1E293B]">
-                      웨딩 갤러리 화보 사진 (최대 20장)
+                      웨딩 갤러리 화보 사진 (최대 30장)
                     </label>
                     <p className="text-[11px] text-[#94A3B8] font-light mt-0.5">
                       여러 장을 한 번에 선택하여 등록하실 수 있습니다.
                     </p>
                   </div>
                   <span className="text-[11px] font-mono text-[#64748B] font-medium bg-[#F1F5F9]/60 px-2.5 py-0.5 rounded-full">
-                    {galleryPreviews.length} / 20 PIC
+                    {galleryPreviews.length} / 30 PIC
                   </span>
                 </div>
 

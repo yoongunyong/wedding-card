@@ -1008,8 +1008,8 @@ function CreateInvitationContent() {
         couple_profile: effectiveCoupleImage,
         ending: effectiveEndingImage,
         photo_sharing: photoSharingImagePreview || '',
-        bride_profile: bridePhotoPreview || (['editorial', 'cinematic', 'scene'].includes(formData.template_type) ? PREVIEW_FALLBACK.images.bride_profile : ''),
-        groom_profile: groomPhotoPreview || (['editorial', 'cinematic', 'scene'].includes(formData.template_type) ? PREVIEW_FALLBACK.images.groom_profile : ''),
+        bride_profile: bridePhotoPreview || PREVIEW_FALLBACK.images.bride_profile,
+        groom_profile: groomPhotoPreview || PREVIEW_FALLBACK.images.groom_profile,
       },
       gallery_images: effectiveGalleryImages,
       accounts: allAccounts,
@@ -3104,22 +3104,23 @@ function CreateInvitationContent() {
                 )}
               </div>
 
-              {/* 시안 2 (에디토리얼) & 시안 4 (시네마틱) & 시안 5 (모던 씬) 전용: 신랑 & 신부 단독 인물 스냅 사진 */}
-              {['editorial', 'cinematic', 'scene'].includes(formData.template_type) && (
-                <div className="p-5 bg-white/80 rounded-2xl border-2 border-stone-900/40">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-bold text-[#0F172A]">
-                      신랑 & 신부 개별 인물 스냅 사진 (선택)
-                    </label>
-                    <span className="text-[10px] font-mono bg-stone-900 text-white px-2 py-0.5 rounded-full font-semibold">
-                      {formData.template_type === 'editorial' ? 'OPTION 02 전용' : 'OPTION 04, 05 전용'}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-[#64748B] mb-4 font-light">
-                    {formData.template_type === 'editorial'
-                      ? '시안 2 에디토리얼 프로필 스프레드에 들어갈 신부 & 신랑 단독 액자 사진입니다. 미등록 시 화보 샘플로 자동 채워집니다.'
-                      : '시안 4 및 시안 5의 2열 인물 스냅(Bride & Groom)에 들어가는 개별 단독 사진입니다. (미등록 시 사진 없이 성함 텍스트만 깔끔하게 노출됩니다)'}
-                  </p>
+              {/* 시안 1~5 공통 지원: 신랑 & 신부 단독 인물 스냅 사진 */}
+              <div className="p-5 bg-white/80 rounded-2xl border-2 border-stone-900/40">
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold text-[#0F172A]">
+                    신랑 & 신부 개별 인물 스냅 사진 (선택)
+                  </label>
+                  <span className="text-[10px] font-mono bg-stone-900 text-white px-2 py-0.5 rounded-full font-semibold">
+                    전 시안 지원
+                  </span>
+                </div>
+                <p className="text-[11px] text-[#64748B] mb-4 font-light">
+                  {formData.template_type === 'cinematic'
+                    ? '시안 4 본문 2열 인물 스냅(Bride & Groom)에 들어가는 개별 단독 사진입니다. (미등록 시 성함 텍스트만 깔끔하게 노출됩니다)'
+                    : formData.template_type === 'scene'
+                    ? '시안 5 2단 인물 프로필 스냅에 들어갈 신부 & 신랑 단독 사진입니다. (미등록 시 메인 사진 자동 적용)'
+                    : '시안 1, 2, 3 소개글 하단 2단 액자 카드에 들어갈 신부 & 신랑 단독 사진입니다. (미등록 시 화보 샘플/일러스트 자동 적용)'}
+                </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* 신부 단독 사진 */}
                     <div className="p-4 bg-white rounded-xl border border-[#E5E8EB]">
@@ -3226,20 +3227,21 @@ function CreateInvitationContent() {
                     </div>
                   </div>
                 </div>
-              )}
 
               {/* 커플 사진 & 엔딩 사진 (선택) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* 축하 와이드 사진 / 커플 사진 */}
+                {/* 축하 와이드 사진 / 커플 화보 사진 */}
                 <div className="p-4.5 bg-white rounded-2xl border border-[#E5E8EB]">
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-xs font-semibold text-[#1E293B]">
-                      {formData.template_type === 'cinematic' ? '축하 와이드 사진 (CELEBRATE)' : '커플 사진 (인용구 섹션용)'}
+                      {formData.template_type === 'cinematic' ? '축하 와이드 사진 (CELEBRATE)' : '커플 화보 사진 (소개글 / 모시는 글용)'}
                     </label>
                     <span className="text-[10px] font-mono text-[#64748B]">선택</span>
                   </div>
                   <p className="text-[10px] text-[#94A3B8] mb-3">
-                    {formData.template_type === 'cinematic' ? '시안 4 상단 CELEBRATE 16:9 와이드 화보용' : '미등록 시 메인 사진이 자동 적용됩니다.'}
+                    {formData.template_type === 'cinematic'
+                      ? '시안 4 상단 CELEBRATE 16:9 와이드 화보용 (미등록 시 메인 사진 적용)'
+                      : '시안 1, 2, 3 소개글(모시는 글) 상단 등에 들어갈 가로형 화보 사진입니다. (미등록 시 메인 사진 적용)'}
                   </p>
                   <input
                     ref={coupleImageInputRef}

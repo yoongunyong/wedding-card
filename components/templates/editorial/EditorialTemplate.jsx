@@ -282,11 +282,11 @@ export default function EditorialTemplate({ invitation }) {
       return groomFull || brideFull;
     }
     // 4) 고객 입력이 없을 때만 샘플 기본값
-    if (isSample) {
+    if (isSample && !groomName && !brideName) {
       return 'Kang Min-jun & Park Ji-min';
     }
     return '';
-  }, [invitation, extra, isSample]);
+  }, [invitation, extra, isSample, groomName, brideName]);
 
   // 하단 푸터 등에서 사용하는 영문/한글 복합 네임
   const displayNamesEn = fullNamesEn;
@@ -301,10 +301,14 @@ export default function EditorialTemplate({ invitation }) {
   const groomRelation = invitation?.groom_relation || config.groom_relation || '';
   const brideRelation = invitation?.bride_relation || config.bride_relation || '';
 
+  const isOfficialDemo = invitation?.slug === 'editorial';
+  const hasUserEnteredAny = Boolean(groomName || brideName || invitation?.groom_father || invitation?.groom_mother || invitation?.bride_father || invitation?.bride_mother);
+  const allowSampleParents = isOfficialDemo || (!hasUserEnteredAny && isSample);
+
   const groomParentsNode = renderParentPair({
-    father: invitation?.groom_father || (isSample && !invitation?.groom_mother ? '강오진' : ''),
+    father: invitation?.groom_father || (allowSampleParents && !invitation?.groom_mother ? '강오진' : ''),
     isFatherDeceased: isGroomFatherDeceased,
-    mother: invitation?.groom_mother || (isSample && !invitation?.groom_father ? '류창희' : ''),
+    mother: invitation?.groom_mother || (allowSampleParents && !invitation?.groom_father ? '류창희' : ''),
     isMotherDeceased: isGroomMotherDeceased,
     markerType: deceasedMarker,
     separator: ' · ',
@@ -312,9 +316,9 @@ export default function EditorialTemplate({ invitation }) {
   });
 
   const brideParentsNode = renderParentPair({
-    father: invitation?.bride_father || (isSample && !invitation?.bride_mother ? '장철규' : ''),
+    father: invitation?.bride_father || (allowSampleParents && !invitation?.bride_mother ? '장철규' : ''),
     isFatherDeceased: isBrideFatherDeceased,
-    mother: invitation?.bride_mother || (isSample && !invitation?.bride_father ? '이정자' : ''),
+    mother: invitation?.bride_mother || (allowSampleParents && !invitation?.bride_father ? '이정자' : ''),
     isMotherDeceased: isBrideMotherDeceased,
     markerType: deceasedMarker,
     separator: ' · ',
@@ -322,14 +326,14 @@ export default function EditorialTemplate({ invitation }) {
   });
 
   // 안전한 혼주 및 성함 표시 (실제 고객 미입력 시 가짜 샘플 노출 차단)
-  const displayGroomParents = groomParentsNode || (isSample ? '강오진 · 류창희' : null);
-  const displayGroomRelation = groomRelation || (isSample ? '아들' : (groomParentsNode ? '장남' : ''));
-  const displayGroomName = groomName || (isSample ? '강민준' : '');
+  const displayGroomParents = groomParentsNode || (allowSampleParents ? '강오진 · 류창희' : null);
+  const displayGroomRelation = groomRelation || (allowSampleParents ? '아들' : (groomParentsNode ? '장남' : ''));
+  const displayGroomName = groomName || (allowSampleParents ? '강민준' : '');
   const hasGroomFamily = Boolean(displayGroomParents && displayGroomName);
 
-  const displayBrideParents = brideParentsNode || (isSample ? '장철규 · 이정자' : null);
-  const displayBrideRelation = brideRelation || (isSample ? '딸' : (brideParentsNode ? '장녀' : ''));
-  const displayBrideName = brideName || (isSample ? '박지민' : '');
+  const displayBrideParents = brideParentsNode || (allowSampleParents ? '장철규 · 이정자' : null);
+  const displayBrideRelation = brideRelation || (allowSampleParents ? '딸' : (brideParentsNode ? '장녀' : ''));
+  const displayBrideName = brideName || (allowSampleParents ? '박지민' : '');
   const hasBrideFamily = Boolean(displayBrideParents && displayBrideName);
 
   // 세로 타이포그래피용 성함 (3글자면 성 제외한 이름, 그 외는 전체)

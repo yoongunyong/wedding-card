@@ -887,20 +887,27 @@ function CreateInvitationContent() {
   const previewInvitation = useMemo(() => {
     const rawGroom = formData.groom_name.trim();
     const rawBride = formData.bride_name.trim();
+    const hasAnyName = Boolean(rawGroom || rawBride);
 
-    // 1. 성함 및 영문 네임 (고객 입력 우선 -> 미입력 시 감성 샘플 매핑)
-    const groomName = rawGroom || PREVIEW_FALLBACK.groom_name;
-    const brideName = rawBride || PREVIEW_FALLBACK.bride_name;
+    // 1. 성함 및 영문 네임 (고객 입력 우선 -> 둘 다 미입력 시에만 초기 감성 샘플 매핑)
+    const groomName = rawGroom || (rawBride ? '' : PREVIEW_FALLBACK.groom_name);
+    const brideName = rawBride || (rawGroom ? '' : PREVIEW_FALLBACK.bride_name);
 
-    const groomFirst = (formData.groom_first_name_en || '').trim() || (formData.groom_name_en || '').trim().split(' ')[0] || (formData.groom_name_en || '').trim() || PREVIEW_FALLBACK.groom_first_name_en;
-    const groomLast = (formData.groom_last_name_en || '').trim() || (formData.groom_name_en || '').trim().split(' ').slice(1).join(' ') || PREVIEW_FALLBACK.groom_last_name_en;
-    const brideFirst = (formData.bride_first_name_en || '').trim() || (formData.bride_name_en || '').trim().split(' ')[0] || (formData.bride_name_en || '').trim() || PREVIEW_FALLBACK.bride_first_name_en;
-    const brideLast = (formData.bride_last_name_en || '').trim() || (formData.bride_name_en || '').trim().split(' ').slice(1).join(' ') || PREVIEW_FALLBACK.bride_last_name_en;
+    const hasAnyCustomEn = Boolean(
+      (formData.groom_first_name_en || '').trim() ||
+      (formData.bride_first_name_en || '').trim() ||
+      (formData.groom_name_en || '').trim() ||
+      (formData.bride_name_en || '').trim()
+    );
 
-    const hasAnyCustomEn = formData.groom_first_name_en || formData.bride_first_name_en || formData.groom_name_en || formData.bride_name_en;
+    const groomFirst = (formData.groom_first_name_en || '').trim() || (formData.groom_name_en || '').trim().split(' ')[0] || (formData.groom_name_en || '').trim() || (!hasAnyName && !hasAnyCustomEn ? PREVIEW_FALLBACK.groom_first_name_en : '');
+    const groomLast = (formData.groom_last_name_en || '').trim() || (formData.groom_name_en || '').trim().split(' ').slice(1).join(' ') || (!hasAnyName && !hasAnyCustomEn ? PREVIEW_FALLBACK.groom_last_name_en : '');
+    const brideFirst = (formData.bride_first_name_en || '').trim() || (formData.bride_name_en || '').trim().split(' ')[0] || (formData.bride_name_en || '').trim() || (!hasAnyName && !hasAnyCustomEn ? PREVIEW_FALLBACK.bride_first_name_en : '');
+    const brideLast = (formData.bride_last_name_en || '').trim() || (formData.bride_name_en || '').trim().split(' ').slice(1).join(' ') || (!hasAnyName && !hasAnyCustomEn ? PREVIEW_FALLBACK.bride_last_name_en : '');
+
     const mainNamesEn = hasAnyCustomEn
       ? ((groomFirst && brideFirst) ? `${groomFirst} & ${brideFirst}` : (formData.groom_name_en && formData.bride_name_en ? `${formData.groom_name_en.trim()} & ${formData.bride_name_en.trim()}` : (groomFirst || brideFirst || '')))
-      : PREVIEW_FALLBACK.main_names_en;
+      : (!hasAnyName ? PREVIEW_FALLBACK.main_names_en : '');
 
     // 2. 다중 계좌 (고객 등록 계좌 우선 -> 0개일 때 샘플 계좌 노출)
     const activeGroomAccounts = groomAccounts.filter((a) => a.number && a.number.trim());
@@ -927,7 +934,7 @@ function CreateInvitationContent() {
       })),
     ];
 
-    if (allAccounts.length === 0) {
+    if (allAccounts.length === 0 && !hasAnyName) {
       allAccounts = PREVIEW_FALLBACK.accounts;
     }
 
@@ -944,14 +951,14 @@ function CreateInvitationContent() {
     const effectiveVenueAddress = formData.venue_address.trim() || PREVIEW_FALLBACK.venue_address;
     const effectiveVenueDetail = formData.venue_detail.trim() || PREVIEW_FALLBACK.venue_detail;
 
-    // 5. 부모님 성함 (신랑/신부 본인 이름을 안 넣었을 때는 예시 부모님도 함께 노출)
-    const effectiveGroomFather = formData.groom_father.trim() || (!rawGroom ? PREVIEW_FALLBACK.groom_father : '');
-    const effectiveGroomMother = formData.groom_mother.trim() || (!rawGroom ? PREVIEW_FALLBACK.groom_mother : '');
-    const effectiveBrideFather = formData.bride_father.trim() || (!rawBride ? PREVIEW_FALLBACK.bride_father : '');
-    const effectiveBrideMother = formData.bride_mother.trim() || (!rawBride ? PREVIEW_FALLBACK.bride_mother : '');
+    // 5. 부모님 성함 (신랑/신부 본인 이름을 안 넣었을 때만 예시 부모님 노출, 본인 입력 시작 시 미입력 혼주는 공백 유지)
+    const effectiveGroomFather = formData.groom_father.trim() || (!hasAnyName ? PREVIEW_FALLBACK.groom_father : '');
+    const effectiveGroomMother = formData.groom_mother.trim() || (!hasAnyName ? PREVIEW_FALLBACK.groom_mother : '');
+    const effectiveBrideFather = formData.bride_father.trim() || (!hasAnyName ? PREVIEW_FALLBACK.bride_father : '');
+    const effectiveBrideMother = formData.bride_mother.trim() || (!hasAnyName ? PREVIEW_FALLBACK.bride_mother : '');
 
-    const effectiveGroomPhone = formData.groom_phone.trim() || (!rawGroom ? PREVIEW_FALLBACK.groom_phone : '');
-    const effectiveBridePhone = formData.bride_phone.trim() || (!rawBride ? PREVIEW_FALLBACK.bride_phone : '');
+    const effectiveGroomPhone = formData.groom_phone.trim() || (!hasAnyName ? PREVIEW_FALLBACK.groom_phone : '');
+    const effectiveBridePhone = formData.bride_phone.trim() || (!hasAnyName ? PREVIEW_FALLBACK.bride_phone : '');
 
     // 6. 예식 일시
     const effectiveWeddingDate = formData.wedding_date 
@@ -961,8 +968,8 @@ function CreateInvitationContent() {
     return {
       groom_name: groomName,
       bride_name: brideName,
-      groom_name_en: (formData.groom_name_en || '').trim() || PREVIEW_FALLBACK.groom_name_en,
-      bride_name_en: (formData.bride_name_en || '').trim() || PREVIEW_FALLBACK.bride_name_en,
+      groom_name_en: (formData.groom_name_en || '').trim() || (!hasAnyName ? PREVIEW_FALLBACK.groom_name_en : ''),
+      bride_name_en: (formData.bride_name_en || '').trim() || (!hasAnyName ? PREVIEW_FALLBACK.bride_name_en : ''),
       groom_first_name_en: groomFirst,
       groom_last_name_en: groomLast,
       bride_first_name_en: brideFirst,
@@ -994,7 +1001,7 @@ function CreateInvitationContent() {
       message: formData.message || GREETING_PRESETS[0].content,
       quote_content: formData.show_quote_section ? (formData.quote_content || QUOTE_PRESETS[0].content) : '',
       quote_source: formData.show_quote_section ? (formData.quote_source || QUOTE_PRESETS[0].source) : '',
-      is_sample_preview: true,
+      is_sample_preview: !hasAnyName,
       images: {
         main: effectiveMainImage,
         cover: effectiveCoverImage,

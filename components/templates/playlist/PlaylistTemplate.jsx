@@ -241,9 +241,9 @@ export default function PlaylistTemplate({ invitation }) {
     const brideFull = [invitation?.bride_last_name_en, invitation?.bride_first_name_en].filter(Boolean).join(' ') || invitation?.bride_name_en;
     if (groomFull && brideFull) return `${groomFull} & ${brideFull}`;
     if (groomFull || brideFull) return groomFull || brideFull;
-    if (isSample) return 'Minwoo Kang & Yujin Seo';
+    if (isSample && !groomName && !brideName) return 'Minwoo Kang & Yujin Seo';
     return '';
-  }, [invitation, extra, isSample]);
+  }, [invitation, extra, isSample, groomName, brideName]);
 
   // 부모님 성함 & 故 / 국화꽃 표기
   const deceasedMarker = config.deceased_marker || invitation?.deceased_marker || 'hanja';
@@ -255,10 +255,14 @@ export default function PlaylistTemplate({ invitation }) {
   const groomRelation = invitation?.groom_relation || config.groom_relation || '';
   const brideRelation = invitation?.bride_relation || config.bride_relation || '';
 
+  const isOfficialDemo = invitation?.slug === 'playlist';
+  const hasUserEnteredAny = Boolean(groomName || brideName || invitation?.groom_father || invitation?.groom_mother || invitation?.bride_father || invitation?.bride_mother);
+  const allowSampleParents = isOfficialDemo || (!hasUserEnteredAny && isSample);
+
   const groomParentsNode = renderParentPair({
-    father: invitation?.groom_father || (isSample && !invitation?.groom_mother ? '강대현' : ''),
+    father: invitation?.groom_father || (allowSampleParents && !invitation?.groom_mother ? '강대현' : ''),
     isFatherDeceased: isGroomFatherDeceased,
-    mother: invitation?.groom_mother || (isSample && !invitation?.groom_father ? '문영희' : ''),
+    mother: invitation?.groom_mother || (allowSampleParents && !invitation?.groom_father ? '문영희' : ''),
     isMotherDeceased: isGroomMotherDeceased,
     markerType: deceasedMarker,
     separator: ' · ',
@@ -266,23 +270,23 @@ export default function PlaylistTemplate({ invitation }) {
   });
 
   const brideParentsNode = renderParentPair({
-    father: invitation?.bride_father || (isSample && !invitation?.bride_mother ? '서병철' : ''),
+    father: invitation?.bride_father || (allowSampleParents && !invitation?.bride_mother ? '서병철' : ''),
     isFatherDeceased: isBrideFatherDeceased,
-    mother: invitation?.bride_mother || (isSample && !invitation?.bride_father ? '한정숙' : ''),
+    mother: invitation?.bride_mother || (allowSampleParents && !invitation?.bride_father ? '한정숙' : ''),
     isMotherDeceased: isBrideMotherDeceased,
     markerType: deceasedMarker,
     separator: ' · ',
     iconClassName: 'w-[13px] h-[15px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0',
   });
 
-  const displayGroomParents = groomParentsNode || (isSample ? '강대현 · 문영희' : null);
-  const displayGroomRelation = groomRelation || (isSample ? '장남' : (groomParentsNode ? '장남' : ''));
-  const displayGroomName = groomName || (isSample ? '강민우' : '');
+  const displayGroomParents = groomParentsNode || (allowSampleParents ? '강대현 · 문영희' : null);
+  const displayGroomRelation = groomRelation || (allowSampleParents ? '장남' : (groomParentsNode ? '장남' : ''));
+  const displayGroomName = groomName || (allowSampleParents ? '강민우' : '');
   const hasGroomFamily = Boolean(displayGroomParents && displayGroomName);
 
-  const displayBrideParents = brideParentsNode || (isSample ? '서병철 · 한정숙' : null);
-  const displayBrideRelation = brideRelation || (isSample ? '차녀' : (brideParentsNode ? '장녀' : ''));
-  const displayBrideName = brideName || (isSample ? '서유진' : '');
+  const displayBrideParents = brideParentsNode || (allowSampleParents ? '서병철 · 한정숙' : null);
+  const displayBrideRelation = brideRelation || (allowSampleParents ? '차녀' : (brideParentsNode ? '장녀' : ''));
+  const displayBrideName = brideName || (allowSampleParents ? '서유진' : '');
   const hasBrideFamily = Boolean(displayBrideParents && displayBrideName);
 
   const groomShort = invitation?.groom_name && invitation.groom_name.length === 3 ? invitation.groom_name.slice(1) : (invitation?.groom_name || '');

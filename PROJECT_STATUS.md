@@ -15,6 +15,25 @@
 
 ## 0. 최근 핫픽스 & 서비스 안정화 내역 (2026-11-11 오너 관점 결함 전수 조치 & 시안 개편)
 
+-3. **[고객 데이터 오염 및 샘플 덮어쓰기 가능성 전수 감사(Audit) 및 원천 차단 조치]**:
+   - **사용자 질의**: "샘플로 덮어써지는 경우가 다른 곳에도 있을까? 데이터가 잘못 노출될 수 있는 가능성이 있는 건가?"
+   - **전수 감사 결과 요약**:
+     1. **실제 배포된 하객용 URL (`/[slug]`)**:
+        - `app/[slug]/page.js`에서 공식 5대 템플릿 슬러그(`basic`, `editorial`, `playlist`, `cinematic`, `scene`) 외의 모든 실제 고객 슬러그는 `isSampleSlug = false` 및 `is_sample_preview = false`로 강제됨.
+        - 따라서 실제 하객들이 열람하는 실제 청첩장에서는 샘플 데이터나 더미 이름/계좌/혼주가 노출될 위험이 **0% (원천 차단)**임을 전수 코드 및 DB 쿼리 레벨에서 확인.
+     2. **DB INSERT / UPDATE (저장 통신)**:
+        - `app/create/page.js` 및 `app/manage/[slug]/edit/page.js`의 `handleSubmit` 로직에서 DB로 전송되는 데이터는 사용자가 폼에 입력한 `formData`를 직접 정제하여 저장함. 샘플 더미 이름이나 가짜 부모님 성함이 DB로 저장되는 경로는 0건임.
+     3. **발견된 잠재 결함 (제작 중 실시간 미리보기 화면의 Fallback 노출)**:
+        - 제작 페이지(`app/create/page.js`)에서 사용자가 성함을 한글로만 입력하고 영문 이름을 비워뒀을 때, `previewInvitation` 및 템플릿 `fullNamesEn`에서 `PREVIEW_FALLBACK.groom_name_en` ('Minjun Kang')이나 'Dohyun Kim & Seoyeon Lee' 등이 실시간 미리보기에 주입되어 고객에게 혼란을 주는 취약점 확인.
+        - `BasicTemplate`, `EditorialTemplate`, `PlaylistTemplate`에서 사용자가 신랑 부모님 중 아버지만 입력하고 어머니를 비워뒀을 때, 실시간 미리보기에서 미입력 혼주에 샘플 어머니('강오진 · 류창희', '장철규 · 이정자' 등)가 합성되어 나타나던 취약점 확인.
+        - `EditorialContactModal`에서 사용자가 한쪽 부모님만 입력했을 때 미입력 혼주 자리에 샘플 '이미자', '장철규' 및 가짜 연락처가 나타나던 취약점 확인.
+   - **적용된 4중 방어벽 (Defense-in-Depth)**:
+     - **방어벽 1 (`app/create/page.js`)**: 고객이 신랑/신부 성함(`rawGroom || rawBride`)을 입력하기 시작하면 영문 이름/부모님/연락처에 샘플 더미 주입을 즉시 중단하고 빈 문자열(`''`)을 유지하며, `is_sample_preview`를 `false`로 자동 전환.
+     - **방어벽 2 (템플릿 부모님 성함 가드)**: `BasicTemplate`, `EditorialTemplate`, `PlaylistTemplate`에서 `const allowSampleParents = isOfficialDemo || (!hasUserEnteredAny && isSample)` 원칙을 도입. 고객이 입력을 시작한 상태에서는 비워둔 부모님 자리에 절대 샘플 부모님이 끼어들지 않고 깔끔하게 숨김/공백 처리.
+     - **방어벽 3 (영문 풀네임 가드)**: 고객이 영문 이름을 비워뒀더라도 한글 성함을 입력했다면 영문 샘플('Kang Min-jun' 등)로 덮어쓰지 않고 한글 성함(`coupleKo`)을 최우선 바인딩.
+     - **방어벽 4 (`EditorialContactModal`)**: `allowSampleFallback` 가드를 적용하여 고객이 입력을 시작한 제작/수정 미리보기에서는 실제 입력된 가족만 표시되고 미입력 혼주(샘플 '이미자' 등)는 완벽히 제거됨.
+   - **검증 결과**: `npx eslint .` 0 errors, `npm run build` Next.js 정적/동적 라우트 전수 통과 (Exit Code 0).
+
 -2. **[전체 템플릿 전수 감사 및 실시간 미리보기 샘플 이름 덮어쓰기 결함 완전 소탕]**:
    - **발견된 결함 1 (고객 입력 성함 덮어쓰기)**: `BasicTemplate` 및 `EditorialTemplate`에서 제작(`app/create`)이나 관리(`app/manage`) 화면의 실시간 미리보기 시(`is_sample_preview: true`), 고객이 직접 입력한 성함이나 영문명이 있음에도 `isSample ? 'Jang Min-ki & Kwon Ki-deuk'` 및 `기득 ♥ 민기님의` 하드코딩이 0순위로 강제 덮어씌워지던 심각한 데이터 바인딩 결함 발견 및 즉시 수정 (고객 입력 성함 1순위 최우선 보장).
    - **발견된 결함 2 (퀵 내비게이션 상단 바 가림)**: 모바일 상단에 샘플 미리보기 바(약 52~60px)가 떠있을 때 `yOffset = -24`로 인해 식장 위치나 계좌 섹션 상단 제목이 헤더 뒤로 묻혀 잘리던 현상을 `yOffset = -70`으로 여유롭게 확장하여 완벽 해결.

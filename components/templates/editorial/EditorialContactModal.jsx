@@ -5,7 +5,9 @@ import ParentDeceasedName from '@/components/ParentDeceasedName';
 
 export default function EditorialContactModal({ invitation, onClose }) {
   const config = invitation?.template_config || {};
-  const isSample = Boolean(invitation?.is_sample_preview || invitation?.slug === 'editorial');
+  const isOfficialDemo = invitation?.slug === 'editorial';
+  const hasUserEnteredNames = Boolean(invitation?.groom_name || invitation?.bride_name || invitation?.groom_father || invitation?.bride_father);
+  const allowSampleFallback = isOfficialDemo || (!hasUserEnteredNames && Boolean(invitation?.is_sample_preview));
 
   const isGroomFatherDeceased = invitation?.groom_father_deceased ?? config.groom_father_deceased ?? false;
   const isGroomMotherDeceased = invitation?.groom_mother_deceased ?? config.groom_mother_deceased ?? false;
@@ -42,67 +44,67 @@ export default function EditorialContactModal({ invitation, onClose }) {
     {
       role: '신랑',
       side: 'groom',
-      name: invitation?.groom_name || (isSample ? '권기득' : ''),
-      phone: invitation?.groom_phone || (isSample ? '010-2345-6789' : ''),
+      name: invitation?.groom_name || (allowSampleFallback ? '권기득' : ''),
+      phone: invitation?.groom_phone || (allowSampleFallback ? '010-2345-6789' : ''),
     },
     {
       role: '신랑 아버지',
       side: 'groom',
-      name: (invitation?.groom_father || isSample) ? (
+      name: (invitation?.groom_father || allowSampleFallback) ? (
         <ParentDeceasedName
-          name={invitation?.groom_father || (isSample ? '권순민' : '')}
+          name={invitation?.groom_father || (allowSampleFallback ? '권순민' : '')}
           isDeceased={isGroomFatherDeceased}
           markerType={deceasedMarker}
           iconClassName="w-[14px] h-[16px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0"
         />
       ) : '',
-      phone: isGroomFatherDeceased ? '' : (invitation?.groom_father_phone || (isSample ? '010-2345-6789' : '')),
+      phone: isGroomFatherDeceased ? '' : (invitation?.groom_father_phone || (allowSampleFallback ? '010-2345-6789' : '')),
     },
     {
       role: '신랑 어머니',
       side: 'groom',
-      name: (invitation?.groom_mother || isSample) ? (
+      name: (invitation?.groom_mother || allowSampleFallback) ? (
         <ParentDeceasedName
-          name={invitation?.groom_mother || (isSample ? '이미자' : '')}
+          name={invitation?.groom_mother || (allowSampleFallback ? '이미자' : '')}
           isDeceased={isGroomMotherDeceased}
           markerType={deceasedMarker}
           iconClassName="w-[14px] h-[16px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0"
         />
       ) : '',
-      phone: isGroomMotherDeceased ? '' : (invitation?.groom_mother_phone || (isSample ? '010-3456-7890' : '')),
+      phone: isGroomMotherDeceased ? '' : (invitation?.groom_mother_phone || (allowSampleFallback ? '010-3456-7890' : '')),
     },
     // 2. 신부측 (로즈 핑크 테마: 라벨 & 아이콘 #D25C8D, 성함 #333333 font-normal)
     {
       role: '신부',
       side: 'bride',
-      name: invitation?.bride_name || (isSample ? '장민기' : ''),
-      phone: invitation?.bride_phone || (isSample ? '010-8765-4321' : ''),
+      name: invitation?.bride_name || (allowSampleFallback ? '장민기' : ''),
+      phone: invitation?.bride_phone || (allowSampleFallback ? '010-8765-4321' : ''),
     },
     {
       role: '신부 아버지',
       side: 'bride',
-      name: (invitation?.bride_father || isSample) ? (
+      name: (invitation?.bride_father || allowSampleFallback) ? (
         <ParentDeceasedName
-          name={invitation?.bride_father || (isSample ? '장철규' : '')}
+          name={invitation?.bride_father || (allowSampleFallback ? '장철규' : '')}
           isDeceased={isBrideFatherDeceased}
           markerType={deceasedMarker}
           iconClassName="w-[14px] h-[16px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0"
         />
       ) : '',
-      phone: isBrideFatherDeceased ? '' : (invitation?.bride_father_phone || (isSample ? '010-8765-4321' : '')),
+      phone: isBrideFatherDeceased ? '' : (invitation?.bride_father_phone || (allowSampleFallback ? '010-8765-4321' : '')),
     },
     {
       role: '신부 어머니',
       side: 'bride',
-      name: (invitation?.bride_mother || isSample) ? (
+      name: (invitation?.bride_mother || allowSampleFallback) ? (
         <ParentDeceasedName
-          name={invitation?.bride_mother || (isSample ? '이정자' : '')}
+          name={invitation?.bride_mother || (allowSampleFallback ? '이정자' : '')}
           isDeceased={isBrideMotherDeceased}
           markerType={deceasedMarker}
           iconClassName="w-[14px] h-[16px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0"
         />
       ) : '',
-      phone: isBrideMotherDeceased ? '' : (invitation?.bride_mother_phone || (isSample ? '010-7654-3210' : '')),
+      phone: isBrideMotherDeceased ? '' : (invitation?.bride_mother_phone || (allowSampleFallback ? '010-7654-3210' : '')),
     },
   ].filter((p) => p.name || p.phone);
 

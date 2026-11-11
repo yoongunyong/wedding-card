@@ -43,6 +43,15 @@ export default function BasicGalleryModal({ images = [], initialIndex = 0, onClo
     touchEndX.current = 0;
   };
 
+  // 모달 활성화 시 배경 스크롤 차단 및 닫힐 때 원복
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
+
   // 키보드 좌우 화살표 & ESC 키 지원
   useEffect(() => {
     const handleKeyDown = (e) => {

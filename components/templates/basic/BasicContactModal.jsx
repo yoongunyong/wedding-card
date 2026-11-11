@@ -160,7 +160,7 @@ export default function BasicContactModal({ invitation, onClose }) {
                   <div className="flex items-center gap-2.5">
                     <a
                       href={`tel:${(person.phone || '').replace(/[^0-9+]/g, '')}`}
-                      aria-label={`${person.name} 전화걸기`}
+                      aria-label={`${typeof person.name === 'string' ? person.name : person.role} 전화걸기`}
                       className="w-10 h-10 rounded-full bg-[#FCEDF0] hover:bg-[#F9DEE3] text-[#C06070] flex items-center justify-center transition-colors shadow-2xs"
                     >
                       <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -169,7 +169,7 @@ export default function BasicContactModal({ invitation, onClose }) {
                     </a>
                     <a
                       href={`sms:${(person.phone || '').replace(/[^0-9+]/g, '')}`}
-                      aria-label={`${person.name} 문자보내기`}
+                      aria-label={`${typeof person.name === 'string' ? person.name : person.role} 문자보내기`}
                       className="w-10 h-10 rounded-full bg-[#FCEDF0] hover:bg-[#F9DEE3] text-[#C06070] flex items-center justify-center transition-colors shadow-2xs"
                     >
                       <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">

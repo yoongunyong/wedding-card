@@ -239,7 +239,7 @@ export default async function WeddingCardPage({ params }) {
         template={invitation.template_type}
       />
       <CurrentTemplate invitation={sanitizedInvitation} />
-      <QuickNavigationPill hasLocation={hasLocation} hasAccounts={hasAccounts} />
+      <QuickNavigationPill hasLocation={hasLocation} hasAccounts={hasAccounts} invitation={sanitizedInvitation} />
     </main>
   );
 }

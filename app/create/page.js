@@ -4530,6 +4530,7 @@ function CreateInvitationContent() {
                       (previewInvitation?.bride_accounts?.length > 0) ||
                       previewInvitation?.account_number
                     )}
+                    invitation={previewInvitation}
                     className="!absolute !bottom-4 !right-3"
                   />
                 )}

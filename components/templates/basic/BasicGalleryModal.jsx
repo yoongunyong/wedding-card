@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 export default function BasicGalleryModal({ images = [], initialIndex = 0, onClose }) {
+  const safeImages = Array.isArray(images) ? images : [];
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
@@ -10,12 +11,12 @@ export default function BasicGalleryModal({ images = [], initialIndex = 0, onClo
   const isSwiping = useRef(false);
 
   const prevImage = useCallback(() => {
-    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
-  }, [images.length]);
+    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : safeImages.length - 1));
+  }, [safeImages.length]);
 
   const nextImage = useCallback(() => {
-    setCurrentIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
-  }, [images.length]);
+    setCurrentIndex((prev) => (prev < safeImages.length - 1 ? prev + 1 : 0));
+  }, [safeImages.length]);
 
   const handleTouchStart = (e) => {
     isSwiping.current = true;
@@ -78,7 +79,7 @@ export default function BasicGalleryModal({ images = [], initialIndex = 0, onClo
         {/* 상단 헤더: 카운터 & 닫기 버튼 */}
         <div className="w-full flex items-center justify-between pb-3 px-1 text-white">
           <span className="text-xs font-sans text-white/70 tracking-wider font-medium">
-            {currentIndex + 1} / {images.length}
+            {currentIndex + 1} / {safeImages.length}
           </span>
           <button
             onClick={onClose}
@@ -93,7 +94,7 @@ export default function BasicGalleryModal({ images = [], initialIndex = 0, onClo
         <div className="relative w-full h-[62vh] max-h-[560px] min-h-[380px] overflow-hidden rounded-2xl shadow-2xl flex items-center justify-center bg-stone-950 border border-white/5">
           <img
             key={currentIndex}
-            src={images[currentIndex]}
+            src={safeImages[currentIndex]}
             alt={`Wedding photo ${currentIndex + 1}`}
             className="w-full h-full object-contain animate-in fade-in duration-200 select-none"
           />
@@ -131,7 +132,7 @@ export default function BasicGalleryModal({ images = [], initialIndex = 0, onClo
 
         {/* 하단 인디케이터 도트 */}
         <div className="flex items-center justify-center gap-1.5 mt-4 max-w-full overflow-x-auto py-1 px-2">
-          {images.map((_, idx) => (
+          {safeImages.map((_, idx) => (
             <button
               key={idx}
               onClick={(e) => {

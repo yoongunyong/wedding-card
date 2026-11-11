@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 export default function SceneGalleryModal({ isOpen, images = [], initialIndex = 0, onClose }) {
+  const safeImages = Array.isArray(images) ? images : [];
   const [active, setActive] = useState(false);
   const [rendered, setRendered] = useState(isOpen);
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
@@ -41,12 +42,12 @@ export default function SceneGalleryModal({ isOpen, images = [], initialIndex = 
   }, [isOpen]);
 
   const prevImage = useCallback(() => {
-    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
-  }, [images.length]);
+    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : safeImages.length - 1));
+  }, [safeImages.length]);
 
   const nextImage = useCallback(() => {
-    setCurrentIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
-  }, [images.length]);
+    setCurrentIndex((prev) => (prev < safeImages.length - 1 ? prev + 1 : 0));
+  }, [safeImages.length]);
 
   const handleTouchStart = (e) => {
     isSwiping.current = true;
@@ -93,7 +94,7 @@ export default function SceneGalleryModal({ isOpen, images = [], initialIndex = 
   }, [isOpen, prevImage, nextImage, handleClose]);
 
   if (!rendered) return null;
-  if (!images || images.length === 0) return null;
+  if (!images || safeImages.length === 0) return null;
 
   return (
     <div
@@ -108,7 +109,7 @@ export default function SceneGalleryModal({ isOpen, images = [], initialIndex = 
         onClick={(e) => e.stopPropagation()}
       >
         <span className="font-mono text-sm tracking-widest text-stone-300 font-light">
-          {currentIndex + 1} / {images.length}
+          {currentIndex + 1} / {safeImages.length}
         </span>
         <button
           type="button"
@@ -130,7 +131,7 @@ export default function SceneGalleryModal({ isOpen, images = [], initialIndex = 
       >
         <img
           key={currentIndex}
-          src={images[currentIndex]}
+          src={safeImages[currentIndex]}
           alt={`Gallery ${currentIndex + 1}`}
           className={`max-h-[75vh] max-w-full object-contain rounded-lg shadow-2xl transition-all duration-300 select-none pointer-events-none ${
             active ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
@@ -138,7 +139,7 @@ export default function SceneGalleryModal({ isOpen, images = [], initialIndex = 
         />
 
         {/* 이전 버튼 (영상 frame_022와 일치하는 반투명 사각 버튼) */}
-        {images.length > 1 && (
+        {safeImages.length > 1 && (
           <button
             type="button"
             onClick={prevImage}
@@ -150,7 +151,7 @@ export default function SceneGalleryModal({ isOpen, images = [], initialIndex = 
         )}
 
         {/* 다음 버튼 (영상 frame_022와 일치하는 반투명 사각 버튼) */}
-        {images.length > 1 && (
+        {safeImages.length > 1 && (
           <button
             type="button"
             onClick={nextImage}
@@ -163,12 +164,12 @@ export default function SceneGalleryModal({ isOpen, images = [], initialIndex = 
       </div>
 
       {/* 하단 썸네일 스트립 */}
-      {images.length > 1 && (
+      {safeImages.length > 1 && (
         <div 
           className="w-full max-w-[430px] overflow-x-auto py-3 px-2 flex items-center justify-center gap-2 z-10 shrink-0 no-scrollbar"
           onClick={(e) => e.stopPropagation()}
         >
-          {images.map((img, idx) => (
+          {safeImages.map((img, idx) => (
             <button
               key={idx}
               type="button"

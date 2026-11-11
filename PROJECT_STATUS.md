@@ -48,6 +48,8 @@
         - `SceneGuestbookDeleteModal`, `SceneGalleryModal`, `SceneInterviewModal`에 모달 오픈 시 배경 스크롤 방지 및 언마운트 시 원복 cleanup 로직 장착.
      6. **하객 뷰(`app/[slug]/page.js`) 민감 정보 2차 격리 방어선 보강**:
         - `sanitizedInvitation`에서 `template_config`뿐 아니라 레거시/확장 필드인 `extra_data` 내부의 `manage_password`, `manage_token`, `order_code`까지 2중 완전 삭제 처리.
+     7. **갤러리 모달 3종(Basic, Editorial, Scene) images null 참조 방어(safeImages) 장착**:
+        - `BasicGalleryModal`, `EditorialGalleryModal`, `SceneGalleryModal`에서 `images` prop이 `null`로 인입될 경우 `useCallback` 의존성 평가 및 `.map()`에서 발생할 수 있는 잠재 런타임 크래시(`Cannot read properties of null (reading 'length')`)를 방지하기 위해 `const safeImages = Array.isArray(images) ? images : [];` 널 방어 체계 전수 장착.
    - **검증 결과**:
      - 5대 템플릿(`/basic`, `/editorial`, `/playlist`, `/cinematic`, `/scene`) 전수 HTTP 200 OK 무결성 응답.
      - 메인(`/`) 및 청첩장 제작(`/create`) 정상 응답.

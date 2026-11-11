@@ -3,18 +3,19 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 export default function EditorialGalleryModal({ images = [], initialIndex = 0, onClose }) {
+  const safeImages = Array.isArray(images) ? images : [];
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
   const isSwiping = useRef(false);
 
   const prevImage = useCallback(() => {
-    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
-  }, [images.length]);
+    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : safeImages.length - 1));
+  }, [safeImages.length]);
 
   const nextImage = useCallback(() => {
-    setCurrentIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
-  }, [images.length]);
+    setCurrentIndex((prev) => (prev < safeImages.length - 1 ? prev + 1 : 0));
+  }, [safeImages.length]);
 
   const handleTouchStart = (e) => {
     isSwiping.current = true;
@@ -75,7 +76,7 @@ export default function EditorialGalleryModal({ images = [], initialIndex = 0, o
         {/* 상단 헤더: 에디토리얼 카운터 & 닫기 */}
         <div className="w-full flex items-center justify-between pb-3 px-1 text-white">
           <span className="font-sans text-[12px] tracking-[0.25em] text-white/70 font-light">
-            PAGE {String(currentIndex + 1).padStart(2, '0')} / {String(images.length).padStart(2, '0')}
+            PAGE {String(currentIndex + 1).padStart(2, '0')} / {String(safeImages.length).padStart(2, '0')}
           </span>
           <button
             onClick={onClose}
@@ -90,7 +91,7 @@ export default function EditorialGalleryModal({ images = [], initialIndex = 0, o
         <div className="relative w-full h-[64vh] max-h-[580px] min-h-[380px] overflow-hidden bg-black/50 border border-white/10 flex items-center justify-center p-2 shadow-2xl">
           <img
             key={currentIndex}
-            src={images[currentIndex]}
+            src={safeImages[currentIndex]}
             alt={`Lookbook photo ${currentIndex + 1}`}
             className="w-full h-full object-contain animate-in fade-in duration-300 select-none"
           />
@@ -122,7 +123,7 @@ export default function EditorialGalleryModal({ images = [], initialIndex = 0, o
 
         {/* 하단 썸네일 스트립 */}
         <div className="w-full flex items-center justify-center gap-1.5 pt-3 overflow-x-auto no-scrollbar">
-          {images.map((src, idx) => (
+          {safeImages.map((src, idx) => (
             <button
               key={idx}
               type="button"

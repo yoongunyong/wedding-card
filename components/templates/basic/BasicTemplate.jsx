@@ -494,7 +494,8 @@ export default function BasicTemplate({ invitation }) {
     if (!isActive) {
       alert('현재 청첩장은 [샘플 미리보기 모드] 상태입니다.\n정식 인증 또는 관리자 활성화 후 하객분들께 공유해 주세요.');
     }
-    if (typeof window === 'undefined' || !window.Kakao) return;
+    if (typeof window === 'undefined') return;
+
     const coupleText = [groomName, brideName].filter(Boolean).join(' ♥ ');
     const shareTitle = coupleText ? `${coupleText} 결혼식에 초대합니다` : '소중한 결혼식에 초대합니다';
     const shareDesc = [formattedDates.fullKo, venueFullName].filter(Boolean).join(' | ');
@@ -505,33 +506,40 @@ export default function BasicTemplate({ invitation }) {
     );
     const currentUrl = window.location.href;
 
-    try {
-      window.Kakao.Share.sendDefault({
-        objectType: 'feed',
-        content: {
-          title: shareTitle,
-          description: shareDesc,
-          imageUrl: shareImageUrl,
-          imageWidth: 800,
-          imageHeight: 1000,
-          link: {
-            mobileWebUrl: currentUrl,
-            webUrl: currentUrl,
-          },
-        },
-        buttons: [
-          {
-            title: '모바일 청첩장 보기',
+    if (window.Kakao && window.Kakao.isInitialized()) {
+      try {
+        window.Kakao.Share.sendDefault({
+          objectType: 'feed',
+          content: {
+            title: shareTitle,
+            description: shareDesc,
+            imageUrl: shareImageUrl,
+            imageWidth: 800,
+            imageHeight: 1000,
             link: {
               mobileWebUrl: currentUrl,
               webUrl: currentUrl,
             },
           },
-        ],
-      });
-    } catch (err) {
-      console.error('카카오 공유 오류:', err);
+          buttons: [
+            {
+              title: '모바일 청첩장 보기',
+              link: {
+                mobileWebUrl: currentUrl,
+                webUrl: currentUrl,
+              },
+            },
+          ],
+        });
+        return;
+      } catch (err) {
+        console.warn('카카오 공유 오류, 링크 복사 fallback:', err);
+      }
     }
+
+    // Fallback: 링크 복사
+    handleCopyLink();
+    alert('카카오톡 연결을 준비하는 중입니다. 청첩장 링크가 복사되었습니다!');
   };
 
   return (

@@ -289,6 +289,17 @@ function EditInvitationContent({ params }) {
   const [previewTab, setPreviewTab] = useState('web'); // 'web' | 'kakao'
   const isClosingRef = useRef(false);
 
+  // 수정 중 실수로 인한 새로고침/탭 닫기 방어 (고객 입력 데이터 유실 방지)
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (submitting) return;
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [submitting]);
+
   // 초기 DB 데이터 로드 및 폼 매핑
   useEffect(() => {
     async function fetchInvitationData() {

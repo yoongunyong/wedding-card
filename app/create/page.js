@@ -462,6 +462,19 @@ function CreateInvitationContent() {
     };
   }, [showPreviewModal]);
 
+  // 작성 중 실수로 인한 새로고침/탭 닫기 방어 (고객 입력 데이터 유실 방지)
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (submitting || createdResult) return;
+      if (formData.groom_name?.trim() || formData.bride_name?.trim() || mainImageFile) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [submitting, createdResult, formData.groom_name, formData.bride_name, mainImageFile]);
+
   // 단계별 필수 입력값 유효성 검사
   const validateStep = (step) => {
     if (step === 1) {

@@ -377,7 +377,7 @@ export default function BasicTemplate({ invitation }) {
         .order('created_at', { ascending: false })
         .limit(50);
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         setGuestbookList(data);
       }
     }

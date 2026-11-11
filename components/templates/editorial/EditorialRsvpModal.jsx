@@ -240,6 +240,7 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
             <input
               type="text"
               required
+              maxLength={30}
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="참석자 본인 성함"

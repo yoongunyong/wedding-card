@@ -101,6 +101,7 @@ export default function EditorialGuestbookModal({ invitationId, onClose, onSucce
             <input
               type="text"
               required
+              maxLength={30}
               value={author}
               onChange={(e) => setAuthor(e.target.value)}
               placeholder="성함"
@@ -117,6 +118,7 @@ export default function EditorialGuestbookModal({ invitationId, onClose, onSucce
             <input
               type="password"
               required
+              maxLength={20}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="비밀번호 입력"
@@ -133,9 +135,10 @@ export default function EditorialGuestbookModal({ invitationId, onClose, onSucce
             <textarea
               required
               rows={5}
+              maxLength={300}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="내용 입력"
+              placeholder="내용 입력 (최대 300자)"
               style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.08)' }}
               className="w-full h-[160px] p-4 bg-white border border-[#DAD1D1] rounded-[11.5px] text-[#333333] placeholder:text-[#B8B8B8] font-nanumsquare text-[13px] leading-relaxed focus:outline-none focus:border-[#393939] transition-colors resize-none"
             />

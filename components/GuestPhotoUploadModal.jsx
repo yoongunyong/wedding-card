@@ -115,6 +115,11 @@ export default function GuestPhotoUploadModal({ invitation, onClose, onSuccess }
   // 업로드 실행
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!invitation?.id) {
+      alert('실시간 미리보기 모드입니다.\n청첩장 제작 신청 완료 후 실제 발급된 링크에서 사진을 선물하실 수 있습니다 🤍');
+      if (onClose) onClose();
+      return;
+    }
     if (!senderName.trim()) {
       alert('보내시는 분의 성함(또는 애칭)을 입력해 주세요.');
       return;

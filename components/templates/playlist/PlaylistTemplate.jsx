@@ -15,8 +15,52 @@ import { supabase } from '@/lib/supabase';
 import { getSafeKakaoShareImageUrl } from '@/lib/kakaoShare';
 import { renderParentPair } from '@/components/ParentDeceasedName';
 
+// 전국 지하철 & 버스 노선 공식/감성 컬러 맵 (피그마 1:1 매칭)
+const TRANSIT_COLORS = {
+  '1호선': '#0052A4',
+  '2호선': '#00A84D',
+  '3호선': '#EF7C1C',
+  '4호선': '#00A5DE',
+  '5호선': '#996CAC',
+  '6호선': '#CD7C2F',
+  '7호선': '#407550',
+  '8호선': '#E6186C',
+  '9호선': '#BDB092',
+  '분당선': '#C79126',
+  '수인분당선': '#C79126',
+  '신분당선': '#D4003B',
+  '경의중앙선': '#77C4A3',
+  '공항철도': '#0090D2',
+  '경춘선': '#0C8E72',
+  '우이신설선': '#B0CE1A',
+  '신림선': '#6789CA',
+  '서해선': '#81A914',
+  '간선버스': '#5B86BF',
+  '지선버스': '#71AB67',
+  '광역버스': '#E6186C',
+  '마을버스': '#8CB83C',
+};
+
+// 텍스트에서 지하철/버스 호선 키워드만 감지해 컬러링하는 스마트 파서
+function renderTransitText(text) {
+  if (!text) return null;
+  const regex = /(1호선|2호선|3호선|4호선|5호선|6호선|7호선|8호선|9호선|수인분당선|분당선|신분당선|경의중앙선|공항철도|경춘선|우이신설선|신림선|서해선|간선버스|지선버스|광역버스|마을버스)/g;
+  const parts = text.split(regex);
+  return parts.map((part, i) => {
+    const color = TRANSIT_COLORS[part];
+    if (color) {
+      return (
+        <span key={i} style={{ color }} className="font-medium mr-0.5">
+          {part}
+        </span>
+      );
+    }
+    return <span key={i}>{part}</span>;
+  });
+}
+
 export default function PlaylistTemplate({ invitation }) {
-  // 1. 모달 상태 (조건부 렌더링 철저 유지)
+  // 1. 모달 상태
   const [showContactModal, setShowContactModal] = useState(false);
   const [showRsvpModal, setShowRsvpModal] = useState(false);
   const [showGuestbookModal, setShowGuestbookModal] = useState(false);
@@ -24,7 +68,7 @@ export default function PlaylistTemplate({ invitation }) {
   const [galleryModalOpen, setGalleryModalOpen] = useState(false);
   const [galleryModalIndex, setGalleryModalIndex] = useState(0);
 
-  // 2. 뮤직 플레이어 위젯 & 바이닐 LP 애니메이션 상태
+  // 2. 뮤직 플레이어 위젯 & 오디오 애니메이션 상태 (시안 3 상단 고유)
   const [isPlaying, setIsPlaying] = useState(false);
   const [trackProgress, setTrackProgress] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
@@ -32,90 +76,221 @@ export default function PlaylistTemplate({ invitation }) {
   const [audioCurrentTime, setAudioCurrentTime] = useState('0:00');
   const [audioTotalDuration, setAudioTotalDuration] = useState('3:19');
 
-
-  // 4. 계좌 아코디언 토글
-  const [openGroomAccount, setOpenGroomAccount] = useState(true);
-  const [openBrideAccount, setOpenBrideAccount] = useState(true);
-
-  // 6. 방명록 상태
+  // 3. 방명록 상태 (시안 2 에디토리얼 4컷 2x2 카드 + 페이지네이션)
   const [guestbookList, setGuestbookList] = useState([]);
-  const [guestbookIndex, setGuestbookIndex] = useState(0);
+  const [guestbookPageIndex, setGuestbookPageIndex] = useState(0);
+  const guestbookTouchStartX = useRef(null);
 
-  // 7. 갤러리 메인 뷰어 인덱스
-  const [selectedGalleryIdx, setSelectedGalleryIdx] = useState(0);
+  // 4. 갤러리 상태
+  const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
 
-  // 8. 데이터 언패킹 & fallback
+  // 5. 계좌 탭 상태
+  const [userAccountTab, setUserAccountTab] = useState(null);
+
+  // 6. 안내사항 상태
+  const [activeNoticeIndex, setActiveNoticeIndex] = useState(0);
+  const noticeTouchStartX = useRef(null);
+
+  // 7. 데이터 언패킹 & fallback
   const isSample = Boolean(invitation?.is_sample_preview || invitation?.slug === 'playlist');
-  const config = invitation?.template_config || {};
-  const images = invitation?.images || {};
-  const extra = invitation?.extra_data || {};
+  const config = useMemo(() => invitation?.template_config || {}, [invitation?.template_config]);
+  const images = useMemo(() => invitation?.images || {}, [invitation?.images]);
+  const extra = useMemo(() => invitation?.extra_data || {}, [invitation?.extra_data]);
 
   const showCountdownSection = config.show_countdown !== false;
   const showGallerySection = config.show_gallery !== false;
   const showAccountsSection = config.show_accounts !== false;
   const showRsvpSection = config.show_rsvp !== false;
   const showGuestbookSection = config.show_guestbook !== false;
-  const showQuoteSection = config.show_quote_section !== false;
 
-  // 대표 이미지 매핑 (원본 보존)
-  const mainImage = images.main || images.cover || invitation?.main_image || '';
-  const couplePhoto = images.couple_profile || images.couple || extra.couple_profile_image || mainImage;
-  const endingImage = images.ending || extra.ending_image || invitation?.ending_image || mainImage;
+  // 대표 이미지 매핑
+  const mainImage = images.main || images.cover || invitation?.main_image || (isSample ? '/samples/main-03-playlist.jpg' : '');
+  const bridePhoto = images.bride_profile || images.bride || extra.bride_profile_image || invitation?.bride_photo || (isSample ? '/samples/bride-profile-03.jpg' : '');
+  const groomPhoto = images.groom_profile || images.groom || extra.groom_profile_image || invitation?.groom_photo || (isSample ? '/samples/groom-profile-01.jpg' : '');
+  const couplePhoto = images.couple_profile || images.couple || extra.couple_profile_image || (isSample ? '/samples/main-beach.jpg' : (mainImage || ''));
+  const endingImage = images.ending || extra.ending_image || invitation?.ending_image || couplePhoto || mainImage;
 
-  // 갤러리 이미지 안전 파싱
+  // 갤러리 이미지 안전 파싱 (문자열, JSON, Postgres 배열 형태 방어)
   const galleryImages = useMemo(() => {
     const raw = invitation?.gallery_images;
-    if (!raw) return [];
+    if (!raw) return isSample ? ['/samples/main-03-playlist.jpg', '/samples/main-beach.jpg', '/samples/photo-04-garden-wine.jpg', '/samples/photo-09-kiss-bouquet.jpg'] : [];
     if (Array.isArray(raw)) return raw;
-    try {
-      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
+    if (typeof raw === 'string') {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {
+        if (raw.startsWith('{') && raw.endsWith('}')) {
+          const items = raw.slice(1, -1).split(',').map((s) => s.trim().replace(/^"|"$/g, ''));
+          if (items.length > 0) return items;
+        }
+      }
     }
-  }, [invitation?.gallery_images]);
+    return isSample ? ['/samples/main-03-playlist.jpg', '/samples/main-beach.jpg', '/samples/photo-04-garden-wine.jpg', '/samples/photo-09-kiss-bouquet.jpg'] : [];
+  }, [invitation?.gallery_images, isSample]);
 
-  // 성함 데이터 (하드코딩 제거: 미입력 시 빈 문자열)
-  const groomName = invitation?.groom_name || '';
-  const brideName = invitation?.bride_name || '';
-  const groomFirstEn = invitation?.groom_first_name_en || (invitation?.groom_name_en || '').split(' ')[0] || '';
-  const brideFirstEn = invitation?.bride_first_name_en || (invitation?.bride_name_en || '').split(' ')[0] || '';
-  const coupleNamesEn = invitation?.main_names_en || [groomFirstEn, brideFirstEn].filter(Boolean).join(' & ') || [groomName, brideName].filter(Boolean).join(' & ') || '';
+  // 성함 데이터
+  const groomName = invitation?.groom_name || (isSample ? '강민우' : '');
+  const brideName = invitation?.bride_name || (isSample ? '서유진' : '');
+  const coupleKo = [groomName, brideName].filter(Boolean).join(' · ');
 
-  // 날짜 파싱 (실제 고객 청첩장에서는 미입력 시 날짜 섹션 미노출, 샘플 모드일 때만 예시 날짜 제공)
+  // 날짜 계산 & 카운트다운
   const weddingDateStr = invitation?.wedding_date 
     ? invitation.wedding_date.replace(' ', 'T') 
-    : (isSample ? '2026-10-24T12:00:00' : '');
+    : (isSample ? '2027-05-23T14:00:00' : '');
   const hasWeddingDate = Boolean(weddingDateStr);
-  const dateObj = hasWeddingDate ? new Date(weddingDateStr) : null;
-  const isValidDate = Boolean(dateObj && !isNaN(dateObj.getTime()));
+  const targetDate = useMemo(() => {
+    if (!weddingDateStr) return null;
+    const d = new Date(weddingDateStr);
+    return isNaN(d.getTime()) ? null : d;
+  }, [weddingDateStr]);
 
-  const year = isValidDate ? dateObj.getFullYear() : '';
-  const month = isValidDate ? dateObj.getMonth() + 1 : '';
-  const date = isValidDate ? dateObj.getDate() : '';
-  const hours = isValidDate ? dateObj.getHours() : 12;
-  const minutes = isValidDate ? dateObj.getMinutes() : 0;
-  const ampm = hours >= 12 ? '오후' : '오전';
-  const displayHours = hours % 12 === 0 ? 12 : hours % 12;
-  const displayMinutes = String(minutes).padStart(2, '0');
+  const isValidDate = Boolean(targetDate);
+  const year = isValidDate ? targetDate.getFullYear() : (isSample ? 2027 : '');
+  const date = isValidDate ? targetDate.getDate() : (isSample ? 23 : '');
 
-  const DAYS_KO = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
-  const DAYS_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const MONTHS_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  const dayKo = isValidDate ? (DAYS_KO[dateObj.getDay()] || '') : '';
-  const dayEn = isValidDate ? (DAYS_EN[dateObj.getDay()] || '') : '';
-  const monthEn = isValidDate ? (MONTHS_EN[month - 1] || '') : '';
+  // 카운트다운 타이머 상태
+  const [timeLeft, setTimeLeft] = useState({ 
+    days: 0, 
+    hours: 0, 
+    minutes: 0, 
+    seconds: 0, 
+    totalDays: 0,
+    isPast: false,
+    isToday: false 
+  });
 
-  // D-Day 계산 (단순 파생 값으로 직접 계산)
-  const dDay = (() => {
-    if (!isValidDate || !dateObj) return 0;
-    const now = new Date();
-    const targetMidnight = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()).getTime();
-    const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-    return Math.round((targetMidnight - nowMidnight) / (1000 * 60 * 60 * 24));
-  })();
+  useEffect(() => {
+    if (!targetDate) return;
+    const updateTimer = () => {
+      const now = new Date();
+      const diff = targetDate.getTime() - now.getTime();
+      
+      const targetMidnight = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate()).getTime();
+      const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      const diffDayCount = Math.round((targetMidnight - nowMidnight) / (1000 * 60 * 60 * 24));
+      const isSameDay = diffDayCount === 0;
 
-  // 전역 오디오 상태 동기화 및 제어 (상단 BgmPlayer와 100% 실시간 양방향 이벤트 동기화)
+      if (diffDayCount > 0) {
+        const totalSec = Math.max(0, Math.floor(diff / 1000));
+        const hours = Math.floor((totalSec / 3600) % 24);
+        const minutes = Math.floor((totalSec / 60) % 60);
+        const seconds = totalSec % 60;
+        setTimeLeft({ days: diffDayCount, hours, minutes, seconds, totalDays: diffDayCount, isPast: false, isToday: false });
+      } else if (isSameDay) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, totalDays: 0, isPast: false, isToday: true });
+      } else {
+        const pastDays = Math.abs(diffDayCount);
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, totalDays: pastDays, isPast: true, isToday: false });
+      }
+    };
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [targetDate]);
+
+  // 캘린더 데이터 생성
+  const calendarData = useMemo(() => {
+    if (!targetDate) return null;
+    const y = targetDate.getFullYear();
+    const m = targetDate.getMonth();
+    const weddingDay = targetDate.getDate();
+    const firstDayIndex = new Date(y, m, 1).getDay();
+    const totalDays = new Date(y, m + 1, 0).getDate();
+    return { year: y, month: m + 1, weddingDay, firstDayIndex, totalDays };
+  }, [targetDate]);
+
+  // 포맷팅 날짜
+  const formattedDates = useMemo(() => {
+    if (!targetDate) return { monthName: isSample ? 'MAY' : '', calendarHeaderDate: '', dowKo: '', timeStrKo: '', yearNumber: '' };
+    const daysKo = ['일', '월', '화', '수', '목', '금', '토'];
+    const monthsEn = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+    
+    const y = targetDate.getFullYear();
+    const m = targetDate.getMonth() + 1;
+    const d = targetDate.getDate();
+    const dowKo = daysKo[targetDate.getDay()];
+    const monthEn = monthsEn[targetDate.getMonth()];
+    
+    const hours = targetDate.getHours();
+    const periodKo = hours < 12 ? '오전' : '오후';
+    const displayHour = hours % 12 === 0 ? 12 : hours % 12;
+    const mins = targetDate.getMinutes();
+    const minStr = mins > 0 ? ` ${mins}분` : '';
+
+    return {
+      monthName: monthEn,
+      dayNumber: String(d).padStart(2, '0'),
+      yearNumber: String(y),
+      timeStrKo: `${periodKo} ${displayHour}시${minStr}`,
+      calendarHeaderDate: `${y}년 ${m}월 ${d}일 ${dowKo}요일 | ${periodKo} ${displayHour}시${minStr}`,
+      dowKo,
+    };
+  }, [targetDate, isSample]);
+
+  const monthEn = formattedDates.monthName || (isSample ? 'MAY' : '');
+
+  // 영문 풀네임 동적 계산
+  const fullNamesEn = useMemo(() => {
+    if (invitation?.main_names_en) return invitation.main_names_en;
+    if (extra?.main_names_en) return extra.main_names_en;
+    if (invitation?.groom_name_en && invitation?.bride_name_en) {
+      return `${invitation.groom_name_en} & ${invitation.bride_name_en}`;
+    }
+    const groomFull = [invitation?.groom_last_name_en, invitation?.groom_first_name_en].filter(Boolean).join(' ') || invitation?.groom_name_en;
+    const brideFull = [invitation?.bride_last_name_en, invitation?.bride_first_name_en].filter(Boolean).join(' ') || invitation?.bride_name_en;
+    if (groomFull && brideFull) return `${groomFull} & ${brideFull}`;
+    if (groomFull || brideFull) return groomFull || brideFull;
+    if (isSample) return 'Minwoo Kang & Yujin Seo';
+    return '';
+  }, [invitation, extra, isSample]);
+
+  // 부모님 성함 & 故 / 국화꽃 표기
+  const deceasedMarker = config.deceased_marker || invitation?.deceased_marker || 'hanja';
+  const isGroomFatherDeceased = invitation?.groom_father_deceased ?? config.groom_father_deceased ?? false;
+  const isGroomMotherDeceased = invitation?.groom_mother_deceased ?? config.groom_mother_deceased ?? false;
+  const isBrideFatherDeceased = invitation?.bride_father_deceased ?? config.bride_father_deceased ?? false;
+  const isBrideMotherDeceased = invitation?.bride_mother_deceased ?? config.bride_mother_deceased ?? false;
+
+  const groomRelation = invitation?.groom_relation || config.groom_relation || '';
+  const brideRelation = invitation?.bride_relation || config.bride_relation || '';
+
+  const groomParentsNode = renderParentPair({
+    father: invitation?.groom_father || (isSample && !invitation?.groom_mother ? '강대현' : ''),
+    isFatherDeceased: isGroomFatherDeceased,
+    mother: invitation?.groom_mother || (isSample && !invitation?.groom_father ? '문영희' : ''),
+    isMotherDeceased: isGroomMotherDeceased,
+    markerType: deceasedMarker,
+    separator: ' · ',
+    iconClassName: 'w-[13px] h-[15px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0',
+  });
+
+  const brideParentsNode = renderParentPair({
+    father: invitation?.bride_father || (isSample && !invitation?.bride_mother ? '서병철' : ''),
+    isFatherDeceased: isBrideFatherDeceased,
+    mother: invitation?.bride_mother || (isSample && !invitation?.bride_father ? '한정숙' : ''),
+    isMotherDeceased: isBrideMotherDeceased,
+    markerType: deceasedMarker,
+    separator: ' · ',
+    iconClassName: 'w-[13px] h-[15px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0',
+  });
+
+  const displayGroomParents = groomParentsNode || (isSample ? '강대현 · 문영희' : null);
+  const displayGroomRelation = groomRelation || (isSample ? '장남' : (groomParentsNode ? '장남' : ''));
+  const displayGroomName = groomName || (isSample ? '강민우' : '');
+  const hasGroomFamily = Boolean(displayGroomParents && displayGroomName);
+
+  const displayBrideParents = brideParentsNode || (isSample ? '서병철 · 한정숙' : null);
+  const displayBrideRelation = brideRelation || (isSample ? '차녀' : (brideParentsNode ? '장녀' : ''));
+  const displayBrideName = brideName || (isSample ? '서유진' : '');
+  const hasBrideFamily = Boolean(displayBrideParents && displayBrideName);
+
+  const groomShort = invitation?.groom_name && invitation.groom_name.length === 3 ? invitation.groom_name.slice(1) : (invitation?.groom_name || '');
+  const brideShort = invitation?.bride_name && invitation.bride_name.length === 3 ? invitation.bride_name.slice(1) : (invitation?.bride_name || '');
+
+  const venueFullName = [invitation?.venue_name, invitation?.venue_hall || config?.venue_hall].filter(Boolean).join(' ');
+
+  // 전역 오디오 상태 동기화 및 제어 (시안 3 상단 플레이어)
   useEffect(() => {
     let audioEl = null;
 
@@ -156,7 +331,6 @@ export default function PlaylistTemplate({ invitation }) {
     };
 
     attachListeners();
-    // DOM 마운트 타이밍 대응 및 폴백 체크
     const interval = setInterval(() => {
       if (!audioEl) {
         attachListeners();
@@ -196,18 +370,20 @@ export default function PlaylistTemplate({ invitation }) {
   useEffect(() => {
     if (!invitation?.id) return;
     async function loadGuestbook() {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('guestbook')
         .select('id, invitation_id, author, content, created_at')
         .eq('invitation_id', invitation.id)
         .order('created_at', { ascending: false })
         .limit(50);
-      if (data) setGuestbookList(data);
+      if (!error && data && data.length > 0) {
+        setGuestbookList(data);
+      }
     }
     loadGuestbook();
   }, [invitation?.id]);
 
-  // 계좌번호 안전 파싱 (문자열 및 혼주 계좌 유연한 매칭)
+  // 계좌 데이터 (JSON 문자열 안전 파싱)
   const allParsedAccounts = useMemo(() => {
     const raw = invitation?.accounts;
     if (Array.isArray(raw)) return raw;
@@ -246,52 +422,80 @@ export default function PlaylistTemplate({ invitation }) {
     );
   }, [allParsedAccounts]);
 
-  // 클립보드 복사
-  const handleCopy = (text, label) => {
-    if (!text) return;
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(text).then(() => {
-        alert(`${label}이(가) 복사되었습니다.`);
-      });
-    } else {
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-      alert(`${label}이(가) 복사되었습니다.`);
+  const activeAccountTab = userAccountTab || (groomAccounts.length === 0 && brideAccounts.length > 0 ? 'bride' : 'groom');
+  const setActiveAccountTab = setUserAccountTab;
+
+  // 정보 카드 목록 (JSON 문자열 및 레거시 extra_data 완벽 호환)
+  const infoCards = useMemo(() => {
+    let raw = invitation?.info_notices;
+    if (typeof raw === 'string') {
+      try { raw = JSON.parse(raw); } catch {}
+    }
+    if (Array.isArray(raw) && raw.length > 0) return raw;
+    const legacy = [];
+    if (extra.meal_info) legacy.push({ title: '식사 안내', content: extra.meal_info });
+    if (extra.shuttle_info) legacy.push({ title: '셔틀버스 안내', content: extra.shuttle_info });
+    return legacy;
+  }, [invitation?.info_notices, extra.meal_info, extra.shuttle_info]);
+
+  // 교통편 목록 (JSON 문자열 및 레거시 extra_data 완벽 호환)
+  const transportationList = useMemo(() => {
+    let raw = invitation?.transportation;
+    if (typeof raw === 'string') {
+      try { raw = JSON.parse(raw); } catch {}
+    }
+    if (Array.isArray(raw) && raw.length > 0) return raw;
+    const legacy = [];
+    if (extra.transport_subway) legacy.push({ type: 'subway', title: '지하철', content: extra.transport_subway });
+    if (extra.transport_bus) legacy.push({ type: 'bus', title: '버스', content: extra.transport_bus });
+    if (extra.transport_car) legacy.push({ type: 'car', title: '자가용', content: extra.transport_car });
+    if (extra.transport_parking) legacy.push({ type: 'parking', title: '주차 안내', content: extra.transport_parking });
+    return legacy;
+  }, [invitation?.transportation, extra.transport_subway, extra.transport_bus, extra.transport_car, extra.transport_parking]);
+
+  // 클립보드 복사 함수
+  const handleCopyText = async (text, msg = '복사되었습니다.') => {
+    if (typeof window === 'undefined') return;
+    try {
+      await navigator.clipboard.writeText(text);
+      alert(msg);
+    } catch {
+      alert('복사에 실패했습니다.');
     }
   };
 
-  // 카카오톡 공유
+  const handleCopyLink = async () => {
+    if (typeof window === 'undefined') return;
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      alert('청첩장 링크가 복사되었습니다.');
+    } catch {
+      alert('링크 복사에 실패했습니다.');
+    }
+  };
+
   const handleKakaoShare = () => {
     const isActive = invitation?.is_active ?? config?.is_active ?? true;
     if (!isActive) {
-      alert('이 청첩장은 [체험용 미리보기] 모드입니다.\n정식 신청 및 활성화 완료 후 하객분들께 공유해 주세요.');
-      return;
+      alert('현재 청첩장은 [샘플 미리보기 모드] 상태입니다.\n정식 인증 또는 관리자 활성화 후 하객분들께 공유해 주세요.');
     }
-
     if (typeof window === 'undefined') return;
+
     const currentUrl = window.location.href;
-    const coupleKo = [groomName, brideName].filter(Boolean).join(' ♥ ');
-    const shareTitle = coupleNamesEn ? `${coupleNamesEn} 결혼합니다` : (coupleKo ? `${coupleKo} 결혼합니다` : '모바일 청첩장');
-    const shareDesc = [
-      invitation?.wedding_date,
-      [invitation?.venue_name, invitation?.venue_hall].filter(Boolean).join(' '),
-    ].filter(Boolean).join(' | ') || '소중한 분들을 초대합니다';
+    const weddingDateFormatted = formattedDates.calendarHeaderDate || `${year}년 ${date}일`;
+    const venueText = venueFullName || invitation?.venue_name || '웨딩홀';
+    const shareTitle = `${groomName} ♥ ${brideName}의 결혼식에 초대합니다`;
+    const shareDesc = `${weddingDateFormatted} | ${venueText}`;
 
-    if (window.Kakao && window.Kakao.isInitialized()) {
-      const rawImg = images.cover || images.main || (isSample ? '/samples/main-03-playlist.jpg' : '');
-      const shareImageUrl = getSafeKakaoShareImageUrl(rawImg, 'playlist');
-
+    if (window.Kakao && window.Kakao.isInitialized && window.Kakao.isInitialized()) {
       try {
+        const imageUrl = getSafeKakaoShareImageUrl(mainImage || endingImage);
         window.Kakao.Share.sendDefault({
           objectType: 'feed',
           content: {
             title: shareTitle,
             description: shareDesc,
-            imageUrl: shareImageUrl,
+            imageUrl: imageUrl,
             link: {
               mobileWebUrl: currentUrl,
               webUrl: currentUrl,
@@ -313,12 +517,11 @@ export default function PlaylistTemplate({ invitation }) {
       }
     }
 
-    // Fallback: 클립보드 복사
-    handleCopy(currentUrl, '청첩장 링크');
+    handleCopyLink();
   };
 
   return (
-    <div className="w-full max-w-[440px] min-h-screen bg-[#FBF9F5] text-[#222E26] font-sans mx-auto shadow-2xl relative overflow-hidden select-none">
+    <div className="w-full max-w-[440px] min-h-screen bg-[#FEFEFE] text-[#222E26] font-sans mx-auto shadow-2xl relative overflow-hidden select-none">
       {/* 카카오 SDK */}
       <Script
         src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"
@@ -335,25 +538,18 @@ export default function PlaylistTemplate({ invitation }) {
       <TodayConciergeCard invitation={invitation} />
       
       {/* ========================================================
-          01. HERO SECTION: PREMIUM WEDDING PLAYLIST CARD (레퍼런스 100% 픽셀 매칭)
-              (화이트/크림 카드 + 정갈한 명조체 + 1줄 고정 카피 + 정밀 컨트롤러)
+          01. HERO SECTION: PREMIUM WEDDING PLAYLIST CARD (시안 3 상단 고유 UI 온전히 유지)
           ======================================================== */}
       <section className="relative px-4 pt-7 pb-10 bg-linear-to-b from-[#F7F5EE] via-[#FAF8F5] to-[#FAF8F5]">
         
-        {/* 감성 뮤직 플레이어 카드 (기준 이미지 100% 일치 규격 & 디자인) */}
+        {/* 감성 뮤직 플레이어 카드 */}
         <div className="w-full max-w-[370px] sm:max-w-[390px] mx-auto bg-[#FAF8F5] rounded-[40px] p-3.5 sm:p-4.5 pb-6 sm:pb-7 shadow-[0_20px_50px_rgba(0,0,0,0.06)] border border-stone-200/70 select-none">
           
-          {/* 1. 상단 둥근 웨딩 화보 사진 (기준 이미지 aspect-[537/525] 1:1 완벽 일치) */}
+          {/* 1. 상단 둥근 웨딩 화보 사진 */}
           <div className="relative w-full aspect-[537/525] rounded-[32px] overflow-hidden bg-stone-200 shadow-xs">
             {mainImage ? (
               <img
                 src={mainImage}
-                alt="Wedding Album Cover"
-                className="w-full h-full object-cover grayscale contrast-105"
-              />
-            ) : isSample ? (
-              <img
-                src="/playlist-couple.png"
                 alt="Wedding Album Cover"
                 className="w-full h-full object-cover grayscale contrast-105"
               />
@@ -382,7 +578,7 @@ export default function PlaylistTemplate({ invitation }) {
                 <span>{brideName}</span>
               </h1>
 
-              {/* 좋아요 하트 버튼 (기준 이미지 원본 얇은 미니멀 라인 하트 ♡ 1:1 일치) */}
+              {/* 좋아요 하트 버튼 */}
               <button
                 type="button"
                 onClick={handleHeartClick}
@@ -401,7 +597,7 @@ export default function PlaylistTemplate({ invitation }) {
               </button>
             </div>
 
-            {/* 1줄 고정 하드코딩 서브카피: '저희  결혼합니다.' (자간 0.18em Noto Serif KR) */}
+            {/* 1줄 고정 하드코딩 서브카피 */}
             <p 
               style={{ fontFamily: "'Noto Serif KR', 'Nanum Myeongjo', serif" }}
               className="text-[12.5px] text-[#8E8E93] tracking-[0.18em] font-normal mt-1.5"
@@ -410,9 +606,8 @@ export default function PlaylistTemplate({ invitation }) {
             </p>
           </div>
 
-          {/* 3. 프로그레스 바 (트랙 높이 3px, 정밀 핸들, 시간 텍스트) */}
+          {/* 3. 프로그레스 바 */}
           <div className="mt-5 px-1.5">
-            {/* 트랙 바 */}
             <div 
               onClick={togglePlayAudio}
               className="relative w-full h-[3px] bg-[#E5E5EA] rounded-full cursor-pointer flex items-center"
@@ -421,21 +616,20 @@ export default function PlaylistTemplate({ invitation }) {
                 className="h-full bg-[#1C1C1E] rounded-full transition-all duration-300 relative flex items-center justify-end"
                 style={{ width: `${isPlaying ? trackProgress : 38}%` }}
               >
-                {/* 둥근 핸들 점 (기준 이미지 100% 매칭) */}
                 <div className="w-2.5 h-2.5 rounded-full bg-[#1C1C1E] shadow-sm shrink-0 -mr-1" />
               </div>
             </div>
 
-            {/* 시간 표시 (3:19 / - 4:26) */}
+            {/* 시간 표시 */}
             <div className="mt-2 flex items-center justify-between text-[11px] font-mono text-[#8E8E93]">
               <span>{isPlaying ? audioCurrentTime : '3:19'}</span>
               <span>- {isPlaying ? audioTotalDuration : '4:26'}</span>
             </div>
           </div>
 
-          {/* 4. 하단 미디어 컨트롤러 (기준 이미지 1:1 시원한 간격 & 정밀 비트맵 일치) */}
+          {/* 4. 하단 미디어 컨트롤러 */}
           <div className="mt-6 mb-2 px-1 w-full flex items-center justify-between">
-            {/* 1. 셔플 (Shuffle: 원작 픽셀 매칭) */}
+            {/* 셔플 */}
             <button
               type="button"
               onClick={togglePlayAudio}
@@ -451,7 +645,7 @@ export default function PlaylistTemplate({ invitation }) {
               </svg>
             </button>
 
-            {/* 2. 이전 곡 (Previous: 원작 Solid 매칭) */}
+            {/* 이전 곡 */}
             <button
               type="button"
               onClick={togglePlayAudio}
@@ -464,7 +658,7 @@ export default function PlaylistTemplate({ invitation }) {
               </svg>
             </button>
 
-            {/* 3. 중앙 대형 재생/일시정지 원형 버튼 (기준 이미지 1:1 직경 54px, ❚❚ / ▶ 전환) */}
+            {/* 중앙 대형 재생/일시정지 원형 버튼 */}
             <button
               type="button"
               onClick={togglePlayAudio}
@@ -472,20 +666,18 @@ export default function PlaylistTemplate({ invitation }) {
               aria-label={isPlaying ? '일시정지' : '재생'}
             >
               {isPlaying ? (
-                /* 재생 중: 기준 이미지 1:1 일치 일시정지 막대 2개 */
                 <svg className="w-[17px] h-[19px] fill-white" viewBox="0 0 20 24">
                   <rect x="2.5" y="3" width="5" height="18" rx="1.5" />
                   <rect x="12.5" y="3" width="5" height="18" rx="1.5" />
                 </svg>
               ) : (
-                /* 미재생: 정통 재생 삼각형 (가운데 정렬) */
                 <svg className="w-[18px] h-[19px] fill-white translate-x-0.5" viewBox="0 0 20 24">
                   <path d="M4 3.5v17a1 1 0 0 0 1.54.85l13-8.5a1 1 0 0 0 0-1.7l-13-8.5A1 1 0 0 0 4 3.5z" />
                 </svg>
               )}
             </button>
 
-            {/* 4. 다음 곡 (Next: 원작 Solid 매칭) */}
+            {/* 다음 곡 */}
             <button
               type="button"
               onClick={togglePlayAudio}
@@ -498,7 +690,7 @@ export default function PlaylistTemplate({ invitation }) {
               </svg>
             </button>
 
-            {/* 5. 반복 (Repeat: 원작 픽셀 매칭 루프 화살표) */}
+            {/* 반복 */}
             <button
               type="button"
               onClick={togglePlayAudio}
@@ -526,628 +718,1180 @@ export default function PlaylistTemplate({ invitation }) {
       </section>
 
       {/* ========================================================
-          02. LINER NOTES: INVITATION STORY (모시는 글 / 앨범 속지)
+          02. 에디토리얼 프로필 스프레드: 신부 & 신랑 단독 프로필 카드 & 혼주 정보 (시안 2 에디토리얼 UI)
           ======================================================== */}
-      <section className="py-16 px-7 bg-white border-t border-stone-200/60 relative">
+      <section id="editorial-story-section" className="pt-[99.5px] pb-0 px-6 bg-[#FEFEFE] relative flex flex-col items-center select-none overflow-hidden">
         <ScrollReveal>
-          <div className="text-center max-w-xs mx-auto">
-            <span className="font-mono text-[11px] tracking-[0.25em] text-emerald-700 uppercase block mb-2 font-semibold">
-              LINER NOTES &middot; INVITATION
-            </span>
-            <h2 className="font-serif text-xl sm:text-2xl text-stone-900 tracking-tight font-normal mb-8">
-              소중한 분들을 초대합니다
-            </h2>
+          {/* 상단 영문 필기체 헤더 */}
+          <div className="text-center mb-[28px] select-none flex flex-col items-center justify-center min-h-[64px]">
+            <p className="font-weddingday text-[27.5px] text-[#292929] tracking-normal leading-[1.14] select-none">
+              Welcome to
+            </p>
+            <p className="font-weddingday text-[27.5px] text-[#292929] tracking-normal leading-[1.14] select-none mt-1 whitespace-nowrap">
+              {fullNamesEn || coupleKo || (isSample ? 'Minwoo & Yujin' : '')}
+            </p>
+          </div>
 
-            {/* 명대사 / 인용구 섹션 */}
-            {showQuoteSection && invitation?.quote_content && (
-              <div className="mb-8 p-5 bg-[#FAF8F5] border border-stone-200/80 rounded-2xl relative shadow-2xs">
-                <p className="text-xs sm:text-[13px] text-stone-800 leading-relaxed font-serif italic whitespace-pre-line">
-                  &ldquo;{invitation.quote_content}&rdquo;
-                </p>
-                {invitation?.quote_source && (
-                  <span className="block text-[11px] text-emerald-700 font-mono mt-3 text-right font-medium">
-                    — {invitation.quote_source}
-                  </span>
+          {/* 신부 & 신랑 2단 액자 카드 그리드 */}
+          <div className="w-[331.35px] max-w-full mx-auto grid grid-cols-2 gap-[13.65px]">
+            {/* 좌측: 신부 카드 */}
+            <div 
+              style={{ boxShadow: '0px 2.7px 5.1px rgba(0, 0, 0, 0.18)' }}
+              className="bg-[#FEFEFE] pt-[7.76px] px-[8.55px] pb-[21.4px] flex flex-col items-center"
+            >
+              <div className="w-full aspect-[283.5/315.9] overflow-hidden bg-stone-100 flex items-center justify-center">
+                {bridePhoto ? (
+                  <img
+                    src={bridePhoto}
+                    alt={brideName || 'Bride'}
+                    className="w-full h-full object-cover object-center select-none"
+                    onError={(e) => {
+                      if (isSample && e.currentTarget.src !== '/samples/bride-profile-03.jpg') {
+                        e.currentTarget.src = '/samples/bride-profile-03.jpg';
+                      }
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-stone-300 font-serif">
+                    <span className="text-2xl mb-1">👰</span>
+                    <span className="text-[11px] font-sans tracking-widest uppercase">Bride</span>
+                  </div>
                 )}
               </div>
-            )}
-
-            {/* 모시는 글 본문 (가독성 높은 Noto Serif KR & 여유로운 행간) */}
-            {invitation?.message && (
-              <p className="font-serif text-[13.5px] sm:text-[14px] text-stone-700 leading-[2.2] font-normal whitespace-pre-line break-keep max-w-[320px] mx-auto">
-                {invitation.message}
-              </p>
-            )}
-
-            {/* 감성 커플 화보 (빈티지 폴라로이드 프레임 & 손글씨) */}
-            {couplePhoto && (
-              <div className="my-8 max-w-[280px] mx-auto p-3.5 pb-4 bg-white rounded-2xl border border-stone-200/90 shadow-[0_12px_32px_rgba(0,0,0,0.06)] text-center">
-                <p className="font-handwriting text-lg text-stone-500 mb-2 select-none tracking-wide">
-                  we are getting married -
-                </p>
-                <div className="w-full aspect-3/4 rounded-xl overflow-hidden bg-stone-100 mb-2.5">
-                  <img
-                    src={couplePhoto}
-                    alt="Couple Profile"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <p className="font-handwriting text-base text-stone-400 select-none">
-                  on {monthEn} {date}, {year}
-                </p>
-              </div>
-            )}
-
-            {/* 양가 혼주 & 신랑 신부 정보 (음반 크레딧 스타일) */}
-            {(() => {
-              const deceasedMarker = config.deceased_marker || invitation?.deceased_marker || 'hanja';
-              const isGroomFatherDeceased = invitation?.groom_father_deceased ?? config.groom_father_deceased ?? false;
-              const isGroomMotherDeceased = invitation?.groom_mother_deceased ?? config.groom_mother_deceased ?? false;
-              const isBrideFatherDeceased = invitation?.bride_father_deceased ?? config.bride_father_deceased ?? false;
-              const isBrideMotherDeceased = invitation?.bride_mother_deceased ?? config.bride_mother_deceased ?? false;
-
-              const groomParentsNode = renderParentPair({
-                father: invitation?.groom_father,
-                isFatherDeceased: isGroomFatherDeceased,
-                mother: invitation?.groom_mother,
-                isMotherDeceased: isGroomMotherDeceased,
-                markerType: deceasedMarker,
-                separator: ' · ',
-                iconClassName: 'w-[13px] h-[15px] inline-block align-[-2px] mr-1 text-stone-400 shrink-0',
-              });
-
-              const brideParentsNode = renderParentPair({
-                father: invitation?.bride_father,
-                isFatherDeceased: isBrideFatherDeceased,
-                mother: invitation?.bride_mother,
-                isMotherDeceased: isBrideMotherDeceased,
-                markerType: deceasedMarker,
-                separator: ' · ',
-                iconClassName: 'w-[13px] h-[15px] inline-block align-[-2px] mr-1 text-stone-400 shrink-0',
-              });
-
-              const hasGroomParents = Boolean(invitation?.groom_father || invitation?.groom_mother);
-              const hasBrideParents = Boolean(invitation?.bride_father || invitation?.bride_mother);
-
-              return (groomName || brideName || hasGroomParents || hasBrideParents) && (
-                <div className="mt-10 pt-8 border-t border-stone-200/60 space-y-3 text-xs sm:text-[13px]">
-                  {(hasGroomParents || groomName) && (
-                    <div className="flex items-center justify-center gap-1.5 text-stone-700 flex-wrap">
-                      <span className="text-stone-500">{groomParentsNode}</span>
-                      {hasGroomParents && (config.groom_relation || invitation?.groom_relation) && (
-                        <span className="text-emerald-700 text-[11px] font-medium">의 {config.groom_relation || invitation?.groom_relation}</span>
-                      )}
-                      {groomName && <span className="font-semibold text-stone-900 ml-1">{groomName}</span>}
-                    </div>
-                  )}
-
-                  {(hasBrideParents || brideName) && (
-                    <div className="flex items-center justify-center gap-1.5 text-stone-700 flex-wrap">
-                      <span className="text-stone-500">{brideParentsNode}</span>
-                      {hasBrideParents && (config.bride_relation || invitation?.bride_relation) && (
-                        <span className="text-emerald-700 text-[11px] font-medium">의 {config.bride_relation || invitation?.bride_relation}</span>
-                      )}
-                      {brideName && <span className="font-semibold text-stone-900 ml-1">{brideName}</span>}
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
-
-
-            {/* 축하 연락하기 버튼 */}
-            <div className="mt-8">
-              <button
-                onClick={() => setShowContactModal(true)}
-                className="px-5 py-2.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-medium border border-stone-200 transition-all inline-flex items-center gap-2 cursor-pointer shadow-2xs active:scale-95"
-              >
-                <span>📞</span>
-                <span>신랑 &middot; 신부에게 축하 연락하기</span>
-              </button>
-            </div>
-          </div>
-        </ScrollReveal>
-      </section>
-
-
-      {/* ========================================================
-          03. PHOTO COLLECTION: FULL-RATIO LOOKBOOK (원본 비율 100% 보존 갤러리)
-          ======================================================== */}
-      {showGallerySection && galleryImages.length > 0 && (
-        <section className="py-16 px-6 bg-[#FAF9F6] border-t border-stone-200/60">
-          <ScrollReveal>
-            <div className="text-center mb-8">
-              <span className="font-mono text-[11px] tracking-[0.25em] text-emerald-700 uppercase block mb-2 font-semibold">
-                PHOTO COLLECTION &middot; GALLERY
-              </span>
-              <h2 className="font-serif text-2xl text-stone-900 font-normal tracking-tight">
-                Our Moments
-              </h2>
-              <p className="text-xs text-stone-500 font-light mt-1">
-                서로를 마주 본 찬란한 순간들
-              </p>
-            </div>
-
-            {/* 대형 직사각형 메인 뷰어 (타원형 크롭 완전 폐기! 원본 화보 비율 100% 보존 + 슬라이드 인터랙션) */}
-            <div 
-              className="relative mx-auto max-w-[340px] aspect-3/4 rounded-3xl overflow-hidden shadow-[0_16px_40px_rgba(0,0,0,0.1)] border border-stone-200/80 mb-6 group bg-stone-100 transition-all select-none"
-            >
-              <img
-                src={galleryImages[selectedGalleryIdx] || couplePhoto}
-                alt={`Gallery View ${selectedGalleryIdx + 1}`}
-                onClick={() => { setGalleryModalIndex(selectedGalleryIdx); setGalleryModalOpen(true); }}
-                className="w-full h-full object-cover transition-all duration-500 cursor-pointer group-hover:scale-102"
-              />
-
-              {/* 트랙 번호 배지 */}
-              <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white font-mono text-[10px] tracking-wider pointer-events-none">
-                TRACK {String(selectedGalleryIdx + 1).padStart(2, '0')} / {String(galleryImages.length).padStart(2, '0')}
-              </div>
-
-              {/* 이전 사진 터치 버튼 */}
-              {galleryImages.length > 1 && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedGalleryIdx((prev) => (prev > 0 ? prev - 1 : galleryImages.length - 1));
-                  }}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-stone-800 shadow-md backdrop-blur-md flex items-center justify-center text-lg font-bold transition-all active:scale-90 cursor-pointer"
-                  aria-label="이전 사진"
-                >
-                  &#8249;
-                </button>
-              )}
-
-              {/* 다음 사진 터치 버튼 */}
-              {galleryImages.length > 1 && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedGalleryIdx((prev) => (prev < galleryImages.length - 1 ? prev + 1 : 0));
-                  }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-stone-800 shadow-md backdrop-blur-md flex items-center justify-center text-lg font-bold transition-all active:scale-90 cursor-pointer"
-                  aria-label="다음 사진"
-                >
-                  &#8250;
-                </button>
-              )}
-
-              {/* 하단 확대 안내 배너 오버레이 */}
-              <div 
-                onClick={() => { setGalleryModalIndex(selectedGalleryIdx); setGalleryModalOpen(true); }}
-                className="absolute inset-x-0 bottom-0 pt-10 pb-4 bg-linear-to-t from-black/60 via-black/20 to-transparent flex items-end justify-center cursor-pointer"
-              >
-                <span className="text-white text-xs font-serif italic tracking-wider drop-shadow-md flex items-center gap-1.5">
-                  <span>터치하여 크게 보기</span>
-                  <span className="text-[10px]">&#8599;</span>
+              <div className="mt-[18.74px] w-full text-center flex items-center justify-center gap-2.5 select-none leading-none">
+                <span className="font-weddingday text-[16px] text-[#999999] select-none pt-0.5">
+                  Bride.
+                </span>
+                <span className="font-nanumsquare text-[14px] text-[#292929] font-normal tracking-tight">
+                  {brideName}
                 </span>
               </div>
             </div>
 
-            {/* 사진 리스트 카운터 안내 */}
-            <div className="flex items-center justify-between max-w-[340px] mx-auto mb-3 px-1">
-              <span className="text-[11px] font-mono text-emerald-800 font-semibold uppercase tracking-wider">
-                THUMBNAIL SELECTOR
-              </span>
-              <span className="text-[11px] font-mono text-stone-500">
-                {selectedGalleryIdx + 1} / {galleryImages.length}
-              </span>
-            </div>
-
-            {/* 정갈한 3열 썸네일 그리드 (터치 시 상단 대형 뷰어 사진 즉시 전환) */}
-            <div className="grid grid-cols-3 gap-2.5 max-w-[340px] mx-auto">
-              {galleryImages.map((imgUrl, idx) => (
-                <div
-                  key={idx}
-                  onClick={() => setSelectedGalleryIdx(idx)}
-                  className={`aspect-square rounded-2xl overflow-hidden bg-stone-100 border transition-all duration-300 relative group cursor-pointer ${
-                    selectedGalleryIdx === idx
-                      ? 'border-emerald-700 ring-2 ring-emerald-700/30 shadow-md scale-102'
-                      : 'border-stone-200/80 opacity-75 hover:opacity-100 shadow-2xs'
-                  }`}
-                >
+            {/* 우측: 신랑 카드 */}
+            <div 
+              style={{ boxShadow: '0px 2.7px 5.1px rgba(0, 0, 0, 0.18)' }}
+              className="bg-[#FEFEFE] pt-[7.76px] px-[8.55px] pb-[21.4px] flex flex-col items-center"
+            >
+              <div className="w-full aspect-[283.5/315.9] overflow-hidden bg-stone-100 flex items-center justify-center">
+                {groomPhoto ? (
                   <img
-                    src={imgUrl}
-                    alt={`Gallery ${idx + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    src={groomPhoto}
+                    alt={groomName || 'Groom'}
+                    className="w-full h-full object-cover object-center select-none"
+                    onError={(e) => {
+                      if (isSample && e.currentTarget.src !== '/samples/groom-profile-01.jpg') {
+                        e.currentTarget.src = '/samples/groom-profile-01.jpg';
+                      }
+                    }}
                   />
-                  {selectedGalleryIdx === idx && (
-                    <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-600 shadow-xs" />
-                  )}
-                </div>
-              ))}
-            </div>
-          </ScrollReveal>
-        </section>
-      )}
-
-      {/* ========================================================
-          04. WEDDING SCHEDULE & COUNTDOWN (예식 일시 & D-Day)
-          ======================================================== */}
-      {showCountdownSection && isValidDate && (
-        <section className="py-14 px-6 bg-white border-t border-stone-200/60 text-center">
-          <ScrollReveal>
-            <span className="font-mono text-[11px] tracking-[0.25em] text-emerald-700 uppercase block mb-2 font-semibold">
-              RELEASE DATE &middot; SCHEDULE
-            </span>
-            <h2 className="font-serif text-xl sm:text-2xl text-stone-900 font-normal mb-2">
-              {year}년 {month}월 {date}일 {dayKo}
-            </h2>
-            <p className="text-sm text-stone-600 font-medium mb-6">
-              {ampm} {displayHours}시 {displayMinutes !== '00' ? `${displayMinutes}분` : ''}
-            </p>
-
-            {/* 디데이 카운트다운 카드 */}
-            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-[#FAF9F6] border border-stone-200/80 shadow-2xs">
-              <span className="text-xs text-stone-600 font-normal">두 사람의 예식일까지</span>
-              <span className="text-lg font-mono font-bold text-emerald-700">
-                {dDay > 0 ? `D-${dDay}` : dDay === 0 ? 'D-DAY' : `D+${Math.abs(dDay)}`}
-              </span>
-            </div>
-          </ScrollReveal>
-        </section>
-      )}
-
-      {/* ========================================================
-          05. LOCATION & MAP (오시는 길)
-          ======================================================== */}
-      <section id="location-section" className="py-16 px-6 bg-[#FAF9F6] border-t border-stone-200/60">
-        <ScrollReveal>
-          <div className="text-center mb-8">
-            <span className="font-mono text-[11px] tracking-[0.25em] text-emerald-700 uppercase block mb-2 font-semibold">
-              VENUE &middot; LOCATION
-            </span>
-            {invitation?.venue_name && (
-              <h2 className="font-serif text-2xl text-stone-900 font-normal">
-                {invitation.venue_name}
-              </h2>
-            )}
-            {config?.venue_hall && (
-              <p className="text-xs text-emerald-700 mt-1 font-medium">{config.venue_hall}</p>
-            )}
-            {invitation?.venue_address && (
-              <p className="text-xs text-stone-600 mt-2 font-light">
-                {invitation.venue_address}
-              </p>
-            )}
-
-          </div>
-
-          {/* 카카오맵 지도 */}
-          <div className="rounded-2xl overflow-hidden border border-stone-200/80 shadow-sm mb-4">
-            <KakaoMap
-              address={invitation?.venue_address}
-              venueName={invitation?.venue_name}
-            />
-          </div>
-
-          {/* 길찾기 내비게이션 바로가기 버튼 (카카오맵, 네이버지도) */}
-          <div className="grid grid-cols-2 gap-2">
-            <a
-              href={`https://map.kakao.com/link/search/${encodeURIComponent(invitation?.venue_name || '')}`}
-              target="_blank"
-              rel="noreferrer"
-              className="py-2.5 rounded-xl bg-white hover:bg-stone-50 border border-stone-200/80 text-xs text-center text-stone-800 font-medium transition-colors shadow-2xs"
-            >
-              카카오맵
-            </a>
-            <a
-              href={`https://map.naver.com/p/search/${encodeURIComponent(invitation?.venue_name || '')}`}
-              target="_blank"
-              rel="noreferrer"
-              className="py-2.5 rounded-xl bg-white hover:bg-stone-50 border border-stone-200/80 text-xs text-center text-stone-800 font-medium transition-colors shadow-2xs"
-            >
-              네이버지도
-            </a>
-          </div>
-
-          {/* 교통편 안내 카드 */}
-          {Array.isArray(invitation?.transportation) && invitation.transportation.length > 0 && (
-            <div className="mt-8 space-y-3">
-              {invitation.transportation.map((trans, idx) => (
-                <div key={idx} className="p-4 rounded-2xl bg-white border border-stone-200/80 shadow-2xs">
-                  <h4 className="text-xs font-semibold text-emerald-800 mb-1">{trans.title}</h4>
-                  <p className="text-xs text-stone-600 font-light leading-relaxed whitespace-pre-line">{trans.content}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </ScrollReveal>
-      </section>
-
-      {/* ========================================================
-          06. ACCOUNTS: 마음 전하실 곳 (축의금 계좌)
-          ======================================================== */}
-      {showAccountsSection && (groomAccounts.length > 0 || brideAccounts.length > 0) && (
-        <section id="accounts-section" className="py-16 px-6 bg-white border-t border-stone-200/60">
-          <ScrollReveal>
-            <div className="text-center mb-8">
-              <span className="font-mono text-[11px] tracking-[0.25em] text-emerald-700 uppercase block mb-2 font-semibold">
-                SUPPORT &middot; REGISTRY
-              </span>
-              <h2 className="font-serif text-2xl text-stone-900 font-normal">
-                마음 전하실 곳
-              </h2>
-              <p className="text-xs text-stone-500 font-light mt-1">
-                축복의 마음을 담아 전해주실 곳을 안내해 드립니다.
-              </p>
-            </div>
-
-            <div className="space-y-4 max-w-sm mx-auto">
-              {/* 신랑측 계좌 */}
-              {groomAccounts.length > 0 && (
-                <div className="rounded-2xl bg-[#FAF9F6] border border-stone-200/80 overflow-hidden shadow-2xs">
-                  <button
-                    onClick={() => setOpenGroomAccount(!openGroomAccount)}
-                    className="w-full p-4 flex items-center justify-between text-left text-sm font-medium text-stone-900 hover:bg-stone-100/60 transition-colors cursor-pointer"
-                  >
-                    <span>신랑측 계좌번호</span>
-                    <span className="text-xs text-emerald-700 font-mono font-medium">
-                      {openGroomAccount ? '접기 ▲' : '열기 ▼'}
-                    </span>
-                  </button>
-                  {openGroomAccount && (
-                    <div className="px-4 pb-4 space-y-2.5 border-t border-stone-200/60 pt-3">
-                      {groomAccounts.map((acc, idx) => (
-                        <div key={idx} className="flex items-center justify-between text-xs bg-white p-3 rounded-xl border border-stone-200/80 shadow-2xs">
-                          <div>
-                            <span className="text-stone-900 font-medium block">
-                              {acc.bank} {acc.number || acc.account_number}
-                            </span>
-                            <span className="text-stone-500 text-[11px] mt-0.5 block">
-                              예금주: {acc.holder || acc.name || ''}
-                            </span>
-                          </div>
-                          <button
-                            onClick={() => handleCopy(acc.number || acc.account_number, `${acc.bank} 계좌`)}
-                            className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-800 font-medium rounded-lg text-[11px] transition-colors shrink-0"
-                          >
-                            복사
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* 신부측 계좌 */}
-              {brideAccounts.length > 0 && (
-                <div className="rounded-2xl bg-[#FAF9F6] border border-stone-200/80 overflow-hidden shadow-2xs">
-                  <button
-                    onClick={() => setOpenBrideAccount(!openBrideAccount)}
-                    className="w-full p-4 flex items-center justify-between text-left text-sm font-medium text-stone-900 hover:bg-stone-100/60 transition-colors cursor-pointer"
-                  >
-                    <span>신부측 계좌번호</span>
-                    <span className="text-xs text-emerald-700 font-mono font-medium">
-                      {openBrideAccount ? '접기 ▲' : '열기 ▼'}
-                    </span>
-                  </button>
-                  {openBrideAccount && (
-                    <div className="px-4 pb-4 space-y-2.5 border-t border-stone-200/60 pt-3">
-                      {brideAccounts.map((acc, idx) => (
-                        <div key={idx} className="flex items-center justify-between text-xs bg-white p-3 rounded-xl border border-stone-200/80 shadow-2xs">
-                          <div>
-                            <span className="text-stone-900 font-medium block">
-                              {acc.bank} {acc.number || acc.account_number}
-                            </span>
-                            <span className="text-stone-500 text-[11px] mt-0.5 block">
-                              예금주: {acc.holder || acc.name || ''}
-                            </span>
-                          </div>
-                          <button
-                            onClick={() => handleCopy(acc.number || acc.account_number, `${acc.bank} 계좌`)}
-                            className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-800 font-medium rounded-lg text-[11px] transition-colors shrink-0"
-                          >
-                            복사
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </ScrollReveal>
-        </section>
-      )}
-
-      {/* ========================================================
-          07. RSVP & GUESTBOOK (참석 여부 & 방명록)
-          ======================================================== */}
-      {/* 06-2. 하객 현장 사진 선물 섹션 */}
-      <GuestPhotoSnapSection invitation={invitation} />
-
-      {(showRsvpSection || showGuestbookSection) && (
-        <section className="py-16 px-6 bg-[#FAF9F6] border-t border-stone-200/60 text-center">
-          <ScrollReveal>
-            <span className="font-mono text-[11px] tracking-[0.25em] text-emerald-700 uppercase block mb-2 font-semibold">
-              RSVP &middot; GUESTBOOK
-            </span>
-            <h2 className="font-serif text-2xl text-stone-900 font-normal mb-3">
-              참석 의사 & 축하 메시지
-            </h2>
-            <p className="text-xs text-stone-500 font-light mb-8">
-              원활한 예식 준비를 위해 참석 여부와 따뜻한 마음을 남겨주세요.
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-xs mx-auto">
-              {showRsvpSection && (
-                <button
-                  onClick={() => setShowRsvpModal(true)}
-                  className="w-full py-3 px-5 rounded-2xl bg-stone-900 hover:bg-black text-white font-medium text-xs shadow-md transition-transform active:scale-95 cursor-pointer"
-                >
-                  참석 의사 전달하기
-                </button>
-              )}
-              {showGuestbookSection && (
-                <button
-                  onClick={() => setShowGuestbookModal(true)}
-                  className="w-full py-3 px-5 rounded-2xl bg-white hover:bg-stone-50 text-stone-800 font-medium text-xs border border-stone-200/80 transition-transform active:scale-95 cursor-pointer shadow-2xs"
-                >
-                  축하 방명록 남기기
-                </button>
-              )}
-            </div>
-
-            {/* 방명록 카드 슬라이더 */}
-            {showGuestbookSection && guestbookList.length > 0 && (
-              <div className="mt-10 max-w-sm mx-auto">
-                <div className="p-5 rounded-2xl bg-white border border-stone-200/80 text-left relative shadow-2xs">
-                  <p className="text-xs text-stone-700 leading-relaxed font-light whitespace-pre-line mb-3">
-                    &ldquo;{guestbookList[guestbookIndex]?.content || guestbookList[guestbookIndex]?.message}&rdquo;
-                  </p>
-                  <div className="flex items-center justify-between text-[11px] text-emerald-800 font-mono font-medium">
-                    <span>— {guestbookList[guestbookIndex]?.author || guestbookList[guestbookIndex]?.name}</span>
-                    <button
-                      onClick={() => setDeleteTargetMsg(guestbookList[guestbookIndex])}
-                      className="text-stone-400 hover:text-rose-600 transition-colors text-[10px]"
-                    >
-                      삭제
-                    </button>
-                  </div>
-                </div>
-
-                {guestbookList.length > 1 && (
-                  <div className="flex items-center justify-center gap-3 mt-4 text-xs font-mono text-stone-500">
-                    <button
-                      onClick={() => setGuestbookIndex((prev) => (prev > 0 ? prev - 1 : guestbookList.length - 1))}
-                      className="px-2 py-1 hover:text-stone-900"
-                    >
-                      ◀ PREV
-                    </button>
-                    <span>{guestbookIndex + 1} / {guestbookList.length}</span>
-                    <button
-                      onClick={() => setGuestbookIndex((prev) => (prev < guestbookList.length - 1 ? prev + 1 : 0))}
-                      className="px-2 py-1 hover:text-stone-900"
-                    >
-                      NEXT ▶
-                    </button>
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-stone-300 font-serif">
+                    <span className="text-2xl mb-1">🤵</span>
+                    <span className="text-[11px] font-sans tracking-widest uppercase">Groom</span>
                   </div>
                 )}
               </div>
+              <div className="mt-[18.74px] w-full text-center flex items-center justify-center gap-2.5 select-none leading-none">
+                <span className="font-weddingday text-[16px] text-[#999999] select-none pt-0.5">
+                  Groom.
+                </span>
+                <span className="font-nanumsquare text-[14px] text-[#292929] font-normal tracking-tight">
+                  {groomName}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 혼주 정보 */}
+          {(hasGroomFamily || hasBrideFamily) && (
+            <div className="mt-[43.55px] w-[255px] max-w-full mx-auto font-nanumsquare text-[14px]">
+              <div className="space-y-[13px]">
+                {/* 1행: 신랑측 부모님 & 관계 & 신랑 */}
+                {hasGroomFamily && (
+                  <div className="flex items-center justify-between gap-2 leading-tight">
+                    <span className="text-left text-[#333333] tracking-tight font-normal shrink-0 whitespace-nowrap">
+                      {displayGroomParents}
+                    </span>
+                    <div className="flex items-center gap-2.5 shrink-0 ml-auto">
+                      <span className="w-[26px] text-center text-[#999999] text-[13px] tracking-tight font-normal">
+                        {displayGroomRelation}
+                      </span>
+                      <span className="w-[42px] text-right text-[#333333] tracking-tight font-normal">
+                        {displayGroomName}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* 2행: 신부측 부모님 & 관계 & 신부 */}
+                {hasBrideFamily && (
+                  <div className="flex items-center justify-between gap-2 leading-tight">
+                    <span className="text-left text-[#333333] tracking-tight font-normal shrink-0 whitespace-nowrap">
+                      {displayBrideParents}
+                    </span>
+                    <div className="flex items-center gap-2.5 shrink-0 ml-auto">
+                      <span className="w-[26px] text-center text-[#999999] text-[13px] tracking-tight font-normal">
+                        {displayBrideRelation}
+                      </span>
+                      <span className="w-[42px] text-right text-[#333333] tracking-tight font-normal">
+                        {displayBrideName}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 구분선 */}
+          <div 
+            style={{ borderTop: '0.5px solid #999999' }}
+            className="w-[280.5px] max-w-[75%] mt-[70px] mb-[40px] mx-auto shrink-0" 
+          />
+        </ScrollReveal>
+      </section>
+
+      {/* ========================================================
+          03. 에디토리얼 커플 화보 & 초대합니다
+          ======================================================== */}
+      <section className="bg-[#FEFEFE] select-none overflow-hidden">
+        <ScrollReveal>
+          {/* 풀 와이드 커플 사진 화보 */}
+          {couplePhoto && (
+            <div className="w-full aspect-[780/576] overflow-hidden bg-stone-100 select-none">
+              <img
+                src={couplePhoto}
+                alt="Couple Wedding Editorial"
+                className="w-full h-full object-cover object-center select-none"
+                onError={(e) => {
+                  if (isSample && e.currentTarget.src !== '/samples/main-beach.jpg') {
+                    e.currentTarget.src = '/samples/main-beach.jpg';
+                  }
+                }}
+              />
+            </div>
+          )}
+
+          {/* 모시는 글 본문 */}
+          <div className="pt-[89px] pb-0 px-6 text-center flex flex-col items-center">
+            <h2 className="font-nanumsquare text-[18px] text-[#292929] font-normal leading-none tracking-tight">
+              {invitation?.message_title || config?.message_title || '초대합니다'}
+            </h2>
+
+            {(invitation?.message || isSample) && (
+              <div className="mt-[43px] w-[256px] max-w-full mx-auto font-nanumsquare text-[14px] text-[#333333] font-normal leading-[1.75] tracking-tight break-keep whitespace-pre-line text-center">
+                {invitation?.message ? (
+                  invitation.message
+                ) : isSample ? (
+                  <>
+                    <p className="mb-6">
+                      어느 따스한 봄날,<br />
+                      서로의 멜로디가 어우러져 하나의 화음이 되었습니다.<br />
+                      이제 두 사람이 한마음으로<br />
+                      평생 아름다운 노래처럼 살아가겠습니다.
+                    </p>
+                    <p>
+                      저희가 시작하는 첫 소절에<br />
+                      귀한 걸음으로 따뜻한 축복을 더해주세요.
+                    </p>
+                  </>
+                ) : null}
+              </div>
             )}
+
+            {/* 연락하기 버튼 */}
+            <button
+              type="button"
+              onClick={() => setShowContactModal(true)}
+              style={{ boxShadow: '0px 2px 2.5px rgba(0, 0, 0, 0.07)' }}
+              className="mt-[47.5px] w-[163.5px] h-[38px] bg-[#F4F3F1] hover:bg-[#eceae7] active:scale-[0.98] border border-[#D3D3D3] rounded-full flex items-center justify-center gap-2 cursor-pointer transition-all select-none"
+            >
+              <span className="font-nanumsquare text-[14px] text-[#555555] font-normal tracking-tight">
+                연락하기
+              </span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="#555555" stroke="none" className="shrink-0">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+            </button>
+
+            {/* 구분선 */}
+            <div 
+              style={{ borderTop: '0.5px solid #999999' }}
+              className="w-[280.5px] max-w-[75%] mt-[80px] mb-[40px] shrink-0" 
+            />
+          </div>
+        </ScrollReveal>
+      </section>
+
+      {/* ========================================================
+          04. 에디토리얼 캘린더 & 카운트다운
+          ======================================================== */}
+      {hasWeddingDate && calendarData && (
+        <section className="w-full bg-[#FEFEFE] pt-[73.5px] pb-0 px-6 text-center select-none overflow-hidden">
+          <ScrollReveal>
+            {/* Wedding Day 필기체 */}
+            <h2
+              className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal"
+              style={{ fontFamily: "'Weddingday Personal Use', 'Bickham Script Pro', cursive" }}
+            >
+              Wedding Day
+            </h2>
+
+            {/* 예식 일시 */}
+            <p className="mt-[34px] font-nanumsquare text-[14px] text-[#333333] text-center leading-none tracking-tight select-none">
+              {formattedDates.calendarHeaderDate || `${formattedDates.yearNumber}년 ${calendarData.month}월 ${calendarData.weddingDay}일 ${formattedDates.dowKo}요일 | ${formattedDates.timeStrKo}`}
+            </p>
+
+            {/* 가로 구분선 */}
+            <div className="w-[319.5px] max-w-[85%] mx-auto border-t border-[#999999] mt-[34.3px]" />
+
+            {/* 캘린더 그리드 */}
+            <div className="w-[301.3px] max-w-full mx-auto mt-[45px]">
+              <div className="grid grid-cols-7 text-center font-nanumsquare text-[12.6px] font-normal mb-[16px] select-none">
+                <span className="text-[#F17171]">일</span>
+                <span className="text-[#666666]">월</span>
+                <span className="text-[#666666]">화</span>
+                <span className="text-[#666666]">수</span>
+                <span className="text-[#666666]">목</span>
+                <span className="text-[#666666]">금</span>
+                <span className="text-[#666666]">토</span>
+              </div>
+
+              <div className="grid grid-cols-7 text-center font-sans text-[13.5px] select-none">
+                {Array.from({ length: calendarData.firstDayIndex }).map((_, i) => (
+                  <div key={`empty-${i}`} className="h-[36px]" />
+                ))}
+
+                {Array.from({ length: calendarData.totalDays }).map((_, i) => {
+                  const day = i + 1;
+                  const isSunday = (calendarData.firstDayIndex + i) % 7 === 0;
+                  const isWeddingDay = day === calendarData.weddingDay;
+
+                  return (
+                    <div key={day} className="flex items-center justify-center h-[36px]">
+                      {isWeddingDay ? (
+                        <span className="w-[33.3px] h-[34.65px] rounded-full bg-[#454545] text-[#F3F3F3] flex items-center justify-center font-normal shadow-xs">
+                          {day}
+                        </span>
+                      ) : (
+                        <span className={isSunday ? 'text-[#F17171]' : 'text-[#666666]'}>
+                          {day}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 카운트다운 타이머 */}
+            {showCountdownSection && (
+              <div className="mt-[46px] w-[301.3px] max-w-full mx-auto">
+                <div className="grid grid-cols-4 gap-[8px] text-center select-none">
+                  {[
+                    { label: 'DAYS', val: timeLeft.days },
+                    { label: 'HOURS', val: timeLeft.hours },
+                    { label: 'MINUTES', val: timeLeft.minutes },
+                    { label: 'SECONDS', val: timeLeft.seconds },
+                  ].map((item, idx) => (
+                    <div
+                      key={idx}
+                      style={{ boxShadow: '0px 3.5px 3.2px rgba(147, 147, 147, 0.22)' }}
+                      className="w-[69.3px] h-[69.3px] max-w-full bg-[#F6F5F5] rounded-[6.3px] flex flex-col items-center justify-center mx-auto"
+                    >
+                      <span className="font-bodoni text-[10.8px] text-[#666666] tracking-[0.04em] uppercase leading-none select-none">
+                        {item.label}
+                      </span>
+                      <span className="font-bodoni text-[22.5px] text-[#535353] leading-none tabular-nums font-normal select-none mt-[8px]">
+                        {String(item.val).padStart(2, '0')}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <p className="mt-[33.3px] font-nanumsquare text-[14px] text-[#333333] tracking-tight text-center select-none">
+                  {groomName && brideName ? (
+                    <>{groomName} <span className="text-[#F17171] mx-0.5">♥</span> {brideName}님의</>
+                  ) : coupleKo ? (
+                    <>{coupleKo}님의</>
+                  ) : (
+                    <>두 사람의</>
+                  )}{' '}결혼식이{' '}
+                  {timeLeft.isToday ? (
+                    <>오늘 <span className="text-[#F17171] font-medium">축복 속에</span> 시작됩니다.</>
+                  ) : timeLeft.isPast ? (
+                    <>결혼한 지 <span className="text-[#F17171] font-medium">{timeLeft.totalDays}일</span>째 되는 날입니다.</>
+                  ) : (
+                    <><span className="text-[#F17171] font-medium">{timeLeft.totalDays || 120}일</span> 남았습니다.</>
+                  )}
+                </p>
+              </div>
+            )}
+
+            {/* 구분선 */}
+            <div 
+              style={{ borderTop: '0.5px solid #999999' }}
+              className="w-[280.5px] max-w-[75%] mt-[73px] mb-[40px] mx-auto shrink-0" 
+            />
           </ScrollReveal>
         </section>
       )}
 
       {/* ========================================================
-          08. ✨ OUTRO: WARM CHAMPAGNE FINALE & CELEBRATION CONFETTI
-              (화사하고 따뜻한 샴페인 피날레 & 축하 꽃가루)
+          05. 에디토리얼 화보 갤러리
           ======================================================== */}
-      <section className="relative py-20 px-6 bg-linear-to-b from-[#FAF7F2] via-[#F5EFE6] to-[#ECE4D8] text-center overflow-hidden text-stone-800 border-t border-stone-200/60">
-        <ScrollReveal>
-          {/* 상단 무드 뱃지 */}
-          <span className="inline-flex items-center gap-1.5 font-mono text-[11px] tracking-[0.28em] text-emerald-850 uppercase font-semibold px-3 py-1 bg-white/70 backdrop-blur-md rounded-full shadow-2xs mb-3">
-            BONUS TRACK &middot; FOREVER
-          </span>
+      {showGallerySection && galleryImages.length > 0 && (
+        <section className="w-full bg-[#FEFEFE] pt-[71px] pb-0 px-6 text-center select-none overflow-hidden">
+          <ScrollReveal>
+            <h2 className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal mb-[34.5px]">
+              gallery
+            </h2>
+            <p className="font-nanumsquare font-normal text-[18px] text-[#292929] leading-none text-center mb-[53px] tracking-tight">
+              사진 갤러리
+            </p>
 
-          <h2 className="font-serif text-2xl sm:text-3xl text-stone-900 font-normal tracking-tight mb-2">
-            {coupleNamesEn}
+            {/* 메인 화보 대형 컷 */}
+            <div 
+              onClick={() => {
+                setGalleryModalIndex(activeGalleryIndex);
+                setGalleryModalOpen(true);
+              }}
+              className="w-[333px] h-[415px] mx-auto mb-[17px] overflow-hidden bg-stone-100 cursor-pointer shadow-[0_2px_12px_rgba(0,0,0,0.04)]"
+            >
+              <img
+                src={galleryImages[activeGalleryIndex] || galleryImages[0]}
+                alt="Selected wedding photo"
+                className="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.01]"
+                onError={(e) => {
+                  if (isSample && e.currentTarget.src !== '/samples/main-03-playlist.jpg') {
+                    e.currentTarget.src = '/samples/main-03-playlist.jpg';
+                  }
+                }}
+              />
+            </div>
+
+            {/* 썸네일 그리드 */}
+            <div className="w-[333px] mx-auto flex items-center justify-between mb-[40.6px]">
+              {galleryImages.slice(0, 4).map((src, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setActiveGalleryIndex(idx)}
+                  className={`w-[72.9px] h-[72.9px] shrink-0 aspect-square overflow-hidden cursor-pointer transition-all ${
+                    idx === activeGalleryIndex
+                      ? 'ring-1 ring-[#333333] opacity-100'
+                      : 'opacity-70 hover:opacity-100'
+                  }`}
+                  aria-label={`갤러리 사진 ${idx + 1}번 보기`}
+                >
+                  <img
+                    src={src}
+                    alt={`Thumbnail ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      if (isSample && e.currentTarget.src !== '/samples/main-03-playlist.jpg') {
+                        e.currentTarget.src = '/samples/main-03-playlist.jpg';
+                      }
+                    }}
+                  />
+                </button>
+              ))}
+            </div>
+
+            {/* 하단 타원형 룩북 버튼 */}
+            <button
+              type="button"
+              onClick={() => {
+                setGalleryModalIndex(0);
+                setGalleryModalOpen(true);
+              }}
+              style={{ borderRadius: '50%' }}
+              className="w-[166px] h-[39.5px] border border-[#999999] hover:border-[#333333] flex items-center justify-center gap-1 mx-auto hover:bg-stone-50/80 active:scale-[0.98] transition-all cursor-pointer select-none"
+            >
+              <span className="font-bodoni font-bold text-[9.5px] text-[#333333] tracking-[0.02em] uppercase leading-none">
+                VIEW THE LOOKBOOK
+              </span>
+              <svg width="11" height="7" viewBox="0 0 11 7" fill="none" className="shrink-0 text-[#333333] ml-0.5">
+                <path d="M0.5 3.5H9.5M9.5 3.5L7 1M9.5 3.5L7 6" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+
+            {/* 구분선 */}
+            <div 
+              style={{ borderTop: '0.5px solid #999999' }}
+              className="w-[280.5px] max-w-[75%] mt-[60px] mb-[40px] mx-auto shrink-0" 
+            />
+          </ScrollReveal>
+        </section>
+      )}
+
+      {/* ========================================================
+          06. 식장 위치 및 오시는 길 안내
+          ======================================================== */}
+      {(invitation?.venue_name || invitation?.venue_address || isSample) && (
+        <section id="location-section" className="w-full bg-[#FEFEFE] pt-[64.5px] pb-0 px-6 text-center select-none overflow-hidden">
+          <ScrollReveal>
+            <h2 className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal">
+              location
+            </h2>
+
+            <p className="font-nanumsquare font-normal text-[18px] text-[#292929] leading-none text-center mt-[34.5px] tracking-tight">
+              식장 위치
+            </p>
+
+            <h3 className="font-nanumsquare font-normal text-[15px] text-[#333333] leading-none text-center mt-[43px] tracking-tight">
+              {venueFullName || (isSample ? '빌라드지디 청담 르씨엘홀' : '')}
+            </h3>
+
+            <div className="mt-[23.5px] flex items-center justify-center gap-1">
+              <span className="font-nanumsquare font-normal text-[14px] text-[#999999] leading-none tracking-tight">
+                {invitation?.venue_address || (isSample ? '서울 강남구 학동로 519' : '')}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  const addr = invitation?.venue_address || (isSample ? '서울 강남구 학동로 519' : '');
+                  handleCopyText(addr, '식장 주소가 복사되었습니다.');
+                }}
+                className="inline-flex items-center justify-center p-0.5 text-[#999999] hover:text-[#333333] transition-colors cursor-pointer select-none"
+                title="주소 복사"
+                aria-label="식장 주소 복사"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              </button>
+            </div>
+
+            {/* 지도 컴포넌트 */}
+            <div className="mt-[40.5px] w-[303.5px] h-[216.5px] max-w-full mx-auto overflow-hidden bg-stone-100 border border-stone-200">
+              <KakaoMap
+                address={invitation?.venue_address || (isSample ? '서울 강남구 학동로 519' : '')}
+                venueName={venueFullName || (isSample ? '빌라드지디 청담' : '')}
+                className="w-full h-full"
+              />
+            </div>
+
+            {/* 길안내 버튼 2개 */}
+            <div className="mt-[26px] w-[303.5px] max-w-full mx-auto flex items-center justify-between gap-[16.5px]">
+              <button
+                type="button"
+                onClick={() => {
+                  const query = venueFullName || invitation?.venue_address || (isSample ? '빌라드지디 청담' : '');
+                  window.open(`https://map.naver.com/p/search/${encodeURIComponent(query)}`, '_blank');
+                }}
+                style={{ boxShadow: '0px 2px 2px rgba(0, 0, 0, 0.11)' }}
+                className="w-[143.5px] h-[38px] bg-[#F5F4F4] hover:bg-[#eceae7] active:scale-[0.98] rounded-full flex items-center justify-center gap-2 cursor-pointer transition-all select-none"
+              >
+                <span className="font-nanumsquare font-normal text-[14px] text-[#666666] tracking-tight">
+                  네이버 지도
+                </span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="shrink-0">
+                  <rect width="24" height="24" rx="5" fill="#03C75A"/>
+                  <path d="M7 6H10.2L13.8 12.3V6H17V18H13.8L10.2 11.7V18H7V6Z" fill="white"/>
+                </svg>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const query = venueFullName || invitation?.venue_address || (isSample ? '빌라드지디 청담' : '');
+                  window.open(`https://map.kakao.com/link/search/${encodeURIComponent(query)}`, '_blank');
+                }}
+                style={{ boxShadow: '0px 2px 2px rgba(0, 0, 0, 0.11)' }}
+                className="w-[143.5px] h-[38px] bg-[#F5F4F4] hover:bg-[#eceae7] active:scale-[0.98] rounded-full flex items-center justify-center gap-2 cursor-pointer transition-all select-none"
+              >
+                <span className="font-nanumsquare font-normal text-[14px] text-[#666666] tracking-tight">
+                  카카오내비
+                </span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="shrink-0">
+                  <rect width="24" height="24" rx="5" fill="#FFEB00"/>
+                  <path d="M6 15.5L12 5L18 15.5L12 13L6 15.5Z" fill="#0075FF"/>
+                </svg>
+              </button>
+            </div>
+
+            {/* 오시는 길 안내 관련 박스 */}
+            {(transportationList.length > 0 || isSample) && (
+              <div className="mt-[54.5px] w-[276.5px] max-w-full mx-auto text-left">
+                {transportationList.length > 0 ? (
+                  <div className="space-y-[24px]">
+                    {transportationList.map((item, idx) => (
+                      <div key={idx}>
+                        <h4 className="font-nanumsquare font-bold text-[14px] text-[#333333] mb-3 leading-none">
+                          {item.title}
+                        </h4>
+                        <p className="font-nanumsquare font-normal text-[13px] text-[#666666] leading-relaxed whitespace-pre-line">
+                          {renderTransitText(item.content)}
+                        </p>
+                        {idx < transportationList.length - 1 && (
+                          <div style={{ borderTop: '0.5px solid #999999' }} className="w-full my-[24px]" />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : isSample ? (
+                  <div>
+                    <div>
+                      <h4 className="font-nanumsquare font-bold text-[14px] text-[#333333] mb-3 leading-none">
+                        지하철
+                      </h4>
+                      <p className="font-nanumsquare font-normal text-[13px] text-[#666666] leading-relaxed">
+                        <span className="text-[#407550] mr-1">7호선</span>청담역 12번 출구 바로 앞 (도보 1분)
+                      </p>
+                    </div>
+
+                    <div style={{ borderTop: '0.5px solid #999999' }} className="w-full my-[24px]" />
+
+                    <div>
+                      <h4 className="font-nanumsquare font-bold text-[14px] text-[#333333] mb-3 leading-none">
+                        버스
+                      </h4>
+                      <p className="font-nanumsquare font-normal text-[13px] text-[#666666] leading-relaxed">
+                        <span className="text-[#5B86BF]">간선버스</span> : 143, 301, 362번 청담역 하차
+                      </p>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            )}
+
+            {/* 구분선 */}
+            <div 
+              style={{ borderTop: '0.5px solid #999999' }}
+              className="w-[280.5px] max-w-[75%] mt-[40px] mb-[40px] mx-auto shrink-0" 
+            />
+          </ScrollReveal>
+        </section>
+      )}
+
+      {/* ========================================================
+          07. 마음 전하실 곳
+          ======================================================== */}
+      {showAccountsSection && (groomAccounts.length > 0 || brideAccounts.length > 0 || isSample) && (() => {
+        const currentAccounts = activeAccountTab === 'groom' ? groomAccounts : brideAccounts;
+        const sampleAccounts = activeAccountTab === 'groom'
+          ? [
+              { relation: '신랑', holder: isSample ? '강민우' : (groomName || '예금주'), bank: '카카오뱅크', number: '3333-02-9876543' },
+            ]
+          : [
+              { relation: '신부', holder: isSample ? '서유진' : (brideName || '예금주'), bank: '신한은행', number: '110-456-789012' },
+            ];
+        const displayAccounts = currentAccounts.length > 0 ? currentAccounts : (isSample ? sampleAccounts : []);
+
+        return (
+          <section id="accounts-section" className="w-full bg-[#FEFEFE] pt-[89px] pb-0 px-6 text-center select-none overflow-hidden">
+            <ScrollReveal>
+              <h2 className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal">
+                Account
+              </h2>
+
+              <p className="font-nanumsquare font-normal text-[18px] text-[#292929] leading-none text-center mt-[34.5px] tracking-tight">
+                마음 전하실 곳
+              </p>
+
+              <p className="font-nanumsquare font-normal text-[14px] text-[#333333] leading-[1.74] text-center mt-[43px] tracking-tight whitespace-pre-line">
+                축복의 마음을 담아 축의금을{`\n`}전달하실 수 있습니다.
+              </p>
+
+              {/* 파일철 탭 카드 */}
+              <div className="w-[315px] max-w-full mx-auto mt-[46.5px] text-left">
+                <div className="flex items-end">
+                  <button
+                    type="button"
+                    onClick={() => setActiveAccountTab('groom')}
+                    style={{
+                      boxShadow: activeAccountTab === 'groom' ? '0px -2px 4px rgba(0,0,0,0.04)' : 'none',
+                    }}
+                    className={`w-1/2 h-[42px] flex items-center justify-center font-nanumsquare text-[13px] tracking-tight transition-all cursor-pointer rounded-tl-[12px] rounded-tr-[16px] select-none ${
+                      activeAccountTab === 'groom'
+                        ? 'bg-[#F5F4F4] text-[#292929] font-bold z-10'
+                        : 'bg-[#FEFEFE] text-[#999999] font-normal border-t border-l border-stone-200/60 hover:text-[#555555]'
+                    }`}
+                  >
+                    신랑측
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveAccountTab('bride')}
+                    style={{
+                      boxShadow: activeAccountTab === 'bride' ? '0px -2px 4px rgba(0,0,0,0.04)' : 'none',
+                    }}
+                    className={`w-1/2 h-[42px] flex items-center justify-center font-nanumsquare text-[13px] tracking-tight transition-all cursor-pointer rounded-tl-[16px] rounded-tr-[12px] select-none ${
+                      activeAccountTab === 'bride'
+                        ? 'bg-[#F5F4F4] text-[#292929] font-bold z-10'
+                        : 'bg-[#FEFEFE] text-[#999999] font-normal border-t border-r border-stone-200/60 hover:text-[#555555]'
+                    }`}
+                  >
+                    신부측
+                  </button>
+                </div>
+
+                <div 
+                  style={{ boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.08)' }}
+                  className="bg-[#F5F4F4] rounded-b-[12px] pt-[28px] pb-[32px] px-[20px]"
+                >
+                  {displayAccounts.length > 0 ? (
+                    <div>
+                      {displayAccounts.map((acc, idx) => {
+                        const relText = acc.relation || acc.title || (activeAccountTab === 'groom' ? '신랑' : '신부');
+                        const holderText = acc.holder || acc.name || '예금주';
+                        const bankText = acc.bank || '';
+                        const numText = acc.number || acc.account_number || '';
+
+                        return (
+                          <div key={idx}>
+                            <div className="flex items-center justify-between">
+                              <div className="text-left">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-nanumsquare text-[12px] text-[#666666] font-normal leading-none">
+                                    {relText}
+                                  </span>
+                                  <span className="font-nanumsquare text-[12px] text-[#292929] font-bold leading-none">
+                                    {holderText}
+                                  </span>
+                                </div>
+                                <p className="font-nanumsquare text-[11.5px] text-[#666666] mt-2 font-normal leading-none tracking-tight">
+                                  {bankText} {numText}
+                                </p>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  handleCopyText(numText, '계좌번호가 복사되었습니다.');
+                                }}
+                                className="w-[80.5px] h-[26px] bg-white hover:bg-stone-50 active:scale-95 border border-[#CCCCCC] rounded-full flex items-center justify-center transition-all cursor-pointer shrink-0 select-none shadow-2xs"
+                              >
+                                <span className="font-nanumsquare text-[12px] text-[#292929] font-normal leading-none">
+                                  복사하기
+                                </span>
+                              </button>
+                            </div>
+
+                            {idx < displayAccounts.length - 1 && (
+                              <div style={{ borderTop: '0.5px solid #D5D5D5' }} className="w-full my-[18px]" />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="py-6 text-center text-stone-400 font-nanumsquare text-[12px]">
+                      등록된 계좌 정보가 없습니다.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 구분선 */}
+              <div 
+                style={{ borderTop: '0.5px solid #999999' }}
+                className="w-[280.5px] max-w-[75%] mt-[60px] mb-[45px] mx-auto shrink-0" 
+              />
+            </ScrollReveal>
+          </section>
+        );
+      })()}
+
+      {/* ========================================================
+          08. Notice 안내사항
+          ======================================================== */}
+      {(infoCards.length > 0 || isSample) && (() => {
+        const sampleNotices = [
+          {
+            title: '식사 안내',
+            content: `소중한 시간을 내어 함께해 주시는 분들을 위해\n감사의 마음을 담아 식사를 준비하였습니다.\n맛있게 드시고 편안한 시간 보내시기 바랍니다.`,
+          },
+        ];
+        const displayNotices = infoCards.length > 0 ? infoCards : (isSample ? sampleNotices : []);
+        if (displayNotices.length === 0) return null;
+
+        const currentNotice = displayNotices[activeNoticeIndex % displayNotices.length] || displayNotices[0];
+        const hasMultiple = displayNotices.length > 1;
+
+        return (
+          <section className="w-full bg-[#FEFEFE] pt-[61px] pb-0 text-center select-none overflow-hidden">
+            <ScrollReveal>
+              <h2 className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal">
+                Notice
+              </h2>
+
+              <p className="font-nanumsquare font-normal text-[18px] text-[#292929] leading-none text-center mt-[34.5px] tracking-tight">
+                안내 사항
+              </p>
+
+              {/* 필름 스트립 프레임 영역 */}
+              <div 
+                className="w-full bg-[#DDE7F3] pt-[12px] pb-[14px] mt-[39px] relative overflow-hidden flex flex-col items-center select-none touch-pan-y"
+                onTouchStart={(e) => {
+                  noticeTouchStartX.current = e.touches[0].clientX;
+                }}
+                onTouchEnd={(e) => {
+                  if (noticeTouchStartX.current === null) return;
+                  const deltaX = e.changedTouches[0].clientX - noticeTouchStartX.current;
+                  noticeTouchStartX.current = null;
+                  if (hasMultiple) {
+                    if (deltaX < -35) {
+                      setActiveNoticeIndex((prev) => (prev + 1) % displayNotices.length);
+                    } else if (deltaX > 35) {
+                      setActiveNoticeIndex((prev) => (prev - 1 + displayNotices.length) % displayNotices.length);
+                    }
+                  }
+                }}
+              >
+                <div className="w-full max-w-[390px] px-6 flex justify-between items-center text-white select-none mb-[8px]">
+                  <span className="font-nanumsquare text-[11px] font-extrabold w-[24px] text-center">2</span>
+                  <span className="font-nanumsquare font-extrabold text-[10px] text-white tracking-[0.05em] leading-none uppercase text-center">
+                    DESIGNED BY ATELIER DE MUKIRU
+                  </span>
+                  <span className="font-nanumsquare text-[11px] font-extrabold w-[24px] text-center">3</span>
+                </div>
+
+                <div className="w-full max-w-[390px] px-3 flex justify-between items-center select-none">
+                  {[...Array(10)].map((_, i) => (
+                    <div key={i} className="w-[19px] h-[23px] bg-[#F5F5F5] rounded-[4px] shrink-0" />
+                  ))}
+                </div>
+
+                <div className="w-full max-w-[390px] flex items-center justify-center gap-[12px] my-[13px] select-none">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (hasMultiple) {
+                        setActiveNoticeIndex((prev) => (prev - 1 + displayNotices.length) % displayNotices.length);
+                      }
+                    }}
+                    aria-label="이전 안내사항 보기"
+                    className={`w-[24px] h-[210px] bg-white rounded-r-[8px] opacity-90 shrink-0 flex items-center justify-center transition-all ${
+                      hasMultiple
+                        ? 'cursor-pointer hover:opacity-100 hover:w-[26px] active:scale-95 text-[#999999] hover:text-[#333333]'
+                        : 'cursor-default pointer-events-none'
+                    }`}
+                  >
+                    {hasMultiple && (
+                      <span className="text-[12px] font-bold select-none opacity-60">‹</span>
+                    )}
+                  </button>
+
+                  <div 
+                    key={activeNoticeIndex}
+                    className="w-[276px] min-h-[210px] bg-white rounded-[10px] py-[28px] px-[18px] flex flex-col items-center justify-center text-center shrink-0 shadow-xs transition-all duration-200 animate-in fade-in"
+                  >
+                    <h3 className="font-nanumsquare font-normal text-[14px] text-[#333333] leading-none text-center tracking-tight">
+                      {currentNotice.title || '식사 안내'}
+                    </h3>
+
+                    <div 
+                      style={{ borderTop: '0.5px solid #929292' }} 
+                      className="w-[239px] max-w-full my-[17px]" 
+                    />
+
+                    <p className="font-nanumsquare font-normal text-[12px] text-[#333333] leading-[1.78] text-center tracking-tight whitespace-pre-line">
+                      {currentNotice.content || ''}
+                    </p>
+
+                    {hasMultiple && (
+                      <div className="flex items-center justify-center gap-1.5 mt-4">
+                        {displayNotices.map((_, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveNoticeIndex(i);
+                            }}
+                            className={`w-1.5 h-1.5 rounded-full transition-all cursor-pointer ${
+                              i === (activeNoticeIndex % displayNotices.length)
+                                ? 'w-4 bg-[#333333]'
+                                : 'bg-stone-300'
+                            }`}
+                            aria-label={`안내 사항 ${i + 1}`}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (hasMultiple) {
+                        setActiveNoticeIndex((prev) => (prev + 1) % displayNotices.length);
+                      }
+                    }}
+                    aria-label="다음 안내사항 보기"
+                    className={`w-[24px] h-[210px] bg-white rounded-l-[8px] opacity-90 shrink-0 flex items-center justify-center transition-all ${
+                      hasMultiple
+                        ? 'cursor-pointer hover:opacity-100 hover:w-[26px] active:scale-95 text-[#999999] hover:text-[#333333]'
+                        : 'cursor-default pointer-events-none'
+                    }`}
+                  >
+                    {hasMultiple && (
+                      <span className="text-[12px] font-bold select-none opacity-60">›</span>
+                    )}
+                  </button>
+                </div>
+
+                <div className="w-full max-w-[390px] px-3 flex justify-between items-center select-none">
+                  {[...Array(10)].map((_, i) => (
+                    <div key={i} className="w-[19px] h-[23px] bg-[#F5F5F5] rounded-[4px] shrink-0" />
+                  ))}
+                </div>
+
+                <div className="w-full max-w-[390px] px-6 flex justify-between items-center text-white select-none mt-[8px]">
+                  <span className="font-nanumsquare text-[11px] font-extrabold w-[24px] text-center">6</span>
+                  <span className="font-nanumsquare text-[11px] font-extrabold w-[24px] text-center">7</span>
+                </div>
+              </div>
+
+              {/* 구분선 */}
+              <div 
+                style={{ borderTop: '0.5px solid #999999' }}
+                className="w-[280.5px] max-w-[75%] mt-[55px] mb-[45px] mx-auto shrink-0" 
+              />
+            </ScrollReveal>
+          </section>
+        );
+      })()}
+
+      {/* ========================================================
+          09. 참석 의사 (RSVP)
+          ======================================================== */}
+      {showRsvpSection && (
+        <section className="w-full bg-[#FEFEFE] pt-[96.5px] pb-0 text-center select-none overflow-hidden">
+          <ScrollReveal>
+            <h2 className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal">
+              R·S·V·P
+            </h2>
+
+            <p className="font-nanumsquare font-normal text-[18px] text-[#292929] leading-none text-center mt-[34.5px] tracking-tight">
+              참석 의사 전달
+            </p>
+
+            <p className="font-nanumsquare font-normal text-[14px] text-[#333333] leading-[1.74] text-center mt-[45px] tracking-tight whitespace-pre-line max-w-[280px] mx-auto">
+              소중한 분들과 함께하는 뜻깊은 날,{`\n`}
+              정성껏 모실 수 있도록{`\n`}
+              참석 여부를 알려주시면 감사하겠습니다.
+            </p>
+
+            <div className="mt-[59.5px] flex items-center justify-center">
+              <button
+                type="button"
+                onClick={() => setShowRsvpModal(true)}
+                style={{
+                  boxShadow: '0px 4px 14.2px rgba(0, 0, 0, 0.09)',
+                }}
+                className="w-[164.5px] h-[39px] bg-[#393939] hover:bg-[#2c2c2c] active:scale-[0.98] rounded-full flex items-center justify-center transition-all cursor-pointer select-none"
+              >
+                <span className="font-nanumsquare font-bold text-[14px] text-[#F3F3F3] leading-none tracking-tight">
+                  참석 정보 전달하기
+                </span>
+              </button>
+            </div>
+
+            {/* 구분선 */}
+            <div 
+              style={{ borderTop: '0.5px solid #999999' }}
+              className="w-[280.5px] max-w-[75%] mt-[65px] mb-[46.5px] mx-auto shrink-0" 
+            />
+          </ScrollReveal>
+        </section>
+      )}
+
+      {/* 09-2. 하객 현장 사진 선물 섹션 */}
+      <GuestPhotoSnapSection invitation={invitation} isEditorial={true} />
+
+      {/* ========================================================
+          10. 축하 메시지 (Guestbook)
+          ======================================================== */}
+      {showGuestbookSection && (() => {
+        const sampleGuestbooks = [
+          {
+            id: 'sample-1',
+            author: '장성경',
+            content: '두 사람 너무\n잘어울려요\n행복하게 잘 살아요.',
+          },
+          {
+            id: 'sample-2',
+            author: '이수빈',
+            content: '언니 너무 예뻐요!\n남편이랑 항상\n행복하세요.',
+          },
+          {
+            id: 'sample-3',
+            author: '김형욱',
+            content: '형, 드디어 장가\n갔네! 항상 좋은 일만\n가득하길 바란다.',
+          },
+          {
+            id: 'sample-4',
+            author: '최미자',
+            content: '선남선녀끼리\n잘만나 오래오래\n행복하길 기원해~~',
+          },
+        ];
+
+        const displayList = guestbookList.length > 0 ? guestbookList : (isSample ? sampleGuestbooks : []);
+        const totalPages = Math.max(isSample ? 3 : 1, Math.ceil(displayList.length / 4));
+        const safePageIndex = Math.min(guestbookPageIndex, Math.max(0, totalPages - 1));
+        const currentFour = displayList.slice(safePageIndex * 4, safePageIndex * 4 + 4);
+
+        return (
+          <section className="w-full bg-[#FEFEFE] pt-[91px] pb-0 text-center select-none overflow-hidden">
+            <ScrollReveal>
+              <h2 className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal">
+                Guestbook
+              </h2>
+
+              <p className="font-nanumsquare font-normal text-[18px] text-[#292929] leading-none text-center mt-[34.5px] tracking-tight">
+                방명록
+              </p>
+
+              <p className="font-nanumsquare font-normal text-[14px] text-[#333333] leading-[1.72] text-center mt-[43px] tracking-tight whitespace-pre-line max-w-[280px] mx-auto">
+                두 사람의 새로운 시작에{`\n`}
+                따뜻한 축복을 남겨주세요.
+              </p>
+
+              {/* 방명록 4컷 프레임 영역 */}
+              <div 
+                onTouchStart={(e) => {
+                  guestbookTouchStartX.current = e.touches[0].clientX;
+                }}
+                onTouchEnd={(e) => {
+                  if (guestbookTouchStartX.current === null) return;
+                  const deltaX = e.changedTouches[0].clientX - guestbookTouchStartX.current;
+                  guestbookTouchStartX.current = null;
+                  if (deltaX < -40 && safePageIndex < totalPages - 1) {
+                    setGuestbookPageIndex(safePageIndex + 1);
+                  } else if (deltaX > 40 && safePageIndex > 0) {
+                    setGuestbookPageIndex(safePageIndex - 1);
+                  }
+                }}
+                className="w-[350px] max-w-[92%] mx-auto bg-[#E6EDF5] rounded-[14px] pt-[9px] pb-[9px] px-[10px] mt-[29px] flex flex-col justify-between select-none touch-pan-y"
+              >
+                <div className="w-full px-2 flex items-center justify-between text-[#999999] text-[8.5px] font-nanumsquare leading-none mb-[8px] select-none">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[7px]">▶</span>
+                    <span className="font-mono text-[9px]">32</span>
+                  </div>
+                  <span className="tracking-[0.14em] font-normal uppercase text-[8px]">
+                    DESIGNED BY ATELIER DE MUKIRU
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono text-[9px]">32</span>
+                    <span className="text-[7px]">◀</span>
+                  </div>
+                </div>
+
+                {/* 4컷 2x2 그리드 */}
+                <div className="grid grid-cols-2 gap-[8px] w-full">
+                  {currentFour.map((item, idx) => (
+                    <div
+                      key={item.id || idx}
+                      className="w-full min-h-[155px] bg-[#FEFEFE] rounded-[10px] py-[16px] px-[12px] flex flex-col justify-between items-center text-center shadow-2xs"
+                    >
+                      <div className="flex-1 flex items-center justify-center w-full">
+                        <p className="font-nanumsquare font-normal text-[11.5px] text-[#333333] leading-[1.78] whitespace-pre-line tracking-tight text-center line-clamp-4">
+                          {item.content}
+                        </p>
+                      </div>
+
+                      <div 
+                        style={{ borderTop: '0.5px solid #999999' }} 
+                        className="w-[99.5px] max-w-[80%] my-[9px] shrink-0" 
+                      />
+
+                      <div className="w-full flex items-center justify-center gap-1.5 shrink-0">
+                        <span className="font-nanumsquare font-normal text-[12px] text-[#999999] leading-none tracking-tight">
+                          {item.author || item.name || '하객'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (isSample && String(item.id).startsWith('sample')) {
+                              alert('샘플 메시지입니다.');
+                              return;
+                            }
+                            setDeleteTargetMsg(item);
+                          }}
+                          className="text-[#999999] hover:text-[#333333] transition-colors p-0.5 cursor-pointer shrink-0"
+                          title="메시지 삭제"
+                          aria-label="방명록 삭제"
+                        >
+                          <svg width="10" height="11" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1 2.5H9M3.5 2.5V1.5C3.5 1.22386 3.72386 1 4 1H6C6.27614 1 6.5 1.22386 6.5 1.5V2.5M8 2.5V9.5C8 9.77614 7.77614 10 7.5 10H2.5C2.22386 10 2 9.77614 2 9.5V2.5" stroke="currentColor" strokeWidth="0.85" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {currentFour.length < 4 && [...Array(4 - currentFour.length)].map((_, i) => (
+                    <div
+                      key={`empty-${i}`}
+                      onClick={() => setShowGuestbookModal(true)}
+                      className="w-full min-h-[155px] bg-[#FEFEFE]/80 hover:bg-[#FEFEFE] border border-dashed border-[#D5DCE5] hover:border-[#999999] rounded-[10px] p-[16px] flex flex-col justify-center items-center text-center cursor-pointer transition-all active:scale-[0.99] select-none group"
+                      title="클릭하여 축하 메시지 남기기"
+                    >
+                      <span className="font-weddingday text-[18px] text-[#B0B8C2] group-hover:text-[#393939] block mb-1 transition-colors">
+                        Best Wishes
+                      </span>
+                      <p className="font-nanumsquare text-[10.5px] text-[#A0A8B2] group-hover:text-[#666666] tracking-tight transition-colors">
+                        따뜻한 축하를 남겨주세요 ✍️
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="w-full px-2 flex items-center justify-between text-[#999999] text-[8.5px] font-nanumsquare leading-none mt-[8px] select-none">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[7px]">▶</span>
+                    <span className="font-mono text-[9px]">32</span>
+                  </div>
+                  <span className="tracking-[0.14em] font-normal uppercase text-[8px]">
+                    DESIGNED BY ATELIER DE MUKIRU
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono text-[9px]">32</span>
+                    <span className="text-[7px]">◀</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 페이지네이션 도트 */}
+              <div className="flex items-center justify-center gap-0.5 mt-[10px] select-none">
+                {[...Array(totalPages)].map((_, pIdx) => (
+                  <button
+                    key={pIdx}
+                    type="button"
+                    onClick={() => setGuestbookPageIndex(pIdx)}
+                    className="w-6 h-6 flex items-center justify-center cursor-pointer p-0 bg-transparent border-none"
+                    aria-label={`방명록 페이지 ${pIdx + 1}`}
+                  >
+                    <span
+                      className={`w-[6px] h-[6px] rounded-full transition-all ${
+                        pIdx === (safePageIndex % totalPages)
+                          ? 'bg-[#999999] scale-125'
+                          : 'bg-[#D9D9D9] hover:bg-[#B0B0B0]'
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+
+              {/* 글 남기기 버튼 */}
+              <div className="mt-[26px] flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={() => setShowGuestbookModal(true)}
+                  style={{
+                    boxShadow: '0px 4px 14.2px rgba(0, 0, 0, 0.09)',
+                  }}
+                  className="w-[134px] h-[39px] bg-[#393939] hover:bg-[#2c2c2c] active:scale-[0.98] rounded-full flex items-center justify-center transition-all cursor-pointer select-none"
+                >
+                  <span className="font-nanumsquare font-bold text-[14px] text-[#F3F3F3] leading-none tracking-tight">
+                    글 남기기
+                  </span>
+                </button>
+              </div>
+
+              {/* 구분선 */}
+              <div 
+                style={{ borderTop: '0.5px solid #999999' }}
+                className="w-[280.5px] max-w-[75%] mt-[65px] mb-[50px] mx-auto shrink-0" 
+              />
+            </ScrollReveal>
+          </section>
+        );
+      })()}
+
+      {/* ========================================================
+          11. 엔딩 사진 & 감사 인사
+          ======================================================== */}
+      <section className="w-full bg-[#FEFEFE] pt-0 pb-[50px] text-center select-none overflow-hidden relative">
+        <ScrollReveal duration={1000}>
+          {/* 풀 와이드 엔딩 화보 사진 */}
+          <div className="w-full aspect-[780/581.27] overflow-hidden bg-stone-100 select-none">
+            <img
+              src={endingImage || couplePhoto || mainImage}
+              alt="Wedding Ending"
+              className="w-full h-full object-cover object-center select-none"
+              onError={(e) => {
+                if (isSample && e.currentTarget.src !== '/samples/ending-03-childhood.jpg') {
+                  e.currentTarget.src = '/samples/ending-03-childhood.jpg';
+                }
+              }}
+            />
+          </div>
+
+          <h2 className="font-weddingday text-[37.5px] text-[#292929] leading-[72%] text-center select-none tracking-normal mt-[37.5px]">
+            Thank you
           </h2>
-          <p className="text-xs text-stone-600 font-light max-w-xs mx-auto leading-relaxed mb-8">
-            저희의 새로운 멜로디에 함께해 주신 모든 분들께<br />
-            마음 깊이 진심으로 감사드립니다.
+
+          <p className="font-nanumsquare font-normal text-[15px] text-[#333333] leading-[1.62] text-center mt-[40px] tracking-tight">
+            함께해 주셔서 감사합니다.
           </p>
 
-          {/* 따뜻한 감성 엔딩 사진 프레임 */}
-          {endingImage && (
-            <div className="w-full max-w-[280px] aspect-3/4 mx-auto rounded-3xl overflow-hidden border-4 border-white shadow-[0_20px_45px_rgba(40,55,45,0.12)] relative mb-8 group bg-white">
-              <img
-                src={endingImage}
-                alt="Bonus Track Moment"
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-103"
-              />
-              {/* 햇살 라이트 오버레이 */}
-              <div className="absolute inset-0 bg-linear-to-t from-black/30 via-transparent to-transparent" />
-              <div className="absolute bottom-3 left-0 right-0 text-white font-serif italic text-xs drop-shadow-md">
-                Forever and Always
-              </div>
-            </div>
-          )}
+          <p className="font-nanumsquare font-normal text-[15px] text-[#999999] leading-[1.62] text-center mt-[10px] tracking-tight">
+            {groomShort && brideShort 
+              ? `${groomShort} · ${brideShort} 드림`
+              : (groomName && brideName ? `${groomName} · ${brideName} 드림` : (isSample ? '민우 · 유진 드림' : '신랑 · 신부 드림'))}
+          </p>
 
-          {/* 공유 버튼 2종 (카카오톡 공유 & 링크 복사) */}
-          <div id="share-section" className="flex items-center justify-center gap-3 mt-8 mb-8 max-w-[320px] mx-auto">
+          {/* 공유 버튼 */}
+          <div id="share-section" className="mt-14 mb-2 flex items-center justify-center gap-2.5 max-w-[340px] mx-auto px-4 select-none">
             <button
               type="button"
               onClick={handleKakaoShare}
-              className="flex-1 py-3 px-4 bg-[#FEE500] hover:bg-[#FADA0A] text-[#191919] text-xs font-medium rounded-full flex items-center justify-center gap-2 transition-transform active:scale-95 cursor-pointer shadow-xs"
+              className="flex-1 py-3 px-4 bg-[#FEE500] hover:bg-[#FADA0A] text-[#191919] text-[12px] font-sans font-medium rounded-full flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs active:scale-95"
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="#191919">
-                <path d="M12 3C6.48 3 2 6.58 2 11c0 2.8 1.8 5.27 4.54 6.64l-.92 3.42c-.08.31.25.56.52.4l4.08-2.69c.58.08 1.17.13 1.78.13 5.52 0 10-3.58 10-8s-4.48-8-10-8z"/>
+              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                <path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.557 1.708 4.8 4.27 6.054-.187.698-.675 2.528-.773 2.915-.121.482.177.476.372.346.154-.102 2.45-1.666 3.442-2.344.56.082 1.127.129 1.689.129 4.97 0 9-3.185 9-7.115S16.97 3 12 3z" />
               </svg>
-              <span>카카오톡 공유</span>
+              <span>카카오톡 공유하기</span>
             </button>
             <button
               type="button"
-              onClick={() => handleCopy(typeof window !== 'undefined' ? window.location.href : '', '청첩장 링크')}
-              className="flex-1 py-3 px-4 bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 text-xs font-medium rounded-full flex items-center justify-center gap-2 transition-transform active:scale-95 cursor-pointer shadow-xs"
+              onClick={handleCopyLink}
+              className="py-3 px-5 border border-stone-200 hover:border-stone-400 bg-white text-stone-700 text-[12px] font-sans font-medium rounded-full hover:bg-stone-50 transition-all cursor-pointer shadow-2xs active:scale-95"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-              </svg>
-              <span>링크 복사</span>
+              링크 복사
             </button>
           </div>
 
-          <p className="font-mono text-[10px] tracking-widest text-stone-400 uppercase">
-            &copy; {year} {coupleNamesEn}. ALL RIGHTS RESERVED.
-          </p>
-          <p className="font-mono text-[9px] tracking-widest text-stone-400/80 uppercase mt-1 select-none">
-            Designed by ATELIER DE MUKIRU
+          <p className="font-sans font-normal text-[12px] leading-[1.62] text-[#999999] tracking-[0.05em] uppercase text-center mt-[48px] select-none">
+            DESIGNED BY ATELIER DE MUKIRU
           </p>
         </ScrollReveal>
       </section>
 
-      {/* 모달 연동 (상태가 true일 때만 조건부 렌더링) */}
+      {/* 에디토리얼 전용 팝업 모달 */}
       {showContactModal && (
-        <EditorialContactModal
-          onClose={() => setShowContactModal(false)}
-          invitation={invitation}
-        />
+        <EditorialContactModal invitation={invitation} onClose={() => setShowContactModal(false)} />
       )}
       {showRsvpModal && (
-        <EditorialRsvpModal
-          invitation={invitation}
-          onClose={() => setShowRsvpModal(false)}
-          invitationId={invitation?.id}
-        />
+        <EditorialRsvpModal invitation={invitation} invitationId={invitation?.id} onClose={() => setShowRsvpModal(false)} />
       )}
       {showGuestbookModal && (
         <EditorialGuestbookModal
-          onClose={() => {
-            setShowGuestbookModal(false);
-            if (invitation?.id) {
-              supabase
-                .from('guestbook')
-        .select('id, invitation_id, author, content, created_at')
-                .eq('invitation_id', invitation.id)
-                .order('created_at', { ascending: false })
-                .then(({ data }) => { if (data) setGuestbookList(data); });
-            }
-          }}
           invitationId={invitation?.id}
+          onClose={() => setShowGuestbookModal(false)}
           onSuccess={(newMsg) => setGuestbookList((prev) => [newMsg, ...prev])}
         />
       )}
       {deleteTargetMsg && (
         <EditorialGuestbookDeleteModal
-          onClose={() => setDeleteTargetMsg(null)}
           targetMsg={deleteTargetMsg}
-          onDeleteSuccess={(id) => {
-            setGuestbookList((prev) => prev.filter((i) => i.id !== id));
-            setDeleteTargetMsg(null);
-          }}
+          onClose={() => setDeleteTargetMsg(null)}
+          onDeleteSuccess={(delId) => setGuestbookList((prev) => prev.filter((m) => m.id !== delId))}
         />
       )}
       {galleryModalOpen && (
         <EditorialGalleryModal
-          onClose={() => setGalleryModalOpen(false)}
           images={galleryImages}
           initialIndex={galleryModalIndex}
+          onClose={() => setGalleryModalOpen(false)}
         />
       )}
     </div>

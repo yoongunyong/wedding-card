@@ -371,12 +371,34 @@ function CreateInvitationContent() {
   const [showQrModal, setShowQrModal] = useState(false);
   const isClosingRef = useRef(false);
 
-  // 실시간 미리보기 모달 열기 (브라우저 뒤로가기 이탈 방지를 위해 히스토리 푸시)
+  // 실시간 미리보기 모달 열기 (필수 항목 검증 및 안전한 히스토리 관리)
   const openPreviewModal = () => {
+    // 1. 필수 기본 정보 입력 여부 검증 (미입력 시 친절한 안내 알림창 표시)
+    const missingFields = [];
+    if (!formData.groom_name?.trim()) missingFields.push('신랑 성함');
+    if (!formData.bride_name?.trim()) missingFields.push('신부 성함');
+    if (!formData.wedding_date) missingFields.push('예식 날짜');
+    if (!formData.wedding_time) missingFields.push('예식 시간');
+    if (!formData.venue_name?.trim()) missingFields.push('예식장 이름');
+
+    if (missingFields.length > 0) {
+      alert(
+        `실시간 미리보기를 확인하시려면 먼저 기본 정보를 입력해 주세요.\n\n[ 미입력 항목 ]\n• ${missingFields.join('\n• ')}\n\n💡 상단의 [예시 데이터 채우기] 버튼을 누르시면 샘플 데이터로 즉시 미리보기를 체험해 보실 수 있습니다.`
+      );
+      if (currentStep !== 1) {
+        handleStepChange(1);
+      }
+      return;
+    }
+
     isClosingRef.current = false;
     setShowPreviewModal(true);
     if (typeof window !== 'undefined') {
-      window.history.pushState({ weddingCardPreview: true }, '');
+      try {
+        window.history.pushState({ weddingCardPreview: true }, '', window.location.href);
+      } catch (err) {
+        console.warn('history.pushState prevented:', err);
+      }
       requestAnimationFrame(() => {
         const previewContainer = document.getElementById('preview-scroll-container');
         if (previewContainer) {
@@ -399,8 +421,12 @@ function CreateInvitationContent() {
     if (typeof window !== 'undefined') {
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
-      if (window.history.state?.weddingCardPreview) {
-        window.history.back();
+      try {
+        if (window.history.state?.weddingCardPreview) {
+          window.history.back();
+        }
+      } catch (err) {
+        console.warn('history.back error:', err);
       }
     }
   };

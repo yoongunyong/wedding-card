@@ -265,10 +265,6 @@ export default function EditorialTemplate({ invitation }) {
 
       // 영문 풀네임 동적 계산 (에디토리얼 시그니처 - 신랑 & 신부 전체 영문명 우선 바인딩)
   const fullNamesEn = useMemo(() => {
-    // 0) UI 시안 확인용 샘플 모드일 때는 샘플 주인공(강민준 & 박지민) 풀네임 고정
-    if (isSample) {
-      return 'Kang Min-jun & Park Ji-min';
-    }
     // 1) main_names_en 명시 시 우선 사용
     if (invitation?.main_names_en) return invitation.main_names_en;
     if (extra?.main_names_en) return extra.main_names_en;
@@ -285,7 +281,10 @@ export default function EditorialTemplate({ invitation }) {
     if (groomFull || brideFull) {
       return groomFull || brideFull;
     }
-    // 4) 실제 고객 청첩장: 영문명이 없으면 가짜 샘플이 절대 노출되지 않도록 빈 문자열 반환
+    // 4) 고객 입력이 없을 때만 샘플 기본값
+    if (isSample) {
+      return 'Kang Min-jun & Park Ji-min';
+    }
     return '';
   }, [invitation, extra, isSample]);
 
@@ -681,7 +680,7 @@ export default function EditorialTemplate({ invitation }) {
               Welcome to
             </p>
             <p className="font-weddingday text-[27.5px] text-[#292929] tracking-normal leading-[1.14] select-none mt-1 whitespace-nowrap">
-              {isSample ? 'Jang Min-ki & Kwon Ki-deuk' : (fullNamesEn || coupleKo || '')}
+              {fullNamesEn || coupleKo || (isSample ? 'Jang Min-ki & Kwon Ki-deuk' : '')}
             </p>
           </div>
 

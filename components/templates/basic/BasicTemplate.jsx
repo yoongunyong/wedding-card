@@ -307,7 +307,6 @@ export default function BasicTemplate({ invitation }) {
 
   // 에디토리얼 시그니처 영문 풀네임
   const fullNamesEn = useMemo(() => {
-    if (isSample) return 'Kang Min-jun & Park Ji-min';
     if (invitation?.main_names_en) return invitation.main_names_en;
     if (extra?.main_names_en) return extra.main_names_en;
     if (invitation?.groom_name_en && invitation?.bride_name_en) {
@@ -317,6 +316,7 @@ export default function BasicTemplate({ invitation }) {
     const brideFull = [invitation?.bride_last_name_en, invitation?.bride_first_name_en].filter(Boolean).join(' ') || invitation?.bride_name_en;
     if (groomFull && brideFull) return `${groomFull} & ${brideFull}`;
     if (groomFull || brideFull) return groomFull || brideFull;
+    if (isSample) return 'Dohyun Kim & Seoyeon Lee';
     return '';
   }, [invitation, extra, isSample]);
 
@@ -732,7 +732,7 @@ export default function BasicTemplate({ invitation }) {
               Welcome to
             </p>
             <p className="font-weddingday text-[27.5px] text-[#292929] tracking-normal leading-[1.14] select-none mt-1 whitespace-nowrap">
-              {isSample ? 'Jang Min-ki & Kwon Ki-deuk' : (fullNamesEn || coupleKo || '')}
+              {fullNamesEn || coupleKo || (isSample ? 'Dohyun Kim & Seoyeon Lee' : '')}
             </p>
           </div>
 
@@ -1014,22 +1014,21 @@ export default function BasicTemplate({ invitation }) {
                 </div>
 
                 <p className="mt-[33.3px] font-nanumsquare text-[14px] text-[#333333] tracking-tight text-center select-none">
-                  {isSample ? (
-                    <>
-                      기득 <span className="text-[#F17171] mx-0.5">♥</span> 민기님의 결혼식이{' '}
-                      <span className="text-[#F17171] font-medium">{timeLeft.totalDays || 120}일</span> 남았습니다.
-                    </>
+                  {groomName && brideName ? (
+                    <>{groomName} <span className="text-[#F17171] mx-0.5">♥</span> {brideName}님의</>
+                  ) : coupleKo ? (
+                    <>{coupleKo}님의</>
+                  ) : isSample ? (
+                    <>도현 <span className="text-[#F17171] mx-0.5">♥</span> 서연님의</>
                   ) : (
-                    <>
-                      {groomName && brideName ? (<>{groomName} <span className="text-[#F17171] mx-0.5">♥</span> {brideName}님의</>) : coupleKo ? (<>{coupleKo}님의</>) : (<>두 사람의</>)} 결혼식이{' '}
-                      {timeLeft.isToday ? (
-                        <>오늘 <span className="text-[#F17171] font-medium">축복 속에</span> 시작됩니다.</>
-                      ) : timeLeft.isPast ? (
-                        <>결혼한 지 <span className="text-[#F17171] font-medium">{timeLeft.totalDays}일</span>째 되는 날입니다.</>
-                      ) : (
-                        <><span className="text-[#F17171] font-medium">{timeLeft.totalDays}일</span> 남았습니다.</>
-                      )}
-                    </>
+                    <>두 사람의</>
+                  )}{' '}결혼식이{' '}
+                  {timeLeft.isToday ? (
+                    <>오늘 <span className="text-[#F17171] font-medium">축복 속에</span> 시작됩니다.</>
+                  ) : timeLeft.isPast ? (
+                    <>결혼한 지 <span className="text-[#F17171] font-medium">{timeLeft.totalDays}일</span>째 되는 날입니다.</>
+                  ) : (
+                    <><span className="text-[#F17171] font-medium">{timeLeft.totalDays || 120}일</span> 남았습니다.</>
                   )}
                 </p>
               </div>

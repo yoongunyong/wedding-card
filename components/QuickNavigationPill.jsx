@@ -65,11 +65,11 @@ export default function QuickNavigationPill({
       const targetTop = el.getBoundingClientRect().top;
       const relativeTop = targetTop - containerTop + previewContainer.scrollTop;
       previewContainer.scrollTo({
-        top: Math.max(0, relativeTop - 20),
+        top: Math.max(0, relativeTop - 70),
         behavior: 'smooth',
       });
     } else if (el) {
-      const yOffset = -24;
+      const yOffset = -70;
       const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
       window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
     }

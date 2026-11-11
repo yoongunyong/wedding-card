@@ -1795,7 +1795,7 @@ function CreateInvitationContent() {
           {/* STEP 1: 기본 정보 (시안 선택 + 신랑&신부 + 예식일시) */}
           <div className={currentStep === 1 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
             {/* 00. 디자인 템플릿 선택 */}
-          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB] overflow-hidden max-w-full">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">00</span>
@@ -1958,7 +1958,7 @@ function CreateInvitationContent() {
 
           
             {/* 01. 신랑 & 신부 정보 */}
-          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB] overflow-hidden max-w-full">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">01</span>
@@ -2415,7 +2415,7 @@ function CreateInvitationContent() {
                   value={formData.slug}
                   onChange={handleChange}
                   placeholder="minjun-seoyeon"
-                  className="flex-1 bg-transparent text-sm text-[#0F172A] font-mono focus:outline-none placeholder:text-[#CBD5E1]"
+                  className="flex-1 min-w-0 bg-transparent text-sm text-[#0F172A] font-mono focus:outline-none placeholder:text-[#CBD5E1]"
                 />
               </div>
             </div>
@@ -2423,7 +2423,7 @@ function CreateInvitationContent() {
 
           
             {/* 02. 예식 일시 및 웨딩홀 위치 */}
-          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB] overflow-hidden max-w-full">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">02</span>
@@ -2437,7 +2437,7 @@ function CreateInvitationContent() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
-              <div>
+              <div className="min-w-0">
                 <label className="block text-xs font-medium text-[#334155] mb-1.5">예식 날짜 *</label>
                 <input
                   type="date"
@@ -2445,10 +2445,10 @@ function CreateInvitationContent() {
                   name="wedding_date"
                   value={formData.wedding_date}
                   onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-sans"
+                  className="w-full max-w-full min-w-0 box-border px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-sans appearance-none"
                 />
               </div>
-              <div>
+              <div className="min-w-0">
                 <label className="block text-xs font-medium text-[#334155] mb-1.5">예식 시간 *</label>
                 <input
                   type="time"
@@ -2456,7 +2456,7 @@ function CreateInvitationContent() {
                   name="wedding_time"
                   value={formData.wedding_time}
                   onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-sans"
+                  className="w-full max-w-full min-w-0 box-border px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-sm text-[#0F172A] focus:outline-none focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 font-sans appearance-none"
                 />
               </div>
             </div>
@@ -2546,7 +2546,7 @@ function CreateInvitationContent() {
           {/* STEP 2: 모시는 글 & 스토리 (인사말 + 감성 글귀) */}
           <div className={currentStep === 2 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
             {/* 03. 모시는 글 (초대 인사말) */}
-          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB] overflow-hidden max-w-full">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">03</span>
@@ -2610,7 +2610,7 @@ function CreateInvitationContent() {
 
           {/* 시안 5 (모던 씬) 전용: 신랑 & 신부 인터뷰 (우리의 이야기) */}
           {formData.template_type === 'scene' && (
-            <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB] overflow-hidden max-w-full">
               <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
                 <div className="flex items-baseline gap-2.5">
                   <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">03-1</span>
@@ -2777,7 +2777,7 @@ function CreateInvitationContent() {
 
           
             {/* 05. 감성 글귀 및 영화 대사 */}
-          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB] overflow-hidden max-w-full">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">05</span>
@@ -2889,7 +2889,7 @@ function CreateInvitationContent() {
           {/* STEP 3: 갤러리 & 배경음악 (웨딩 사진 + BGM) */}
           <div className={currentStep === 3 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
             {/* 04. 웨딩 사진 등록 */}
-          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB] overflow-hidden max-w-full">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">04</span>
@@ -3447,7 +3447,7 @@ function CreateInvitationContent() {
 
           
             {/* 09. 배경음악 및 디자인 설정 */}
-          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB] overflow-hidden max-w-full">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">09</span>
@@ -3823,7 +3823,7 @@ function CreateInvitationContent() {
           {/* STEP 4: 편의 안내 & 계좌 (축의금 + 교통 + 카드) */}
           <div className={currentStep === 4 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
             {/* 06. 축의금 계좌번호 (다중 계좌 등록) */}
-          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB] overflow-hidden max-w-full">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">06</span>
@@ -3993,7 +3993,7 @@ function CreateInvitationContent() {
 
           
             {/* 07. 오시는 길 (교통편 안내) */}
-          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB] overflow-hidden max-w-full">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">07</span>
@@ -4059,7 +4059,7 @@ function CreateInvitationContent() {
           
 
             {/* 08. 안내 정보 (INFORMATION 카드) */}
-          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB] overflow-hidden max-w-full">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">08</span>
@@ -4200,7 +4200,7 @@ function CreateInvitationContent() {
           
 
             {/* 11. 스마트스토어 주문 인증코드 (선택) */}
-          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB] overflow-hidden max-w-full">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">10</span>

@@ -1450,7 +1450,7 @@ function EditInvitationContent({ params }) {
           {/* STEP 1: 기본 정보 (시안 변경 + 신랑&신부 + 예식일시) */}
           <div className={currentStep === 1 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
             {/* 00. 디자인 템플릿 변경 */}
-          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB] overflow-hidden max-w-full">
             <div className="flex items-center justify-between pb-4 mb-4 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">00</span>
@@ -1571,7 +1571,7 @@ function EditInvitationContent({ params }) {
 
           
             {/* 01. 신랑 & 신부 인적사항 */}
-          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB] overflow-hidden max-w-full">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">01</span>
@@ -1872,7 +1872,7 @@ function EditInvitationContent({ params }) {
 
           
             {/* 02. 예식 일시 및 장소 */}
-          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB] overflow-hidden max-w-full">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">02</span>
@@ -1884,7 +1884,7 @@ function EditInvitationContent({ params }) {
 
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div>
+                <div className="min-w-0">
                   <label className="block text-xs font-medium text-[#334155] mb-1.5">예식 날짜 *</label>
                   <input
                     type="date"
@@ -1892,10 +1892,10 @@ function EditInvitationContent({ params }) {
                     required
                     value={formData.wedding_date}
                     onChange={handleChange}
-                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
+                    className="w-full max-w-full min-w-0 box-border px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 appearance-none"
                   />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <label className="block text-xs font-medium text-[#334155] mb-1.5">예식 시간 *</label>
                   <input
                     type="time"
@@ -1903,7 +1903,7 @@ function EditInvitationContent({ params }) {
                     required
                     value={formData.wedding_time}
                     onChange={handleChange}
-                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10"
+                    className="w-full max-w-full min-w-0 box-border px-3.5 py-2.5 bg-white border border-[#E5E8EB] rounded-xl text-xs text-[#0F172A] focus:outline-hidden focus:border-[#191F28] focus:ring-2 focus:ring-[#191F28]/10 appearance-none"
                   />
                 </div>
               </div>
@@ -1988,7 +1988,7 @@ function EditInvitationContent({ params }) {
           {/* STEP 2: 초대 문구 & 스토리 (인사말 + 인터뷰 문답) */}
           <div className={currentStep === 2 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
             {/* 03. 초대 문구 & 영화 대사 */}
-          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB] overflow-hidden max-w-full">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">03</span>
@@ -2051,7 +2051,7 @@ function EditInvitationContent({ params }) {
           
             {/* 시안 5 (모던 씬) 전용: 신랑 & 신부 인터뷰 (우리의 이야기) */}
           {formData.template_type === 'scene' && (
-            <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+            <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB] overflow-hidden max-w-full">
               <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
                 <div className="flex items-baseline gap-2.5">
                   <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">03-1</span>
@@ -2252,7 +2252,7 @@ function EditInvitationContent({ params }) {
           {/* STEP 3: 웨딩 사진 & 배경음악 (갤러리 관리 + BGM) */}
           <div className={currentStep === 3 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
             {/* 04. 웨딩 사진 교체 및 갤러리 관리 */}
-          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB] overflow-hidden max-w-full">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">04</span>
@@ -2820,7 +2820,7 @@ function EditInvitationContent({ params }) {
 
           
             {/* 06. 배경음악(BGM) 설정 */}
-          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB] overflow-hidden max-w-full">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">06</span>
@@ -2927,7 +2927,7 @@ function EditInvitationContent({ params }) {
           {/* STEP 4: 편의 안내 & 계좌 (축의금 계좌 + 노출 옵션) */}
           <div className={currentStep === 4 ? 'space-y-8 animate-fadeIn' : 'hidden'}>
             {/* 05. 축의금 계좌번호 */}
-          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB] overflow-hidden max-w-full">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">05</span>
@@ -3059,7 +3059,7 @@ function EditInvitationContent({ params }) {
           </div>
 
           {/* 메인 커버 타이포 컬러 선택 */}
-          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB] overflow-hidden max-w-full">
             <div className="flex items-center justify-between pb-4 mb-4 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">06</span>
@@ -3099,7 +3099,7 @@ function EditInvitationContent({ params }) {
           </div>
 
           {/* 07. 세부 섹션 표시 제어 */}
-          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB]">
+          <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E5E8EB] overflow-hidden max-w-full">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#F1F5F9]">
               <div className="flex items-baseline gap-2.5">
                 <span className="font-mono text-xs text-[#3182F6] font-bold tracking-wider">07</span>

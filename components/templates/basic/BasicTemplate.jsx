@@ -760,9 +760,12 @@ export default function BasicTemplate({ invitation }) {
                     }}
                   />
                 ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-stone-300 font-serif">
-                    <span className="text-2xl mb-1">👰</span>
-                    <span className="text-[11px] font-sans tracking-widest uppercase">Bride</span>
+                  <div className="w-full h-full bg-[#FAF9F5] border border-[#ECE8E1] flex flex-col items-center justify-center p-3 select-none">
+                    <svg className="w-6 h-6 text-[#A8A199] mb-1.5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 21V11m0 0a4 4 0 10-4-4c0 2.21 4 4 4 4zm0 0a4 4 0 114-4c0 2.21-4 4-4 4z" />
+                    </svg>
+                    <span className="font-serif italic text-[15px] text-[#78716C] tracking-wide">Bride</span>
+                    <span className="font-nanumsquare text-[8px] tracking-[0.25em] text-[#A8A29E] uppercase mt-0.5">Portrait</span>
                   </div>
                 )}
               </div>
@@ -794,9 +797,13 @@ export default function BasicTemplate({ invitation }) {
                     }}
                   />
                 ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-stone-300 font-serif">
-                    <span className="text-2xl mb-1">🤵</span>
-                    <span className="text-[11px] font-sans tracking-widest uppercase">Groom</span>
+                  <div className="w-full h-full bg-[#FAF9F5] border border-[#ECE8E1] flex flex-col items-center justify-center p-3 select-none">
+                    <svg className="w-6 h-6 text-[#A8A199] mb-1.5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 8l7 4-7 4V8zm14 0l-7 4 7 4V8z" />
+                      <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+                    </svg>
+                    <span className="font-serif italic text-[15px] text-[#78716C] tracking-wide">Groom</span>
+                    <span className="font-nanumsquare text-[8px] tracking-[0.25em] text-[#A8A29E] uppercase mt-0.5">Portrait</span>
                   </div>
                 )}
               </div>

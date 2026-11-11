@@ -8,12 +8,53 @@
 > **공식 카카오톡 채널**: `http://pf.kakao.com/_RJamX/chat`  
 > **새 세션 시작 가이드**: 다른 PC나 새 채팅 세션에서 **"PROJECT_STATUS.md 읽고 이어서 작업하자"**라고 말씀하시면 AI가 이 문서의 모든 맥락과 개발 원칙을 즉시 파악하고 작업을 이어갑니다.
 
+
 ---
 
+## 0-1. [TODO 작업 대기열] 5대 시안 및 제작·수정 폼 논리/정합성 전수 감사 발견 과제 (2026-11-11 등록)
+
+> **상태**: 🔍 전수 정합성 감사 완료 ➔ **오너 1건씩 순차 지시 대기 중**  
+> **배경**: 2026-11-11 오너 요청에 따른 5대 시안(`basic`, `editorial`, `playlist`, `cinematic`, `scene`) 및 제작/수정 폼(`app/create`, `app/manage/[slug]/edit`), DB 스키마 간 데이터 흐름·논리·시안 일치성 전수 점검 결과 발견된 5대 핵심 개선 과제입니다.
+
+1. **[TODO 1] 감성 글귀 & 인용구 (`quote_content` / `quote_source`) 화면 렌더링 복원 (치명적 모순)**
+   - **문제점**: 제작 및 수정 폼(`04번 감성 글귀 & 인용구`)에서 추천 명대사/시 프리셋 선택 및 직접 작성을 제공하고 DB에 정상 저장되나, 5대 템플릿 전체에서 화면에 렌더링되지 않음 (`EditorialTemplate.jsx:104`에 `const showQuoteSection = config.show_quote_section !== false;` 선언만 남고 피그마 리뉴얼 시 JSX 블록 누락됨).
+   - **조치 방안**:
+     - 시안 1, 2, 3: 소개글/모시는 글 영역에 우아한 매거진 북마크 스타일(`“` 큰 따옴표 + 세리프 글귀 + 출처)로 `showQuoteSection && (invitation?.quote_content || config?.quote_content)` 조건부 렌더링 복원.
+     - 시안 4, 5: 템플릿 고유 무드에 맞춘 미니멀 인용구 블록 렌더링 지원.
+   - **대상 파일**: `components/templates/editorial/EditorialTemplate.jsx`, `components/templates/basic/BasicTemplate.jsx`, `components/templates/playlist/PlaylistTemplate.jsx`, `components/templates/cinematic/CinematicTemplate.jsx`, `components/templates/scene/SceneTemplate.jsx`
+
+2. **[TODO 2] 시안 4(시네마틱) 방명록(`show_guestbook`) 본문 섹션 및 작성 UI 신설 (기능 누락)**
+   - **문제점**: 제작/수정 폼에 '축하 방명록' 토글이 켜져 있고, `CinematicTemplate.jsx` 상단에 모달 import 및 최하단 모달 마운트 레이어(`EditorialGuestbookModal`)가 존재하나, 정작 본문에는 방명록 글 목록이나 `setShowGuestbookModal(true)`를 호출하는 방명록 섹션/버튼이 통째로 누락되어 하객이 축하 글을 작성하거나 볼 수 없음.
+   - **조치 방안**:
+     - 시안 4의 ☀️Day / 🌙Night 듀얼 테마에 맞춘 시네마틱 감성 방명록 섹션(메시지 카드 뷰어 및 '축하 메시지 남기기' 버튼) 신설.
+   - **대상 파일**: `components/templates/cinematic/CinematicTemplate.jsx`
+
+3. **[TODO 3] 제작/수정 폼 '봉투 인트로 커버 (`show_intro`)' 토글 템플릿별 동적 정합화 (UX/논리 불일치)**
+   - **문제점**: 제작/수정 폼에서 전 시안 공통으로 `봉투 인트로 커버`라는 고정 라벨의 체크박스가 노출되나, 시안 1만 실제 봉투 커버이고 시안 2는 매거진 슬리브 커버이며, 시안 3, 4, 5는 인트로 커버 자체가 없어 켜거나 꺼도 아무 변화가 없는 '유령 토글' 상태임.
+   - **조치 방안**:
+     - 선택된 템플릿에 따라 동적 라벨 표시:
+       - 시안 1: `봉투 인트로 커버 (시안 1)`
+       - 시안 2: `에디토리얼 매거진 커버 (시안 2)`
+       - 시안 3, 4, 5: `(시안 1, 2 전용)` 안내 뱃지 적용 및 불필요한 혼선 방지 비활성화 또는 숨김 처리.
+   - **대상 파일**: `app/create/page.js`, `app/manage/[slug]/edit/page.js`
+
+4. **[TODO 4] 모시는 글 제목(`message_title`)의 시안 4, 5 반영 (기능 불일치)**
+   - **문제점**: 고객이 제작/수정 폼에서 "새로운 시작의 날", "초대합니다" 등 모시는 글 제목을 설정해도, 시안 1~3과 달리 시안 4(제목 영역 미존재)와 시안 5(영문 `Invitation` 하드코딩)에서는 반영되지 않고 무시됨.
+   - **조치 방안**:
+     - 시안 4: 모시는 글 본문 상단에 `message_title` 시네마틱 헤더 노출.
+     - 시안 5: 영문 `Invitation` 하단에 고객이 입력한 `message_title`을 한글 서브타이틀로 조화롭게 렌더링.
+   - **대상 파일**: `components/templates/cinematic/CinematicTemplate.jsx`, `components/templates/scene/SceneTemplate.jsx`
+
+5. **[TODO 5] 시안 5(모던 씬) 신랑/신부 단독 스냅 렌더링 안전 가드 개선 (데이터 예외 방어)**
+   - **문제점**: `SceneTemplate.jsx:743`에서 `{groomPhoto && bridePhoto && (` AND 조건문으로 검사하여, 신랑 또는 신부 중 한 분만 사진을 등록한 경우 둘 다 화면에서 숨겨지는 결함.
+   - **조치 방안**:
+     - 한 분만 사진을 등록해도 단독 스냅이 정상 노출되도록 조건식 보정 (`(groomPhoto || bridePhoto)`), 혹은 시안 1~3처럼 미등록 쪽에 단아한 아트워크 플레이스홀더를 배치하여 레이아웃 균형 유지.
+   - **대상 파일**: `components/templates/scene/SceneTemplate.jsx`
 
 ---
 
 ## 0. 최근 핫픽스 & 서비스 안정화 내역 (2026-11-11 오너 관점 결함 전수 조치 & 시안 개편)
+
 
 -10. **[웨딩 갤러리 화보 사진 업로드 제한 20장 ➔ 30장 상향 조정 및 랜딩페이지 스펙 일치화 (2026-11-11)]**:
    - **사용자 요청**: "지금 제작할 때 갤러리 사진 20장으로 개수 제한해서 받고 있는 것 같은데, 30장으로 늘리자. 관련된 거 모두 수정해 줘."

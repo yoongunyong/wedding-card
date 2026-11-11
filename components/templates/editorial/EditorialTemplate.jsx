@@ -1036,32 +1036,36 @@ export default function EditorialTemplate({ invitation }) {
             </div>
 
             {/* 썸네일 그리드 (Figma Group 1183: 145.8x145.8 2x -> 1x 72.9x72.9 정사각형 4개, 간격 정렬) */}
-            <div className="w-[333px] mx-auto flex items-center justify-between mb-[40.6px]">
-              {galleryImages.slice(0, 4).map((src, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => setActiveGalleryIndex(idx)}
-                  className={`w-[72.9px] h-[72.9px] shrink-0 aspect-square overflow-hidden cursor-pointer transition-all ${
-                    idx === activeGalleryIndex
-                      ? 'ring-1 ring-[#333333] opacity-100'
-                      : 'opacity-70 hover:opacity-100'
-                  }`}
-                  aria-label={`갤러리 사진 ${idx + 1}번 보기`}
-                >
-                  <img
-                    src={src}
-                    alt={`Thumbnail ${idx + 1}`}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      if (isSample && e.currentTarget.src !== '/samples/main-02-editorial.jpg') {
-                        e.currentTarget.src = '/samples/main-02-editorial.jpg';
-                      }
-                    }}
-                  />
-                </button>
-              ))}
-            </div>
+            {galleryImages.length > 1 && (
+              <div className={`w-[333px] max-w-full mx-auto flex items-center mb-[40.6px] ${
+                galleryImages.length >= 4 ? 'justify-between' : 'justify-center gap-[14px]'
+              }`}>
+                {galleryImages.slice(0, 4).map((src, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setActiveGalleryIndex(idx)}
+                    className={`w-[72.9px] h-[72.9px] shrink-0 aspect-square overflow-hidden cursor-pointer transition-all ${
+                      idx === activeGalleryIndex
+                        ? 'ring-1 ring-[#333333] opacity-100'
+                        : 'opacity-70 hover:opacity-100'
+                    }`}
+                    aria-label={`갤러리 사진 ${idx + 1}번 보기`}
+                  >
+                    <img
+                      src={src}
+                      alt={`Thumbnail ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        if (isSample && e.currentTarget.src !== '/samples/main-02-editorial.jpg') {
+                          e.currentTarget.src = '/samples/main-02-editorial.jpg';
+                        }
+                      }}
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* 하단 타원형 룩북 버튼 (Figma Ellipse 749: 332x79 2x -> 166x39.5 1x, border: 1px solid #999999, borderRadius: 50%) */}
             <button

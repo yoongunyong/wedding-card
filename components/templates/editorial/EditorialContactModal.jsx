@@ -144,7 +144,12 @@ export default function EditorialContactModal({ invitation, onClose }) {
 
         {/* 인물 리스트 (Figma Group 1113: 너비 524px -> 1x 262px 중앙 정렬, mt-[37.5px], pb-[50px], space-y-[20px]) */}
         <div className="w-[262px] mx-auto mt-[37.5px] pb-[50px] space-y-[20px]">
-          {contacts.map((person, idx) => {
+          {contacts.length === 0 ? (
+            <div className="py-10 text-center text-stone-400 font-nanumsquare text-[13px]">
+              등록된 연락처 정보가 없습니다.
+            </div>
+          ) : (
+            contacts.map((person, idx) => {
             const isGroom = person.side === 'groom';
             const roleColorClass = isGroom ? 'text-[#4C62A2]' : 'text-[#D25C8D]';
             const iconColorClass = isGroom ? 'text-[#4C62A2]' : 'text-[#D25C8D]';
@@ -195,7 +200,7 @@ export default function EditorialContactModal({ invitation, onClose }) {
                 </div>
               </div>
             );
-          })}
+          }))}
         </div>
       </div>
     </div>

@@ -15,6 +15,36 @@
 
 ## 0. 최근 핫픽스 & 서비스 안정화 내역 (2026-11-11 오너 관점 결함 전수 조치 & 시안 개편)
 
+-7. **[데이터 경우의 수(0개/1개/다수/한부모/무부모/한쪽계좌) 전수 감사 및 잠재 레이아웃 결함 소탕 (2026-11-11)]**:
+   - **사용자 요청**: "하객화면에서 값이 하나인 경우, 두개인 경우, 없을 경우 이런식으로 경우의 수가 다양한 필드(예: 부모가 1명, 2명, 또는 없을 때 등)에 대해 제작화면, 수정화면, 하객화면 등 모두 검사해줘."
+   - **경우의 수별 전수 분석 및 발견된 결함 조치**:
+     1. **부모님 성함 및 혼주 표기 (0명 / 1명 / 2명 / 고인 혼주)**:
+        - renderParentPair에서 양부모(2명), 한부모(1명), 무부모(0명) 분기 로직 정상 검증 완료. 부모 정보가 둘 다 없을 시 hasGroomFamily/hasBrideFamily 가드로 해당 줄 전체가 안전하게 숨겨지고 빈 여백이 남지 않음.
+        - 한부모(부 또는 모만 입력) 가정일 경우 ' · ' 구분선 없이 단독 성함 및 고인(故/국화) 심볼이 완벽하게 표시됨.
+        - 시안 5(Scene): 부모 정보가 둘 다 없을 시 groomName · brideName 한 줄로 자연스럽게 폴백.
+     2. **계좌번호 (신랑측 0개 & 신부측 1개 이상 / 반대 / 둘 다 0개)**:
+        - 신랑측 계좌가 없고 신부측 계좌만 등록된 경우, 신부측 탭이 자동으로 선택(userAccountTab || (groomAccounts.length === 0 && brideAccounts.length > 0 ? 'bride' : 'groom'))되도록 5대 템플릿 공통 로직 완비.
+        - CinematicTemplate: 신랑/신부 탭 전환 시 등록된 계좌가 없는 탭을 선택했을 때 빈 흰 박스로 남던 결함 ➔ "등록된 계좌 정보가 없습니다." 감성 Empty State 추가.
+        - 둘 다 0건일 때: 5대 템플릿 모두 showAccountsSection && (allAccounts.length > 0 || isSample) 가드로 섹션 전체가 안전하게 숨겨짐.
+     3. **연락처 (0개 / 신랑측만 / 신부측만 / 부분 등록)**:
+        - EditorialContactModal: 등록된 연락처가 0개일 때 모달 내부가 하얗게 비던 결함 ➔ "등록된 연락처 정보가 없습니다." Empty State 추가.
+        - BasicContactModal: 모달 활성화 시 배경 스크롤 방지 및 ESC 키 닫기 이벤트 핸들러 장착, 연락처 0건 시 Empty State 추가, 신랑측/신부측 중 한쪽만 등록된 경우 불필요한 중간 구분선 숨김 처리.
+     4. **갤러리 썸네일 그리드 (1장 / 2~3장 / 4장 이상)**:
+        - EditorialTemplate, PlaylistTemplate, BasicTemplate:
+          - 사진이 1장일 때 상단에 큰 대표 사진이 이미 노출되어 있음에도 하단 썸네일 바에 동일 사진 1장이 중복 노출되던 문제 ➔ galleryImages.length > 1 가드로 1장일 때 썸네일 바 숨김 처리.
+          - 사진이 2~3장일 때 w-[333px] 컨테이너에서 justify-between으로 양 끝으로 극단적으로 벌어지던 레이아웃 결함 ➔ galleryImages.length >= 4 ? 'justify-between' : 'justify-center gap-[14px]'로 2~3장일 때 정중앙에 14px 간격으로 단아하게 정렬되도록 완전 개편.
+        - CinematicTemplate: 가로 스와이프 캐러셀에서 사진이 1장일 때 좌측에 붙던 현상 ➔ activeGalleryImages.length === 1 ? 'justify-center' : ''로 화면 정중앙 배치.
+     5. **인터뷰 (0개 / 다 삭제 / 수정화면)**:
+        - app/create/page.js: 사용자가 입력을 시작했음에도(hasAnyName === true) 인터뷰가 빈 배열일 때 PREVIEW_FALLBACK.interviews로 덮어써지던 결함 ➔ (!hasAnyName ? PREVIEW_FALLBACK.interviews : [])로 안전 분기.
+        - app/manage/[slug]/edit/page.js: 수정 화면에서 사용자가 인터뷰를 비웠을 때 DEFAULT_INTERVIEWS가 다시 나타나던 버그 ➔ interviews && interviews.length > 0 ? interviews : []로 교정하여 삭제 시 완벽하게 빈 상태 유지.
+     6. **안내 카드 / 교통편 (0개 / 1개 / 다수)**:
+        - 안내 카드가 1개일 때 스와이프 화살표 및 인디케이터 도트가 자동 숨김 처리되고 단일 카드가 정중앙에 단아하게 배치됨 확인. 0개일 때 섹션 숨김 확인.
+        - 교통편 0개일 때 해당 구역이 숨겨지고 여백이 비지 않음 확인.
+   - **검증 결과**:
+     - npx eslint . --rule "no-undef: error": 0 errors
+     - npm run build: Exit Code 0 (전체 성공)
+     - 5대 템플릿 및 제작/수정 페이지 HTTP 200 OK 무결성 응답.
+
 -6. **[결함 발생 근본 원인(Root Causes) 관점 전수 코드베이스 정밀 감사 및 잠재 버그 박멸]**:
    - **사용자 질의**: "지금 계속 발견되는 결함들.. 결국은 너가 어떠한 이유에서 놓치는 부분들이잖아. 그 이유들을 관점으로 코드를 전체 검증해서 버그 수정해줘."
    - **AI가 결함을 놓쳤던 5대 근본 원인 도출 및 정밀 분석**:

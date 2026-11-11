@@ -1076,32 +1076,36 @@ export default function PlaylistTemplate({ invitation }) {
             </div>
 
             {/* 썸네일 그리드 */}
-            <div className="w-[333px] mx-auto flex items-center justify-between mb-[40.6px]">
-              {galleryImages.slice(0, 4).map((src, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => setActiveGalleryIndex(idx)}
-                  className={`w-[72.9px] h-[72.9px] shrink-0 aspect-square overflow-hidden cursor-pointer transition-all ${
-                    idx === activeGalleryIndex
-                      ? 'ring-1 ring-[#333333] opacity-100'
-                      : 'opacity-70 hover:opacity-100'
-                  }`}
-                  aria-label={`갤러리 사진 ${idx + 1}번 보기`}
-                >
-                  <img
-                    src={src}
-                    alt={`Thumbnail ${idx + 1}`}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      if (isSample && e.currentTarget.src !== '/samples/main-03-playlist.jpg') {
-                        e.currentTarget.src = '/samples/main-03-playlist.jpg';
-                      }
-                    }}
-                  />
-                </button>
-              ))}
-            </div>
+            {galleryImages.length > 1 && (
+              <div className={`w-[333px] max-w-full mx-auto flex items-center mb-[40.6px] ${
+                galleryImages.length >= 4 ? 'justify-between' : 'justify-center gap-[14px]'
+              }`}>
+                {galleryImages.slice(0, 4).map((src, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setActiveGalleryIndex(idx)}
+                    className={`w-[72.9px] h-[72.9px] shrink-0 aspect-square overflow-hidden cursor-pointer transition-all ${
+                      idx === activeGalleryIndex
+                        ? 'ring-1 ring-[#333333] opacity-100'
+                        : 'opacity-70 hover:opacity-100'
+                    }`}
+                    aria-label={`갤러리 사진 ${idx + 1}번 보기`}
+                  >
+                    <img
+                      src={src}
+                      alt={`Thumbnail ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        if (isSample && e.currentTarget.src !== '/samples/main-03-playlist.jpg') {
+                          e.currentTarget.src = '/samples/main-03-playlist.jpg';
+                        }
+                      }}
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* 하단 타원형 룩북 버튼 */}
             <button

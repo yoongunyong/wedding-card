@@ -1015,7 +1015,7 @@ function CreateInvitationContent() {
       accounts: allAccounts,
       transportation: transportationList.filter((t) => t.title && t.content),
       info_notices: infoCards.filter((c) => c.title && c.content),
-      interviews: interviews && interviews.length > 0 ? interviews : PREVIEW_FALLBACK.interviews,
+      interviews: interviews && interviews.length > 0 ? interviews : (!hasAnyName ? PREVIEW_FALLBACK.interviews : []),
       template_config: {
         title_color: formData.title_color,
         show_intro: formData.show_intro,

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import ParentDeceasedName from '@/components/ParentDeceasedName';
 
 export default function BasicContactModal({ invitation, onClose }) {
@@ -10,10 +11,23 @@ export default function BasicContactModal({ invitation, onClose }) {
   const isBrideMotherDeceased = invitation?.bride_mother_deceased ?? config.bride_mother_deceased ?? false;
   const deceasedMarker = config.deceased_marker || invitation?.deceased_marker || 'hanja';
 
-  const formatName = (name, isDeceased) => {
-    if (!name) return '';
-    return isDeceased ? `故 ${name}` : name;
-  };
+  // 모달 활성화 시 배경 스크롤 방지 및 ESC 키 닫기
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        onClose?.();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClose]);
 
   const groom = {
     role: '신랑',
@@ -77,6 +91,7 @@ export default function BasicContactModal({ invitation, onClose }) {
 
   const groomSide = [groom, groomFather, groomMother].filter((p) => p.name || p.phone);
   const brideSide = [bride, brideFather, brideMother].filter((p) => p.name || p.phone);
+  const hasAnyContacts = groomSide.length > 0 || brideSide.length > 0;
 
   return (
     <div 
@@ -104,83 +119,98 @@ export default function BasicContactModal({ invitation, onClose }) {
 
         {/* 연락처 리스트 */}
         <div className="py-1">
-          {/* 신랑측 */}
-          <div className="space-y-4.5 sm:space-y-5">
-            {groomSide.map((person, idx) => (
-              <div key={idx} className="flex items-center justify-between">
-                <div>
-                  <p className="text-[11.5px] text-[#4A6B82] font-medium leading-none mb-1.5">
-                    {person.role}
-                  </p>
-                  <p className="text-[16px] font-bold text-stone-800 leading-tight">
-                    {person.name}
-                  </p>
+          {!hasAnyContacts ? (
+            <div className="py-8 text-center text-stone-400 text-sm">
+              등록된 연락처 정보가 없습니다.
+            </div>
+          ) : (
+            <>
+              {/* 신랑측 */}
+              {groomSide.length > 0 && (
+                <div className="space-y-4.5 sm:space-y-5">
+                  {groomSide.map((person, idx) => (
+                    <div key={idx} className="flex items-center justify-between">
+                      <div>
+                        <p className="text-[11.5px] text-[#4A6B82] font-medium leading-none mb-1.5">
+                          {person.role}
+                        </p>
+                        <p className="text-[16px] font-bold text-stone-800 leading-tight">
+                          {person.name}
+                        </p>
+                      </div>
+                      {person.phone && (
+                        <div className="flex items-center gap-2.5">
+                          <a
+                            href={`tel:${(person.phone || '').replace(/[^0-9+]/g, '')}`}
+                            aria-label={`${typeof person.name === 'string' ? person.name : person.role} 전화걸기`}
+                            className="w-10 h-10 rounded-full bg-[#EFF5F9] hover:bg-[#E2ECF3] text-[#3B698A] flex items-center justify-center transition-colors shadow-2xs"
+                          >
+                            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                              <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+                            </svg>
+                          </a>
+                          <a
+                            href={`sms:${(person.phone || '').replace(/[^0-9+]/g, '')}`}
+                            aria-label={`${typeof person.name === 'string' ? person.name : person.role} 문자보내기`}
+                            className="w-10 h-10 rounded-full bg-[#EFF5F9] hover:bg-[#E2ECF3] text-[#3B698A] flex items-center justify-center transition-colors shadow-2xs"
+                          >
+                            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                              <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" />
+                            </svg>
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
-                {person.phone && (
-                  <div className="flex items-center gap-2.5">
-                    <a
-                      href={`tel:${(person.phone || '').replace(/[^0-9+]/g, '')}`}
-                      aria-label={`${typeof person.name === 'string' ? person.name : person.role} 전화걸기`}
-                      className="w-10 h-10 rounded-full bg-[#EFF5F9] hover:bg-[#E2ECF3] text-[#3B698A] flex items-center justify-center transition-colors shadow-2xs"
-                    >
-                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                        <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
-                      </svg>
-                    </a>
-                    <a
-                      href={`sms:${(person.phone || '').replace(/[^0-9+]/g, '')}`}
-                      aria-label={`${typeof person.name === 'string' ? person.name : person.role} 문자보내기`}
-                      className="w-10 h-10 rounded-full bg-[#EFF5F9] hover:bg-[#E2ECF3] text-[#3B698A] flex items-center justify-center transition-colors shadow-2xs"
-                    >
-                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                        <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" />
-                      </svg>
-                    </a>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+              )}
 
-          <div className="w-full h-px bg-stone-100 my-5 sm:my-5.5" />
+              {/* 신랑측과 신부측 둘 다 있을 때만 구분선 노출 */}
+              {groomSide.length > 0 && brideSide.length > 0 && (
+                <div className="w-full h-px bg-stone-100 my-5 sm:my-5.5" />
+              )}
 
-          {/* 신부측 */}
-          <div className="space-y-4.5 sm:space-y-5">
-            {brideSide.map((person, idx) => (
-              <div key={idx} className="flex items-center justify-between">
-                <div>
-                  <p className="text-[11.5px] text-[#C06070] font-medium leading-none mb-1.5">
-                    {person.role}
-                  </p>
-                  <p className="text-[16px] font-bold text-stone-800 leading-tight">
-                    {person.name}
-                  </p>
+              {/* 신부측 */}
+              {brideSide.length > 0 && (
+                <div className="space-y-4.5 sm:space-y-5">
+                  {brideSide.map((person, idx) => (
+                    <div key={idx} className="flex items-center justify-between">
+                      <div>
+                        <p className="text-[11.5px] text-[#C06070] font-medium leading-none mb-1.5">
+                          {person.role}
+                        </p>
+                        <p className="text-[16px] font-bold text-stone-800 leading-tight">
+                          {person.name}
+                        </p>
+                      </div>
+                      {person.phone && (
+                        <div className="flex items-center gap-2.5">
+                          <a
+                            href={`tel:${(person.phone || '').replace(/[^0-9+]/g, '')}`}
+                            aria-label={`${typeof person.name === 'string' ? person.name : person.role} 전화걸기`}
+                            className="w-10 h-10 rounded-full bg-[#FCEDF0] hover:bg-[#F9DEE3] text-[#C06070] flex items-center justify-center transition-colors shadow-2xs"
+                          >
+                            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                              <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+                            </svg>
+                          </a>
+                          <a
+                            href={`sms:${(person.phone || '').replace(/[^0-9+]/g, '')}`}
+                            aria-label={`${typeof person.name === 'string' ? person.name : person.role} 문자보내기`}
+                            className="w-10 h-10 rounded-full bg-[#FCEDF0] hover:bg-[#F9DEE3] text-[#C06070] flex items-center justify-center transition-colors shadow-2xs"
+                          >
+                            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                              <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" />
+                            </svg>
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
-                {person.phone && (
-                  <div className="flex items-center gap-2.5">
-                    <a
-                      href={`tel:${(person.phone || '').replace(/[^0-9+]/g, '')}`}
-                      aria-label={`${typeof person.name === 'string' ? person.name : person.role} 전화걸기`}
-                      className="w-10 h-10 rounded-full bg-[#FCEDF0] hover:bg-[#F9DEE3] text-[#C06070] flex items-center justify-center transition-colors shadow-2xs"
-                    >
-                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                        <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
-                      </svg>
-                    </a>
-                    <a
-                      href={`sms:${(person.phone || '').replace(/[^0-9+]/g, '')}`}
-                      aria-label={`${typeof person.name === 'string' ? person.name : person.role} 문자보내기`}
-                      className="w-10 h-10 rounded-full bg-[#FCEDF0] hover:bg-[#F9DEE3] text-[#C06070] flex items-center justify-center transition-colors shadow-2xs"
-                    >
-                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                        <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" />
-                      </svg>
-                    </a>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+              )}
+            </>
+          )}
         </div>
 
       </div>

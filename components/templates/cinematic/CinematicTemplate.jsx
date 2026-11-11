@@ -695,7 +695,9 @@ export default function CinematicTemplate({ invitation }) {
             </div>
 
             {/* 영상 1:1 일치 가로 스와이프 화보 캐러셀 (Horizontal Peek-Preview Carousel) */}
-            <div className="w-full overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory flex gap-3 px-6 py-2">
+            <div className={`w-full overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory flex gap-3 px-6 py-2 ${
+              activeGalleryImages.length === 1 ? 'justify-center' : ''
+            }`}>
               {activeGalleryImages.map((src, idx) => (
                 <div
                   key={`${galleryTab}-${idx}`}
@@ -1034,44 +1036,50 @@ export default function CinematicTemplate({ invitation }) {
 
             {/* 선택된 탭 계좌 리스트 (영상 1:1 슬림 행) */}
             <div className="space-y-3 max-w-[380px] mx-auto text-left font-sans">
-              {currentAccounts.map((acc, idx) => {
-                const copyNum = acc.number || acc.account_number || '';
-                return (
-                  <div
-                    key={idx}
-                    className={`py-2.5 px-3 border-b flex items-center justify-between ${
-                      isNightMode ? 'border-stone-800/80' : 'border-stone-100'
-                    }`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="min-w-[65px]">
-                        <span className={`text-xs font-medium ${isNightMode ? 'text-white' : 'text-stone-900'}`}>
-                          {acc.title || (acc.group === '신부측' || acc.side === 'bride' || accountTab === 'bride' ? '신부' : '신랑')}
-                        </span>
-                        <span className="text-[11px] text-stone-400 ml-1">
-                          | {acc.holder || acc.name || ''}
-                        </span>
-                      </div>
-                      <p className={`text-xs font-mono tracking-tight ${isNightMode ? 'text-stone-300' : 'text-stone-600'}`}>
-                        {acc.bank} {copyNum}
-                      </p>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => handleCopy(copyNum, `${acc.bank} 계좌번호가`)}
-                      className={`px-2.5 py-1 rounded text-[10px] font-mono uppercase tracking-wider transition-all cursor-pointer active:scale-95 flex items-center gap-1 ${
-                        isNightMode
-                          ? 'bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700'
-                          : 'bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200'
+              {currentAccounts.length > 0 ? (
+                currentAccounts.map((acc, idx) => {
+                  const copyNum = acc.number || acc.account_number || '';
+                  return (
+                    <div
+                      key={idx}
+                      className={`py-2.5 px-3 border-b flex items-center justify-between ${
+                        isNightMode ? 'border-stone-800/80' : 'border-stone-100'
                       }`}
                     >
-                      <span>COPY</span>
-                      <span className="text-[9px]">⎘</span>
-                    </button>
-                  </div>
-                );
-              })}
+                      <div className="flex items-center gap-4">
+                        <div className="min-w-[65px]">
+                          <span className={`text-xs font-medium ${isNightMode ? 'text-white' : 'text-stone-900'}`}>
+                            {acc.title || (acc.group === '신부측' || acc.side === 'bride' || accountTab === 'bride' ? '신부' : '신랑')}
+                          </span>
+                          <span className="text-[11px] text-stone-400 ml-1">
+                            | {acc.holder || acc.name || ''}
+                          </span>
+                        </div>
+                        <p className={`text-xs font-mono tracking-tight ${isNightMode ? 'text-stone-300' : 'text-stone-600'}`}>
+                          {acc.bank} {copyNum}
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(copyNum, `${acc.bank} 계좌번호가`)}
+                        className={`px-2.5 py-1 rounded text-[10px] font-mono uppercase tracking-wider transition-all cursor-pointer active:scale-95 flex items-center gap-1 ${
+                          isNightMode
+                            ? 'bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700'
+                            : 'bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200'
+                        }`}
+                      >
+                        <span>COPY</span>
+                        <span className="text-[9px]">⎘</span>
+                      </button>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className={`py-6 text-center text-xs ${isNightMode ? 'text-stone-500' : 'text-stone-400'}`}>
+                  등록된 계좌 정보가 없습니다.
+                </div>
+              )}
             </div>
           </ScrollReveal>
         </section>

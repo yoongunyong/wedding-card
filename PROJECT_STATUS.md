@@ -42,6 +42,12 @@
         - `SamplePreviewModal.jsx`: `onClose?.()` 안전 옵셔널 체이닝 적용.
      3. **5대 템플릿 날짜 및 널 가드 무결성 점검**:
         - 5대 템플릿 전체(`BasicTemplate`, `EditorialTemplate`, `PlaylistTemplate`, `CinematicTemplate`, `SceneTemplate`)의 `targetDate`, `timeLeft`, `calendarData`, `formattedDates`에 `!targetDate` 널 가드가 100% 장착되어 있음을 확인.
+     4. **템플릿 간 인풋 유효성(maxLength) 불일치 전수 해소**:
+        - `EditorialGuestbookModal` 및 `EditorialRsvpModal`에만 적용되어 있던 `maxLength`를 `BasicGuestbookModal`(성함 30, 비번 20, 본문 300), `BasicRsvpModal`(성함 30), `SceneTemplate`(성함 30, 비번 20)에 동일하게 전수 적용 완료.
+     5. **모달 배경 스크롤 락(overflow hidden/restore) 전수 일관화**:
+        - `SceneGuestbookDeleteModal`, `SceneGalleryModal`, `SceneInterviewModal`에 모달 오픈 시 배경 스크롤 방지 및 언마운트 시 원복 cleanup 로직 장착.
+     6. **하객 뷰(`app/[slug]/page.js`) 민감 정보 2차 격리 방어선 보강**:
+        - `sanitizedInvitation`에서 `template_config`뿐 아니라 레거시/확장 필드인 `extra_data` 내부의 `manage_password`, `manage_token`, `order_code`까지 2중 완전 삭제 처리.
    - **검증 결과**:
      - 5대 템플릿(`/basic`, `/editorial`, `/playlist`, `/cinematic`, `/scene`) 전수 HTTP 200 OK 무결성 응답.
      - 메인(`/`) 및 청첩장 제작(`/create`) 정상 응답.

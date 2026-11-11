@@ -79,6 +79,7 @@ export default function BasicGuestbookModal({ invitationId, onClose, onSuccess }
             <input
               type="text"
               required
+              maxLength={30}
               placeholder="성함"
               value={author}
               onChange={(e) => setAuthor(e.target.value)}
@@ -94,6 +95,7 @@ export default function BasicGuestbookModal({ invitationId, onClose, onSuccess }
             <input
               type="password"
               required
+              maxLength={20}
               placeholder="비밀번호 입력"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -109,6 +111,7 @@ export default function BasicGuestbookModal({ invitationId, onClose, onSuccess }
             <textarea
               rows={4}
               required
+              maxLength={300}
               placeholder="내용 입력"
               value={content}
               onChange={(e) => setContent(e.target.value)}

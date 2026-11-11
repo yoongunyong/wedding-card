@@ -213,6 +213,7 @@ export default function BasicRsvpModal({ invitation, invitationId, onClose }) {
             <input
               type="text"
               required
+              maxLength={30}
               placeholder="참석자 본인 성함"
               value={name}
               onChange={(e) => setName(e.target.value)}

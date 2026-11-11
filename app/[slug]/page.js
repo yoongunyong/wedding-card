@@ -212,6 +212,12 @@ export default async function WeddingCardPage({ params }) {
   delete sanitizedInvitation.manage_token;
   delete sanitizedInvitation.order_code;
   delete sanitizedInvitation.manage_password;
+  if (sanitizedInvitation.extra_data) {
+    sanitizedInvitation.extra_data = { ...sanitizedInvitation.extra_data };
+    delete sanitizedInvitation.extra_data.manage_password;
+    delete sanitizedInvitation.extra_data.manage_token;
+    delete sanitizedInvitation.extra_data.order_code;
+  }
 
   // 어르신/혼주 및 하객 퀵 내비게이션 (오시는 길 / 계좌) 유무 계산
   const hasLocation = Boolean(invitation?.venue_name || invitation?.venue_address);

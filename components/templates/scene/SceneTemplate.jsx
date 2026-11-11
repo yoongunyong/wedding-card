@@ -1346,6 +1346,7 @@ export default function SceneTemplate({ invitation }) {
                 required
                 value={rsvpName}
                 onChange={(e) => setRsvpName(e.target.value)}
+                maxLength={30}
                 placeholder="성함을 입력해 주세요."
                 className="w-full px-3.5 py-3 bg-[#FAFAFA] border border-stone-200 rounded-xl text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-400"
               />
@@ -1589,6 +1590,7 @@ export default function SceneTemplate({ invitation }) {
                   required
                   value={guestbookName}
                   onChange={(e) => setGuestbookName(e.target.value)}
+                  maxLength={30}
                   placeholder="이름 또는 닉네임"
                   className="w-full px-3.5 py-3 bg-[#FAFAFA] border border-stone-200 rounded-xl text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-400"
                 />
@@ -1597,6 +1599,7 @@ export default function SceneTemplate({ invitation }) {
                   required
                   value={guestbookPassword}
                   onChange={(e) => setGuestbookPassword(e.target.value)}
+                  maxLength={20}
                   placeholder="비밀번호(삭제용)"
                   className="w-full px-3.5 py-3 bg-[#FAFAFA] border border-stone-200 rounded-xl text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-400"
                 />

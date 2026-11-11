@@ -43,8 +43,8 @@ export default function BasicGuestbookDeleteModal({ targetMsg, onClose, onDelete
       }
 
       alert('방명록이 삭제되었습니다.');
-      onDeleteSuccess(targetMsg.id);
-      onClose();
+      onDeleteSuccess?.(targetMsg.id);
+      onClose?.();
     } catch (err) {
       console.error(err);
       setErrorMsg('삭제 처리 중 문제가 발생했습니다.');

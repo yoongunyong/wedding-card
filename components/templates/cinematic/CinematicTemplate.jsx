@@ -1046,7 +1046,7 @@ export default function CinematicTemplate({ invitation }) {
                     <div className="flex items-center gap-4">
                       <div className="min-w-[65px]">
                         <span className={`text-xs font-medium ${isNightMode ? 'text-white' : 'text-stone-900'}`}>
-                          {acc.title || (acc.group === '신부측' || acc.side === 'bride' || activeTab === 'bride' ? '신부' : '신랑')}
+                          {acc.title || (acc.group === '신부측' || acc.side === 'bride' || accountTab === 'bride' ? '신부' : '신랑')}
                         </span>
                         <span className="text-[11px] text-stone-400 ml-1">
                           | {acc.holder || acc.name || ''}

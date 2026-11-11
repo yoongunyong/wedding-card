@@ -48,7 +48,7 @@ export default function EditorialGalleryModal({ images = [], initialIndex = 0, o
     document.body.style.overflow = 'hidden';
 
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') onClose?.();
       if (e.key === 'ArrowLeft') prevImage();
       if (e.key === 'ArrowRight') nextImage();
     };

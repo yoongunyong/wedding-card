@@ -7,7 +7,7 @@ export default function SamplePreviewModal({ isOpen, template, onClose }) {
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') onClose?.();
     };
     document.body.style.overflow = 'hidden';
     window.addEventListener('keydown', handleKeyDown);

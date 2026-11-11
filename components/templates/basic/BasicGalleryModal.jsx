@@ -55,7 +55,7 @@ export default function BasicGalleryModal({ images = [], initialIndex = 0, onClo
   // 키보드 좌우 화살표 & ESC 키 지원
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') onClose?.();
       if (e.key === 'ArrowLeft') prevImage();
       if (e.key === 'ArrowRight') nextImage();
     };

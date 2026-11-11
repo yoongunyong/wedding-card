@@ -15,6 +15,38 @@
 
 ## 0. 최근 핫픽스 & 서비스 안정화 내역 (2026-11-11 오너 관점 결함 전수 조치 & 시안 개편)
 
+-6. **[결함 발생 근본 원인(Root Causes) 관점 전수 코드베이스 정밀 감사 및 잠재 버그 박멸]**:
+   - **사용자 질의**: "지금 계속 발견되는 결함들.. 결국은 너가 어떠한 이유에서 놓치는 부분들이잖아. 그 이유들을 관점으로 코드를 전체 검증해서 버그 수정해줘."
+   - **AI가 결함을 놓쳤던 5대 근본 원인 도출 및 정밀 분석**:
+     1. **[원인 1] 국소적 리팩토링 시 스코프 영향도 간과 (Local Cleanup Side-effect)**:
+        - ESLint 경고나 미사용 변수를 정리할 때 특정 변수(`transitionStep`, `activeTab`)를 지우거나 남겨두면서 조건문/삼항식/인라인 핸들러의 런타임 참조를 놓침.
+     2. **[원인 2] 변수명/상태명 리네이밍 불일치 (Inconsistent Renaming)**:
+        - 상태명이나 Ref를 바꿀 때 전체 일괄 교체하지 않고 수동 교체하면서 분기별 구 변수명 잔재(`photoSharingInputRef` vs `photoSharingImageInputRef`, `activeTab` vs `accountTab`)가 남음.
+     3. **[원인 3] 콜백/이벤트 핸들러 옵셔널 체이닝 누락 (`TypeError: is not a function`)**:
+        - 모달이나 자식 컴포넌트에서 상위 prop(`onClose()`, `onDeleteSuccess()`)을 가드 없이 직접 호출하여 prop 미전달 시 즉시 크래시되는 취약점.
+     4. **[원인 4] Next.js 빌드의 경고 관대성 (Leniency of Standard Next.js Build)**:
+        - `next build`는 `no-undef`를 기본 Warning으로 취급하여 컴파일을 통과(Exit 0)시키므로 빌드 성공만으로는 런타임 ReferenceError를 사전에 걸러내지 못함.
+     5. **[원인 5] 5대 템플릿 간 복사/분기 드리프트 (Multi-template Drift)**:
+        - 5개 템플릿(Basic, Editorial, Playlist, Cinematic, Scene) 간에 유사 코드가 복사되면서 한쪽만 고치고 다른 템플릿의 잔여 미정의 변수를 놓침.
+   - **전수 감사 및 조치 내역**:
+     1. **엄격 정적 검사 강제 (`npx eslint . --rule "no-undef: error"`)**:
+        - [CinematicTemplate.jsx](file:///c:/Users/YOONGUNYONG/wedding-card/components/templates/cinematic/CinematicTemplate.jsx#L1049): `activeTab === 'bride'`로 잘못 참조되어 `acc.title`이 없을 때 500 에러를 유발하던 시한폭탄 결함 적발 ➔ `accountTab === 'bride'`로 교정 완료.
+        - 프로젝트 전체에서 `no-undef` 0 Errors 달성.
+     2. **콜백/모달 핸들러 안전 가드 전수 교정**:
+        - `BasicGuestbookDeleteModal.jsx`: `onDeleteSuccess?.()`, `onClose?.()` 안전 옵셔널 체이닝 적용.
+        - `SceneGuestbookDeleteModal.jsx`: `onDeleteSuccess?.()`, `onClose?.()` 안전 옵셔널 체이닝 적용.
+        - `SceneInterviewModal.jsx`: `onClose?.()` 안전 옵셔널 체이닝 적용.
+        - `SceneGalleryModal.jsx`: `onClose?.()` 안전 옵셔널 체이닝 적용.
+        - `BasicGalleryModal.jsx`: `onClose?.()` 안전 옵셔널 체이닝 적용.
+        - `EditorialGalleryModal.jsx`: `onClose?.()` 안전 옵셔널 체이닝 적용.
+        - `SamplePreviewModal.jsx`: `onClose?.()` 안전 옵셔널 체이닝 적용.
+     3. **5대 템플릿 날짜 및 널 가드 무결성 점검**:
+        - 5대 템플릿 전체(`BasicTemplate`, `EditorialTemplate`, `PlaylistTemplate`, `CinematicTemplate`, `SceneTemplate`)의 `targetDate`, `timeLeft`, `calendarData`, `formattedDates`에 `!targetDate` 널 가드가 100% 장착되어 있음을 확인.
+   - **검증 결과**:
+     - 5대 템플릿(`/basic`, `/editorial`, `/playlist`, `/cinematic`, `/scene`) 전수 HTTP 200 OK 무결성 응답.
+     - 메인(`/`) 및 청첩장 제작(`/create`) 정상 응답.
+     - `npm run build` 전 라우트 최적화 컴파일 100% 무결성 통과 (Exit Code 0).
+
 -5. **[시안2 Editorial 인트로 크래시(500) 및 Create 페이지 DOM Ref 결함 핫픽스]**:
    - **사용자 문의**: "사이트 메인화면에서 상단 카드 시안 중 시안2 editorial을 클릭하면 첨부 이미지와 같이 오류('페이지를 불러오는 중 일시적인 오류가 발생했습니다')가 발생해. 원인 파악해보고, 다른 데서도 같은 문제 없는지 검증해."
    - **원인 파악**:

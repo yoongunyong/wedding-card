@@ -18,7 +18,7 @@ export default function SceneInterviewModal({ isOpen, onClose, groomName, brideN
   const handleClose = useCallback(() => {
     setActive(false);
     setTimeout(() => {
-      onClose();
+      onClose?.();
     }, 300);
   }, [onClose]);
 

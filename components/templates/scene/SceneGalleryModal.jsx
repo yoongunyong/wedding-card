@@ -77,7 +77,7 @@ export default function SceneGalleryModal({ isOpen, images = [], initialIndex = 
   const handleClose = useCallback(() => {
     setActive(false);
     setTimeout(() => {
-      onClose();
+      onClose?.();
     }, 300);
   }, [onClose]);
 

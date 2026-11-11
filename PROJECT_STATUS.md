@@ -15,6 +15,28 @@
 
 ## 0. 최근 핫픽스 & 서비스 안정화 내역 (2026-11-11 오너 관점 결함 전수 조치 & 시안 개편)
 
+-5. **[시안2 Editorial 인트로 크래시(500) 및 Create 페이지 DOM Ref 결함 핫픽스]**:
+   - **사용자 문의**: "사이트 메인화면에서 상단 카드 시안 중 시안2 editorial을 클릭하면 첨부 이미지와 같이 오류('페이지를 불러오는 중 일시적인 오류가 발생했습니다')가 발생해. 원인 파악해보고, 다른 데서도 같은 문제 없는지 검증해."
+   - **원인 파악**:
+     1. `components/templates/editorial/EditorialIntro.jsx`에서 인트로 화면 트랜지션 애니메이션 제어용 상태인 `const [transitionStep, setTransitionStep] = useState('idle');` 선언부가 누락되어 있어, 인트로 렌더링 시점에 `ReferenceError: transitionStep is not defined`가 발생하면서 컴포넌트가 크래시되고 글로벌 에러 바운더리(`app/error.js`)가 트리거됨.
+     2. 추가 전수 검증 중 `app/create/page.js` 초기화 로직(Line 664)에서 `photoSharingImageInputRef`가 `photoSharingInputRef`로 잘못 참조되어 있던 잠재 `no-undef` 결함 발견.
+   - **조치 내역**:
+     1. `EditorialIntro.jsx`에 누락된 `const [transitionStep, setTransitionStep] = useState('idle');` 복원 완료.
+     2. `app/create/page.js` Line 664의 참조명을 정확한 인풋 참조 변수명(`photoSharingImageInputRef`)으로 교정 완료.
+   - **전수 검증 결과**:
+     1. **5대 템플릿 전수 요청 테스트**:
+        - `/basic`: HTTP 200 OK (정상)
+        - `/editorial`: HTTP 200 OK (정상 복구 확인)
+        - `/playlist`: HTTP 200 OK (정상)
+        - `/cinematic`: HTTP 200 OK (정상)
+        - `/scene`: HTTP 200 OK (정상)
+     2. **메인 및 제작 페이지 검증**:
+        - `/`: HTTP 200 OK (정상)
+        - `/create`, `/create?template=editorial`, `/create?template=playlist`: 모두 HTTP 200 OK (정상)
+     3. **정적 분석 및 빌드**:
+        - `npx eslint components/templates/editorial/EditorialIntro.jsx app/create/page.js`: 0 Errors (10 image warnings only)
+        - `npm run build`: 전 라우트 최적화 컴파일 완료 (Exit Code 0).
+
 -4. **[하객 인터랙티브 기능 (방명록, 참석의사, 하객 포토스냅) 통신·화면·보안 전수 검증 및 강화]**:
    - **사용자 질의**: "하객화면에서 방명록, 참석의사, 하객 포토 쉐어링 뭐 이런것들에 있어서도 통신 및 데이터 누락, 화면처리, 결함, 버그 그 무엇에도 문제가 없는지 확인해줘."
    - **전수 정밀 감사 및 개선 내역**:

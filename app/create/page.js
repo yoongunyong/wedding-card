@@ -661,7 +661,7 @@ function CreateInvitationContent() {
       if (coverImageInputRef.current) coverImageInputRef.current.value = '';
       if (coupleImageInputRef.current) coupleImageInputRef.current.value = '';
       if (endingImageInputRef.current) endingImageInputRef.current.value = '';
-      if (photoSharingInputRef.current) photoSharingInputRef.current.value = '';
+      if (photoSharingImageInputRef.current) photoSharingImageInputRef.current.value = '';
       if (groomPhotoInputRef.current) groomPhotoInputRef.current.value = '';
       if (bridePhotoInputRef.current) bridePhotoInputRef.current.value = '';
       if (galleryInputRef.current) galleryInputRef.current.value = '';

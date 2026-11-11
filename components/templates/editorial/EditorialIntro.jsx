@@ -5,6 +5,7 @@ import EditorialTitleTypewriter from './EditorialTitleTypewriter';
 
 export default function EditorialIntro({ invitation, onOpen, isInModal: propIsInModal }) {
   // 'idle' | 'darkening' | 'revealing'
+  const [transitionStep, setTransitionStep] = useState('idle');
   const isInModal = Boolean(propIsInModal ?? invitation?.is_modal_preview);
 
   const isSample = Boolean(invitation?.is_sample_preview || invitation?.slug === 'editorial');

@@ -347,7 +347,8 @@ export default function EditorialTemplate({ invitation }) {
         .from('guestbook')
         .select('id, invitation_id, author, content, created_at')
         .eq('invitation_id', invitation.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50);
 
       if (!error && data && data.length > 0) {
         setGuestbookList(data);

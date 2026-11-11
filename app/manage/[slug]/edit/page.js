@@ -1288,14 +1288,20 @@ function EditInvitationContent({ params }) {
         },
       };
 
-      const { error: updateErr } = await supabase
+      const { data: updatedRows, error: updateErr } = await supabase
         .from('invitations')
         .update(updatePayload)
         .eq('slug', slug)
-        .eq('manage_token', token);
+        .eq('manage_token', token)
+        .select('id');
 
       if (updateErr) {
         throw updateErr;
+      }
+
+      // Silent Update Fail 방어: 토큰 불일치나 조건 미부합으로 0건 수정된 경우 롤백 예외 발생
+      if (!updatedRows || updatedRows.length === 0) {
+        throw new Error('수정 권한 토큰이 유효하지 않거나 대상 청첩장을 찾을 수 없습니다.');
       }
 
       setSubmitting(false);

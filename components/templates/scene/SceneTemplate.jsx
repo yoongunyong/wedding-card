@@ -377,7 +377,8 @@ export default function SceneTemplate({ invitation }) {
         .from('guestbook')
         .select('id, invitation_id, author, content, created_at')
         .eq('invitation_id', invitation.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50);
       if (data) setGuestbookList(data);
     }
     loadGuestbook();

@@ -170,14 +170,15 @@ function ManageRsvpContent({ params }) {
         manage_password: newPin,
       };
 
-      const { error } = await supabase
+      const { data: updatedRows, error } = await supabase
         .from('invitations')
         .update({ 
           template_config: updatedConfig,
         })
-        .eq('id', invitation.id);
+        .eq('id', invitation.id)
+        .select('id');
 
-      if (error) {
+      if (error || !updatedRows || updatedRows.length === 0) {
         console.error('PIN 등록 오류:', error);
         setRegisterPinError('저장 중 오류가 발생했습니다. 다시 시도해 주세요.');
         return;
@@ -226,14 +227,15 @@ function ManageRsvpContent({ params }) {
         manage_password: changeNewPin,
       };
 
-      const { error } = await supabase
+      const { data: updatedRows, error } = await supabase
         .from('invitations')
         .update({ 
           template_config: updatedConfig,
         })
-        .eq('id', invitation.id);
+        .eq('id', invitation.id)
+        .select('id');
 
-      if (error) {
+      if (error || !updatedRows || updatedRows.length === 0) {
         setChangePinError('변경 중 오류가 발생했습니다.');
         return;
       }

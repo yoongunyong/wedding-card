@@ -56,6 +56,23 @@
 ## 0. 최근 핫픽스 & 서비스 안정화 내역 (2026-11-11 오너 관점 결함 전수 조치 & 시안 개편)
 
 
+-11. **[시안 2 에디토리얼 인트로 손글씨 획순 드로잉(방안 B) 시험 적용 및 원복/확정 가이드 (2026-11-12)]**:
+   - **배경 및 사용자 요청**:
+     - 에어스튜디오 등 프리미엄 청첩장의 '필기체 이름 써지는 영상'을 참고하여, 시안 2 인트로 `We are getting married`에 실제 사람의 획순을 따르는 손글씨 드로잉(방안 B) 시험 적용 요청.
+     - 1차 단일선 프로토타입에서 피그마 원본 폰트(`Weddingday Personal Use`)가 왜곡되는 문제를 발견 ➔ **「Weddingday 원본 폰트 100% 보존 + SVG 획순 추적 마스크(Stroke-Tracing Mask)」**로 전면 업그레이드 완료.
+   - **현재 적용 상태**:
+     - 컴포넌트: `components/templates/editorial/EditorialTitleHandwriting.jsx`
+     - 인트로 연결: `components/templates/editorial/EditorialIntro.jsx` Line 148 (`<EditorialTitleHandwriting />`)
+     - 상단에 `[✍️ 방안 B (원래 폰트 + 획순)]`, `[🌊 방안 A (와이프)]`, `[기존 (타자기)]`, `[↺ 다시보기]` 비교 스위치 탑재로 브라우저에서 직접 시각적 차이 비교 가능.
+   - **★ 다른 PC 또는 새 세션에서 이전 상태로 되돌리기 (1초 원복 가이드)**:
+     - 만약 오너가 기존의 타자기 키스트로크 모드로 되돌리기를 원할 경우:
+       1. 파일: `components/templates/editorial/EditorialIntro.jsx` 열기
+       2. 상단 Import 변경: `import EditorialTitleHandwriting from './EditorialTitleHandwriting';` ➔ `import EditorialTitleTypewriter from './EditorialTitleTypewriter';`
+       3. 본문 JSX 변경: `<EditorialTitleHandwriting />` ➔ `<EditorialTitleTypewriter />`
+       4. (기존 `EditorialTitleTypewriter.jsx`는 코드 수정 없이 그대로 보존되어 있으므로 2줄 변경만으로 즉시 100% 이전 상태로 원복됨)
+   - **★ 최종 확정 시 (프로덕션 반영 가이드)**:
+     - 방안 B의 획순 드로잉을 최종 확정할 경우, `EditorialTitleHandwriting.jsx` 상단의 테스트용 모드 비교 바(`<div className="mb-3.5 flex items-center...">`)만 제거하면 됨.
+
 -10. **[웨딩 갤러리 화보 사진 업로드 제한 20장 ➔ 30장 상향 조정 및 랜딩페이지 스펙 일치화 (2026-11-11)]**:
    - **사용자 요청**: "지금 제작할 때 갤러리 사진 20장으로 개수 제한해서 받고 있는 것 같은데, 30장으로 늘리자. 관련된 거 모두 수정해 줘."
    - **배경 및 전수 점검**:

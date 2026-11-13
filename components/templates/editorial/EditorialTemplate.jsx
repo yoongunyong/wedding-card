@@ -1257,21 +1257,17 @@ export default function EditorialTemplate({ invitation }) {
                 축복의 마음을 담아 축의금을{`\n`}전달하실 수 있습니다.
               </p>
 
-              {/* 중앙: 파일철 탭 카드 (Figma: 너비 630px -> 1x 315px, mt-[46.5px], 그림자, 신랑측/신부측 탭) */}
-              <div className="w-[315px] max-w-full mx-auto mt-[46.5px] text-left">
-                {/* 탭 헤더 (파일철 인덱스 형태) */}
-                <div className="flex items-end">
+              {/* 탭 영역 (Figma: 전체선 너비 553px -> 1x 276.5px, mt-[56px]) */}
+              <div className="mt-[56px] w-[276.5px] max-w-full mx-auto">
+                <div className="relative flex items-center justify-between pb-[13px]">
                   {/* 신랑측 탭 버튼 */}
                   <button
                     type="button"
                     onClick={() => setActiveAccountTab('groom')}
-                    style={{
-                      boxShadow: activeAccountTab === 'groom' ? '0px -2px 4px rgba(0,0,0,0.04)' : 'none',
-                    }}
-                    className={`w-1/2 h-[42px] flex items-center justify-center font-nanumsquare text-[13px] tracking-tight transition-all cursor-pointer rounded-tl-[12px] rounded-tr-[16px] select-none ${
+                    className={`w-1/2 text-center font-nanumsquare text-[13px] leading-[72%] transition-colors cursor-pointer select-none ${
                       activeAccountTab === 'groom'
-                        ? 'bg-[#F5F4F4] text-[#292929] font-bold z-10'
-                        : 'bg-[#FEFEFE] text-[#999999] font-normal border-t border-l border-stone-200/60 hover:text-[#555555]'
+                        ? 'text-[#292929] font-bold'
+                        : 'text-[#999999] font-normal'
                     }`}
                   >
                     신랑측
@@ -1281,24 +1277,28 @@ export default function EditorialTemplate({ invitation }) {
                   <button
                     type="button"
                     onClick={() => setActiveAccountTab('bride')}
-                    style={{
-                      boxShadow: activeAccountTab === 'bride' ? '0px -2px 4px rgba(0,0,0,0.04)' : 'none',
-                    }}
-                    className={`w-1/2 h-[42px] flex items-center justify-center font-nanumsquare text-[13px] tracking-tight transition-all cursor-pointer rounded-tl-[16px] rounded-tr-[12px] select-none ${
+                    className={`w-1/2 text-center font-nanumsquare text-[13px] leading-[72%] transition-colors cursor-pointer select-none ${
                       activeAccountTab === 'bride'
-                        ? 'bg-[#F5F4F4] text-[#292929] font-bold z-10'
-                        : 'bg-[#FEFEFE] text-[#999999] font-normal border-t border-r border-stone-200/60 hover:text-[#555555]'
+                        ? 'text-[#292929] font-bold'
+                        : 'text-[#999999] font-normal'
                     }`}
                   >
                     신부측
                   </button>
+
+                  {/* 전체 바닥선 (Figma: 553px -> 1x 276.5px, height: 2px -> 1px, background: #CBCBCB) */}
+                  <div className="absolute bottom-0 left-0 w-full h-[1px] bg-[#CBCBCB]" />
+
+                  {/* 선택된 쪽에 음영주기 위한 선 (Figma: 너비 281px -> 1x 138.25px / 50%, height: 2px, background: #333333) */}
+                  <div 
+                    className={`absolute bottom-0 h-[2px] w-1/2 bg-[#333333] transition-all duration-300 ${
+                      activeAccountTab === 'groom' ? 'left-0' : 'left-1/2'
+                    }`}
+                  />
                 </div>
 
-                {/* 탭 본체 카드 (Figma: bg #F5F4F4, rounded-b-[12px], 그림자) */}
-                <div 
-                  style={{ boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.08)' }}
-                  className="bg-[#F5F4F4] rounded-b-[12px] pt-[28px] pb-[32px] px-[20px]"
-                >
+                {/* 계좌 목록 영역 (Group 1232: Figma top: 9797px, mt-[37px]) */}
+                <div className="mt-[37px] text-left">
                   {displayAccounts.length > 0 ? (
                     <div>
                       {displayAccounts.map((acc, idx) => {
@@ -1306,49 +1306,48 @@ export default function EditorialTemplate({ invitation }) {
                         const holderText = acc.holder || acc.name || '예금주';
                         const bankText = acc.bank || '';
                         const numText = acc.number || acc.account_number || '';
+                        const copyTarget = [bankText, numText, holderText].filter(Boolean).join(' ');
 
                         return (
                           <div key={idx}>
                             <div className="flex items-center justify-between">
-                              {/* 좌측 정보: 관계 + 예금주, 아래 은행+계좌 */}
+                              {/* 좌측: 신랑 예금주 / 하나은행 504-910579-89707 */}
                               <div className="text-left">
                                 <div className="flex items-center gap-2">
-                                  <span className="font-nanumsquare text-[12px] text-[#666666] font-normal leading-none">
+                                  <span className="font-nanumsquare text-[12px] font-normal leading-none text-[#666666]">
                                     {relText}
                                   </span>
-                                  <span className="font-nanumsquare text-[12px] text-[#292929] font-bold leading-none">
+                                  <span className="font-nanumsquare text-[12px] font-bold leading-none text-[#292929]">
                                     {holderText}
                                   </span>
                                 </div>
-                                <p className="font-nanumsquare text-[11.5px] text-[#666666] mt-2 font-normal leading-none tracking-tight">
+                                <p className="font-nanumsquare font-normal text-[11.5px] leading-none mt-[8px] tracking-tight text-[#666666]">
                                   {bankText} {numText}
                                 </p>
                               </div>
 
-                              {/* 우측 복사하기 버튼 (Figma: w-[161px] -> 1x 80.5px, h-[52px] -> 1x 26px, bg-white, border, rounded-full) */}
+                              {/* 우측: 복사하기 버튼 (Figma: 161x52 -> 1x 80.5x26, rounded-full) */}
                               <button
                                 type="button"
-                                onClick={() => {
-                                  handleCopyText(numText, '계좌번호가 복사되었습니다.');
-                                }}
-                                className="w-[80.5px] h-[26px] bg-white hover:bg-stone-50 active:scale-95 border border-[#CCCCCC] rounded-full flex items-center justify-center transition-all cursor-pointer shrink-0 select-none shadow-2xs"
+                                onClick={() => handleCopyText(numText || copyTarget, '계좌번호가 복사되었습니다.')}
+                                className="w-[80.5px] h-[26px] rounded-full border border-[#D3D3D3] bg-white hover:bg-[#F5F4F4] text-[#292929] flex items-center justify-center cursor-pointer transition-all active:scale-[0.98] select-none"
                               >
-                                <span className="font-nanumsquare text-[12px] text-[#292929] font-normal leading-none">
+                                <span className="font-nanumsquare font-normal text-[12px] leading-none tracking-tight">
                                   복사하기
                                 </span>
                               </button>
                             </div>
 
-                            {/* 계좌간의 구분선 (Figma: 너비 553px -> 1x 276.5px, border: 0.5px solid #999999) */}
+                            {/* 예금주 간 구분선 (Line 152: border 0.5px solid #999999) */}
                             {idx < displayAccounts.length - 1 && (
-                              <div style={{ borderTop: '0.5px solid #D5D5D5' }} className="w-full my-[18px]" />
+                              <div style={{ borderTop: '0.5px solid #E5E5E5' }} className="w-full my-[18px]" />
                             )}
                           </div>
                         );
                       })}
                     </div>
                   ) : (
-                    <div className="py-6 text-center text-stone-400 font-nanumsquare text-[12px]">
+                    <div className="py-8 text-center font-nanumsquare text-[12px] text-stone-400">
                       등록된 계좌 정보가 없습니다.
                     </div>
                   )}
@@ -1358,7 +1357,7 @@ export default function EditorialTemplate({ invitation }) {
               {/* 마음 전하실 곳 섹션 바닥 공통 구분선 (인수인계서 필수 탑재 규격: w-[280.5px], borderTop: 0.5px solid #999999) */}
               <div 
                 style={{ borderTop: '0.5px solid #999999' }}
-                className="w-[280.5px] max-w-[75%] mt-[60px] mb-[45px] mx-auto shrink-0" 
+                className="w-[280.5px] max-w-[75%] mt-[55px] mb-[40px] mx-auto shrink-0" 
               />
             </ScrollReveal>
           </section>

@@ -15,6 +15,50 @@ import { supabase } from '@/lib/supabase';
 import { getSafeKakaoShareImageUrl } from '@/lib/kakaoShare';
 import { renderParentPair } from '@/components/ParentDeceasedName';
 
+// 전국 지하철 & 버스 노선 공식/감성 컬러 맵 (피그마 1:1 매칭)
+const TRANSIT_COLORS = {
+  '1호선': '#0052A4',
+  '2호선': '#00A84D',
+  '3호선': '#EF7C1C',
+  '4호선': '#00A5DE',
+  '5호선': '#996CAC',
+  '6호선': '#CD7C2F',
+  '7호선': '#407550', // 피그마 실측 올리브 그린
+  '8호선': '#E6186C',
+  '9호선': '#BDB092',
+  '분당선': '#C79126', // 피그마 실측 골드 옐로우
+  '수인분당선': '#C79126',
+  '신분당선': '#D4003B',
+  '경의중앙선': '#77C4A3',
+  '공항철도': '#0090D2',
+  '경춘선': '#0C8E72',
+  '우이신설선': '#B0CE1A',
+  '신림선': '#6789CA',
+  '서해선': '#81A914',
+  '간선버스': '#5B86BF', // 피그마 실측 간선 파랑
+  '지선버스': '#71AB67', // 피그마 실측 지선 초록
+  '광역버스': '#E6186C',
+  '마을버스': '#8CB83C',
+};
+
+// 텍스트에서 지하철/버스 호선 키워드만 감지해 컬러링하는 스마트 파서
+function renderTransitText(text) {
+  if (!text) return null;
+  const regex = /(1호선|2호선|3호선|4호선|5호선|6호선|7호선|8호선|9호선|수인분당선|분당선|신분당선|경의중앙선|공항철도|경춘선|우이신설선|신림선|서해선|간선버스|지선버스|광역버스|마을버스)/g;
+  const parts = text.split(regex);
+  return parts.map((part, i) => {
+    const color = TRANSIT_COLORS[part];
+    if (color) {
+      return (
+        <span key={i} style={{ color }} className="font-medium mr-0.5">
+          {part}
+        </span>
+      );
+    }
+    return <span key={i}>{part}</span>;
+  });
+}
+
 export default function CinematicTemplate({ invitation }) {
   // 1. ☀️ Brightly (Day) ↔ 🌙 Midnight (Night) 듀얼 테마 스위처
   const [isNightMode, setIsNightMode] = useState(false);
@@ -341,11 +385,12 @@ export default function CinematicTemplate({ invitation }) {
     } catch {}
     if (isSample) {
       return [
-        { group: '신랑측', name: '신랑 데이', holder: '데이', title: '신랑', bank: '카카오뱅크', number: '1002-753-478932' },
-        { group: '신랑측', name: '아버지 루카스', holder: '루카스', title: '아버지', bank: '우리은행', number: '8223-7323-4123556' },
-        { group: '신랑측', name: '어머니 소피아', holder: '소피아', title: '어머니', bank: 'IBK 기업은행', number: '76443-2231-22345' },
-        { group: '신부측', name: '신부 이브', holder: '이브', title: '신부', bank: '카카오뱅크', number: '1002-753-478932' },
-        { group: '신부측', name: '아버지 에이든', holder: '에이든', title: '아버지', bank: '우리은행', number: '8223-7323-4123556' },
+        { group: '신랑측', relation: '신랑', title: '신랑', holder: '예금주', name: '예금주', bank: '하나은행', number: '504-910579-89707' },
+        { group: '신랑측', relation: '신랑', title: '신랑', holder: '예금주', name: '예금주', bank: '하나은행', number: '504-910579-89707' },
+        { group: '신랑측', relation: '신랑', title: '신랑', holder: '예금주', name: '예금주', bank: '하나은행', number: '504-910579-89707' },
+        { group: '신부측', relation: '신부', title: '신부', holder: '예금주', name: '예금주', bank: '하나은행', number: '504-910579-89707' },
+        { group: '신부측', relation: '신부', title: '신부', holder: '예금주', name: '예금주', bank: '하나은행', number: '504-910579-89707' },
+        { group: '신부측', relation: '신부', title: '신부', holder: '예금주', name: '예금주', bank: '하나은행', number: '504-910579-89707' },
       ];
     }
     return [];
@@ -1076,8 +1121,238 @@ export default function CinematicTemplate({ invitation }) {
       )}
 
       {/* ========================================================
-          06. INFORMATION (가로 스와이프 안내 카드 캐러셀)
+          06. LOCATION (식장 위치 및 오시는 길 안내 - Figma 섹션 6 매칭)
+          - 피그마 7135px~9022px (780x1887 -> 1x 390x943.5 1:1 정밀 매칭)
           ======================================================== */}
+      {(venueFullName || venueAddress || isSample) && (
+        <section 
+          id="location-section" 
+          className={`w-full pt-[69.5px] pb-0 px-6 text-center select-none overflow-hidden transition-colors duration-300 ${
+            isNightMode ? 'bg-[#1E1E1E]' : 'bg-[#FEFEFE]'
+          }`}
+        >
+          <ScrollReveal>
+            {/* 상단 1: location 영문 (Figma: Cormorant Garamond 500 50px -> 1x 25px, #292929, leading-[72%]) */}
+            <h2 
+              style={{ fontFamily: "'Cormorant Garamond', serif" }}
+              className={`text-[25px] font-medium leading-[72%] text-center select-none tracking-normal ${
+                isNightMode ? 'text-white' : 'text-[#292929]'
+              }`}
+            >
+              location
+            </h2>
+
+            {/* 상단 2: 식장 위치 (Figma: NanumSquare Neo OTF 400 36px -> 1x 18px, leading-[72%], mt-[36.5px]) */}
+            <p className={`font-nanumsquare font-normal text-[18px] leading-[72%] text-center mt-[36.5px] tracking-tight ${
+              isNightMode ? 'text-[#E5E5E5]' : 'text-[#292929]'
+            }`}>
+              식장 위치
+            </p>
+
+            {/* 상단 3: 호텔금오산 컨벤션센터 (웨딩홀 명칭) (Figma: NanumSquare Neo OTF 400 30px -> 1x 15px, #333333, mt-[43px]) */}
+            <h3 className={`font-nanumsquare font-normal text-[15px] leading-[72%] text-center mt-[43px] tracking-tight ${
+              isNightMode ? 'text-white' : 'text-[#333333]'
+            }`}>
+              {venueFullName || (isSample ? '호텔금오산 컨벤션센터' : '')}
+            </h3>
+
+            {/* 상단 4: 경북 구미시 금오산로 400 (식장 주소) & 주소 복사 (Figma: NanumSquare Neo 28px -> 1x 14px, #999999, mt-[23.5px]) */}
+            <div className="mt-[23.5px] flex items-center justify-center gap-1.5">
+              <span className={`font-nanumsquare font-normal text-[14px] leading-[72%] tracking-tight ${
+                isNightMode ? 'text-[#A3A3A3]' : 'text-[#999999]'
+              }`}>
+                {venueAddress || (isSample ? '경북 구미시 금오산로 400' : '')}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  const addr = venueAddress || (isSample ? '경북 구미시 금오산로 400' : '');
+                  handleCopy(addr, '식장 주소가');
+                }}
+                className={`inline-flex items-center justify-center p-0.5 transition-colors cursor-pointer select-none ${
+                  isNightMode ? 'text-stone-400 hover:text-white' : 'text-[#999999] hover:text-[#333333]'
+                }`}
+                title="주소 복사"
+                aria-label="식장 주소 복사"
+              >
+                {/* 복사 아이콘 (Figma: 31x31 -> 1x 15.5x15.5) */}
+                <svg width="15.5" height="15.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              </button>
+            </div>
+
+            {/* 지도 컴포넌트 (Figma image 678: 607x433 -> 1x 303.5x216.5, mt-[40.5px]) */}
+            <div className={`mt-[40.5px] w-[303.5px] h-[216.5px] max-w-full mx-auto overflow-hidden border ${
+              isNightMode ? 'bg-stone-900 border-stone-800' : 'bg-stone-100 border-stone-200'
+            }`}>
+              <KakaoMap
+                address={venueAddress || (isSample ? '경북 구미시 금오산로 400' : '')}
+                venueName={venueFullName || (isSample ? '호텔금오산 컨벤션센터' : '')}
+                className="w-full h-full"
+              />
+            </div>
+
+            {/* 길안내 버튼 2개: 네이버 지도 & 카카오내비 (Figma: 너비 각 143.5px, 높이 38px, bg #F5F4F4, rounded-full, mt-[26px]) */}
+            <div className="mt-[26px] w-[303.5px] max-w-full mx-auto flex items-center justify-between gap-[16.5px]">
+              {/* 네이버 지도 버튼 */}
+              <button
+                type="button"
+                onClick={() => {
+                  const query = venueFullName || venueAddress || (isSample ? '호텔금오산 컨벤션센터' : '');
+                  window.open(`https://map.naver.com/p/search/${encodeURIComponent(query)}`, '_blank');
+                }}
+                style={{
+                  boxShadow: isNightMode ? 'none' : '0px 2px 2px rgba(0, 0, 0, 0.11)',
+                }}
+                className={`w-[143.5px] h-[38px] rounded-full flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98] select-none ${
+                  isNightMode
+                    ? 'bg-[#2A2A2A] hover:bg-[#333333] text-stone-200 border border-stone-700'
+                    : 'bg-[#F5F4F4] hover:bg-[#eceae7] text-[#666666]'
+                }`}
+              >
+                <span className="font-nanumsquare font-normal text-[14px] tracking-tight">
+                  네이버 지도
+                </span>
+                {/* 네이버 지도 아이콘 */}
+                <svg width="15.5" height="15.5" viewBox="0 0 24 24" fill="none" className="shrink-0">
+                  <rect width="24" height="24" rx="5" fill="#03C75A"/>
+                  <path d="M7 6H10.2L13.8 12.3V6H17V18H13.8L10.2 11.7V18H7V6Z" fill="white"/>
+                </svg>
+              </button>
+
+              {/* 카카오내비 버튼 */}
+              <button
+                type="button"
+                onClick={() => {
+                  const query = venueFullName || venueAddress || (isSample ? '호텔금오산 컨벤션센터' : '');
+                  window.open(`https://map.kakao.com/link/search/${encodeURIComponent(query)}`, '_blank');
+                }}
+                style={{
+                  boxShadow: isNightMode ? 'none' : '0px 2px 2px rgba(0, 0, 0, 0.11)',
+                }}
+                className={`w-[143.5px] h-[38px] rounded-full flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98] select-none ${
+                  isNightMode
+                    ? 'bg-[#2A2A2A] hover:bg-[#333333] text-stone-200 border border-stone-700'
+                    : 'bg-[#F5F4F4] hover:bg-[#eceae7] text-[#666666]'
+                }`}
+              >
+                <span className="font-nanumsquare font-normal text-[14px] tracking-tight">
+                  카카오내비
+                </span>
+                {/* 카카오내비 아이콘 */}
+                <svg width="15.5" height="15.5" viewBox="0 0 24 24" fill="none" className="shrink-0">
+                  <rect width="24" height="24" rx="5" fill="#FFEB00"/>
+                  <path d="M6 15.5L12 5L18 15.5L12 13L6 15.5Z" fill="#0075FF"/>
+                </svg>
+              </button>
+            </div>
+
+            {/* 오시는 길 안내 관련 박스 (Figma: 너비 553px -> 1x 276.5px, mt-[54.5px], text-left) */}
+            {(transportationList.length > 0 || isSample) && (
+              <div className="mt-[54.5px] w-[276.5px] max-w-full mx-auto text-left">
+                {transportationList.length > 0 ? (
+                  /* 고객 직접 입력 교통편이 있는 경우 */
+                  <div className="space-y-[24px]">
+                    {transportationList.map((item, idx) => (
+                      <div key={idx}>
+                        <h4 className={`font-nanumsquare font-bold text-[14px] mb-3 leading-none ${
+                          isNightMode ? 'text-white' : 'text-[#333333]'
+                        }`}>
+                          {item.title}
+                        </h4>
+                        <p className={`font-nanumsquare font-normal text-[13px] leading-relaxed whitespace-pre-line ${
+                          isNightMode ? 'text-stone-300' : 'text-[#666666]'
+                        }`}>
+                          {renderTransitText(item.content)}
+                        </p>
+                        {idx < transportationList.length - 1 && (
+                          <div 
+                            style={{ 
+                              borderTop: isNightMode ? '0.5px solid rgba(255, 255, 255, 0.15)' : '0.5px solid #999999' 
+                            }} 
+                            className="w-full my-[24px]" 
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : isSample ? (
+                  /* 피그마 시안 4 기본 오시는 길 안내 */
+                  <div>
+                    {/* 지하철 블록 */}
+                    <div>
+                      <h4 className={`font-nanumsquare font-bold text-[14px] mb-3 leading-none ${
+                        isNightMode ? 'text-white' : 'text-[#333333]'
+                      }`}>
+                        지하철
+                      </h4>
+                      <p className={`font-nanumsquare font-normal text-[13px] leading-relaxed ${
+                        isNightMode ? 'text-stone-300' : 'text-[#666666]'
+                      }`}>
+                        <span style={{ color: '#407550' }} className="font-medium mr-1">7호선</span>강남구청역 3-1번 출구
+                      </p>
+                      <p className={`font-nanumsquare font-normal text-[13px] leading-relaxed ${
+                        isNightMode ? 'text-stone-300' : 'text-[#666666]'
+                      }`}>
+                        <span style={{ color: '#C79126' }} className="font-medium mr-1">분당선</span>강남구청역 3-1번 출구
+                      </p>
+                      <p className={`font-nanumsquare font-normal text-[13px] leading-relaxed mt-2 ${
+                        isNightMode ? 'text-stone-400' : 'text-[#666666]'
+                      }`}>
+                        좌측 방향 570M 도보 후 좌측 건물
+                      </p>
+                    </div>
+
+                    {/* 지하철과 버스 사이에 구분선 (Figma: 553px -> 1x 276.5px, border: 0.5px solid #999999) */}
+                    <div 
+                      style={{ 
+                        borderTop: isNightMode ? '0.5px solid rgba(255, 255, 255, 0.15)' : '0.5px solid #999999' 
+                      }} 
+                      className="w-full my-[24px]" 
+                    />
+
+                    {/* 버스 블록 */}
+                    <div>
+                      <h4 className={`font-nanumsquare font-bold text-[14px] mb-3 leading-none ${
+                        isNightMode ? 'text-white' : 'text-[#333333]'
+                      }`}>
+                        버스
+                      </h4>
+                      <p className={`font-nanumsquare font-normal text-[13px] leading-relaxed ${
+                        isNightMode ? 'text-stone-300' : 'text-[#666666]'
+                      }`}>
+                        <span style={{ color: '#5B86BF' }} className="font-medium mr-1">간선버스</span> : 342, 465, 786
+                      </p>
+                      <p className={`font-nanumsquare font-normal text-[13px] leading-relaxed ${
+                        isNightMode ? 'text-stone-300' : 'text-[#666666]'
+                      }`}>
+                        <span style={{ color: '#71AB67' }} className="font-medium mr-1">지선버스</span> : 1234, 5678
+                      </p>
+                      <p className={`font-nanumsquare font-normal text-[13px] leading-relaxed mt-2 ${
+                        isNightMode ? 'text-stone-400' : 'text-[#666666]'
+                      }`}>
+                        셔틀버스 수시 운행
+                      </p>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            )}
+
+            {/* 식장 위치 섹션 바닥 공통 구분선 (인수인계서 필수 탑재 규격: w-[280.5px], borderTop: 0.5px solid #999999) */}
+            <div 
+              style={{ 
+                borderTop: isNightMode ? '0.5px solid rgba(255, 255, 255, 0.15)' : '0.5px solid #999999' 
+              }}
+              className="w-[280.5px] max-w-[75%] mt-[55px] mb-[40px] mx-auto shrink-0" 
+            />
+          </ScrollReveal>
+        </section>
+      )}
+
+      {/* 안내 카드 캐러셀 (고객이 등록한 카드가 있는 경우에만 보조적으로 노출) */}
       {infoCards.length > 0 && (
         <section className="py-18 sm:py-20 px-5 text-center border-t border-stone-200/60 dark:border-white/10">
           <ScrollReveal>
@@ -1114,7 +1389,7 @@ export default function CinematicTemplate({ invitation }) {
                         <img
                           src={card.image}
                           alt={card.title}
-                          className="w-full h-full object-cover grayscale"
+                          className="w-full h-full object-cover"
                         />
                       </div>
                     )}
@@ -1157,199 +1432,169 @@ export default function CinematicTemplate({ invitation }) {
       )}
 
       {/* ========================================================
-          07. WEDDING LOCATION (식장 위치 & 3대 내비게이션 - 정보가 있을 때만 노출)
+          07. ACCOUNT (마음 전하실 곳 - Figma 섹션 7 매칭)
+          - 피그마 9022px~10338px (780x1316 -> 1x 390x658 1:1 정밀 매칭)
           ======================================================== */}
-      {(venueFullName || venueAddress) && (
-        <section id="location-section" className="py-18 sm:py-20 px-5 text-center border-t border-stone-200/60 dark:border-white/10">
+      {showAccountsSection && (allAccounts.length > 0 || isSample) && (
+        <section 
+          id="accounts-section" 
+          className={`w-full pt-[69.5px] pb-0 px-6 text-center select-none overflow-hidden transition-colors duration-300 ${
+            isNightMode ? 'bg-[#1E1E1E]' : 'bg-[#FEFEFE]'
+          }`}
+        >
           <ScrollReveal>
+            {/* 상단 1: Account 영문 (Figma: Cormorant Garamond 500 50px -> 1x 25px, #292929, leading-[72%]) */}
             <h2 
-              style={serifItalic}
-              className={`text-xl tracking-[0.25em] uppercase mb-4 ${
-                isNightMode ? 'text-white' : 'text-stone-900'
+              style={{ fontFamily: "'Cormorant Garamond', serif" }}
+              className={`text-[25px] font-medium leading-[72%] text-center select-none tracking-normal ${
+                isNightMode ? 'text-white' : 'text-[#292929]'
               }`}
             >
-              WEDDING LOCATION
+              Account
             </h2>
-            {venueFullName && (
-              <p 
-                style={serifItalic}
-                className={`text-base font-medium mb-1 ${isNightMode ? 'text-white' : 'text-stone-900'}`}
-              >
-                {venueFullName}
-              </p>
-            )}
 
-            {/* 주소 박스 & 복사 */}
-            {venueAddress && (
-              <div className="flex items-center justify-center gap-2 mb-6">
-                <span className="text-xs font-mono text-stone-400">{venueAddress}</span>
+            {/* 상단 2: 마음 전하실 곳 (Figma: NanumSquare Neo OTF 400 36px -> 1x 18px, leading-[72%], mt-[36.5px]) */}
+            <p className={`font-nanumsquare font-normal text-[18px] leading-[72%] text-center mt-[36.5px] tracking-tight ${
+              isNightMode ? 'text-[#E5E5E5]' : 'text-[#292929]'
+            }`}>
+              마음 전하실 곳
+            </p>
+
+            {/* 상단 3: 축복의 마음을 담아 축의금을 전달하실 수 있습니다. (Figma: NanumSquare Neo 28px -> 1x 14px, leading-[174%], mt-[43px]) */}
+            <p className={`font-nanumsquare font-normal text-[14px] leading-[174%] text-center mt-[43px] tracking-tight ${
+              isNightMode ? 'text-[#D4D4D4]' : 'text-[#333333]'
+            }`}>
+              축복의 마음을 담아 축의금을<br />
+              전달하실 수 있습니다.
+            </p>
+
+            {/* 탭 영역 (Figma: 전체선 너비 553px -> 1x 276.5px, mt-[56px]) */}
+            <div className="mt-[56px] w-[276.5px] max-w-full mx-auto">
+              <div className="relative flex items-center justify-between pb-[13px]">
+                {/* 신랑측 탭 버튼 */}
                 <button
                   type="button"
-                  onClick={() => handleCopy(venueAddress, '주소가')}
-                  className="text-stone-400 hover:text-stone-700 text-xs cursor-pointer"
-                  aria-label="주소 복사"
+                  onClick={() => setAccountTab('groom')}
+                  className={`w-1/2 text-center font-nanumsquare text-[13px] leading-[72%] transition-colors cursor-pointer select-none ${
+                    accountTab === 'groom'
+                      ? (isNightMode ? 'text-white font-bold' : 'text-[#292929] font-bold')
+                      : (isNightMode ? 'text-stone-500 font-normal' : 'text-[#999999] font-normal')
+                  }`}
                 >
-                  ⎘
+                  신랑측
                 </button>
-              </div>
-            )}
 
-            {/* 지도 컴포넌트 */}
-            {venueAddress && (
-              <div className="w-full max-w-[390px] mx-auto rounded-none overflow-hidden shadow-xs border border-stone-100 mb-6 bg-stone-100">
-                <KakaoMap
-                  address={venueAddress}
-                  venueName={invitation?.venue_name || venueFullName}
-                  className="w-full h-[280px]"
+                {/* 신부측 탭 버튼 */}
+                <button
+                  type="button"
+                  onClick={() => setAccountTab('bride')}
+                  className={`w-1/2 text-center font-nanumsquare text-[13px] leading-[72%] transition-colors cursor-pointer select-none ${
+                    accountTab === 'bride'
+                      ? (isNightMode ? 'text-white font-bold' : 'text-[#292929] font-bold')
+                      : (isNightMode ? 'text-stone-500 font-normal' : 'text-[#999999] font-normal')
+                  }`}
+                >
+                  신부측
+                </button>
+
+                {/* 전체 바닥선 (Figma: 553px -> 1x 276.5px, height: 2px -> 1px, background: #CBCBCB) */}
+                <div 
+                  className={`absolute bottom-0 left-0 w-full h-[1px] ${
+                    isNightMode ? 'bg-stone-700' : 'bg-[#CBCBCB]'
+                  }`} 
+                />
+
+                {/* 선택된 쪽에 음영주기 위한 선 (Figma: 너비 281px -> 1x 138.25px / 50%, height: 2px, background: #333333) */}
+                <div 
+                  className={`absolute bottom-0 h-[2px] w-1/2 transition-all duration-300 ${
+                    accountTab === 'groom' ? 'left-0' : 'left-1/2'
+                  } ${
+                    isNightMode ? 'bg-white' : 'bg-[#333333]'
+                  }`}
                 />
               </div>
-            )}
 
-            {/* 내비게이션 버튼 (네이버 지도, 카카오내비) */}
-            {venueAddress && (
-              <div className="grid grid-cols-2 gap-2 max-w-[390px] mx-auto mb-10 text-xs font-medium font-sans">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const q = invitation?.venue_name || venueAddress;
-                    window.open(`https://map.naver.com/p/search/${encodeURIComponent(q)}`, '_blank');
-                  }}
-                  className={`py-3 px-2 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer ${
-                    isNightMode ? 'bg-stone-900 hover:bg-stone-800 text-stone-200' : 'bg-stone-100 hover:bg-stone-200 text-stone-800'
-                  }`}
-                >
-                  <span className="font-bold text-emerald-600">N</span>
-                  <span>네이버 지도</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const q = invitation?.venue_name || venueAddress;
-                    window.open(`https://map.kakao.com/link/search/${encodeURIComponent(q)}`, '_blank');
-                  }}
-                  className={`py-3 px-2 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer ${
-                    isNightMode ? 'bg-stone-900 hover:bg-stone-800 text-stone-200' : 'bg-stone-100 hover:bg-stone-200 text-stone-800'
-                  }`}
-                >
-                  <span className="font-bold text-amber-500">K</span>
-                  <span>카카오내비</span>
-                </button>
-              </div>
-            )}
+              {/* 계좌 목록 영역 (Group 1232: Figma top: 9797px, mt-[37px]) */}
+              <div className="mt-[37px] text-left">
+                {currentAccounts.length > 0 ? (
+                  <div>
+                    {currentAccounts.map((acc, idx) => {
+                      const relText = acc.relation || acc.title || (accountTab === 'groom' ? '신랑' : '신부');
+                      const holderText = acc.holder || acc.name || '예금주';
+                      const bankText = acc.bank || '';
+                      const numText = acc.number || acc.account_number || '';
+                      const copyTarget = [bankText, numText, holderText].filter(Boolean).join(' ');
 
-            {/* 교통편 안내 리스트 (영상 스타일 회색 뱃지) */}
-            {transportationList.length > 0 && (
-              <div className="space-y-4 max-w-[390px] mx-auto text-left font-sans">
-                {transportationList.map((item, idx) => (
-                  <div key={idx} className="text-xs">
-                    <span className={`inline-block px-2.5 py-0.5 rounded text-[11px] font-mono font-medium uppercase mb-1.5 ${
-                      isNightMode ? 'bg-stone-800 text-stone-300' : 'bg-stone-100 text-stone-700'
-                    }`}>
-                      {item.title}
-                    </span>
-                    <p className={`leading-relaxed font-light whitespace-pre-line break-keep ${
-                      isNightMode ? 'text-stone-400' : 'text-stone-600'
-                    }`}>
-                      {item.content}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </ScrollReveal>
-        </section>
-      )}
+                      return (
+                        <div key={idx}>
+                          <div className="flex items-center justify-between">
+                            {/* 좌측: 신랑 예금주 / 하나은행 504-910579-89707 */}
+                            <div className="text-left">
+                              <div className="flex items-center gap-2">
+                                <span className={`font-nanumsquare text-[12px] font-normal leading-none ${
+                                  isNightMode ? 'text-stone-400' : 'text-[#666666]'
+                                }`}>
+                                  {relText}
+                                </span>
+                                <span className={`font-nanumsquare text-[12px] font-bold leading-none ${
+                                  isNightMode ? 'text-white' : 'text-[#292929]'
+                                }`}>
+                                  {holderText}
+                                </span>
+                              </div>
+                              <p className={`font-nanumsquare font-normal text-[11.5px] leading-none mt-[8px] tracking-tight ${
+                                isNightMode ? 'text-stone-300' : 'text-[#666666]'
+                              }`}>
+                                {bankText} {numText}
+                              </p>
+                            </div>
 
-      {/* ========================================================
-          08. WEDDING GIFT (등록된 계좌가 있을 때만 노출)
-          ======================================================== */}
-      {showAccountsSection && allAccounts.length > 0 && (
-        <section id="accounts-section" className="py-18 sm:py-20 px-5 text-center border-t border-stone-200/60 dark:border-white/10">
-          <ScrollReveal>
-            <h2 
-              style={serifItalic}
-              className={`text-xl tracking-[0.25em] uppercase mb-6 ${
-                isNightMode ? 'text-white' : 'text-stone-900'
-              }`}
-            >
-              WEDDING GIFT
-            </h2>
+                            {/* 우측: 복사하기 버튼 (Figma: 161x52 -> 1x 80.5x26, rounded-full) */}
+                            <button
+                              type="button"
+                              onClick={() => handleCopy(numText || copyTarget, `${bankText} 계좌번호가`)}
+                              className={`w-[80.5px] h-[26px] rounded-full border flex items-center justify-center cursor-pointer transition-all active:scale-[0.98] select-none ${
+                                isNightMode
+                                  ? 'border-stone-600 bg-[#2A2A2A] hover:bg-[#333333] text-stone-200'
+                                  : 'border-[#D3D3D3] bg-white hover:bg-[#F5F4F4] text-[#292929]'
+                              }`}
+                            >
+                              <span className="font-nanumsquare font-normal text-[12px] leading-none tracking-tight">
+                                복사하기
+                              </span>
+                            </button>
+                          </div>
 
-            {/* 신랑측에게 / 신부측에게 탭 버튼 */}
-            <div className={`flex items-center justify-center gap-12 font-serif text-xs tracking-widest uppercase mb-8 border-b pb-3 max-w-[260px] mx-auto ${
-              isNightMode ? 'border-stone-800' : 'border-stone-100'
-            }`}>
-              <button
-                type="button"
-                onClick={() => setAccountTab('groom')}
-                className={`pb-1 cursor-pointer transition-colors ${
-                  accountTab === 'groom'
-                    ? (isNightMode ? 'text-white font-semibold border-b-2 border-white' : 'text-stone-900 font-semibold border-b-2 border-stone-900')
-                    : 'text-stone-400 hover:text-stone-600'
-                }`}
-              >
-                신랑측에게
-              </button>
-              <button
-                type="button"
-                onClick={() => setAccountTab('bride')}
-                className={`pb-1 cursor-pointer transition-colors ${
-                  accountTab === 'bride'
-                    ? (isNightMode ? 'text-white font-semibold border-b-2 border-white' : 'text-stone-900 font-semibold border-b-2 border-stone-900')
-                    : 'text-stone-400 hover:text-stone-600'
-                }`}
-              >
-                신부측에게
-              </button>
-            </div>
-
-            {/* 선택된 탭 계좌 리스트 (영상 1:1 슬림 행) */}
-            <div className="space-y-3 max-w-[380px] mx-auto text-left font-sans">
-              {currentAccounts.length > 0 ? (
-                currentAccounts.map((acc, idx) => {
-                  const copyNum = acc.number || acc.account_number || '';
-                  return (
-                    <div
-                      key={idx}
-                      className={`py-2.5 px-3 border-b flex items-center justify-between ${
-                        isNightMode ? 'border-stone-800/80' : 'border-stone-100'
-                      }`}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="min-w-[65px]">
-                          <span className={`text-xs font-medium ${isNightMode ? 'text-white' : 'text-stone-900'}`}>
-                            {acc.title || (acc.group === '신부측' || acc.side === 'bride' || accountTab === 'bride' ? '신부' : '신랑')}
-                          </span>
-                          <span className="text-[11px] text-stone-400 ml-1">
-                            | {acc.holder || acc.name || ''}
-                          </span>
+                          {/* 예금주 간 구분선 (Line 152: border 0.5px solid #999999) */}
+                          {idx < currentAccounts.length - 1 && (
+                            <div 
+                              style={{ 
+                                borderTop: isNightMode ? '0.5px solid rgba(255, 255, 255, 0.15)' : '0.5px solid #E5E5E5' 
+                              }} 
+                              className="w-full my-[18px]" 
+                            />
+                          )}
                         </div>
-                        <p className={`text-xs font-mono tracking-tight ${isNightMode ? 'text-stone-300' : 'text-stone-600'}`}>
-                          {acc.bank} {copyNum}
-                        </p>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => handleCopy(copyNum, `${acc.bank} 계좌번호가`)}
-                        className={`px-2.5 py-1 rounded text-[10px] font-mono uppercase tracking-wider transition-all cursor-pointer active:scale-95 flex items-center gap-1 ${
-                          isNightMode
-                            ? 'bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700'
-                            : 'bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200'
-                        }`}
-                      >
-                        <span>COPY</span>
-                        <span className="text-[9px]">⎘</span>
-                      </button>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className={`py-6 text-center text-xs ${isNightMode ? 'text-stone-500' : 'text-stone-400'}`}>
-                  등록된 계좌 정보가 없습니다.
-                </div>
-              )}
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className={`py-8 text-center font-nanumsquare text-[12px] ${
+                    isNightMode ? 'text-stone-500' : 'text-stone-400'
+                  }`}>
+                    등록된 계좌 정보가 없습니다.
+                  </div>
+                )}
+              </div>
             </div>
+
+            {/* 계좌 섹션 바닥 공통 구분선 (인수인계서 필수 탑재 규격: w-[280.5px], borderTop: 0.5px solid #999999) */}
+            <div 
+              style={{ 
+                borderTop: isNightMode ? '0.5px solid rgba(255, 255, 255, 0.15)' : '0.5px solid #999999' 
+              }}
+              className="w-[280.5px] max-w-[75%] mt-[55px] mb-[40px] mx-auto shrink-0" 
+            />
           </ScrollReveal>
         </section>
       )}

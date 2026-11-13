@@ -56,9 +56,8 @@ export default function SceneTemplate({ invitation }) {
   const [galleryModalIndex, setGalleryModalIndex] = useState(0);
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
 
-  // 3. 계좌 아코디언 토글 (기본 펼쳐진 상태)
-  const [openGroomAccount, setOpenGroomAccount] = useState(true);
-  const [openBrideAccount, setOpenBrideAccount] = useState(true);
+  // 3. 계좌 탭 상태 (신랑측 vs 신부측)
+  const [activeAccountTab, setActiveAccountTab] = useState('groom');
 
   // 4. 정보 카드 캐러셀 인덱스
   const [infoCardIndex, setInfoCardIndex] = useState(0);
@@ -328,15 +327,25 @@ export default function SceneTemplate({ invitation }) {
   // 계좌 목록 (문자열 안전 파싱 및 혼주 계좌 유연한 매칭)
   const allParsedAccounts = useMemo(() => {
     const raw = invitation?.accounts;
-    if (Array.isArray(raw)) return raw;
+    if (Array.isArray(raw) && raw.length > 0) return raw;
     if (typeof raw === 'string') {
       try {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       } catch {}
     }
+    if (isSample) {
+      return [
+        { group: '신랑측', relation: '신랑', title: '신랑', holder: '예금주', name: '예금주', bank: '하나은행', number: '504-910579-89707' },
+        { group: '신랑측', relation: '신랑', title: '신랑', holder: '예금주', name: '예금주', bank: '하나은행', number: '504-910579-89707' },
+        { group: '신랑측', relation: '신랑', title: '신랑', holder: '예금주', name: '예금주', bank: '하나은행', number: '504-910579-89707' },
+        { group: '신부측', relation: '신부', title: '신부', holder: '예금주', name: '예금주', bank: '하나은행', number: '504-910579-89707' },
+        { group: '신부측', relation: '신부', title: '신부', holder: '예금주', name: '예금주', bank: '하나은행', number: '504-910579-89707' },
+        { group: '신부측', relation: '신부', title: '신부', holder: '예금주', name: '예금주', bank: '하나은행', number: '504-910579-89707' },
+      ];
+    }
     return [];
-  }, [invitation?.accounts]);
+  }, [invitation?.accounts, isSample]);
 
   const groomAccounts = useMemo(() => {
     return allParsedAccounts.filter(
@@ -363,6 +372,8 @@ export default function SceneTemplate({ invitation }) {
         a.relation?.includes('신부')
     );
   }, [allParsedAccounts]);
+
+  const displayAccounts = activeAccountTab === 'groom' ? groomAccounts : brideAccounts;
 
   // 방명록 로드
   useEffect(() => {
@@ -1122,131 +1133,126 @@ export default function SceneTemplate({ invitation }) {
           - 순백 화이트 베이스 + 영상 00:56 ~ 01:00 1:1 일치
           - 기본은 접힘 상태이며 누르면 화살표 회전과 함께 부드럽게 펼쳐집니다.
           ======================================================== */}
-      {config.show_accounts !== false && (groomAccounts.length > 0 || brideAccounts.length > 0) && (
-        <section id="accounts-section" className="py-20 px-6 bg-white border-t border-stone-100">
+      {/* ========================================================
+          07. ACCOUNT (마음 전하실 곳 - 미니멀 라인 탭 UI)
+          ======================================================== */}
+      {config.show_accounts !== false && (groomAccounts.length > 0 || brideAccounts.length > 0 || isSample) && (
+        <section id="accounts-section" className="py-20 px-6 bg-white border-t border-stone-100 text-center select-none overflow-hidden">
           <ScrollReveal>
-            <div className="text-center mb-8">
+            <div className="text-center">
               <span className="font-cormorant italic text-3xl sm:text-4xl text-[#222222] block mb-2 font-light tracking-wide">
                 Account
               </span>
-              <h2 className="font-serif text-base sm:text-lg text-stone-900 font-medium mb-1">
+              <h2 className="font-serif text-base sm:text-lg text-stone-900 font-medium mb-3">
                 마음 전하실 곳
               </h2>
-              <p className="text-xs text-stone-500 font-light max-w-xs mx-auto leading-relaxed">
-                참석이 어려운 분들을 위해 계좌번호를 기재하였습니다.<br />
-                너그러운 마음으로 양해 부탁드립니다.
+              <p className="font-sans text-xs text-stone-500 font-light max-w-xs mx-auto leading-relaxed whitespace-pre-line">
+                축복의 마음을 담아 축의금을{'\n'}전달하실 수 있습니다.
               </p>
             </div>
 
-            <div className="space-y-3 max-w-[370px] mx-auto">
-              {/* 신랑측 계좌 아코디언 */}
-              {groomAccounts.length > 0 && (
-                <div className="bg-white rounded-xl border border-stone-200 shadow-2xs overflow-hidden transition-all duration-300">
-                  <button
-                    type="button"
-                    onClick={() => setOpenGroomAccount(!openGroomAccount)}
-                    className="w-full p-4 flex items-center justify-between text-xs font-semibold text-stone-800 cursor-pointer select-none"
-                  >
-                    <span>신랑측 계좌번호</span>
-                    <svg 
-                      className={`w-4 h-4 text-stone-400 transition-transform duration-300 transform ${openGroomAccount ? 'rotate-180' : ''}`}
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="1.6" 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round"
-                    >
-                      <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                  </button>
+            {/* 탭 영역 (Figma: 전체선 너비 553px -> 1x 276.5px, mt-[40px]) */}
+            <div className="mt-[40px] w-[276.5px] max-w-full mx-auto">
+              <div className="relative flex items-center justify-between pb-[13px]">
+                {/* 신랑측 탭 버튼 */}
+                <button
+                  type="button"
+                  onClick={() => setActiveAccountTab('groom')}
+                  className={`w-1/2 text-center font-sans text-[13px] leading-[72%] transition-colors cursor-pointer select-none ${
+                    activeAccountTab === 'groom'
+                      ? 'text-[#292929] font-bold'
+                      : 'text-[#999999] font-normal'
+                  }`}
+                >
+                  신랑측
+                </button>
 
-                  <div 
-                    className={`grid transition-[grid-template-rows] duration-300 ease-out ${
-                      openGroomAccount ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-                    }`}
-                  >
-                    <div className="overflow-hidden">
-                      <div className="px-4 pb-4 space-y-2 pt-1 border-t border-stone-100">
-                        {groomAccounts.map((acc, idx) => (
-                          <div key={idx} className="flex items-center justify-between py-3 border-b border-stone-100 last:border-b-0 text-xs">
-                            <div className="space-y-0.5">
-                              <span className="font-medium text-stone-900 block">
-                                {acc.holder || acc.title}
-                              </span>
-                              <span className="font-mono text-stone-500 text-[11px] block">
-                                {acc.bank} {acc.number || acc.account_number}
-                              </span>
+                {/* 신부측 탭 버튼 */}
+                <button
+                  type="button"
+                  onClick={() => setActiveAccountTab('bride')}
+                  className={`w-1/2 text-center font-sans text-[13px] leading-[72%] transition-colors cursor-pointer select-none ${
+                    activeAccountTab === 'bride'
+                      ? 'text-[#292929] font-bold'
+                      : 'text-[#999999] font-normal'
+                  }`}
+                >
+                  신부측
+                </button>
+
+                {/* 전체 바닥선 (Figma: 553px -> 1x 276.5px, height: 2px -> 1px, background: #CBCBCB) */}
+                <div className="absolute bottom-0 left-0 w-full h-[1px] bg-[#CBCBCB]" />
+
+                {/* 선택된 쪽에 음영주기 위한 선 (Figma: 너비 281px -> 1x 138.25px / 50%, height: 2px, background: #333333) */}
+                <div 
+                  className={`absolute bottom-0 h-[2px] w-1/2 bg-[#333333] transition-all duration-300 ${
+                    activeAccountTab === 'groom' ? 'left-0' : 'left-1/2'
+                  }`}
+                />
+              </div>
+
+              {/* 계좌 목록 영역 (Group 1232: Figma top: 9797px, mt-[37px]) */}
+              <div className="mt-[37px] text-left">
+                {displayAccounts.length > 0 ? (
+                  <div>
+                    {displayAccounts.map((acc, idx) => {
+                      const relText = acc.relation || acc.title || (activeAccountTab === 'groom' ? '신랑' : '신부');
+                      const holderText = acc.holder || acc.name || '예금주';
+                      const bankText = acc.bank || '';
+                      const numText = acc.number || acc.account_number || '';
+                      const copyTarget = [bankText, numText, holderText].filter(Boolean).join(' ');
+
+                      return (
+                        <div key={idx}>
+                          <div className="flex items-center justify-between">
+                            {/* 좌측: 신랑 예금주 / 하나은행 504-910579-89707 */}
+                            <div className="text-left font-sans">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[12px] font-normal leading-none text-[#666666]">
+                                  {relText}
+                                </span>
+                                <span className="text-[12px] font-bold leading-none text-[#292929]">
+                                  {holderText}
+                                </span>
+                              </div>
+                              <p className="font-normal text-[11.5px] leading-none mt-[8px] tracking-tight text-[#666666]">
+                                {bankText} {numText}
+                              </p>
                             </div>
+
+                            {/* 우측: 복사하기 버튼 (Figma: 161x52 -> 1x 80.5x26, rounded-full) */}
                             <button
                               type="button"
-                              onClick={() => handleCopy(acc.number || acc.account_number, `${acc.holder || acc.title} 계좌번호가`)}
-                              className="px-3 py-1.5 bg-white border border-stone-200 hover:border-stone-400 rounded-lg text-[11px] font-medium text-stone-700 hover:text-black cursor-pointer shadow-2xs active:scale-95 transition-all"
+                              onClick={() => handleCopy(numText || copyTarget, `${bankText} 계좌번호가`)}
+                              className="w-[80.5px] h-[26px] rounded-full border border-[#D3D3D3] bg-white hover:bg-[#F5F4F4] text-[#292929] flex items-center justify-center cursor-pointer transition-all active:scale-[0.98] select-none"
                             >
-                              복사하기
+                              <span className="font-sans font-normal text-[12px] leading-none tracking-tight">
+                                복사하기
+                              </span>
                             </button>
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
 
-              {/* 신부측 계좌 아코디언 */}
-              {brideAccounts.length > 0 && (
-                <div className="bg-white rounded-xl border border-stone-200 shadow-2xs overflow-hidden transition-all duration-300">
-                  <button
-                    type="button"
-                    onClick={() => setOpenBrideAccount(!openBrideAccount)}
-                    className="w-full p-4 flex items-center justify-between text-xs font-semibold text-stone-800 cursor-pointer select-none"
-                  >
-                    <span>신부측 계좌번호</span>
-                    <svg 
-                      className={`w-4 h-4 text-stone-400 transition-transform duration-300 transform ${openBrideAccount ? 'rotate-180' : ''}`}
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="1.6" 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round"
-                    >
-                      <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                  </button>
-
-                  <div 
-                    className={`grid transition-[grid-template-rows] duration-300 ease-out ${
-                      openBrideAccount ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-                    }`}
-                  >
-                    <div className="overflow-hidden">
-                      <div className="px-4 pb-2 pt-1 border-t border-stone-100 divide-y divide-stone-100">
-                        {brideAccounts.map((acc, idx) => (
-                          <div key={idx} className="flex items-center justify-between py-3 border-b border-stone-100 last:border-b-0 text-xs">
-                            <div className="space-y-0.5">
-                              <span className="font-medium text-stone-900 block">
-                                {acc.holder || acc.title}
-                              </span>
-                              <span className="font-mono text-stone-500 text-[11px] block">
-                                {acc.bank} {acc.number || acc.account_number}
-                              </span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => handleCopy(acc.number || acc.account_number, `${acc.holder || acc.title} 계좌번호가`)}
-                              className="px-3 py-1.5 bg-white border border-stone-200 hover:border-stone-400 rounded-lg text-[11px] font-medium text-stone-700 hover:text-black cursor-pointer shadow-2xs active:scale-95 transition-all"
-                            >
-                              복사하기
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                          {/* 예금주 간 구분선 (Line 152: border 0.5px solid #999999) */}
+                          {idx < displayAccounts.length - 1 && (
+                            <div style={{ borderTop: '0.5px solid #E5E5E5' }} className="w-full my-[18px]" />
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="py-8 text-center font-sans text-[12px] text-stone-400">
+                    등록된 계좌 정보가 없습니다.
+                  </div>
+                )}
+              </div>
             </div>
+
+            {/* 계좌 섹션 바닥 공통 구분선 */}
+            <div 
+              style={{ borderTop: '0.5px solid #999999' }}
+              className="w-[280.5px] max-w-[75%] mt-[55px] mb-[40px] mx-auto shrink-0" 
+            />
           </ScrollReveal>
         </section>
       )}

@@ -133,7 +133,7 @@ export default function CinematicTemplate({ invitation }) {
   const bridePhoto = images.bride_profile || extra.bride_profile_image || invitation?.bride_photo || (isSample ? '/samples/bride-solo.jpg' : '');
   const groomPhoto = images.groom_profile || extra.groom_profile_image || invitation?.groom_photo || (isSample ? '/samples/groom-solo.jpg' : '');
   const couplePhoto = images.couple_photo || images.couple || images.couple_profile || extra.couple_photo || (userGallery && userGallery.length > 0 ? userGallery[0] : null) || (isSample ? '/samples/couple-profile-01.jpg' : '');
-  const datePhoto = images.ending || (userGallery && userGallery.length > 1 ? userGallery[1] : null) || (isSample ? '/samples/ending-04-classic.jpg' : '');
+  const datePhoto = images.calendar || images.calendar_photo || images.ending || (userGallery && userGallery.length > 1 ? userGallery[1] : null) || (isSample ? '/samples/ending-04-classic.jpg' : '');
 
   // 성함 데이터 (하드코딩 더미 성함 완전 제거)
   const groomName = invitation?.groom_name || '';

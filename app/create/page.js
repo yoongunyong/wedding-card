@@ -119,6 +119,7 @@ const PREVIEW_FALLBACK = {
     bride_profile: '/samples/bride-profile-01.jpg',
     groom_profile: '/samples/groom-profile-01.jpg',
     ending: '/samples/ending-01-kiss.jpg',
+    calendar: '/samples/photo-04-garden-wine.jpg',
   },
   gallery_images: [
     '/samples/main-01-garden.jpg',
@@ -286,6 +287,9 @@ function CreateInvitationContent() {
   const [endingImageFile, setEndingImageFile] = useState(null);
   const [endingImagePreview, setEndingImagePreview] = useState('');
 
+  const [calendarImageFile, setCalendarImageFile] = useState(null);
+  const [calendarImagePreview, setCalendarImagePreview] = useState('');
+
   const [photoSharingImageFile, setPhotoSharingImageFile] = useState(null);
   const [photoSharingImagePreview, setPhotoSharingImagePreview] = useState('');
 
@@ -303,6 +307,7 @@ function CreateInvitationContent() {
   const coverImageInputRef = useRef(null);
   const coupleImageInputRef = useRef(null);
   const endingImageInputRef = useRef(null);
+  const calendarImageInputRef = useRef(null);
   const photoSharingImageInputRef = useRef(null);
   const groomPhotoInputRef = useRef(null);
   const bridePhotoInputRef = useRef(null);
@@ -652,6 +657,7 @@ function CreateInvitationContent() {
       setCoverImageFile(null); setCoverImagePreview('');
       setCoupleImageFile(null); setCoupleImagePreview('');
       setEndingImageFile(null); setEndingImagePreview('');
+      setCalendarImageFile(null); setCalendarImagePreview('');
       setPhotoSharingImageFile(null); setPhotoSharingImagePreview('');
       setGroomPhotoFile(null); setGroomPhotoPreview('');
       setBridePhotoFile(null); setBridePhotoPreview('');
@@ -661,6 +667,7 @@ function CreateInvitationContent() {
       if (coverImageInputRef.current) coverImageInputRef.current.value = '';
       if (coupleImageInputRef.current) coupleImageInputRef.current.value = '';
       if (endingImageInputRef.current) endingImageInputRef.current.value = '';
+      if (calendarImageInputRef.current) calendarImageInputRef.current.value = '';
       if (photoSharingImageInputRef.current) photoSharingImageInputRef.current.value = '';
       if (groomPhotoInputRef.current) groomPhotoInputRef.current.value = '';
       if (bridePhotoInputRef.current) bridePhotoInputRef.current.value = '';
@@ -1007,6 +1014,7 @@ function CreateInvitationContent() {
         cover: effectiveCoverImage,
         couple_profile: effectiveCoupleImage,
         ending: effectiveEndingImage,
+        calendar: calendarImagePreview || '',
         photo_sharing: photoSharingImagePreview || '',
         bride_profile: bridePhotoPreview || PREVIEW_FALLBACK.images.bride_profile,
         groom_profile: groomPhotoPreview || PREVIEW_FALLBACK.images.groom_profile,
@@ -1067,6 +1075,7 @@ function CreateInvitationContent() {
     coverImagePreview,
     coupleImagePreview,
     endingImagePreview,
+    calendarImagePreview,
     photoSharingImagePreview,
     groomPhotoPreview,
     bridePhotoPreview,
@@ -1211,6 +1220,12 @@ function CreateInvitationContent() {
         if (u) uploadedEndingUrl = u;
       }
 
+      let uploadedCalendarUrl = calendarImagePreview;
+      if (calendarImageFile) {
+        const u = await uploadFileToStorage(calendarImageFile, `${cleanSlug}/calendar`);
+        if (u) uploadedCalendarUrl = u;
+      }
+
       let uploadedPhotoSharingUrl = photoSharingImagePreview;
       if (photoSharingImageFile) {
         const u = await uploadFileToStorage(photoSharingImageFile, `${cleanSlug}/photo_sharing`);
@@ -1348,6 +1363,7 @@ function CreateInvitationContent() {
           cover: uploadedCoverUrl || uploadedMainUrl || '',
           couple_profile: uploadedCoupleUrl || uploadedMainUrl || '',
           ending: uploadedEndingUrl || uploadedMainUrl || '',
+          calendar: uploadedCalendarUrl || '',
           photo_sharing: uploadedPhotoSharingUrl || '',
           groom_profile: uploadedGroomUrl || '',
           bride_profile: uploadedBrideUrl || '',
@@ -3301,16 +3317,16 @@ function CreateInvitationContent() {
                   </div>
                 </div>
 
-                {/* 캘린더 스냅 사진 / 엔딩 사진 */}
+                {/* 엔딩 사진 (최하단 감사 인사용) */}
                 <div className="p-4.5 bg-white rounded-2xl border border-[#E5E8EB]">
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-xs font-semibold text-[#1E293B]">
-                      {formData.template_type === 'cinematic' ? '캘린더 감성 스냅 사진' : '엔딩 사진 (최하단 감사 인사용)'}
+                      엔딩 사진 (최하단 감사 인사용)
                     </label>
                     <span className="text-[10px] font-mono text-[#64748B]">선택</span>
                   </div>
                   <p className="text-[10px] text-[#94A3B8] mb-3">
-                    {formData.template_type === 'cinematic' ? '시안 4 DATE 캘린더 상단 정사각형 스냅용' : '미등록 시 메인 사진이 자동 적용됩니다.'}
+                    청첩장 최하단 감사 인사 영역에 들어가는 사진입니다. 미등록 시 메인 사진이 자동 적용됩니다.
                   </p>
                   <input
                     ref={endingImageInputRef}
@@ -3352,6 +3368,67 @@ function CreateInvitationContent() {
                         <button
                           type="button"
                           onClick={() => endingImageInputRef.current?.click()}
+                          className="px-3.5 py-2 bg-[#F1F5F9] hover:bg-[#F1F5F9] text-[#1E293B] border border-[#E5E8EB] text-xs font-medium rounded-xl cursor-pointer inline-flex items-center gap-1.5"
+                        >
+                          <span>+</span>
+                          <span>사진 선택하기</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 캘린더 감성 화보 사진 (Wedding Day 캘린더 상단용) */}
+                <div className="p-4.5 bg-white rounded-2xl border border-[#E5E8EB]">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-semibold text-[#1E293B]">
+                      캘린더 감성 화보 사진 (Wedding Day용)
+                    </label>
+                    <span className="text-[10px] font-mono text-[#64748B]">선택</span>
+                  </div>
+                  <p className="text-[10px] text-[#94A3B8] mb-3">
+                    예식일 달력(Wedding Day) 상단에 표시되는 감성 화보 사진입니다. 미등록 시 엔딩/갤러리 사진이 자동 적용됩니다.
+                  </p>
+                  <input
+                    ref={calendarImageInputRef}
+                    type="file"
+                    accept="image/*,.heic,.heif"
+                    onChange={(e) => validateAndSetImage(e.target.files?.[0], setCalendarImageFile, setCalendarImagePreview, '캘린더 사진', calendarImageInputRef)}
+                    className="hidden"
+                  />
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-16 h-16 bg-white rounded-xl overflow-hidden border border-[#E5E8EB] shrink-0 flex items-center justify-center shadow-xs">
+                      {calendarImagePreview ? (
+                        <img src={calendarImagePreview} alt="Calendar Photo" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-[9px] text-[#CBD5E1] font-mono">CALENDAR</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      {calendarImagePreview ? (
+                        <div className="space-y-1.5">
+                          <span className="text-[11px] text-emerald-600 font-medium block">● 등록됨</span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => calendarImageInputRef.current?.click()}
+                              className="px-3 py-1.5 bg-stone-900 text-white text-xs font-medium rounded-xl cursor-pointer"
+                            >
+                              변경
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleClearSingleImage(setCalendarImageFile, setCalendarImagePreview, calendarImageInputRef)}
+                              className="px-2.5 py-1.5 bg-rose-50 text-rose-600 border border-rose-200/60 text-xs font-medium rounded-xl cursor-pointer"
+                            >
+                              삭제
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => calendarImageInputRef.current?.click()}
                           className="px-3.5 py-2 bg-[#F1F5F9] hover:bg-[#F1F5F9] text-[#1E293B] border border-[#E5E8EB] text-xs font-medium rounded-xl cursor-pointer inline-flex items-center gap-1.5"
                         >
                           <span>+</span>

@@ -173,6 +173,7 @@ export default function SceneTemplate({ invitation }) {
   const mainImage = images.main || images.cover || invitation?.main_image || '';
   const groomPhoto = images.groom_profile || extra.groom_profile_image || (isSample ? mainImage : '');
   const bridePhoto = images.bride_profile || extra.bride_profile_image || (isSample ? mainImage : '');
+  const calendarPhoto = images.calendar || images.calendar_photo || mainImage;
 
   // 갤러리 이미지 파싱
   const galleryImages = useMemo(() => {
@@ -825,10 +826,10 @@ export default function SceneTemplate({ invitation }) {
         className="relative py-20 px-4 sm:px-6 text-center overflow-hidden border-t border-stone-200/60"
       >
         {/* 캘린더 배경: 영상(frame_009, 010) 1:1 일치 - 웨딩 사진이 가득 차게 블러되어 신랑·신부의 따뜻한 살구/베이지톤 실루엣이 캘린더 투명 격자 뒤로 확연히 투과됨 */}
-        {mainImage && (
+        {calendarPhoto && (
           <div 
             className="absolute inset-0 bg-cover bg-center opacity-85 pointer-events-none filter blur-[22px] scale-105"
-            style={{ backgroundImage: `url(${mainImage})` }}
+            style={{ backgroundImage: `url(${calendarPhoto})` }}
           />
         )}
         {/* 전체 부드러운 소프트 화이트 틴트 및 하단 다음 섹션으로 이어지는 자연스러운 페이드 */}

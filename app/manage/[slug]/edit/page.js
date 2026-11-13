@@ -185,6 +185,9 @@ function EditInvitationContent({ params }) {
   const [endingImageFile, setEndingImageFile] = useState(null);
   const [endingImagePreview, setEndingImagePreview] = useState('');
 
+  const [calendarImageFile, setCalendarImageFile] = useState(null);
+  const [calendarImagePreview, setCalendarImagePreview] = useState('');
+
   const [photoSharingImageFile, setPhotoSharingImageFile] = useState(null);
   const [photoSharingImagePreview, setPhotoSharingImagePreview] = useState('');
 
@@ -204,6 +207,7 @@ function EditInvitationContent({ params }) {
   const coverImageInputRef = useRef(null);
   const coupleImageInputRef = useRef(null);
   const endingImageInputRef = useRef(null);
+  const calendarImageInputRef = useRef(null);
   const photoSharingImageInputRef = useRef(null);
   const groomPhotoInputRef = useRef(null);
   const bridePhotoInputRef = useRef(null);
@@ -499,6 +503,7 @@ function EditInvitationContent({ params }) {
       setCoverImagePreview(imgs.cover || card.cover_image || card.extra_data?.cover_image || '');
       setCoupleImagePreview(imgs.couple_profile || imgs.couple || card.couple_image || '');
       setEndingImagePreview(imgs.ending || card.ending_image || '');
+      setCalendarImagePreview(imgs.calendar || card.calendar_image || card.extra_data?.calendar_image || '');
       setPhotoSharingImagePreview(imgs.photo_sharing || imgs.snap_photo || card.extra_data?.photo_sharing_image || '');
       setBridePhotoPreview(imgs.bride_profile || imgs.bride || card.bride_photo || '');
       setGroomPhotoPreview(imgs.groom_profile || imgs.groom || card.groom_photo || '');
@@ -948,6 +953,7 @@ function EditInvitationContent({ params }) {
         cover: coverImagePreview || mainImagePreview,
         couple_profile: coupleImagePreview || mainImagePreview,
         ending: endingImagePreview || mainImagePreview,
+        calendar: calendarImagePreview || '',
         photo_sharing: photoSharingImagePreview || '',
         bride_profile: bridePhotoPreview || '',
         groom_profile: groomPhotoPreview || '',
@@ -1008,6 +1014,7 @@ function EditInvitationContent({ params }) {
     coverImagePreview,
     coupleImagePreview,
     endingImagePreview,
+    calendarImagePreview,
     photoSharingImagePreview,
     groomPhotoPreview,
     bridePhotoPreview,
@@ -1078,6 +1085,13 @@ function EditInvitationContent({ params }) {
         setUploadStatus('엔딩 감사 사진을 업로드하고 있습니다...');
         const u = await uploadFileToStorage(endingImageFile, `${slug}/ending`);
         if (u) finalEndingUrl = u;
+      }
+
+      let finalCalendarUrl = calendarImagePreview;
+      if (calendarImageFile) {
+        setUploadStatus('캘린더 감성 화보 사진을 업로드하고 있습니다...');
+        const u = await uploadFileToStorage(calendarImageFile, `${slug}/calendar`);
+        if (u) finalCalendarUrl = u;
       }
 
       let finalPhotoSharingUrl = photoSharingImagePreview;
@@ -1219,6 +1233,7 @@ function EditInvitationContent({ params }) {
           cover: finalCoverUrl || finalMainUrl || '',
           couple_profile: finalCoupleUrl || finalMainUrl || '',
           ending: finalEndingUrl || finalMainUrl || '',
+          calendar: finalCalendarUrl || '',
           photo_sharing: finalPhotoSharingUrl || '',
           groom_profile: finalGroomUrl || '',
           bride_profile: finalBrideUrl || '',
@@ -2653,16 +2668,16 @@ function EditInvitationContent({ params }) {
                   </div>
                 </div>
 
-                {/* 캘린더 감성 스냅 사진 / 엔딩 사진 */}
+                {/* 엔딩 감사 사진 (최하단) */}
                 <div className="p-4.5 bg-white rounded-2xl border border-[#E5E8EB]">
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-xs font-semibold text-[#1E293B]">
-                      {formData.template_type === 'cinematic' ? '캘린더 감성 스냅 사진' : '엔딩 감사 사진 (최하단)'}
+                      엔딩 감사 사진 (최하단)
                     </label>
                     <span className="text-[10px] font-mono text-[#64748B]">선택</span>
                   </div>
                   <p className="text-[10px] text-[#94A3B8] mb-3">
-                    {formData.template_type === 'cinematic' ? '시안 4 DATE 캘린더 상단 정사각형 스냅용' : '미등록 시 메인 사진이 자동 적용됩니다.'}
+                    청첩장 최하단 감사 인사 영역에 들어가는 사진입니다. 미등록 시 메인 사진이 자동 적용됩니다.
                   </p>
                   <input
                     ref={endingImageInputRef}
@@ -2704,6 +2719,67 @@ function EditInvitationContent({ params }) {
                         <button
                           type="button"
                           onClick={() => endingImageInputRef.current?.click()}
+                          className="px-3.5 py-2 bg-[#F1F5F9] hover:bg-[#F1F5F9] text-[#1E293B] border border-[#E5E8EB] text-xs font-medium rounded-xl cursor-pointer inline-flex items-center gap-1.5"
+                        >
+                          <span>+</span>
+                          <span>사진 선택하기</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 캘린더 감성 화보 사진 (Wedding Day용) */}
+                <div className="p-4.5 bg-white rounded-2xl border border-[#E5E8EB]">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-semibold text-[#1E293B]">
+                      캘린더 감성 화보 사진 (Wedding Day용)
+                    </label>
+                    <span className="text-[10px] font-mono text-[#64748B]">선택</span>
+                  </div>
+                  <p className="text-[10px] text-[#94A3B8] mb-3">
+                    예식일 달력(Wedding Day) 상단에 표시되는 감성 화보 사진입니다. 미등록 시 엔딩/갤러리 사진이 자동 적용됩니다.
+                  </p>
+                  <input
+                    ref={calendarImageInputRef}
+                    type="file"
+                    accept="image/*,.heic,.heif"
+                    onChange={(e) => validateAndSetImage(e.target.files?.[0], setCalendarImageFile, setCalendarImagePreview, '캘린더 사진', calendarImageInputRef)}
+                    className="hidden"
+                  />
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-16 h-16 bg-white rounded-xl overflow-hidden border border-[#E5E8EB] shrink-0 flex items-center justify-center shadow-xs">
+                      {calendarImagePreview ? (
+                        <img src={calendarImagePreview} alt="Calendar" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-[9px] text-[#CBD5E1] font-mono">CALENDAR</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      {calendarImagePreview ? (
+                        <div className="space-y-1.5">
+                          <span className="text-[11px] text-emerald-600 font-medium block">● 등록됨</span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => calendarImageInputRef.current?.click()}
+                              className="px-3 py-1.5 bg-stone-900 text-white text-xs font-medium rounded-xl cursor-pointer"
+                            >
+                              변경
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleClearSingleImage(setCalendarImageFile, setCalendarImagePreview, calendarImageInputRef)}
+                              className="px-2.5 py-1.5 bg-rose-50 text-rose-600 border border-rose-200/60 text-xs font-medium rounded-xl cursor-pointer"
+                            >
+                              삭제
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => calendarImageInputRef.current?.click()}
                           className="px-3.5 py-2 bg-[#F1F5F9] hover:bg-[#F1F5F9] text-[#1E293B] border border-[#E5E8EB] text-xs font-medium rounded-xl cursor-pointer inline-flex items-center gap-1.5"
                         >
                           <span>+</span>

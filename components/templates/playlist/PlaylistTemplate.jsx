@@ -109,6 +109,7 @@ export default function PlaylistTemplate({ invitation }) {
   const groomPhoto = images.groom_profile || images.groom || extra.groom_profile_image || invitation?.groom_photo || (isSample ? '/samples/groom-profile-01.jpg' : '');
   const couplePhoto = images.couple_profile || images.couple || extra.couple_profile_image || (isSample ? '/samples/main-beach.jpg' : (mainImage || ''));
   const endingImage = images.ending || extra.ending_image || invitation?.ending_image || couplePhoto || mainImage;
+  const datePhoto = images.calendar || images.calendar_photo || images.ending || (galleryImages && galleryImages.length > 1 ? galleryImages[1] : null) || (isSample ? '/samples/ending-04-classic.jpg' : '');
 
   // 갤러리 이미지 안전 파싱 (문자열, JSON, Postgres 배열 형태 방어)
   const galleryImages = useMemo(() => {
@@ -936,115 +937,80 @@ export default function PlaylistTemplate({ invitation }) {
       </section>
 
       {/* ========================================================
-          04. 에디토리얼 캘린더 & 카운트다운
+          04. 플레이리스트 캘린더 (이미지 포함 + 미니멀 7열 달력, 카운트다운 제거)
           ======================================================== */}
       {hasWeddingDate && calendarData && (
-        <section className="w-full bg-[#FEFEFE] pt-[73.5px] pb-0 px-6 text-center select-none overflow-hidden">
+        <section className="w-full bg-[#FEFEFE] pt-16 sm:pt-20 pb-0 px-6 text-center select-none overflow-hidden">
           <ScrollReveal>
-            {/* Wedding Day 필기체 */}
-            <h2
-              className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal"
-              style={{ fontFamily: "'Weddingday Personal Use', 'Bickham Script Pro', cursive" }}
-            >
-              Wedding Day
-            </h2>
+            <div className="flex flex-col items-center">
+              {/* Wedding Day 필기체 (Playlist 서체: Weddingday Personal Use 70px -> 1x 35px, #292929, leading-[72%]) */}
+              <h2
+                className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal"
+                style={{ fontFamily: "'Weddingday Personal Use', 'Bickham Script Pro', cursive" }}
+              >
+                Wedding Day
+              </h2>
 
-            {/* 예식 일시 */}
-            <p className="mt-[34px] font-nanumsquare text-[14px] text-[#333333] text-center leading-none tracking-tight select-none">
-              {formattedDates.calendarHeaderDate || `${formattedDates.yearNumber}년 ${calendarData.month}월 ${calendarData.weddingDay}일 ${formattedDates.dowKo}요일 | ${formattedDates.timeStrKo}`}
-            </p>
-
-            {/* 가로 구분선 */}
-            <div className="w-[319.5px] max-w-[85%] mx-auto border-t border-[#999999] mt-[34.3px]" />
-
-            {/* 캘린더 그리드 */}
-            <div className="w-[301.3px] max-w-full mx-auto mt-[45px]">
-              <div className="grid grid-cols-7 text-center font-nanumsquare text-[12.6px] font-normal mb-[16px] select-none">
-                <span className="text-[#F17171]">일</span>
-                <span className="text-[#666666]">월</span>
-                <span className="text-[#666666]">화</span>
-                <span className="text-[#666666]">수</span>
-                <span className="text-[#666666]">목</span>
-                <span className="text-[#666666]">금</span>
-                <span className="text-[#666666]">토</span>
-              </div>
-
-              <div className="grid grid-cols-7 text-center font-sans text-[13.5px] select-none">
-                {Array.from({ length: calendarData.firstDayIndex }).map((_, i) => (
-                  <div key={`empty-${i}`} className="h-[36px]" />
-                ))}
-
-                {Array.from({ length: calendarData.totalDays }).map((_, i) => {
-                  const day = i + 1;
-                  const isSunday = (calendarData.firstDayIndex + i) % 7 === 0;
-                  const isWeddingDay = day === calendarData.weddingDay;
-
-                  return (
-                    <div key={day} className="flex items-center justify-center h-[36px]">
-                      {isWeddingDay ? (
-                        <span className="w-[33.3px] h-[34.65px] rounded-full bg-[#454545] text-[#F3F3F3] flex items-center justify-center font-normal shadow-xs">
-                          {day}
-                        </span>
-                      ) : (
-                        <span className={isSunday ? 'text-[#F17171]' : 'text-[#666666]'}>
-                          {day}
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* 카운트다운 타이머 */}
-            {showCountdownSection && (
-              <div className="mt-[46px] w-[301.3px] max-w-full mx-auto">
-                <div className="grid grid-cols-4 gap-[8px] text-center select-none">
-                  {[
-                    { label: 'DAYS', val: timeLeft.days },
-                    { label: 'HOURS', val: timeLeft.hours },
-                    { label: 'MINUTES', val: timeLeft.minutes },
-                    { label: 'SECONDS', val: timeLeft.seconds },
-                  ].map((item, idx) => (
-                    <div
-                      key={idx}
-                      style={{ boxShadow: '0px 3.5px 3.2px rgba(147, 147, 147, 0.22)' }}
-                      className="w-[69.3px] h-[69.3px] max-w-full bg-[#F6F5F5] rounded-[6.3px] flex flex-col items-center justify-center mx-auto"
-                    >
-                      <span className="font-bodoni text-[10.8px] text-[#666666] tracking-[0.04em] uppercase leading-none select-none">
-                        {item.label}
-                      </span>
-                      <span className="font-bodoni text-[22.5px] text-[#535353] leading-none tabular-nums font-normal select-none mt-[8px]">
-                        {String(item.val).padStart(2, '0')}
-                      </span>
-                    </div>
-                  ))}
+              {/* 흑백/감성 화보 (Figma image 763: 354px * 315px -> 1x 177px * 157.5px, mt-[30px]) */}
+              {datePhoto && (
+                <div className="mt-[30px] w-[177px] aspect-[354/315] overflow-hidden bg-stone-100 select-none shadow-xs">
+                  <img
+                    src={datePhoto}
+                    alt="Wedding Day Moment"
+                    className="w-full h-full object-cover object-center grayscale select-none"
+                    onError={(e) => {
+                      if (isSample && e.currentTarget.src !== '/samples/ending-04-classic.jpg') {
+                        e.currentTarget.src = '/samples/ending-04-classic.jpg';
+                      }
+                    }}
+                  />
                 </div>
+              )}
 
-                <p className="mt-[33.3px] font-nanumsquare text-[14px] text-[#333333] tracking-tight text-center select-none">
-                  {groomName && brideName ? (
-                    <>{groomName} <span className="text-[#F17171] mx-0.5">♥</span> {brideName}님의</>
-                  ) : coupleKo ? (
-                    <>{coupleKo}님의</>
-                  ) : (
-                    <>두 사람의</>
-                  )}{' '}결혼식이{' '}
-                  {timeLeft.isToday ? (
-                    <>오늘 <span className="text-[#F17171] font-medium">축복 속에</span> 시작됩니다.</>
-                  ) : timeLeft.isPast ? (
-                    <>결혼한 지 <span className="text-[#F17171] font-medium">{timeLeft.totalDays}일</span>째 되는 날입니다.</>
-                  ) : (
-                    <><span className="text-[#F17171] font-medium">{timeLeft.totalDays || 120}일</span> 남았습니다.</>
-                  )}
-                </p>
+              {/* 예식 일시 (Playlist 서체: NanumSquare Neo OTF 28px -> 1x 14px, #333333, mt-[48px]) */}
+              <p className="mt-[48px] font-nanumsquare text-[14px] text-[#333333] text-center leading-none tracking-tight select-none">
+                {formattedDates.calendarHeaderDate || `${formattedDates.yearNumber}년 ${calendarData.month}월 ${calendarData.weddingDay}일 ${formattedDates.dowKo}요일 | ${formattedDates.timeStrKo}`}
+              </p>
+
+              {/* 중앙: 7열 미니멀 숫자 달력 (요일 헤더 없이 숫자만 정렬, mt-[38px]) */}
+              <div className="mt-[38px] w-[255px] max-w-full mx-auto select-none font-sans">
+                <div className="grid grid-cols-7 gap-y-1.5 text-center items-center">
+                  {/* 1일 전 빈칸 */}
+                  {Array.from({ length: calendarData.firstDayIndex }).map((_, i) => (
+                    <div key={`empty-${i}`} className="w-[34px] h-[34px] mx-auto" />
+                  ))}
+
+                  {/* 날짜 숫자들 */}
+                  {Array.from({ length: calendarData.totalDays }).map((_, i) => {
+                    const day = i + 1;
+                    const isWedding = day === calendarData.weddingDay;
+                    const isSunday = (calendarData.firstDayIndex + i) % 7 === 0;
+
+                    return (
+                      <div key={day} className="flex items-center justify-center w-[34px] h-[34px] mx-auto">
+                        <span
+                          className={`w-[32px] h-[32px] flex items-center justify-center rounded-full text-[13.5px] leading-none transition-all duration-200 ${
+                            isWedding
+                              ? 'bg-[#454545] text-white font-medium shadow-xs'
+                              : isSunday
+                                ? 'text-[#E05353] font-normal'
+                                : 'text-[#666666] font-normal'
+                          }`}
+                        >
+                          {day}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            )}
 
-            {/* 구분선 */}
-            <div 
-              style={{ borderTop: '0.5px solid #999999' }}
-              className="w-[280.5px] max-w-[75%] mt-[73px] mb-[40px] mx-auto shrink-0" 
-            />
+              {/* 구분선 */}
+              <div 
+                style={{ borderTop: '0.5px solid #999999' }}
+                className="w-[280.5px] max-w-[75%] mt-[75px] mb-[40px] shrink-0 mx-auto" 
+              />
+            </div>
           </ScrollReveal>
         </section>
       )}

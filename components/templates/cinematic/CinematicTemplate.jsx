@@ -239,7 +239,7 @@ export default function CinematicTemplate({ invitation }) {
   const brideRelation = config.bride_relation || invitation?.bride_relation || '';
 
   // 날짜 계산 (샘플 모드일 때만 기본 데모 일시 사용, 실제 고객은 미입력 시 공백 처리)
-  const weddingDateStr = invitation?.wedding_date || (isSample ? '2026-12-24 15:00:00' : '');
+  const weddingDateStr = invitation?.wedding_date || (isSample ? '2027-03-27 23:00:00' : '');
   const targetDate = useMemo(() => {
     if (!weddingDateStr) return null;
     const normalized = typeof weddingDateStr === 'string' ? weddingDateStr.replace(' ', 'T') : weddingDateStr;
@@ -273,25 +273,30 @@ export default function CinematicTemplate({ invitation }) {
 
   // 포맷된 날짜 텍스트
   const formattedDates = useMemo(() => {
-    if (!targetDate) return { fullDateDot: '', monthScript: '', timeStr: '', timeStrShort: '', dowEn: '', fullEn: '' };
+    if (!targetDate) return { fullDateDot: '', monthScript: '', timeStr: '', timeStrShort: '', dowEn: '', fullEn: '', calendarHeaderDate: '' };
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const dowsEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dowsKo = ['일', '월', '화', '수', '목', '금', '토'];
 
     const y = targetDate.getFullYear();
     const m = targetDate.getMonth();
     const d = targetDate.getDate();
     const dow = dowsEn[targetDate.getDay()];
+    const dowKo = dowsKo[targetDate.getDay()];
     const monthStr = months[m];
 
     const hours = targetDate.getHours();
     const minutes = targetDate.getMinutes();
     const period = hours < 12 ? 'AM' : 'PM';
     const periodLower = hours < 12 ? 'am' : 'pm';
+    const periodKo = hours < 12 ? '오전' : '오후';
     const displayHour = hours % 12 === 0 ? 12 : hours % 12;
     const timeFormatted = `${period} ${displayHour}:${String(minutes).padStart(2, '0')}`;
     const timeFormattedShort = `${period} ${displayHour}:${String(minutes).padStart(2, '0')}`;
+    const timeFormattedKo = minutes === 0 ? `${periodKo} ${displayHour}시` : `${periodKo} ${displayHour}시 ${minutes}분`;
     const hourStr24 = String(hours).padStart(2, '0');
     const section1DateFormatted = `${y}.${monthStr.slice(0, 3)} ${d}. ${hourStr24}:${String(minutes).padStart(2, '0')} ${periodLower}`;
+    const calendarHeaderFormatted = `${y}년 ${m + 1}월 ${d}일 ${dowKo}요일 | ${timeFormattedKo}`;
 
     return {
       fullDateDot: `${y}.${String(m + 1).padStart(2, '0')}.${String(d).padStart(2, '0')}`,
@@ -301,6 +306,7 @@ export default function CinematicTemplate({ invitation }) {
       dowEn: dow.slice(0, 3).toUpperCase(),
       fullEn: `${dow}, ${monthStr} ${d}, ${y}`,
       section1DateStr: section1DateFormatted,
+      calendarHeaderDate: calendarHeaderFormatted,
     };
   }, [targetDate]);
 
@@ -891,10 +897,99 @@ export default function CinematicTemplate({ invitation }) {
       )}
 
       {/* ========================================================
-          04. WEDDING GALLERY (시네마틱 룩북 갤러리 - 가로 스와이프 화보)
+          04. WEDDING DAY & CALENDAR (Figma 섹션4: 780px * 1291px 1:1 정밀 매칭)
+          ======================================================== */}
+      {showCountdownSection && targetDate && calendarData && (
+        <section className={`select-none overflow-hidden text-center transition-colors duration-300 ${
+          isNightMode ? 'bg-[#1C1C1C]' : 'bg-[#FEFEFE]'
+        }`}>
+          <ScrollReveal>
+            <div className="pt-16 sm:pt-20 px-6 flex flex-col items-center">
+              {/* 상단 1: Wedding Day (Figma: Cormorant Garamond 50px -> 1x 25px, font-weight: 500, #292929, leading-[72%]) */}
+              <h2
+                className={`text-[25px] font-medium leading-none tracking-normal transition-colors duration-300 ${
+                  isNightMode ? 'text-stone-100' : 'text-[#292929]'
+                }`}
+                style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', serif" }}
+              >
+                Wedding Day
+              </h2>
+
+              {/* 상단 2: 흑백 사진 화보 (Figma image 763: 354px * 315px -> 1x 177px * 157.5px, mt-[30px]) */}
+              {datePhoto && (
+                <div className="mt-[30px] w-[177px] aspect-[354/315] overflow-hidden bg-stone-100 dark:bg-stone-900 select-none shadow-xs">
+                  <img
+                    src={datePhoto}
+                    alt="Wedding Day Moment"
+                    className="w-full h-full object-cover object-center grayscale select-none"
+                    onError={(e) => {
+                      if (isSample && e.currentTarget.src !== '/samples/ending-04-classic.jpg') {
+                        e.currentTarget.src = '/samples/ending-04-classic.jpg';
+                      }
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* 상단 3: 일시 텍스트 (Figma: NanumSquare Neo OTF 28px -> 1x 14px, #333333, mt-[48px]) */}
+              <p className={`mt-[48px] font-nanumsquare text-[14px] font-normal text-center leading-none tracking-tight select-none transition-colors duration-300 ${
+                isNightMode ? 'text-stone-300' : 'text-[#333333]'
+              }`}>
+                {formattedDates.calendarHeaderDate || `${calendarData.year}년 ${calendarData.month}월 ${calendarData.weddingDay}일 | ${formattedDates.timeStr}`}
+              </p>
+
+              {/* 중앙: 7열 미니멀 숫자 달력 (Figma: 너비 509.45px -> 1x 254.7px, mt-[38px], 요일 헤더 없이 숫자만 정렬) */}
+              <div className="mt-[38px] w-[255px] max-w-full mx-auto select-none font-sans">
+                <div className="grid grid-cols-7 gap-y-1.5 text-center items-center">
+                  {/* 1일 전 빈칸 */}
+                  {Array.from({ length: calendarData.firstDayIndex }).map((_, i) => (
+                    <div key={`empty-${i}`} className="w-[34px] h-[34px] mx-auto" />
+                  ))}
+
+                  {/* 날짜 숫자들 */}
+                  {Array.from({ length: calendarData.totalDays }).map((_, i) => {
+                    const day = i + 1;
+                    const isWedding = day === calendarData.weddingDay;
+                    const isSunday = (calendarData.firstDayIndex + i) % 7 === 0;
+
+                    return (
+                      <div key={day} className="flex items-center justify-center w-[34px] h-[34px] mx-auto">
+                        <span
+                          className={`w-[32px] h-[32px] flex items-center justify-center rounded-full text-[13.5px] leading-none transition-all duration-200 ${
+                            isWedding
+                              ? (isNightMode 
+                                  ? 'bg-stone-200 text-stone-950 font-medium shadow-xs' 
+                                  : 'bg-[#454545] text-white font-medium shadow-xs')
+                              : isSunday
+                                ? 'text-[#E05353] font-normal'
+                                : (isNightMode ? 'text-stone-300 font-normal' : 'text-[#666666] font-normal')
+                          }`}
+                        >
+                          {day}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 섹션 하단 구분선 (사용자 필수 지침: 항상 섹션이 끝날 때마다 구분선 적용 / Figma: mt-[75px] mb-[40px]) */}
+              <div 
+                style={{ borderTop: isNightMode ? '0.5px solid rgba(255, 255, 255, 0.15)' : '0.5px solid #999999' }}
+                className="w-[280.5px] max-w-[75%] mt-[75px] mb-[40px] shrink-0 mx-auto" 
+              />
+            </div>
+          </ScrollReveal>
+        </section>
+      )}
+
+      {/* ========================================================
+          05. WEDDING GALLERY (시네마틱 룩북 갤러리 - 가로 스와이프 화보)
           ======================================================== */}
       {showGallerySection && activeGalleryImages.length > 0 && (
-        <section className="py-18 sm:py-20 text-center border-t border-stone-200/60 dark:border-white/10">
+        <section className={`py-16 sm:py-20 text-center select-none transition-colors duration-300 ${
+          isNightMode ? 'bg-[#1C1C1C]' : 'bg-[#FEFEFE]'
+        }`}>
           <ScrollReveal>
             <h2 
               style={serifItalic}
@@ -953,92 +1048,12 @@ export default function CinematicTemplate({ invitation }) {
                 </div>
               ))}
             </div>
-          </ScrollReveal>
-        </section>
-      )}
 
-      {/* ========================================================
-          05. DATE & CALENDAR (미니멀 캘린더 & D-Day)
-          ======================================================== */}
-      {showCountdownSection && (
-        <section className="py-18 sm:py-20 px-5 text-center border-t border-stone-200/60 dark:border-white/10">
-          <ScrollReveal>
-            <h2 
-              style={serifItalic}
-              className={`text-xl tracking-[0.25em] uppercase mb-8 ${
-                isNightMode ? 'text-white' : 'text-stone-900'
-              }`}
-            >
-              DATE
-            </h2>
-
-            {/* 캘린더 상단 정사각형 감성 스냅 사진 (등록된 경우에만 노출) */}
-            {datePhoto && (
-              <div className="w-36 h-36 mx-auto rounded-none overflow-hidden mb-6 bg-stone-100 dark:bg-stone-900">
-                <img
-                  src={datePhoto}
-                  alt="Wedding Moment"
-                  className="w-full h-full object-cover grayscale"
-                />
-              </div>
-            )}
-
-            {/* 필기체 영문 월명 (December.) */}
-            <p 
-              style={scriptFont}
-              className={`text-4xl mb-6 ${
-                isNightMode ? 'text-white' : 'text-stone-900'
-              }`}
-            >
-              {formattedDates.monthScript}
-            </p>
-
-            {/* 7열 숫자 캘린더 (영상: 요일 헤더 없이 숫자만 정렬, 당일은 얇은 원형 선 테두리) */}
-            <div className="max-w-[260px] mx-auto mb-6 font-mono text-xs">
-              <div className={`grid grid-cols-7 gap-y-2 text-center ${
-                isNightMode ? 'text-stone-400' : 'text-stone-600'
-              }`}>
-                {/* 1일 전 빈칸 */}
-                {Array.from({ length: calendarData.firstDayIndex }).map((_, i) => (
-                  <div key={`empty-${i}`} className="w-8 h-8" />
-                ))}
-
-                {/* 날짜 */}
-                {Array.from({ length: calendarData.totalDays }).map((_, i) => {
-                  const day = i + 1;
-                  const isWedding = day === calendarData.weddingDay;
-                  return (
-                    <div key={day} className="flex items-center justify-center w-8 h-8 mx-auto">
-                      <span
-                        className={`w-7 h-7 flex items-center justify-center rounded-full text-xs transition-colors ${
-                          isWedding
-                            ? (isNightMode ? 'border border-white text-white font-semibold' : 'border border-stone-800 text-stone-900 font-semibold')
-                            : (isNightMode ? 'text-stone-300 hover:text-white' : 'text-stone-700 hover:text-stone-950')
-                        }`}
-                      >
-                        {day}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* 풀 영문 날짜 */}
-            <p 
-              style={serifItalic}
-              className="text-xs text-stone-500 tracking-wider mb-4"
-            >
-              {formattedDates.fullEn}
-            </p>
-
-            {/* D-Day 뱃지 */}
-            <div className={`inline-flex items-center gap-1 px-4 py-1.5 rounded-full font-mono text-xs font-medium shadow-2xs ${
-              isNightMode ? 'bg-stone-900 text-stone-200 border border-stone-800' : 'bg-stone-100 text-stone-800'
-            }`}>
-              <span>{timeLeft.isToday ? 'D-DAY' : timeLeft.isPast ? `D+${timeLeft.totalDays}` : `D-${timeLeft.totalDays}`}</span>
-              <span className="text-rose-500">♡</span>
-            </div>
+            {/* 섹션 하단 구분선 (사용자 필수 지침: 항상 섹션이 끝날 때마다 구분선 적용) */}
+            <div 
+              style={{ borderTop: isNightMode ? '0.5px solid rgba(255, 255, 255, 0.15)' : '0.5px solid #999999' }}
+              className="w-[280.5px] max-w-[75%] mt-[70px] mb-[10px] shrink-0 mx-auto" 
+            />
           </ScrollReveal>
         </section>
       )}

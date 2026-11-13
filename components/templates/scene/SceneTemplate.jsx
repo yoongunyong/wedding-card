@@ -7,7 +7,7 @@ import ScrollReveal from '@/components/ScrollReveal';
 import TodayConciergeCard from '@/components/TodayConciergeCard';
 import GuestPhotoSnapSection from '@/components/GuestPhotoSnapSection';
 import SceneInterviewModal from './SceneInterviewModal';
-import SceneGalleryModal from './SceneGalleryModal';
+import EditorialGalleryModal from '../editorial/EditorialGalleryModal';
 import SceneGuestbookDeleteModal from './SceneGuestbookDeleteModal';
 import { supabase } from '@/lib/supabase';
 import { getSafeKakaoShareImageUrl } from '@/lib/kakaoShare';
@@ -54,9 +54,7 @@ export default function SceneTemplate({ invitation }) {
   const [interviewModalOpen, setInterviewModalOpen] = useState(false);
   const [galleryModalOpen, setGalleryModalOpen] = useState(false);
   const [galleryModalIndex, setGalleryModalIndex] = useState(0);
-
-  // 2. 갤러리 더보기 상태 (기본 9장 노출 ➔ 더보기 시 전체 노출)
-  const [galleryExpanded, setGalleryExpanded] = useState(false);
+  const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
 
   // 3. 계좌 아코디언 토글 (기본 펼쳐진 상태)
   const [openGroomAccount, setOpenGroomAccount] = useState(true);
@@ -188,10 +186,6 @@ export default function SceneTemplate({ invitation }) {
     }
   }, [invitation?.gallery_images]);
 
-  // 상단 와이드 2장 & 하단 그리드 분리
-  const widePhotos = galleryImages.slice(0, 2);
-  const gridPhotos = galleryImages.slice(2);
-  const visibleGridPhotos = galleryExpanded ? gridPhotos : gridPhotos.slice(0, 9);
 
   // 날짜 계산 (실제 고객 미입력 시 캘린더 미노출, 샘플 모드일 때만 예시 날짜 제공)
   const weddingDateStr = invitation?.wedding_date 
@@ -970,73 +964,76 @@ export default function SceneTemplate({ invitation }) {
       )}
 
       {/* ========================================================
-          05. GALLERY (와이드 2장 전면 + 3열 빈틈없는 그리드 타일)
-          - 영상 frame_018, frame_019 1:1 일치
-          - 사진들 간의 간격/빈틈 0px(no-gap) 및 화면 가로폭 100% 밀착 룩
-          - 더보기 클릭 시 숨겨진 사진들이 스르륵 아래로 펼쳐지는 확장 모션
+          05. GALLERY (대형 메인 컷 + 8개 썸네일 그리드 + 더보기 모달 연동)
           ======================================================== */}
       {config.show_gallery !== false && galleryImages.length > 0 && (
-        <section className="py-20 px-0 bg-white border-t border-stone-100">
+        <section className="py-20 px-6 bg-white border-t border-stone-100 text-center select-none overflow-hidden">
           <ScrollReveal>
-            {/* 상단 와이드 화보 2장 (영상 frame_018, frame_019: 간격 0px로 위아래 밀착) */}
-            {widePhotos.length > 0 && (
-              <div className="space-y-0 mb-0">
-                {widePhotos.map((img, idx) => (
-                  <div
-                    key={`wide-${idx}`}
-                    onClick={() => {
-                      setGalleryModalIndex(idx);
-                      setGalleryModalOpen(true);
-                    }}
-                    className="w-full aspect-[4/3] rounded-none overflow-hidden bg-stone-100 cursor-pointer group"
-                  >
-                    <img
-                      src={img}
-                      alt={`Wedding Wide ${idx + 1}`}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-102"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+            <span className="font-cormorant italic text-3xl sm:text-4xl text-[#222222] block mb-2 font-light tracking-wide">
+              Gallery
+            </span>
+            <h2 className="font-serif text-base sm:text-lg text-stone-900 font-medium mb-8">
+              사진 갤러리
+            </h2>
 
-            {/* 3열 정사각 썸네일 그리드 (영상 frame_019: 빈틈/간격 0px로 타일처럼 딱 붙어 있는 룩) */}
-            {gridPhotos.length > 0 && (
-              <div className="grid grid-cols-3 gap-0">
-                {visibleGridPhotos.map((img, idx) => {
-                  const realIndex = idx + widePhotos.length;
-                  return (
-                    <div
-                      key={`grid-${idx}`}
-                      onClick={() => {
-                        setGalleryModalIndex(realIndex);
-                        setGalleryModalOpen(true);
-                      }}
-                      className="aspect-square overflow-hidden bg-stone-100 cursor-pointer group"
+            {/* 선택된 큰 이미지 */}
+            <div 
+              onClick={() => {
+                setGalleryModalIndex(activeGalleryIndex);
+                setGalleryModalOpen(true);
+              }}
+              className="w-[333px] max-w-[calc(100vw-48px)] aspect-[666/830] mx-auto mb-[17px] overflow-hidden bg-stone-100 cursor-pointer shadow-[0_2px_12px_rgba(0,0,0,0.04)] active:scale-[0.99] transition-transform"
+            >
+              <img
+                src={galleryImages[activeGalleryIndex] || galleryImages[0]}
+                alt={`선택된 갤러리 사진 ${activeGalleryIndex + 1}`}
+                className="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.01]"
+              />
+            </div>
+
+            {/* 썸네일 그리드: 4개 + 밑에 4개 = 총 8개 나열 */}
+            {galleryImages.length > 1 && (
+              <div className="w-[333px] max-w-[calc(100vw-48px)] mx-auto mb-[32px] sm:mb-[40px]">
+                <div className="grid grid-cols-4 gap-[13.8px]">
+                  {galleryImages.slice(0, 8).map((src, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setActiveGalleryIndex(idx)}
+                      className={`relative aspect-square overflow-hidden rounded-none cursor-pointer transition-all ${
+                        idx === activeGalleryIndex
+                          ? 'ring-2 ring-[#333333] opacity-100'
+                          : 'opacity-70 hover:opacity-100'
+                      }`}
+                      aria-label={`갤러리 사진 ${idx + 1}번 보기`}
                     >
                       <img
-                        src={img}
-                        alt={`Wedding Thumb ${idx + 1}`}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        src={src}
+                        alt={`Thumbnail ${idx + 1}`}
+                        className="w-full h-full object-cover object-center"
                       />
-                    </div>
-                  );
-                })}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
-            {/* 더보기 버튼 (영상 00:46 및 frame_020과 1:1 일치하는 밑줄 텍스트 스타일) */}
-            {gridPhotos.length > 9 && !galleryExpanded && (
-              <div className="text-center pt-8 pb-2">
-                <button
-                  type="button"
-                  onClick={() => setGalleryExpanded(true)}
-                  className="text-xs text-stone-600 underline underline-offset-4 hover:text-stone-900 transition-colors cursor-pointer bg-transparent border-none py-1 select-none"
-                >
-                  더보기
-                </button>
-              </div>
-            )}
+            {/* 하단 더보기 버튼 (클릭 시 전체화면 갤러리 모달 오픈) */}
+            <button
+              type="button"
+              onClick={() => {
+                setGalleryModalIndex(activeGalleryIndex);
+                setGalleryModalOpen(true);
+              }}
+              style={{
+                boxShadow: '0px 2px 2.5px rgba(0, 0, 0, 0.07)',
+              }}
+              className="w-[163.5px] h-[38px] rounded-full bg-[#F4F3F1] hover:bg-[#eceae7] border border-[#D3D3D3] text-[#666666] flex items-center justify-center mx-auto active:scale-[0.98] transition-all cursor-pointer select-none"
+            >
+              <span className="font-nanumsquare text-[14px] font-normal tracking-tight">
+                더보기
+              </span>
+            </button>
           </ScrollReveal>
         </section>
       )}
@@ -1741,11 +1738,10 @@ export default function SceneTemplate({ invitation }) {
 
       {/* 사진 라이트박스 뷰어 모달 */}
       {galleryModalOpen && (
-        <SceneGalleryModal
-          isOpen={galleryModalOpen}
-          onClose={() => setGalleryModalOpen(false)}
+        <EditorialGalleryModal
           images={galleryImages}
           initialIndex={galleryModalIndex}
+          onClose={() => setGalleryModalOpen(false)}
         />
       )}
 

@@ -28,9 +28,8 @@ export default function CinematicTemplate({ invitation }) {
   const [showGuestbookModal, setShowGuestbookModal] = useState(false);
   const [galleryModalOpen, setGalleryModalOpen] = useState(false);
   const [galleryModalIndex, setGalleryModalIndex] = useState(0);
-
-  // 3. 갤러리 탭 (Our Story vs Wedding Photo)
-  const [galleryTab, setGalleryTab] = useState('story');
+  const [selectedGalleryIndex, setSelectedGalleryIndex] = useState(0);
+  const [isGalleryExpanded, setIsGalleryExpanded] = useState(false);
 
   // 4. 축의금 계좌 탭 (신랑측에게 vs 신부측에게)
   const [userAccountTab, setUserAccountTab] = useState(null);
@@ -81,7 +80,7 @@ export default function CinematicTemplate({ invitation }) {
     };
   }, [isModalPreview, showIntro, showIntroSection]);
 
-  // 갤러리 이미지 안전 파싱 & Our Story / Wedding Photo 컬렉션 분리
+  // 갤러리 이미지 안전 파싱 (고객 등록 사진 최우선, 샘플 모드 시 데모 갤러리 제공)
   const rawGallery = invitation?.gallery_images;
   const userGallery = useMemo(() => {
     if (Array.isArray(rawGallery) && rawGallery.length > 0) return rawGallery;
@@ -94,38 +93,20 @@ export default function CinematicTemplate({ invitation }) {
     return null;
   }, [rawGallery]);
 
-  const defaultOurStoryImages = useMemo(() => isSample ? [
+  const defaultGalleryImages = useMemo(() => isSample ? [
+    '/samples/garden-couple.jpg',
+    '/samples/bride-solo.jpg',
+    '/samples/groom-solo.jpg',
+    '/samples/photo-11-rose-hug.jpg',
+    '/samples/photo-01-walk.jpg',
+    '/samples/photo-13-ring-laugh.jpg',
     '/samples/cinematic-cover.jpg',
     '/samples/ending-02-stairs.jpg',
-    '/samples/garden-couple.jpg',
-    '/samples/photo-13-ring-laugh.jpg',
-    '/samples/scene-cover.jpg',
   ] : [], [isSample]);
 
-  const defaultWeddingPhotoImages = useMemo(() => isSample ? [
-    '/samples/editorial-cover.jpg',
-    '/samples/photo-01-walk.jpg',
-    '/samples/photo-11-rose-hug.jpg',
-    '/samples/cinematic-cover.jpg',
-    '/samples/garden-couple.jpg',
-  ] : [], [isSample]);
-
-  const ourStoryImages = useMemo(() => {
-    if (!userGallery) return defaultOurStoryImages;
-    if (userGallery.length <= 2) return userGallery;
-    const mid = Math.ceil(userGallery.length / 2);
-    return userGallery.slice(0, mid);
-  }, [userGallery, defaultOurStoryImages]);
-
-  const weddingPhotoImages = useMemo(() => {
-    if (!userGallery) return defaultWeddingPhotoImages;
-    if (userGallery.length <= 2) return userGallery;
-    const mid = Math.ceil(userGallery.length / 2);
-    return userGallery.slice(mid);
-  }, [userGallery, defaultWeddingPhotoImages]);
-
-  const activeGalleryImages = galleryTab === 'wedding' ? weddingPhotoImages : ourStoryImages;
-  const galleryImages = userGallery || (isSample ? [...defaultOurStoryImages, ...defaultWeddingPhotoImages] : []);
+  const galleryImages = userGallery && userGallery.length > 0 ? userGallery : defaultGalleryImages;
+  const currentMainImage = galleryImages[selectedGalleryIndex] || galleryImages[0] || '';
+  const displayedThumbnails = isGalleryExpanded ? galleryImages : galleryImages.slice(0, 4);
 
   // 대표 이미지 매핑 (고객 등록 사진 최우선 매핑, 미등록 시 타인의 사진이 노출되지 않도록 제어)
   const mainImage = images.main || images.cover || invitation?.main_image || (isSample ? '/samples/cinematic-cover.jpg' : '');
@@ -986,74 +967,110 @@ export default function CinematicTemplate({ invitation }) {
       {/* ========================================================
           05. WEDDING GALLERY (시네마틱 룩북 갤러리 - 가로 스와이프 화보)
           ======================================================== */}
-      {showGallerySection && activeGalleryImages.length > 0 && (
-        <section className={`py-16 sm:py-20 text-center select-none transition-colors duration-300 ${
+      {/* ========================================================
+          05. WEDDING GALLERY (Figma 섹션5: 780px * 1622px 1:1 정밀 매칭)
+          ======================================================== */}
+      {showGallerySection && galleryImages.length > 0 && (
+        <section className={`pt-16 sm:pt-20 pb-0 text-center select-none transition-colors duration-300 ${
           isNightMode ? 'bg-[#1C1C1C]' : 'bg-[#FEFEFE]'
         }`}>
           <ScrollReveal>
-            <h2 
-              style={serifItalic}
-              className={`text-xl tracking-[0.25em] uppercase mb-6 ${
-                isNightMode ? 'text-white' : 'text-stone-900'
-              }`}
-            >
-              WEDDING GALLERY
-            </h2>
+            <div className="flex flex-col items-center px-4 sm:px-6">
+              {/* 상단 1: gallery (Figma: Cormorant Garamond 500, 50px -> 1x 25px, #292929, leading-[72%]) */}
+              <h2
+                className={`text-[25px] font-medium leading-none tracking-normal transition-colors duration-300 ${
+                  isNightMode ? 'text-stone-100' : 'text-[#292929]'
+                }`}
+                style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', serif" }}
+              >
+                gallery
+              </h2>
 
-            {/* 갤러리 탭 버튼 (Our Story / Wedding Photo) - 테두리 없는 미니멀 텍스트 탭 */}
-            <div className="flex items-center justify-center gap-8 font-serif text-xs uppercase tracking-widest mb-8">
-              <button
-                type="button"
-                onClick={() => setGalleryTab('story')}
-                className={`transition-colors cursor-pointer ${
-                  galleryTab === 'story'
-                    ? (isNightMode ? 'text-white font-semibold' : 'text-stone-900 font-semibold')
-                    : (isNightMode ? 'text-stone-500 hover:text-stone-300 font-light' : 'text-stone-400 hover:text-stone-600 font-light')
+              {/* 상단 2: 사진 갤러리 (Figma: NanumSquare Neo OTF 400, 36px -> 1x 18px, #292929, mt-[24px]) */}
+              <h3
+                className={`mt-[24px] font-nanumsquare text-[18px] font-normal leading-none tracking-tight transition-colors duration-300 ${
+                  isNightMode ? 'text-stone-200' : 'text-[#292929]'
                 }`}
               >
-                Our Story
-              </button>
-              <button
-                type="button"
-                onClick={() => setGalleryTab('wedding')}
-                className={`transition-colors cursor-pointer ${
-                  galleryTab === 'wedding'
-                    ? (isNightMode ? 'text-white font-semibold' : 'text-stone-900 font-semibold')
-                    : (isNightMode ? 'text-stone-500 hover:text-stone-300 font-light' : 'text-stone-400 hover:text-stone-600 font-light')
-                }`}
-              >
-                Wedding Photo
-              </button>
-            </div>
+                사진 갤러리
+              </h3>
 
-            {/* 영상 1:1 일치 가로 스와이프 화보 캐러셀 (Horizontal Peek-Preview Carousel) */}
-            <div className={`w-full overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory flex gap-3 px-6 py-2 ${
-              activeGalleryImages.length === 1 ? 'justify-center' : ''
-            }`}>
-              {activeGalleryImages.map((src, idx) => (
-                <div
-                  key={`${galleryTab}-${idx}`}
+              {/* 중앙: 선택된 갤러리 (큰 이미지) (Figma: 너비 666px * 높이 830px -> 1x 333px * 415px, aspect-[666/830], mt-[53px]) */}
+              {currentMainImage && (
+                <div 
                   onClick={() => {
-                    setGalleryModalIndex(idx);
+                    setGalleryModalIndex(selectedGalleryIndex);
                     setGalleryModalOpen(true);
                   }}
-                  className="shrink-0 w-[80vw] max-w-[320px] aspect-[3/4] snap-center rounded-none overflow-hidden bg-stone-100 dark:bg-stone-900 cursor-pointer select-none active:scale-[0.99] transition-transform"
+                  className="mt-[48px] sm:mt-[53px] w-[333px] max-w-[calc(100vw-48px)] aspect-[666/830] mx-auto overflow-hidden bg-stone-100 dark:bg-stone-900 select-none shadow-xs cursor-pointer active:scale-[0.99] transition-transform"
                 >
                   <img
-                    src={src}
-                    alt={`웨딩 갤러리 ${idx + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-102"
-                    loading="lazy"
+                    src={currentMainImage}
+                    alt={`선택된 갤러리 사진 ${selectedGalleryIndex + 1}`}
+                    className="w-full h-full object-cover object-center transition-all duration-300"
                   />
                 </div>
-              ))}
-            </div>
+              )}
 
-            {/* 섹션 하단 구분선 (사용자 필수 지침: 항상 섹션이 끝날 때마다 구분선 적용) */}
-            <div 
-              style={{ borderTop: isNightMode ? '0.5px solid rgba(255, 255, 255, 0.15)' : '0.5px solid #999999' }}
-              className="w-[280.5px] max-w-[75%] mt-[70px] mb-[10px] shrink-0 mx-auto" 
-            />
+              {/* 하단 1: 작은 이미지 (썸네일 그리드: 4개 + 밑에 4개 = 총 8개 나열) */}
+              {galleryImages.length > 0 && (
+                <div className="mt-[17px] w-[333px] max-w-[calc(100vw-48px)] mx-auto">
+                  <div className="grid grid-cols-4 gap-[13.8px]">
+                    {galleryImages.slice(0, 8).map((src, idx) => {
+                      const isSelected = idx === selectedGalleryIndex;
+                      return (
+                        <button
+                          key={`thumb-${idx}`}
+                          type="button"
+                          onClick={() => setSelectedGalleryIndex(idx)}
+                          className={`relative aspect-square overflow-hidden rounded-none cursor-pointer transition-all duration-200 ${
+                            isSelected
+                              ? (isNightMode 
+                                  ? 'ring-2 ring-stone-100 opacity-100' 
+                                  : 'ring-2 ring-stone-900 opacity-100')
+                              : 'opacity-70 hover:opacity-100'
+                          }`}
+                        >
+                          <img
+                            src={src}
+                            alt={`갤러리 썸네일 ${idx + 1}`}
+                            className="w-full h-full object-cover object-center"
+                            loading="lazy"
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* 하단 2: 더보기 버튼 영역 (클릭 시 전체화면 갤러리 모달 오픈) */}
+              <button
+                type="button"
+                onClick={() => {
+                  setGalleryModalIndex(selectedGalleryIndex);
+                  setGalleryModalOpen(true);
+                }}
+                style={{
+                  boxShadow: isNightMode ? 'none' : '0px 2px 2.5px rgba(0, 0, 0, 0.07)',
+                }}
+                className={`mt-[25px] w-[163.5px] h-[38px] rounded-full flex items-center justify-center cursor-pointer transition-all active:scale-[0.98] select-none mx-auto ${
+                  isNightMode
+                    ? 'bg-[#2A2A2A] hover:bg-[#333333] border border-stone-700 text-stone-300'
+                    : 'bg-[#F4F3F1] hover:bg-[#eceae7] border border-[#D3D3D3] text-[#666666]'
+                }`}
+              >
+                <span className="font-nanumsquare text-[14px] font-normal tracking-tight">
+                  더보기
+                </span>
+              </button>
+
+              {/* 섹션 하단 구분선 (사용자 필수 지침: 항상 섹션이 끝날 때마다 구분선 적용 / Figma: mt-[55px] mb-[40px]) */}
+              <div 
+                style={{ borderTop: isNightMode ? '0.5px solid rgba(255, 255, 255, 0.15)' : '0.5px solid #999999' }}
+                className="w-[280.5px] max-w-[75%] mt-[55px] mb-[40px] shrink-0 mx-auto" 
+              />
+            </div>
           </ScrollReveal>
         </section>
       )}
@@ -1428,7 +1445,7 @@ export default function CinematicTemplate({ invitation }) {
       )}
       {galleryModalOpen && (
         <EditorialGalleryModal
-          images={activeGalleryImages}
+          images={galleryImages}
           initialIndex={galleryModalIndex}
           onClose={() => setGalleryModalOpen(false)}
         />

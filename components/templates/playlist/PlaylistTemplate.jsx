@@ -1048,54 +1048,53 @@ export default function PlaylistTemplate({ invitation }) {
               />
             </div>
 
-            {/* 썸네일 그리드 */}
+            {/* 썸네일 그리드: 4개 + 밑에 4개 = 총 8개 나열 */}
             {galleryImages.length > 1 && (
-              <div className={`w-[333px] max-w-full mx-auto flex items-center mb-[40.6px] ${
-                galleryImages.length >= 4 ? 'justify-between' : 'justify-center gap-[14px]'
-              }`}>
-                {galleryImages.slice(0, 4).map((src, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setActiveGalleryIndex(idx)}
-                    className={`w-[72.9px] h-[72.9px] shrink-0 aspect-square overflow-hidden cursor-pointer transition-all ${
-                      idx === activeGalleryIndex
-                        ? 'ring-1 ring-[#333333] opacity-100'
-                        : 'opacity-70 hover:opacity-100'
-                    }`}
-                    aria-label={`갤러리 사진 ${idx + 1}번 보기`}
-                  >
-                    <img
-                      src={src}
-                      alt={`Thumbnail ${idx + 1}`}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        if (isSample && e.currentTarget.src !== '/samples/main-03-playlist.jpg') {
-                          e.currentTarget.src = '/samples/main-03-playlist.jpg';
-                        }
-                      }}
-                    />
-                  </button>
-                ))}
+              <div className="w-[333px] max-w-[calc(100vw-48px)] mx-auto mb-[32px] sm:mb-[40px]">
+                <div className="grid grid-cols-4 gap-[13.8px]">
+                  {galleryImages.slice(0, 8).map((src, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setActiveGalleryIndex(idx)}
+                      className={`relative aspect-square overflow-hidden rounded-none cursor-pointer transition-all ${
+                        idx === activeGalleryIndex
+                          ? 'ring-2 ring-[#333333] opacity-100'
+                          : 'opacity-70 hover:opacity-100'
+                      }`}
+                      aria-label={`갤러리 사진 ${idx + 1}번 보기`}
+                    >
+                      <img
+                        src={src}
+                        alt={`Thumbnail ${idx + 1}`}
+                        className="w-full h-full object-cover object-center"
+                        onError={(e) => {
+                          if (isSample && e.currentTarget.src !== '/samples/main-03-playlist.jpg') {
+                            e.currentTarget.src = '/samples/main-03-playlist.jpg';
+                          }
+                        }}
+                      />
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
-            {/* 하단 타원형 룩북 버튼 */}
+            {/* 하단 더보기 버튼 (클릭 시 전체화면 갤러리 모달 오픈) */}
             <button
               type="button"
               onClick={() => {
-                setGalleryModalIndex(0);
+                setGalleryModalIndex(activeGalleryIndex);
                 setGalleryModalOpen(true);
               }}
-              style={{ borderRadius: '50%' }}
-              className="w-[166px] h-[39.5px] border border-[#999999] hover:border-[#333333] flex items-center justify-center gap-1 mx-auto hover:bg-stone-50/80 active:scale-[0.98] transition-all cursor-pointer select-none"
+              style={{
+                boxShadow: '0px 2px 2.5px rgba(0, 0, 0, 0.07)',
+              }}
+              className="w-[163.5px] h-[38px] rounded-full bg-[#F4F3F1] hover:bg-[#eceae7] border border-[#D3D3D3] text-[#666666] flex items-center justify-center mx-auto active:scale-[0.98] transition-all cursor-pointer select-none"
             >
-              <span className="font-bodoni font-bold text-[9.5px] text-[#333333] tracking-[0.02em] uppercase leading-none">
-                VIEW THE LOOKBOOK
+              <span className="font-nanumsquare text-[14px] font-normal tracking-tight">
+                더보기
               </span>
-              <svg width="11" height="7" viewBox="0 0 11 7" fill="none" className="shrink-0 text-[#333333] ml-0.5">
-                <path d="M0.5 3.5H9.5M9.5 3.5L7 1M9.5 3.5L7 6" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
             </button>
 
             {/* 구분선 */}

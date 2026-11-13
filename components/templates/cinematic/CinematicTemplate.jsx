@@ -339,41 +339,43 @@ export default function CinematicTemplate({ invitation }) {
   const venueFullName = [invitation?.venue_name, config?.venue_hall || invitation?.venue_hall].filter(Boolean).join(' ');
   const venueAddress = invitation?.venue_address || '';
 
-  // 안내 카드 리스트 (미등록 시 실제 고객 청첩장에서는 미노출)
+  // 안내 사항 카드 리스트 (Figma 섹션 8 Notice 매칭 - 미등록 시 실제 고객 청첩장에서는 미노출)
+  const rawInfoNotices = invitation?.info_notices;
+  const mealInfo = extra.meal_info;
+  const shuttleInfo = extra.shuttle_info;
   const infoCards = useMemo(() => {
-    if (Array.isArray(invitation?.info_notices) && invitation.info_notices.length > 0) {
-      return invitation.info_notices;
-    }
+    if (Array.isArray(rawInfoNotices) && rawInfoNotices.length > 0) return rawInfoNotices;
+    try {
+      const parsed = typeof rawInfoNotices === 'string' ? JSON.parse(rawInfoNotices) : rawInfoNotices;
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch {}
+
+    const legacy = [];
+    if (mealInfo) legacy.push({ title: '식사 안내', time: '', content: mealInfo });
+    if (shuttleInfo) legacy.push({ title: '셔틀버스 안내', time: '', content: shuttleInfo });
+    if (legacy.length > 0) return legacy;
+
     if (isSample) {
       return [
         {
-          title: 'Special Moment',
-          subtitle: 'Special Moment',
-          content: '평생 간직할 소중한 추억을 만들어가는 시간입니다.\n웨딩의 모든 순간이 특별한 기억으로 남을 것입니다.',
-          image: '/samples/cinematic-cover.jpg',
+          title: '식사 안내',
+          time: 'PM 12:00 ~ 16:00',
+          content: '식사는 12시부터 가능합니다.\n맛있게 식사해주세요!',
         },
         {
-          title: 'Celebration Time',
-          subtitle: 'Celebration Time',
-          content: '사랑하는 사람들과 함께 축하하며 즐거운 시간을 보내세요.\n여러분의 참석이 저희에게 큰 기쁨이 됩니다.',
-          image: '/samples/garden-couple.jpg',
+          title: '주차장 안내',
+          time: '',
+          content: '주차는 14시부터 가능합니다.\n편하게 오셔서 주차하세요!',
         },
         {
-          title: 'Dining Experience',
-          subtitle: 'Dining Experience',
-          content: '정성껏 준비한 다양한 메뉴를 맛보시며 편안한 식사 시간을 가지세요.\n맛있는 음식과 함께 즐거운 대화를 나누실 수 있습니다.',
-          image: '/samples/photo-10-orchid-night.jpg',
-        },
-        {
-          title: 'Reception Party',
-          subtitle: 'Wedding Ceremony',
-          content: '아름다운 예식장에서 진행되는 특별한 순간을 함께해주세요.\n소중한 분들과 함께하는 행복한 시간이 될 것입니다.',
-          image: '/samples/scene-cover.jpg',
+          title: '사진부스 안내',
+          time: 'PM 12:00 ~ 16:00',
+          content: '사진 부스는 14시부터 운영됩니다.\n편하게 오셔서 촬영해주세요!',
         },
       ];
     }
     return [];
-  }, [invitation?.info_notices, isSample]);
+  }, [rawInfoNotices, mealInfo, shuttleInfo, isSample]);
 
   // 계좌 분리 (미등록 시 실제 고객 청첩장에서는 계좌 섹션 미노출)
   const allAccounts = useMemo(() => {
@@ -1352,84 +1354,7 @@ export default function CinematicTemplate({ invitation }) {
         </section>
       )}
 
-      {/* 안내 카드 캐러셀 (고객이 등록한 카드가 있는 경우에만 보조적으로 노출) */}
-      {infoCards.length > 0 && (
-        <section className="py-18 sm:py-20 px-5 text-center border-t border-stone-200/60 dark:border-white/10">
-          <ScrollReveal>
-            <h2 
-              style={serifItalic}
-              className={`text-xl tracking-[0.25em] uppercase mb-8 ${
-                isNightMode ? 'text-white' : 'text-stone-900'
-              }`}
-            >
-              INFORMATION
-            </h2>
 
-            {/* 카드 캐러셀 */}
-            <div
-              ref={infoContainerRef}
-              onScroll={(e) => {
-                const scrollLeft = e.target.scrollLeft;
-                const idx = Math.round(scrollLeft / 280);
-                if (idx >= 0 && idx < infoCards.length && idx !== activeInfoIdx) {
-                  setActiveInfoIdx(idx);
-                }
-              }}
-              className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-4 py-2"
-            >
-              {infoCards.map((card, idx) => (
-                <div
-                  key={idx}
-                  className="snap-start shrink-0 w-[270px] sm:w-[290px] text-center flex flex-col justify-between"
-                >
-                  <div>
-                    {/* 상단 가로 흑백 사진 */}
-                    {card.image && (
-                      <div className="w-full aspect-[16/9] rounded-none overflow-hidden mb-4 bg-stone-100 dark:bg-stone-900">
-                        <img
-                          src={card.image}
-                          alt={card.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-
-                    <h3 
-                      style={serifItalic}
-                      className={`text-sm mb-2 font-medium tracking-wide ${
-                        isNightMode ? 'text-white' : 'text-stone-900'
-                      }`}
-                    >
-                      {card.subtitle || card.title}
-                    </h3>
-                    <p className={`text-xs leading-relaxed font-light whitespace-pre-line break-keep ${
-                      isNightMode ? 'text-stone-400' : 'text-stone-600'
-                    }`}>
-                      {card.content}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* 인디케이터 도트 */}
-            {infoCards.length > 1 && (
-              <div className="flex items-center justify-center gap-1.5 mt-6">
-                {infoCards.map((_, idx) => (
-                  <span
-                    key={idx}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
-                      idx === activeInfoIdx
-                        ? (isNightMode ? 'w-4 bg-white' : 'w-4 bg-stone-800')
-                        : (isNightMode ? 'w-1.5 bg-stone-700' : 'w-1.5 bg-stone-300')
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
-          </ScrollReveal>
-        </section>
-      )}
 
       {/* ========================================================
           07. ACCOUNT (마음 전하실 곳 - Figma 섹션 7 매칭)
@@ -1589,6 +1514,153 @@ export default function CinematicTemplate({ invitation }) {
             </div>
 
             {/* 계좌 섹션 바닥 공통 구분선 (인수인계서 필수 탑재 규격: w-[280.5px], borderTop: 0.5px solid #999999) */}
+            <div 
+              style={{ 
+                borderTop: isNightMode ? '0.5px solid rgba(255, 255, 255, 0.15)' : '0.5px solid #999999' 
+              }}
+              className="w-[280.5px] max-w-[75%] mt-[55px] mb-[40px] mx-auto shrink-0" 
+            />
+          </ScrollReveal>
+        </section>
+      )}
+
+      {/* ========================================================
+          08. NOTICE (안내 사항 - Figma 섹션 매칭)
+          - 피그마 10339px~11586px (780x1247 -> 1x 390x623.5 1:1 정밀 매칭)
+          ======================================================== */}
+      {infoCards.length > 0 && (
+        <section 
+          id="notice-section" 
+          className={`w-full pt-[69.5px] pb-0 text-center select-none overflow-hidden transition-colors duration-300 ${
+            isNightMode ? 'bg-[#1E1E1E]' : 'bg-[#FEFEFE]'
+          }`}
+        >
+          <ScrollReveal>
+            {/* 상단 1: Notice 영문 (Figma: Cormorant Garamond 500 50px -> 1x 25px, #292929, leading-[72%]) */}
+            <h2 
+              style={{ fontFamily: "'Cormorant Garamond', serif" }}
+              className={`text-[25px] font-medium leading-[72%] text-center select-none tracking-normal ${
+                isNightMode ? 'text-white' : 'text-[#292929]'
+              }`}
+            >
+              Notice
+            </h2>
+
+            {/* 상단 2: 안내 사항 (Figma: NanumSquare Neo OTF 400 36px -> 1x 18px, leading-[72%], mt-[36.5px]) */}
+            <p className={`font-nanumsquare font-normal text-[18px] leading-[72%] text-center mt-[36.5px] tracking-tight ${
+              isNightMode ? 'text-[#E5E5E5]' : 'text-[#292929]'
+            }`}>
+              안내 사항
+            </p>
+
+            {/* 안내 사항 여러개 박스 캐러셀 (Figma: 너비 1169px -> 1x 584.5px, 1개 박스 373x473 -> 1x 186.5x236.5, top: 10807px, mt-[52px]) */}
+            <div className="relative mt-[52px] w-full">
+              <div
+                ref={infoContainerRef}
+                onScroll={(e) => {
+                  const scrollLeft = e.target.scrollLeft;
+                  const cardWidthWithGap = 186.5 + 13; // 199.5px
+                  const idx = Math.round(scrollLeft / cardWidthWithGap);
+                  if (idx >= 0 && idx < infoCards.length && idx !== activeInfoIdx) {
+                    setActiveInfoIdx(idx);
+                  }
+                }}
+                className="flex gap-[13px] overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-[calc(50%-93.25px)] py-2"
+              >
+                {infoCards.map((card, idx) => {
+                  const numStr = String(idx + 1).padStart(2, '0');
+                  const timeText = card.time || card.sub_title || card.subtitle || '';
+
+                  return (
+                    <div
+                      key={idx}
+                      className={`snap-center shrink-0 w-[186.5px] h-[236.5px] border box-border flex flex-col justify-start items-center text-center pt-[28px] pb-[20px] px-3.5 transition-colors duration-300 ${
+                        isNightMode
+                          ? 'bg-[#252525] border-[#3D3D3D]'
+                          : 'bg-[#F3F3F3] border-[#DCDCDC]'
+                      }`}
+                    >
+                      {/* 번호 (Figma: 01, 02 등 - NanumSquare Neo 26px -> 1x 13px, leading-[72%], #292929) */}
+                      <p className={`font-nanumsquare font-normal text-[13px] leading-[72%] ${
+                        isNightMode ? 'text-[#D4D4D4]' : 'text-[#292929]'
+                      }`}>
+                        {numStr}
+                      </p>
+
+                      {/* 제목 (Figma: 주차장 안내 등 - NanumSquare Neo 26px -> 1x 13px, leading-[72%], mt-[16px], #292929) */}
+                      <h3 className={`font-nanumsquare font-normal text-[13px] leading-[72%] mt-[16px] tracking-tight ${
+                        isNightMode ? 'text-white' : 'text-[#292929]'
+                      }`}>
+                        {card.title}
+                      </h3>
+
+                      {/* 제목과 본문 사이 구분선 (Figma: 255px -> 1x 127.5px, border: 0.5px solid #999999, mt-[12px] mb-[14px]) */}
+                      <div 
+                        style={{ 
+                          borderTop: isNightMode ? '0.5px solid rgba(255, 255, 255, 0.2)' : '0.5px solid #999999' 
+                        }}
+                        className="w-[127.5px] max-w-full my-[13px] shrink-0" 
+                      />
+
+                      {/* 시간 알약 태그 (옵션: PM 12:00 ~ 16:00 등) */}
+                      {timeText ? (
+                        <div className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-full border mb-[10px] shrink-0 ${
+                          isNightMode ? 'border-stone-600 bg-stone-800/60 text-stone-300' : 'border-[#C4C4C4] bg-white/70 text-[#666666]'
+                        }`}>
+                          <span className="font-nanumsquare font-normal text-[9.5px] leading-none tracking-tight">
+                            {timeText}
+                          </span>
+                        </div>
+                      ) : null}
+
+                      {/* 본문 (Figma: NanumSquare Neo 20px -> 1x 10px, leading-[145%], #333333) */}
+                      <p className={`font-nanumsquare font-normal text-[10px] leading-[145%] text-center whitespace-pre-line break-keep px-1 ${
+                        isNightMode ? 'text-[#C7C7C7]' : 'text-[#333333]'
+                      }`}>
+                        {card.content}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* 페이지 점선 인디케이터 도트 (Figma 1:1: 9x9 -> 1x 4.5x4.5, 선택: #585858, 미선택: #D9D9D9, 간격: gap-[6px], top: 11363px, mt-[36px]) */}
+              {infoCards.length > 1 && (
+                <div className="flex items-center justify-center gap-[6px] mt-[36px]">
+                  {infoCards.map((_, idx) => {
+                    const isSelected = idx === activeInfoIdx;
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        aria-label={`안내사항 ${idx + 1}번으로 이동`}
+                        onClick={() => {
+                          if (infoContainerRef.current) {
+                            const cardWidthWithGap = 186.5 + 13;
+                            infoContainerRef.current.scrollTo({
+                              left: idx * cardWidthWithGap,
+                              behavior: 'smooth',
+                            });
+                            setActiveInfoIdx(idx);
+                          }
+                        }}
+                        className="p-1 cursor-pointer flex items-center justify-center transition-all select-none"
+                      >
+                        <span
+                          className={`w-[4.5px] h-[4.5px] rounded-full block transition-colors duration-200 ${
+                            isSelected
+                              ? (isNightMode ? 'bg-white' : 'bg-[#585858]')
+                              : (isNightMode ? 'bg-[#555555]' : 'bg-[#D9D9D9]')
+                          }`}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* 안내사항 섹션 바닥 공통 구분선 (인수인계서 필수 탑재 규격: w-[280.5px], borderTop: 0.5px solid #999999) */}
             <div 
               style={{ 
                 borderTop: isNightMode ? '0.5px solid rgba(255, 255, 255, 0.15)' : '0.5px solid #999999' 

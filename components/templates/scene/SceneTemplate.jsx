@@ -61,6 +61,7 @@ export default function SceneTemplate({ invitation }) {
 
   // 4. 정보 카드 캐러셀 인덱스
   const [infoCardIndex, setInfoCardIndex] = useState(0);
+  const noticeContainerRef = useRef(null);
 
   // 5. 방명록 상태 & 페이징 & 삭제 모달
   const [guestbookList, setGuestbookList] = useState([]);
@@ -285,29 +286,43 @@ export default function SceneTemplate({ invitation }) {
   }, [invitation?.transportation, isSample]);
 
   // 안내 정보 카드 목록 (포토부스, 전세버스 등 - 실제 고객이 없으면 빈 배열)
+  const rawInfoNotices = invitation?.info_notices;
+  const mealInfo = extra.meal_info;
+  const shuttleInfo = extra.shuttle_info;
   const infoNotices = useMemo(() => {
-    const raw = invitation?.info_notices;
-    if (Array.isArray(raw) && raw.length > 0) return raw;
+    if (Array.isArray(rawInfoNotices) && rawInfoNotices.length > 0) return rawInfoNotices;
     try {
-      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      const parsed = typeof rawInfoNotices === 'string' ? JSON.parse(rawInfoNotices) : rawInfoNotices;
       if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     } catch {}
+
+    const legacy = [];
+    if (mealInfo) legacy.push({ title: '식사 안내', time: '', content: mealInfo });
+    if (shuttleInfo) legacy.push({ title: '셔틀버스 안내', time: '', content: shuttleInfo });
+    if (legacy.length > 0) return legacy;
 
     // 샘플 모드일 때만 기본 영상 속 안내 카드 제공 (실제 고객에겐 미입력 시 숨김)
     if (isSample) {
       return [
         {
-          title: '포토부스',
-          content: '행복한 날을 기록할 수 있도록 본식 당일 로비에 포토부스가 설치됩니다.\n따뜻한 미소와 함께 축복의 메시지를 남겨주시면 소중히 간직하도록 하겠습니다.',
+          title: '식사 안내',
+          time: 'PM 12:00 ~ 16:00',
+          content: '식사는 12시부터 가능합니다.\n맛있게 식사해주세요!',
         },
         {
-          title: '전세버스',
-          content: '귀한 발걸음을 해주시는 하객분들의 편의를 위해 전세버스를 준비하였습니다.\n출발 시간: 오전 8시\n탑승 장소: 목포역 광장 앞\n연락처: 010-1234-5678',
+          title: '주차장 안내',
+          time: '',
+          content: '주차는 14시부터 가능합니다.\n편하게 오셔서 주차하세요!',
+        },
+        {
+          title: '사진부스 안내',
+          time: 'PM 12:00 ~ 16:00',
+          content: '사진 부스는 14시부터 운영됩니다.\n편하게 오셔서 촬영해주세요!',
         },
       ];
     }
     return [];
-  }, [invitation?.info_notices, isSample]);
+  }, [rawInfoNotices, mealInfo, shuttleInfo, isSample]);
 
   // RSVP 전세버스 탑승 여부 질문 노출 조건 (전세버스를 운영하지 않는 일반 신랑신부에게 불필요한 버스 질문이 나가지 않도록 방지)
   const showBusOption = useMemo(() => {
@@ -1510,56 +1525,120 @@ export default function SceneTemplate({ invitation }) {
       )}
 
       {/* ========================================================
-          09. INFORMATION (안내 카드 슬라이더)
-          - 영상 01:10 ~ 01:13 및 frame_036 1:1 일치
+          09. NOTICE (안내 사항 - Figma 캐러셀 규격 매칭)
           ======================================================== */}
       {infoNotices.length > 0 && (
-        <section className="py-20 px-6 bg-white border-t border-stone-100">
+        <section 
+          id="notice-section" 
+          className="w-full bg-white pt-[69.5px] pb-0 text-center select-none overflow-hidden border-t border-stone-100"
+        >
           <ScrollReveal>
-            <div className="text-center mb-8">
-              <span className="font-cormorant italic text-3xl sm:text-4xl text-[#222222] block mb-2 font-light tracking-wide">
-                Information
-              </span>
-            </div>
+            {/* 상단 1: Notice 영문 (시안 5 고유 폰트: Cormorant Garamond Italic) */}
+            <span className="font-cormorant italic text-3xl sm:text-4xl text-[#222222] block font-light tracking-wide text-center">
+              Notice
+            </span>
 
-            <div className="max-w-[360px] mx-auto relative bg-[#F9F9F9] rounded-none sm:rounded-xl p-8 text-center shadow-2xs">
-              <div className="flex items-center justify-between mb-4 text-stone-400">
-                <button
-                  type="button"
-                  onClick={() => setInfoCardIndex((prev) => (prev > 0 ? prev - 1 : infoNotices.length - 1))}
-                  className="p-1 hover:text-stone-800 cursor-pointer text-sm font-mono active:scale-90 transition-transform"
-                >
-                  〈
-                </button>
-                <h3 className="text-sm font-bold text-stone-900 tracking-tight transition-opacity duration-300">
-                  {infoNotices[infoCardIndex]?.title}
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setInfoCardIndex((prev) => (prev < infoNotices.length - 1 ? prev + 1 : 0))}
-                  className="p-1 hover:text-stone-800 cursor-pointer text-sm font-mono active:scale-90 transition-transform"
-                >
-                  〉
-                </button>
+            {/* 상단 2: 안내 사항 (시안 5 고유 폰트: Serif) */}
+            <h2 className="font-serif text-base sm:text-lg text-stone-900 font-medium text-center mt-[28px] tracking-tight">
+              안내 사항
+            </h2>
+
+            {/* 안내 사항 여러개 박스 캐러셀 (1개 박스 186.5x236.5) */}
+            <div className="relative mt-[52px] w-full">
+              <div
+                ref={noticeContainerRef}
+                onScroll={(e) => {
+                  const scrollLeft = e.target.scrollLeft;
+                  const cardWidthWithGap = 186.5 + 13;
+                  const idx = Math.round(scrollLeft / cardWidthWithGap);
+                  if (idx >= 0 && idx < infoNotices.length && idx !== infoCardIndex) {
+                    setInfoCardIndex(idx);
+                  }
+                }}
+                className="flex gap-[13px] overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-[calc(50%-93.25px)] py-2"
+              >
+                {infoNotices.map((card, idx) => {
+                  const numStr = String(idx + 1).padStart(2, '0');
+                  const timeText = card.time || card.sub_title || card.subtitle || '';
+
+                  return (
+                    <div
+                      key={idx}
+                      className="snap-center shrink-0 w-[186.5px] h-[236.5px] border box-border flex flex-col justify-start items-center text-center pt-[28px] pb-[20px] px-3.5 bg-[#F3F3F3] border-[#DCDCDC]"
+                    >
+                      {/* 번호 (시안 5 폰트: Serif) */}
+                      <p className="font-serif font-normal text-[13px] leading-[72%] text-stone-800">
+                        {numStr}
+                      </p>
+
+                      {/* 제목 (시안 5 폰트: Serif) */}
+                      <h3 className="font-serif font-medium text-[13px] leading-[72%] mt-[16px] tracking-tight text-stone-900">
+                        {card.title}
+                      </h3>
+
+                      {/* 중간 구분선 */}
+                      <div 
+                        style={{ borderTop: '0.5px solid #999999' }}
+                        className="w-[127.5px] max-w-full my-[13px] shrink-0" 
+                      />
+
+                      {/* 시간 알약 태그 (옵션) */}
+                      {timeText ? (
+                        <div className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full border border-[#C4C4C4] bg-white/70 text-stone-600 mb-[10px] shrink-0">
+                          <span className="font-sans font-normal text-[9.5px] leading-none tracking-tight">
+                            {timeText}
+                          </span>
+                        </div>
+                      ) : null}
+
+                      {/* 본문 (시안 5 폰트: Sans) */}
+                      <p className="font-sans font-light text-[10px] leading-[145%] text-stone-700 text-center whitespace-pre-line break-keep px-1">
+                        {card.content}
+                      </p>
+                    </div>
+                  );
+                })}
               </div>
 
-              <p className="text-xs text-stone-600 leading-relaxed font-light whitespace-pre-line break-keep min-h-[60px] flex items-center justify-center transition-opacity duration-300">
-                {infoNotices[infoCardIndex]?.content}
-              </p>
-
+              {/* 페이지 점선 인디케이터 도트 (1개일 때 숨김, 4.5x4.5, 선택 #585858, 미선택 #D9D9D9) */}
               {infoNotices.length > 1 && (
-                <div className="flex justify-center gap-1.5 mt-5">
-                  {infoNotices.map((_, i) => (
-                    <span
-                      key={i}
-                      className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                        infoCardIndex === i ? 'bg-stone-800 w-3' : 'bg-stone-300'
-                      }`}
-                    />
-                  ))}
+                <div className="flex items-center justify-center gap-[6px] mt-[36px]">
+                  {infoNotices.map((_, idx) => {
+                    const isSelected = idx === infoCardIndex;
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        aria-label={`안내사항 ${idx + 1}번으로 이동`}
+                        onClick={() => {
+                          if (noticeContainerRef.current) {
+                            const cardWidthWithGap = 186.5 + 13;
+                            noticeContainerRef.current.scrollTo({
+                              left: idx * cardWidthWithGap,
+                              behavior: 'smooth',
+                            });
+                            setInfoCardIndex(idx);
+                          }
+                        }}
+                        className="p-1 cursor-pointer flex items-center justify-center select-none"
+                      >
+                        <span
+                          className={`w-[4.5px] h-[4.5px] rounded-full block transition-colors duration-200 ${
+                            isSelected ? 'bg-[#585858]' : 'bg-[#D9D9D9]'
+                          }`}
+                        />
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
+
+            {/* 바닥 공통 구분선 */}
+            <div 
+              style={{ borderTop: '0.5px solid #999999' }}
+              className="w-[280.5px] max-w-[75%] mt-[55px] mb-[45px] mx-auto shrink-0" 
+            />
           </ScrollReveal>
         </section>
       )}

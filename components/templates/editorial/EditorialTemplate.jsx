@@ -88,6 +88,7 @@ export default function EditorialTemplate({ invitation }) {
 
 
   const [activeNoticeIndex, setActiveNoticeIndex] = useState(0);
+  const noticeContainerRef = useRef(null);
   const noticeTouchStartX = useRef(null);
 
   // 6. 데이터 언패킹 & fallback
@@ -413,14 +414,40 @@ export default function EditorialTemplate({ invitation }) {
   const setActiveAccountTab = setUserAccountTab;
 
   // 정보 카드 목록 (동적 배열 및 레거시 extra_data 완벽 호환)
+  const rawInfoNotices = invitation?.info_notices;
+  const mealInfo = extra.meal_info;
+  const shuttleInfo = extra.shuttle_info;
   const infoCards = useMemo(() => {
-    const raw = invitation?.info_notices;
-    if (Array.isArray(raw) && raw.length > 0) return raw;
+    if (Array.isArray(rawInfoNotices) && rawInfoNotices.length > 0) return rawInfoNotices;
+    try {
+      const parsed = typeof rawInfoNotices === 'string' ? JSON.parse(rawInfoNotices) : rawInfoNotices;
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch {}
     const legacy = [];
-    if (extra.meal_info) legacy.push({ title: '식사 안내', content: extra.meal_info });
-    if (extra.shuttle_info) legacy.push({ title: '셔틀버스 안내', content: extra.shuttle_info });
-    return legacy;
-  }, [invitation?.info_notices, extra.meal_info, extra.shuttle_info]);
+    if (mealInfo) legacy.push({ title: '식사 안내', time: '', content: mealInfo });
+    if (shuttleInfo) legacy.push({ title: '셔틀버스 안내', time: '', content: shuttleInfo });
+    if (legacy.length > 0) return legacy;
+    if (isSample) {
+      return [
+        {
+          title: '식사 안내',
+          time: 'PM 12:00 ~ 16:00',
+          content: '식사는 12시부터 가능합니다.\n맛있게 식사해주세요!',
+        },
+        {
+          title: '주차장 안내',
+          time: '',
+          content: '주차는 14시부터 가능합니다.\n편하게 오셔서 주차하세요!',
+        },
+        {
+          title: '사진부스 안내',
+          time: 'PM 12:00 ~ 16:00',
+          content: '사진 부스는 14시부터 운영됩니다.\n편하게 오셔서 촬영해주세요!',
+        },
+      ];
+    }
+    return [];
+  }, [rawInfoNotices, mealInfo, shuttleInfo, isSample]);
 
   // 교통편 목록 (동적 배열 및 레거시 extra_data 완벽 호환)
   const transportationList = useMemo(() => {
@@ -1364,178 +1391,122 @@ export default function EditorialTemplate({ invitation }) {
         );
       })()}
 
-      {/* 8. Notice 안내사항 (Figma 섹션 10339px~11518px: 780x1179 -> 1x 390x589.5 1:1 정밀 매칭) */}
-      {(infoCards.length > 0 || isSample) && (() => {
-        const sampleNotices = [
-          {
-            title: '식사 안내',
-            content: `소중한 시간을 내어 함께해 주시는 분들을 위해\n감사의 마음을 담아 식사를 준비하였습니다.\n맛있게 드시고 편안한 시간 보내시기 바랍니다.`,
-          },
-        ];
-        const displayNotices = infoCards.length > 0 ? infoCards : (isSample ? sampleNotices : []);
-        if (displayNotices.length === 0) return null;
+      {/* 8. Notice 안내사항 (Figma 캐러셀 규격 매칭) */}
+      {(infoCards.length > 0 || isSample) && (
+        <section 
+          id="notice-section" 
+          className="w-full bg-[#FEFEFE] pt-[69.5px] pb-0 text-center select-none overflow-hidden"
+        >
+          <ScrollReveal>
+            {/* 상단 1: Notice 필기체 (시안 2 기존 폰트: Weddingday Personal Use) */}
+            <h2 className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal">
+              Notice
+            </h2>
 
-        const currentNotice = displayNotices[activeNoticeIndex % displayNotices.length] || displayNotices[0];
-        const hasMultiple = displayNotices.length > 1;
+            {/* 상단 2: 안내 사항 (시안 2 기존 폰트: NanumSquare Neo) */}
+            <p className="font-nanumsquare font-normal text-[18px] text-[#292929] leading-[72%] text-center mt-[36.5px] tracking-tight">
+              안내 사항
+            </p>
 
-        return (
-          <section className="w-full bg-[#FEFEFE] pt-[61px] pb-0 text-center select-none overflow-hidden">
-            <ScrollReveal>
-              {/* 상단 1: Notice 필기체 (Figma: Weddingday Personal Use 70px -> 1x 35px, #292929, leading-[72%]) */}
-              <h2 className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal">
-                Notice
-              </h2>
-
-              {/* 상단 2: 안내 사항 (Figma: NanumSquare Neo OTF 36px -> 1x 18px, #292929, mt-[34.5px]) */}
-              <p className="font-nanumsquare font-normal text-[18px] text-[#292929] leading-none text-center mt-[34.5px] tracking-tight">
-                안내 사항
-              </p>
-
-              {/* 중앙: 필름 스트립 프레임 영역 (Figma: 10822px, bg #DDE7F3, mt-[39px], 실측 1x 305px 파스텔 블루 필름) */}
-              <div 
-                className="w-full bg-[#DDE7F3] pt-[12px] pb-[14px] mt-[39px] relative overflow-hidden flex flex-col items-center select-none touch-pan-y"
-                onTouchStart={(e) => {
-                  noticeTouchStartX.current = e.touches[0].clientX;
-                }}
-                onTouchEnd={(e) => {
-                  if (noticeTouchStartX.current === null) return;
-                  const deltaX = e.changedTouches[0].clientX - noticeTouchStartX.current;
-                  noticeTouchStartX.current = null;
-                  if (hasMultiple) {
-                    if (deltaX < -35) {
-                      setActiveNoticeIndex((prev) => (prev + 1) % displayNotices.length);
-                    } else if (deltaX > 35) {
-                      setActiveNoticeIndex((prev) => (prev - 1 + displayNotices.length) % displayNotices.length);
-                    }
+            {/* 안내 사항 여러개 박스 캐러셀 (1개 박스 186.5x236.5) */}
+            <div className="relative mt-[52px] w-full">
+              <div
+                ref={noticeContainerRef}
+                onScroll={(e) => {
+                  const scrollLeft = e.target.scrollLeft;
+                  const cardWidthWithGap = 186.5 + 13;
+                  const idx = Math.round(scrollLeft / cardWidthWithGap);
+                  if (idx >= 0 && idx < infoCards.length && idx !== activeNoticeIndex) {
+                    setActiveNoticeIndex(idx);
                   }
                 }}
+                className="flex gap-[13px] overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-[calc(50%-93.25px)] py-2"
               >
-                {/* 상단 필름 바: 2, DESIGNED BY ATELIER DE MUKIRU (Figma: NanumSquare Neo 800 10px #FFFFFF), 3 */}
-                <div className="w-full max-w-[390px] px-6 flex justify-between items-center text-white select-none mb-[8px]">
-                  <span className="font-nanumsquare text-[11px] font-extrabold w-[24px] text-center">2</span>
-                  <span className="font-nanumsquare font-extrabold text-[10px] text-white tracking-[0.05em] leading-none uppercase text-center">
-                    DESIGNED BY ATELIER DE MUKIRU
-                  </span>
-                  <span className="font-nanumsquare text-[11px] font-extrabold w-[24px] text-center">3</span>
-                </div>
+                {infoCards.map((card, idx) => {
+                  const numStr = String(idx + 1).padStart(2, '0');
+                  const timeText = card.time || card.sub_title || card.subtitle || '';
 
-                {/* 상단 퍼포레이션 구멍 열 (Figma: 너비 38px 높이 46px -> 1x 19x23px, #F5F5F5, radius 8.1px -> 4.05px) */}
-                <div className="w-full max-w-[390px] px-3 flex justify-between items-center select-none">
-                  {[...Array(10)].map((_, i) => (
-                    <div key={i} className="w-[19px] h-[23px] bg-[#F5F5F5] rounded-[4px] shrink-0" />
-                  ))}
-                </div>
+                  return (
+                    <div
+                      key={idx}
+                      className="snap-center shrink-0 w-[186.5px] h-[236.5px] border box-border flex flex-col justify-start items-center text-center pt-[28px] pb-[20px] px-3.5 bg-[#F3F3F3] border-[#DCDCDC]"
+                    >
+                      {/* 번호 (시안 2 폰트: NanumSquare Neo) */}
+                      <p className="font-nanumsquare font-normal text-[13px] leading-[72%] text-[#292929]">
+                        {numStr}
+                      </p>
 
-                {/* 중앙 프레임 영역 (좌측 잘린 프레임 + 중앙 메인 카드 + 우측 잘린 프레임) */}
-                <div className="w-full max-w-[390px] flex items-center justify-center gap-[12px] my-[13px] select-none">
-                  {/* 좌측 프레임 가장자리 (여러 장일 땐 클릭 시 이전 카드로 이동) */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (hasMultiple) {
-                        setActiveNoticeIndex((prev) => (prev - 1 + displayNotices.length) % displayNotices.length);
-                      }
-                    }}
-                    aria-label="이전 안내사항 보기"
-                    className={`w-[24px] h-[210px] bg-white rounded-r-[8px] opacity-90 shrink-0 flex items-center justify-center transition-all ${
-                      hasMultiple
-                        ? 'cursor-pointer hover:opacity-100 hover:w-[26px] active:scale-95 text-[#999999] hover:text-[#333333]'
-                        : 'cursor-default pointer-events-none'
-                    }`}
-                  >
-                    {hasMultiple && (
-                      <span className="text-[12px] font-bold select-none opacity-60">‹</span>
-                    )}
-                  </button>
+                      {/* 제목 (시안 2 폰트: NanumSquare Neo) */}
+                      <h3 className="font-nanumsquare font-normal text-[13px] leading-[72%] mt-[16px] tracking-tight text-[#292929]">
+                        {card.title}
+                      </h3>
 
-                  {/* 중앙 메인 안내 카드 (터치 스와이프 지원 및 부드러운 전환) */}
-                  <div 
-                    key={activeNoticeIndex}
-                    className="w-[276px] min-h-[210px] bg-white rounded-[10px] py-[28px] px-[18px] flex flex-col items-center justify-center text-center shrink-0 shadow-xs transition-all duration-200 animate-in fade-in"
-                  >
-                    {/* 카드 제목 */}
-                    <h3 className="font-nanumsquare font-normal text-[14px] text-[#333333] leading-none text-center tracking-tight">
-                      {currentNotice.title || '식사 안내'}
-                    </h3>
+                      {/* 중간 구분선 */}
+                      <div 
+                        style={{ borderTop: '0.5px solid #999999' }}
+                        className="w-[127.5px] max-w-full my-[13px] shrink-0" 
+                      />
 
-                    {/* 식사안내 제목과 내용 사이 구분선 (Figma: width 478px -> 1x 239px, border: 0.5px solid #929292) */}
-                    <div 
-                      style={{ borderTop: '0.5px solid #929292' }} 
-                      className="w-[239px] max-w-full my-[17px]" 
-                    />
+                      {/* 시간 알약 태그 (옵션) */}
+                      {timeText ? (
+                        <div className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full border border-[#C4C4C4] bg-white/70 text-[#666666] mb-[10px] shrink-0">
+                          <span className="font-nanumsquare font-normal text-[9.5px] leading-none tracking-tight">
+                            {timeText}
+                          </span>
+                        </div>
+                      ) : null}
 
-                    {/* 카드 내용 */}
-                    <p className="font-nanumsquare font-normal text-[12px] text-[#333333] leading-[1.78] text-center tracking-tight whitespace-pre-line">
-                      {currentNotice.content || ''}
-                    </p>
-
-                    {/* 카드가 2개 이상일 때 인디케이터 도트 */}
-                    {hasMultiple && (
-                      <div className="flex items-center justify-center gap-1.5 mt-4">
-                        {displayNotices.map((_, i) => (
-                          <button
-                            key={i}
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveNoticeIndex(i);
-                            }}
-                            className={`w-1.5 h-1.5 rounded-full transition-all cursor-pointer ${
-                              i === (activeNoticeIndex % displayNotices.length)
-                                ? 'w-4 bg-[#333333]'
-                                : 'bg-stone-300'
-                            }`}
-                            aria-label={`안내 사항 ${i + 1}`}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* 우측 프레임 가장자리 (여러 장일 땐 클릭 시 다음 카드로 이동) */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (hasMultiple) {
-                        setActiveNoticeIndex((prev) => (prev + 1) % displayNotices.length);
-                      }
-                    }}
-                    aria-label="다음 안내사항 보기"
-                    className={`w-[24px] h-[210px] bg-white rounded-l-[8px] opacity-90 shrink-0 flex items-center justify-center transition-all ${
-                      hasMultiple
-                        ? 'cursor-pointer hover:opacity-100 hover:w-[26px] active:scale-95 text-[#999999] hover:text-[#333333]'
-                        : 'cursor-default pointer-events-none'
-                    }`}
-                  >
-                    {hasMultiple && (
-                      <span className="text-[12px] font-bold select-none opacity-60">›</span>
-                    )}
-                  </button>
-                </div>
-
-                {/* 하단 퍼포레이션 구멍 열 (10개, #F5F5F5) */}
-                <div className="w-full max-w-[390px] px-3 flex justify-between items-center select-none">
-                  {[...Array(10)].map((_, i) => (
-                    <div key={i} className="w-[19px] h-[23px] bg-[#F5F5F5] rounded-[4px] shrink-0" />
-                  ))}
-                </div>
-
-                {/* 하단 필름 바: 6, 7 */}
-                <div className="w-full max-w-[390px] px-6 flex justify-between items-center text-white select-none mt-[8px]">
-                  <span className="font-nanumsquare text-[11px] font-extrabold w-[24px] text-center">6</span>
-                  <span className="font-nanumsquare text-[11px] font-extrabold w-[24px] text-center">7</span>
-                </div>
+                      {/* 본문 (시안 2 폰트: NanumSquare Neo) */}
+                      <p className="font-nanumsquare font-normal text-[10px] leading-[145%] text-[#333333] text-center whitespace-pre-line break-keep px-1">
+                        {card.content}
+                      </p>
+                    </div>
+                  );
+                })}
               </div>
 
-              {/* 안내 사항 섹션 바닥 공통 구분선 (인수인계서 필수 원칙: w-[280.5px], borderTop: 0.5px solid #999999) */}
-              <div 
-                style={{ borderTop: '0.5px solid #999999' }}
-                className="w-[280.5px] max-w-[75%] mt-[55px] mb-[45px] mx-auto shrink-0" 
-              />
-            </ScrollReveal>
-          </section>
-        );
-      })()}
+              {/* 페이지 점선 인디케이터 도트 (1개일 때 숨김, 4.5x4.5, 선택 #585858, 미선택 #D9D9D9) */}
+              {infoCards.length > 1 && (
+                <div className="flex items-center justify-center gap-[6px] mt-[36px]">
+                  {infoCards.map((_, idx) => {
+                    const isSelected = idx === activeNoticeIndex;
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        aria-label={`안내사항 ${idx + 1}번으로 이동`}
+                        onClick={() => {
+                          if (noticeContainerRef.current) {
+                            const cardWidthWithGap = 186.5 + 13;
+                            noticeContainerRef.current.scrollTo({
+                              left: idx * cardWidthWithGap,
+                              behavior: 'smooth',
+                            });
+                            setActiveNoticeIndex(idx);
+                          }
+                        }}
+                        className="p-1 cursor-pointer flex items-center justify-center select-none"
+                      >
+                        <span
+                          className={`w-[4.5px] h-[4.5px] rounded-full block transition-colors duration-200 ${
+                            isSelected ? 'bg-[#585858]' : 'bg-[#D9D9D9]'
+                          }`}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* 바닥 공통 구분선 */}
+            <div 
+              style={{ borderTop: '0.5px solid #999999' }}
+              className="w-[280.5px] max-w-[75%] mt-[55px] mb-[45px] mx-auto shrink-0" 
+            />
+          </ScrollReveal>
+        </section>
+      )}
 
       {/* 9. 참석 의사 (RSVP - Figma 섹션 11548px~12513px: 780x965 -> 1x 390x482.5 1:1 정밀 매칭) */}
       {showRsvpSection && (

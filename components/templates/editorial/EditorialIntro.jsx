@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import EditorialTitleHandwriting from './EditorialTitleHandwriting';
+import EditorialTitleTypewriter from './EditorialTitleTypewriter';
 
 export default function EditorialIntro({ invitation, onOpen, isInModal: propIsInModal }) {
   // 'idle' | 'darkening' | 'revealing'
@@ -145,7 +145,7 @@ export default function EditorialIntro({ invitation, onOpen, isInModal: propIsIn
           
           {/* 상단: We are getting married 타이핑 타이틀 (Figma 2832:2131: Weddingday Personal Use 80px -> 1x 40px) */}
           <div className="w-full text-center mb-[24px] shrink-0 flex justify-center items-center">
-            <EditorialTitleHandwriting />
+            <EditorialTitleTypewriter />
           </div>
 
           {/* 중앙: 피그마 화이트 프레임 카드 (Figma Rectangle 6219: 619x998 -> 1x 309.5x499, background: #FEFEFE) */}

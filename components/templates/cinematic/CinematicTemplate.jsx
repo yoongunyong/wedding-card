@@ -6,6 +6,7 @@ import ScrollReveal from '@/components/ScrollReveal';
 import TodayConciergeCard from '@/components/TodayConciergeCard';
 import GuestPhotoSnapSection from '@/components/GuestPhotoSnapSection';
 import KakaoMap from '@/components/KakaoMap';
+import CinematicIntro from './CinematicIntro';
 import EditorialRsvpModal from '../editorial/EditorialRsvpModal';
 import EditorialGuestbookModal from '../editorial/EditorialGuestbookModal';
 import EditorialGalleryModal from '../editorial/EditorialGalleryModal';
@@ -16,6 +17,9 @@ import { renderParentPair } from '@/components/ParentDeceasedName';
 export default function CinematicTemplate({ invitation }) {
   // 1. ☀️ Brightly (Day) ↔ 🌙 Midnight (Night) 듀얼 테마 스위처
   const [isNightMode, setIsNightMode] = useState(false);
+
+  // 1-1. 커버 인트로 화면 상태 (기본값 true)
+  const [showIntro, setShowIntro] = useState(true);
 
   // 2. 모달 제어 상태
   const [showRsvpModal, setShowRsvpModal] = useState(false);
@@ -44,10 +48,36 @@ export default function CinematicTemplate({ invitation }) {
   const images = invitation?.images || {};
   const extra = invitation?.extra_data || {};
 
+  const showIntroSection = config.show_intro !== false;
   const showCountdownSection = config.show_countdown !== false;
   const showGallerySection = config.show_gallery !== false;
   const showAccountsSection = config.show_accounts !== false;
   const showRsvpSection = config.show_rsvp !== false;
+
+  const isModalPreview = Boolean(invitation?.is_modal_preview);
+
+  // 모달 미리보기 중 인트로 활성화 시 모달 스크롤 컨테이너를 잠그고, 수락 시 스크롤 복원
+  useEffect(() => {
+    if (isModalPreview && typeof document !== 'undefined') {
+      const container = document.getElementById('preview-scroll-container');
+      if (container) {
+        if (showIntro && showIntroSection) {
+          container.style.overflowY = 'hidden';
+          container.scrollTop = 0;
+        } else {
+          container.style.overflowY = 'auto';
+        }
+      }
+    }
+    return () => {
+      if (isModalPreview && typeof document !== 'undefined') {
+        const container = document.getElementById('preview-scroll-container');
+        if (container) {
+          container.style.overflowY = 'auto';
+        }
+      }
+    };
+  }, [isModalPreview, showIntro, showIntroSection]);
 
   // 갤러리 이미지 안전 파싱 & Our Story / Wedding Photo 컬렉션 분리
   const rawGallery = invitation?.gallery_images;
@@ -108,6 +138,39 @@ export default function CinematicTemplate({ invitation }) {
   const groomFirstEn = invitation?.groom_first_name_en || (invitation?.groom_name_en || '').split(' ')[0] || '';
   const brideFirstEn = invitation?.bride_first_name_en || (invitation?.bride_name_en || '').split(' ')[0] || '';
   const displayNamesEn = invitation?.main_names_en || (groomFirstEn && brideFirstEn ? `${groomFirstEn} & ${brideFirstEn}` : '');
+
+  const displayNamesEnUpper = useMemo(() => {
+    const gf = (
+      invitation?.groom_name_en ||
+      [invitation?.groom_last_name_en, invitation?.groom_first_name_en].filter(Boolean).join(' ') ||
+      invitation?.groom_first_name_en ||
+      ''
+    ).trim();
+
+    const bf = (
+      invitation?.bride_name_en ||
+      [invitation?.bride_last_name_en, invitation?.bride_first_name_en].filter(Boolean).join(' ') ||
+      invitation?.bride_first_name_en ||
+      ''
+    ).trim();
+
+    if (gf && bf) {
+      return `${gf.toUpperCase()} & ${bf.toUpperCase()}`;
+    }
+    if (invitation?.main_names_en) {
+      return invitation.main_names_en.toUpperCase();
+    }
+    if (gf || bf) {
+      return (gf || bf).toUpperCase();
+    }
+    if (invitation?.groom_name && invitation?.bride_name) {
+      return `${invitation.groom_name} & ${invitation.bride_name}`;
+    }
+    if (isSample) {
+      return 'JANG MIN KI & KWON KI-DEUK';
+    }
+    return '';
+  }, [invitation, isSample]);
 
   // 부모님 성함 & 故 / 국화꽃 표기 포맷팅
   const deceasedMarker = config.deceased_marker || invitation?.deceased_marker || 'hanja';
@@ -189,9 +252,12 @@ export default function CinematicTemplate({ invitation }) {
     const hours = targetDate.getHours();
     const minutes = targetDate.getMinutes();
     const period = hours < 12 ? 'AM' : 'PM';
+    const periodLower = hours < 12 ? 'am' : 'pm';
     const displayHour = hours % 12 === 0 ? 12 : hours % 12;
     const timeFormatted = `${period} ${displayHour}:${String(minutes).padStart(2, '0')}`;
     const timeFormattedShort = `${period} ${displayHour}:${String(minutes).padStart(2, '0')}`;
+    const hourStr24 = String(hours).padStart(2, '0');
+    const section1DateFormatted = `${y}.${monthStr.slice(0, 3)} ${d}. ${hourStr24}:${String(minutes).padStart(2, '0')} ${periodLower}`;
 
     return {
       fullDateDot: `${y}.${String(m + 1).padStart(2, '0')}.${String(d).padStart(2, '0')}`,
@@ -200,6 +266,7 @@ export default function CinematicTemplate({ invitation }) {
       timeStrShort: timeFormattedShort,
       dowEn: dow.slice(0, 3).toUpperCase(),
       fullEn: `${dow}, ${monthStr} ${d}, ${y}`,
+      section1DateStr: section1DateFormatted,
     };
   }, [targetDate]);
 
@@ -394,17 +461,34 @@ export default function CinematicTemplate({ invitation }) {
       />
 
       {/* 예식 당일 안내 데스크 (당일 자동 전환) */}
-      <TodayConciergeCard invitation={invitation} />
+      {(!showIntro || !showIntroSection) && (
+        <TodayConciergeCard invitation={invitation} />
+      )}
 
-      {/* ========================================================
-      {/* ========================================================
-          00. 좌측 상단 플로팅 테마 스위처 (☀️ Brightly ↔ 🌙 Midnight)
-              (우측 상단 BGM 플레이어와 겹치지 않도록 좌측 상단에 정갈하게 배치)
-          ======================================================== */}
-      <div 
-        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 1.25rem)' }}
-        className="fixed left-5 z-40"
-      >
+      {/* 0. 시네마틱 모노리스 인트로 커버 화면 */}
+      {showIntro && showIntroSection && (
+        <CinematicIntro
+          invitation={invitation}
+          isInModal={isModalPreview}
+          isNightMode={isNightMode}
+          setIsNightMode={setIsNightMode}
+          onOpen={() => {
+            setShowIntro(false);
+          }}
+        />
+      )}
+
+      {/* 본문 콘텐츠: 모달 미리보기 중 인트로 활성화 시에는 노출 및 높이 차지 방지 */}
+      <div className={isModalPreview && showIntro && showIntroSection ? 'hidden' : 'contents'}>
+        {/* ========================================================
+            00. 좌측 상단 플로팅 테마 스위처 (☀️ Brightly ↔ 🌙 Midnight)
+                (우측 상단 BGM 플레이어와 겹치지 않도록 좌측 상단에 정갈하게 배치)
+            ======================================================== */}
+        {(!showIntro || !showIntroSection) && (
+          <div 
+            style={{ top: 'calc(env(safe-area-inset-top, 0px) + 1.25rem)' }}
+            className="fixed left-5 z-40"
+          >
         <div className={`flex items-center p-0.5 rounded-full border shadow-sm backdrop-blur-md transition-all ${
           isNightMode ? 'bg-stone-900/90 border-stone-800' : 'bg-white/95 border-stone-200'
         }`}>
@@ -432,77 +516,112 @@ export default function CinematicTemplate({ invitation }) {
           </button>
         </div>
       </div>
+    )}
 
       {/* ========================================================
-          01. 커버 섹션 (Our First Page)
+          01. 섹션 1 (Figma 1:1 매칭: Full-width 메인 화보 + The marriage of 오버레이 + 하단 그라데이션 페이드)
           ======================================================== */}
-      <section className="relative w-full pt-[calc(env(safe-area-inset-top,0px)+3.8rem)] pb-12 px-5 text-center select-none">
-        {/* 상단 서브 인디케이터 (신랑/신부 영문 퍼스트네임 소문자 동적 표시) */}
-        {(groomFirstEn || brideFirstEn) && (
-          <div 
-            style={serifItalic}
-            className="flex items-center justify-between text-xs text-stone-400 mb-5 px-1 tracking-wider lowercase"
-          >
-            <span>{groomFirstEn ? groomFirstEn.toLowerCase() : ''}</span>
-            <span>{brideFirstEn ? brideFirstEn.toLowerCase() : ''}</span>
-          </div>
-        )}
-
-        {/* 메인 흑백 시네마틱 화보 프레임 (하단 흰색 블렌딩 페이드) */}
-        {mainImage && (
-          <div className="relative w-full aspect-[4/5] rounded-none overflow-hidden mx-auto mb-6 bg-stone-100 dark:bg-stone-900 group">
+      <section className="relative w-full select-none flex flex-col items-center">
+        {/* A. 상단 메인 화보 + 텍스트 오버레이 + 하단 페이드 그라데이션 */}
+        <div className="relative w-full aspect-[784/937] overflow-hidden bg-stone-100 dark:bg-stone-900">
+          {mainImage ? (
             <img
               src={mainImage}
-              alt="Our First Page"
+              alt="Main wedding portrait"
               className="w-full h-full object-cover object-center grayscale contrast-105"
             />
-
-            {/* 하단 화이트 블렌딩 그라데이션 페이드 오버레이 */}
-            <div className={`absolute inset-0 pointer-events-none ${
-              isNightMode 
-                ? 'bg-gradient-to-t from-[#000000] via-transparent to-black/20' 
-                : 'bg-gradient-to-t from-white via-white/40 to-transparent'
-            }`} />
-
-            {/* 메인 커버 타이틀 (영상: 신랑신부 상단에 검은색 필기체) */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
-              <h1 
-                style={scriptFont}
-                className={`text-[46px] sm:text-[54px] leading-tight font-normal mb-1.5 ${
-                  isNightMode ? 'text-white drop-shadow-md' : 'text-stone-900'
-                }`}
-              >
-                Our First Page
-              </h1>
-              <p 
-                style={serifItalic}
-                className={`text-[11px] sm:text-[12px] tracking-[0.25em] uppercase font-light ${
-                  isNightMode ? 'text-stone-300' : 'text-stone-700'
-                }`}
-              >
-                We&apos;re Getting Married
-              </p>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-xs text-stone-400">
+              Wedding Photo
             </div>
-          </div>
-        )}
+          )}
 
-        {/* 커버 하단 메타 (2026.12.24 / WITH LOVE / THU 3:00PM - 구분선 없음) */}
-        <div className="flex items-center justify-between font-mono text-[10.5px] tracking-wider text-stone-400 pt-1 px-1">
-          <span>{formattedDates.fullDateDot}</span>
-          <span 
-            style={serifItalic}
-            className="text-stone-500 font-medium tracking-[0.2em]"
+          {/* 상단 텍스트 오버레이: The marriage of + 신랑 & 신부 영문명 (Figma: #FEFEFE) */}
+          <div 
+            style={{ top: 'calc(env(safe-area-inset-top, 0px) + 3.2rem)' }}
+            className="absolute inset-x-0 flex flex-col items-center text-center px-4 z-10"
           >
-            WITH LOVE
-          </span>
-          <span>{formattedDates.dowEn} {formattedDates.timeStrShort}</span>
+            {/* The marriage of (Figma: Weddingday Personal Use 65px -> 1x 32.5px) */}
+            <h1
+              className="text-[32px] sm:text-[35px] leading-tight text-[#FEFEFE] drop-shadow-[0_2px_4px_rgba(0,0,0,0.45)]"
+              style={{
+                fontFamily: "'Weddingday Personal Use', 'Bickham Script Pro', cursive",
+              }}
+            >
+              The marriage of
+            </h1>
+
+            {/* JANG MIN KI & KWON KI-DEUK (Figma: Cormorant Garamond 600, 48px -> 1x 24px) */}
+            {displayNamesEnUpper && (
+              <h2
+                className="font-editorial-serif font-semibold text-[22px] sm:text-[24px] leading-tight tracking-[0.05em] uppercase text-[#FEFEFE] mt-3 sm:mt-3.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.45)]"
+                style={{
+                  fontFamily: "'Cormorant Garamond', 'Playfair Display', serif",
+                }}
+              >
+                {displayNamesEnUpper}
+              </h2>
+            )}
+          </div>
+
+          {/* 사진 하단 페이드 그라데이션 (Figma 272px~937px 블렌딩: 투명 -> 배경색으로 부드럽게 전환) */}
+          <div
+            className={`absolute inset-x-0 bottom-0 h-[52%] pointer-events-none transition-colors duration-500 ${
+              isNightMode
+                ? 'bg-gradient-to-b from-transparent via-[#000000]/60 to-[#000000]'
+                : 'bg-gradient-to-b from-transparent via-[#FEFEFE]/60 to-[#FEFEFE]'
+            }`}
+          />
+        </div>
+
+        {/* B. 하단 정보 영역: 날짜 + 장소 + Welcome to our Wedding Day */}
+        <div className="w-full flex flex-col items-center text-center px-6 pt-7 sm:pt-9 pb-12 sm:pb-14 z-10">
+          {/* 2027.May 15. 14:00 pm (Figma: Cormorant Garamond 500, 50px -> 1x 25px, letter-spacing 0.04em) */}
+          {formattedDates.section1DateStr && (
+            <p
+              className={`font-editorial-serif font-medium text-[23px] sm:text-[25px] leading-tight tracking-[0.04em] transition-colors duration-300 ${
+                isNightMode ? 'text-[#FFFFFF]' : 'text-[#292929]'
+              }`}
+              style={{
+                fontFamily: "'Cormorant Garamond', 'Playfair Display', serif",
+              }}
+            >
+              {formattedDates.section1DateStr}
+            </p>
+          )}
+
+          {/* 반얀트리 클럽 앤 스파 서울 (Figma: NanumSquare Neo OTF 400, 32px -> 1x 16px) */}
+          {venueFullName && (
+            <p
+              className={`font-nanumsquare font-normal text-[15px] sm:text-[16px] leading-normal tracking-wide mt-[18px] sm:mt-[20px] transition-colors duration-300 ${
+                isNightMode ? 'text-[#CCCCCC]' : 'text-[#333333]'
+              }`}
+            >
+              {venueFullName}
+            </p>
+          )}
+
+          {/* Welcome to our Wedding Day (Figma: Cormorant Garamond 400, 34px -> 1x 17px, 피그마 1x 73.5px 널찍한 여백) */}
+          <p
+            className={`font-editorial-serif text-[16px] sm:text-[17px] leading-tight tracking-[0.06em] mt-[68px] sm:mt-[76px] transition-colors duration-300 ${
+              isNightMode ? 'text-[#9E9E9E]' : 'text-[#333333]'
+            }`}
+            style={{
+              fontFamily: "'Cormorant Garamond', 'Playfair Display', serif",
+            }}
+          >
+            Welcome to our Wedding Day
+          </p>
+
+          {/* 섹션 구분선 (사용자 필수 지침: 항상 섹션이 끝날 때마다 구분선 적용) */}
+          <div className="w-full max-w-[350px] border-b border-stone-200/80 dark:border-white/10 mt-[44px] sm:mt-[48px]" />
         </div>
       </section>
 
       {/* ========================================================
           02. CELEBRATE! & OUR WEDDING PARTY
           ======================================================== */}
-      <section className="py-18 sm:py-20 px-5 text-center border-t border-stone-200/60 dark:border-white/10">
+      <section className="py-18 sm:py-20 px-5 text-center">
         <ScrollReveal>
           {/* 상단 별표 심볼 */}
           <div className="text-sm tracking-widest text-stone-400 mb-2">✶</div>
@@ -1154,6 +1273,7 @@ export default function CinematicTemplate({ invitation }) {
           </ScrollReveal>
         </section>
       )}
+      </div>
 
       {/* 모달 연동 레이어 */}
       {showRsvpModal && (

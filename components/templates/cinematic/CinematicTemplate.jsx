@@ -10,6 +10,7 @@ import CinematicIntro from './CinematicIntro';
 import EditorialRsvpModal from '../editorial/EditorialRsvpModal';
 import EditorialGuestbookModal from '../editorial/EditorialGuestbookModal';
 import EditorialGalleryModal from '../editorial/EditorialGalleryModal';
+import EditorialContactModal from '../editorial/EditorialContactModal';
 import { supabase } from '@/lib/supabase';
 import { getSafeKakaoShareImageUrl } from '@/lib/kakaoShare';
 import { renderParentPair } from '@/components/ParentDeceasedName';
@@ -22,6 +23,7 @@ export default function CinematicTemplate({ invitation }) {
   const [showIntro, setShowIntro] = useState(true);
 
   // 2. 모달 제어 상태
+  const [showContactModal, setShowContactModal] = useState(false);
   const [showRsvpModal, setShowRsvpModal] = useState(false);
   const [showGuestbookModal, setShowGuestbookModal] = useState(false);
   const [galleryModalOpen, setGalleryModalOpen] = useState(false);
@@ -130,6 +132,7 @@ export default function CinematicTemplate({ invitation }) {
   const celebrationPhoto = images.couple_profile || images.couple || extra.couple_profile_image || (isSample ? '/samples/garden-couple.jpg' : images.main || '');
   const bridePhoto = images.bride_profile || extra.bride_profile_image || invitation?.bride_photo || (isSample ? '/samples/bride-solo.jpg' : '');
   const groomPhoto = images.groom_profile || extra.groom_profile_image || invitation?.groom_photo || (isSample ? '/samples/groom-solo.jpg' : '');
+  const couplePhoto = images.couple_photo || images.couple || images.couple_profile || extra.couple_photo || (userGallery && userGallery.length > 0 ? userGallery[0] : null) || (isSample ? '/samples/couple-profile-01.jpg' : '');
   const datePhoto = images.ending || (userGallery && userGallery.length > 1 ? userGallery[1] : null) || (isSample ? '/samples/ending-04-classic.jpg' : '');
 
   // 성함 데이터 (하드코딩 더미 성함 완전 제거)
@@ -169,6 +172,37 @@ export default function CinematicTemplate({ invitation }) {
     if (isSample) {
       return 'JANG MIN KI & KWON KI-DEUK';
     }
+    return '';
+  }, [invitation, isSample]);
+
+  // 섹션 2 Welcome to 영문 타이틀용 TitleCase 성함 (Figma: Jang Min-ki & Kwon Ki-deuk)
+  const displayNamesEnTitleCase = useMemo(() => {
+    const formatTitleCase = (str) => {
+      if (!str) return '';
+      return str
+        .split(' ')
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+        .join(' ');
+    };
+
+    const gf = formatTitleCase(
+      invitation?.groom_name_en ||
+      [invitation?.groom_last_name_en, invitation?.groom_first_name_en].filter(Boolean).join(' ') ||
+      invitation?.groom_first_name_en
+    );
+    const bf = formatTitleCase(
+      invitation?.bride_name_en ||
+      [invitation?.bride_last_name_en, invitation?.bride_first_name_en].filter(Boolean).join(' ') ||
+      invitation?.bride_first_name_en
+    );
+
+    if (gf && bf) return `${gf}  &  ${bf}`;
+    if (invitation?.main_names_en) return invitation.main_names_en;
+    if (gf || bf) return gf || bf;
+    if (invitation?.groom_name && invitation?.bride_name) {
+      return `${invitation.groom_name} & ${invitation.bride_name}`;
+    }
+    if (isSample) return 'Jang Min-ki  &  Kwon Ki-deuk';
     return '';
   }, [invitation, isSample]);
 
@@ -619,158 +653,242 @@ export default function CinematicTemplate({ invitation }) {
       </section>
 
       {/* ========================================================
-          02. CELEBRATE! & OUR WEDDING PARTY
+          02. 피그마 1:1 매칭: Welcome to 타이틀 + 신부/신랑 2열 프로필 + 양가 혼주 & 신랑신부 성함
           ======================================================== */}
-      <section className="py-18 sm:py-20 px-5 text-center">
+      <section className="py-16 sm:py-20 px-6 text-center select-none flex flex-col items-center">
         <ScrollReveal>
-          {/* 상단 별표 심볼 */}
-          <div className="text-sm tracking-widest text-stone-400 mb-2">✶</div>
-          <span 
-            style={serifItalic}
-            className="text-xs sm:text-[13px] tracking-[0.3em] uppercase text-stone-500 block mb-6 font-semibold"
-          >
-            CELEBRATE!
-          </span>
-
-          {/* 중간 시네마틱 가로 흑백 액자 */}
-          {celebrationPhoto && (
-            <div className="w-full max-w-[340px] aspect-[16/9] mx-auto rounded-none overflow-hidden shadow-xs mb-8 bg-stone-100 dark:bg-stone-900">
-              <img
-                src={celebrationPhoto}
-                alt="Celebration moment"
-                className="w-full h-full object-cover grayscale"
-              />
-            </div>
-          )}
-
-          {/* 영상 1:1 3단 타이틀 (OUR, / WEDDING / Party) */}
-          <div 
-            style={serifItalic}
-            className={`text-2xl sm:text-[28px] leading-snug mb-3 ${
-              isNightMode ? 'text-white' : 'text-stone-900'
-            }`}
-          >
-            <div>OUR,</div>
-            <div>WEDDING</div>
-            <div 
-              style={scriptFont}
-              className="text-3xl sm:text-4xl not-italic mt-0.5"
+          {/* 상단 2단 타이틀: Welcome to / Jang Min-ki & Kwon Ki-deuk (Figma: Cormorant Garamond 400, 48px -> 1x 24px) */}
+          <div className="w-full max-w-[340px] mx-auto text-center mb-10 sm:mb-12">
+            <h2
+              className={`font-editorial-serif font-normal text-[23px] sm:text-[25px] leading-[1.2] transition-colors duration-300 ${
+                isNightMode ? 'text-[#FFFFFF]' : 'text-[#292929]'
+              }`}
+              style={{
+                fontFamily: "'Cormorant Garamond', 'Playfair Display', serif",
+              }}
             >
-              Party
+              <div>Welcome to</div>
+              <div className="mt-1">{displayNamesEnTitleCase}</div>
+            </h2>
+          </div>
+
+          {/* 중간 2열 프로필 스냅: 좌측 신부(Bride) & 우측 신랑(Groom) (Figma: 283.5px * 315.9px) */}
+          <div className="w-full max-w-[340px] mx-auto grid grid-cols-2 gap-5 sm:gap-7 mb-[60px] sm:mb-[68px]">
+            {/* 좌측: 신부 (Bride) */}
+            <div className="flex flex-col items-center">
+              <div className="w-full aspect-[283.5/315.9] bg-stone-100 dark:bg-stone-900 overflow-hidden shadow-xs mb-3">
+                {bridePhoto ? (
+                  <img
+                    src={bridePhoto}
+                    alt={brideName || 'Bride'}
+                    className="w-full h-full object-cover object-center"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-xs text-stone-400">
+                    Bride Photo
+                  </div>
+                )}
+              </div>
+              {/* Figma: Bride. & 이름 단정한 중앙 정렬 */}
+              <div className="flex items-center justify-center gap-2 sm:gap-2.5 mt-2">
+                <span
+                  className="text-[14px] text-stone-400 tracking-wider italic"
+                  style={{
+                    fontFamily: "'Weddingday Personal Use', 'Bickham Script Pro', cursive",
+                  }}
+                >
+                  Bride.
+                </span>
+                <span className={`font-nanumsquare text-[13px] sm:text-[13.5px] font-normal transition-colors duration-300 ${
+                  isNightMode ? 'text-stone-200' : 'text-[#333333]'
+                }`}>
+                  {brideName || (isSample ? '박지민' : '')}
+                </span>
+              </div>
+            </div>
+
+            {/* 우측: 신랑 (Groom) */}
+            <div className="flex flex-col items-center">
+              <div className="w-full aspect-[283.5/315.9] bg-stone-100 dark:bg-stone-900 overflow-hidden shadow-xs mb-3">
+                {groomPhoto ? (
+                  <img
+                    src={groomPhoto}
+                    alt={groomName || 'Groom'}
+                    className="w-full h-full object-cover object-center"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-xs text-stone-400">
+                    Groom Photo
+                  </div>
+                )}
+              </div>
+              {/* Figma: Groom. & 이름 단정한 중앙 정렬 */}
+              <div className="flex items-center justify-center gap-2 sm:gap-2.5 mt-2">
+                <span
+                  className="text-[14px] text-stone-400 tracking-wider italic"
+                  style={{
+                    fontFamily: "'Weddingday Personal Use', 'Bickham Script Pro', cursive",
+                  }}
+                >
+                  Groom.
+                </span>
+                <span className={`font-nanumsquare text-[13px] sm:text-[13.5px] font-normal transition-colors duration-300 ${
+                  isNightMode ? 'text-stone-200' : 'text-[#333333]'
+                }`}>
+                  {groomName || (isSample ? '강민준' : '')}
+                </span>
+              </div>
             </div>
           </div>
 
-          {formattedDates.fullDateDot && (
-            <p className="font-mono text-xs text-stone-400 tracking-wider">
-              {formattedDates.fullDateDot} {formattedDates.timeStr}
-            </p>
-          )}
-        </ScrollReveal>
-      </section>
-
-      {/* ========================================================
-          03. 모시는 글 & 2분할 흑백 인물 스냅 (Bride / Groom)
-          ======================================================== */}
-      {/* ========================================================
-          03. 모시는 글 & 2분할 흑백 인물 스냅 (Bride / Groom)
-          ======================================================== */}
-      <section className="py-18 sm:py-20 px-5 text-center border-t border-stone-200/60 dark:border-white/10">
-        <ScrollReveal>
-          {/* 모시는 글 본문 (미입력 시 가짜 더미 텍스트 노출 차단) */}
-          {(invitation?.message || isSample) && (
-            <div className={`text-xs sm:text-[13px] leading-[2.6] font-light max-w-[320px] mx-auto whitespace-pre-line break-keep mb-12 ${
-              isNightMode ? 'text-stone-300' : 'text-stone-700'
-            }`}>
-              {invitation?.message || (isSample ? `서로에게 행복을 주는 사람을 만났습니다.
-웃는 모습이 너무나 예쁜 그 사람을 만났습니다.
-운명처럼 만나게 된 우리의 인연
-그 인연에 이끌려 이제 영원을 함께 약속하려 합니다.
-저희의 하나 됨을 지켜보아 주시고 격려해 주시면
-더 없는 기쁨으로 평생 간직하겠습니다.
-
-둘이 함께 맞이하는 3번째 겨울,
-저희 두 사람 여러분 앞에 결혼합니다.
-앞으로 맞이할 저희의 봄날을 축복해 주세요.` : '')}
-            </div>
-          )}
-
-          {/* 2분할 신랑 & 신부 흑백 인물 스냅 사진 (사진이 등록된 경우에만 사진 프레임 노출) */}
-          {(bridePhoto || groomPhoto) ? (
-            <div className="grid grid-cols-2 gap-3 max-w-[340px] mx-auto mb-10">
-              {/* 신부 카드 */}
-              <div className="flex flex-col items-center">
-                {bridePhoto ? (
-                  <div className="w-full aspect-[4/5] rounded-none overflow-hidden bg-stone-100 dark:bg-stone-900 mb-2.5">
-                    <img
-                      src={bridePhoto}
-                      alt={brideName}
-                      className="w-full h-full object-cover grayscale"
-                    />
+          {/* 하단 혼주 & 서열 & 신랑신부 한글 성함 (Figma 447px * 74px 1:1 정밀 매칭) */}
+          {(hasGroomParents || hasBrideParents || isSample) && (
+            <div className="w-fit mx-auto flex flex-col space-y-3 select-none text-[13.5px] sm:text-[14px] font-nanumsquare font-normal">
+              {/* 1행: 신랑측 (강오진 · 류창희      아들    강민준) */}
+              {(hasGroomParents || isSample) && (
+                <div className="grid grid-cols-[105px_42px_55px] gap-x-6 sm:gap-x-7 items-center text-left">
+                  <div className={`transition-colors duration-300 whitespace-nowrap ${isNightMode ? 'text-stone-200' : 'text-[#333333]'}`}>
+                    {hasGroomParents ? groomParentsNode : '강오진 · 류창희'}
                   </div>
-                ) : null}
-                {brideName && (
-                  <span 
-                    style={serifItalic}
-                    className="text-xs text-stone-500"
-                  >
-                    Bride. <strong className={`font-sans font-medium not-italic ml-1 ${isNightMode ? 'text-white' : 'text-stone-900'}`}>{brideName}</strong>
-                  </span>
-                )}
-              </div>
-
-              {/* 신랑 카드 */}
-              <div className="flex flex-col items-center">
-                {groomPhoto ? (
-                  <div className="w-full aspect-[4/5] rounded-none overflow-hidden bg-stone-100 dark:bg-stone-900 mb-2.5">
-                    <img
-                      src={groomPhoto}
-                      alt={groomName}
-                      className="w-full h-full object-cover grayscale"
-                    />
+                  <div className={`text-[12.5px] sm:text-[13px] text-center transition-colors duration-300 ${isNightMode ? 'text-stone-400' : 'text-[#999999]'}`}>
+                    {groomRelation || (isSample ? '아들' : '장남')}
                   </div>
-                ) : null}
-                {groomName && (
-                  <span 
-                    style={serifItalic}
-                    className="text-xs text-stone-500"
-                  >
-                    Groom. <strong className={`font-sans font-medium not-italic ml-1 ${isNightMode ? 'text-white' : 'text-stone-900'}`}>{groomName}</strong>
-                  </span>
-                )}
-              </div>
-            </div>
-          ) : (
-            /* 인물 사진이 미등록된 경우 타인의 사진 대신 단정한 성함 라인으로 노출 */
-            (groomName || brideName) && (
-              <div className="flex items-center justify-center gap-6 mb-10 text-sm">
-                {groomName && <span>Groom. <strong className={isNightMode ? 'text-white' : 'text-stone-900'}>{groomName}</strong></span>}
-                {groomName && brideName && <span className="text-stone-300">·</span>}
-                {brideName && <span>Bride. <strong className={isNightMode ? 'text-white' : 'text-stone-900'}>{brideName}</strong></span>}
-              </div>
-            )
-          )}
-
-          {/* 양가 부모님 정보 (부모님 정보가 입력된 경우에만 깔끔하게 노출) */}
-          {(hasGroomParents || hasBrideParents) && (
-            <div className={`space-y-2.5 text-xs sm:text-[13px] font-light max-w-[280px] mx-auto ${
-              isNightMode ? 'text-stone-400' : 'text-stone-600'
-            }`}>
-              {hasGroomParents && (
-                <div className="flex items-center justify-between">
-                  <span>{groomParentsNode} {groomRelation && `의 ${groomRelation}`}</span>
-                  <strong className={`font-medium ${isNightMode ? 'text-white' : 'text-stone-900'}`}>{groomName}</strong>
+                  <div className={`transition-colors duration-300 whitespace-nowrap ${isNightMode ? 'text-stone-200' : 'text-[#333333]'}`}>
+                    {groomName || (isSample ? '강민준' : '')}
+                  </div>
                 </div>
               )}
-              {hasBrideParents && (
-                <div className="flex items-center justify-between">
-                  <span>{brideParentsNode} {brideRelation && `의 ${brideRelation}`}</span>
-                  <strong className={`font-medium ${isNightMode ? 'text-white' : 'text-stone-900'}`}>{brideName}</strong>
+
+              {/* 2행: 신부측 (장철규 · 이정자      딸      박지민) */}
+              {(hasBrideParents || isSample) && (
+                <div className="grid grid-cols-[105px_42px_55px] gap-x-6 sm:gap-x-7 items-center text-left">
+                  <div className={`transition-colors duration-300 whitespace-nowrap ${isNightMode ? 'text-stone-200' : 'text-[#333333]'}`}>
+                    {hasBrideParents ? brideParentsNode : '장철규 · 이정자'}
+                  </div>
+                  <div className={`text-[12.5px] sm:text-[13px] text-center transition-colors duration-300 ${isNightMode ? 'text-stone-400' : 'text-[#999999]'}`}>
+                    {brideRelation || (isSample ? '딸' : '장녀')}
+                  </div>
+                  <div className={`transition-colors duration-300 whitespace-nowrap ${isNightMode ? 'text-stone-200' : 'text-[#333333]'}`}>
+                    {brideName || (isSample ? '박지민' : '')}
+                  </div>
                 </div>
               )}
             </div>
           )}
+
+          {/* 섹션 하단 구분선 (사용자 필수 지침: 항상 섹션이 끝날 때마다 구분선 적용) */}
+          <div className="w-full max-w-[350px] border-b border-stone-200/80 dark:border-white/10 mt-14 sm:mt-16 mx-auto" />
         </ScrollReveal>
       </section>
+
+      {/* ========================================================
+          03. 모시는 글 본문 & 커플 화보 & 연락하기 (Figma 섹션3: 780px * 1589px 1:1 정밀 매칭)
+          ======================================================== */}
+      {(invitation?.message || couplePhoto || isSample) && (
+        <section className={`select-none overflow-hidden transition-colors duration-300 ${
+          isNightMode ? 'bg-[#1C1C1C]' : 'bg-[#FEFEFE]'
+        }`}>
+          <ScrollReveal>
+            {/* 상단: 풀 와이드 커플 사진 화보 & 하단 페이드 그라데이션 (Figma Rectangle 6304: 780x576 -> 1x aspect-[780/576]) */}
+            {couplePhoto && (
+              <div className="relative w-full aspect-[780/576] overflow-hidden select-none">
+                <img
+                  src={couplePhoto}
+                  alt="Couple Wedding Editorial"
+                  className="w-full h-full object-cover object-center select-none"
+                  onError={(e) => {
+                    if (isSample && e.currentTarget.src !== '/samples/couple-profile-01.jpg') {
+                      e.currentTarget.src = '/samples/couple-profile-01.jpg';
+                    }
+                  }}
+                />
+                {/* 피그마 Rectangle 6304 하단 페이드 그라데이션 */}
+                <div
+                  className="absolute inset-0 pointer-events-none transition-colors duration-300"
+                  style={{
+                    background: isNightMode
+                      ? 'linear-gradient(180deg, rgba(28, 28, 28, 0) 68.73%, rgba(28, 28, 28, 0.4) 82.26%, #1C1C1C 100%)'
+                      : 'linear-gradient(180deg, rgba(217, 217, 217, 0) 68.73%, rgba(236, 236, 236, 0.23) 82.26%, #FEFEFE 100%)',
+                  }}
+                />
+              </div>
+            )}
+
+            {/* 하단: 모시는 글 본문 (Figma 실측: 사진 아래 178px -> 1x 89px, 초대합니다 18px, 간격 86px -> 1x 43px, 본문 너비 256px, 버튼 아래 간격 160px -> 1x 80px) */}
+            <div className={`px-6 text-center flex flex-col items-center ${
+              couplePhoto ? 'pt-[89px]' : 'pt-16'
+            }`}>
+              {/* 제목: 초대합니다 (Figma: NanumSquare Neo OTF 36px -> 1x 18px, #292929, line-height 72%) */}
+              <h2 className={`font-nanumsquare text-[18px] font-normal leading-none tracking-tight transition-colors duration-300 ${
+                isNightMode ? 'text-stone-100' : 'text-[#292929]'
+              }`}>
+                {invitation?.message_title || config?.message_title || '초대합니다'}
+              </h2>
+
+              {/* 본문 초대글 (Figma: NanumSquare Neo OTF 28px -> 1x 14px, 너비 512px -> 1x 256px, line-height 175%, #333333, 간격 43px) */}
+              {(invitation?.message || isSample) && (
+                <div className={`mt-[43px] w-[256px] max-w-full mx-auto font-nanumsquare text-[14px] font-normal leading-[1.75] tracking-tight break-keep whitespace-pre-line text-center transition-colors duration-300 ${
+                  isNightMode ? 'text-stone-300' : 'text-[#333333]'
+                }`}>
+                  {invitation?.message ? (
+                    invitation.message
+                  ) : isSample ? (
+                    <>
+                      <p className="mb-6">
+                        서로를 만나 평범했던 하루가<br />
+                        조금 더 따뜻하고 특별해졌습니다.<br />
+                        이제 두 사람이 한마음으로<br />
+                        새로운 계절을 시작하려 합니다.
+                      </p>
+                      <p>
+                        소중한 분들과 함께<br />
+                        그 순간을 나누고 싶습니다.<br />
+                        저희의 첫걸음에 따뜻한 축복을 보내주세요.
+                      </p>
+                    </>
+                  ) : null}
+                </div>
+              )}
+
+              {/* 연락하기 버튼 영역 (Figma: 너비 327px -> 1x 163.5px, 높이 76px -> 1x 38px, bg #F4F3F1, border 1px #D3D3D3, rounded-full, mt 95px -> 1x 47.5px) */}
+              <button
+                type="button"
+                onClick={() => setShowContactModal(true)}
+                style={{
+                  boxShadow: isNightMode ? 'none' : '0px 2px 2.5px rgba(0, 0, 0, 0.07)',
+                }}
+                className={`mt-[47.5px] w-[163.5px] h-[38px] rounded-full flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98] select-none ${
+                  isNightMode
+                    ? 'bg-[#2A2A2A] hover:bg-[#333333] border border-stone-700 text-stone-200'
+                    : 'bg-[#F4F3F1] hover:bg-[#eceae7] border border-[#D3D3D3] text-[#666666]'
+                }`}
+              >
+                {/* 연락하기 텍스트 (Figma: NanumSquare Neo OTF 28px -> 1x 14px, #666666) */}
+                <span className="font-nanumsquare text-[14px] font-normal tracking-tight">
+                  연락하기
+                </span>
+                {/* 연락하기 전화기 아이콘 (Figma: free-icon-call, 25px * 25px -> 1x 12.5px) */}
+                <svg
+                  width="12.5"
+                  height="12.5"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  stroke="none"
+                  className="shrink-0"
+                >
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+              </button>
+
+              {/* 섹션 하단 구분선 (사용자 필수 지침: 항상 섹션이 끝날 때마다 구분선 적용 / Figma: 버튼 아래 160px -> 1x 80px) */}
+              <div 
+                style={{ borderTop: isNightMode ? '0.5px solid rgba(255, 255, 255, 0.15)' : '0.5px solid #999999' }}
+                className="w-[280.5px] max-w-[75%] mt-[80px] mb-[40px] shrink-0 mx-auto" 
+              />
+            </div>
+          </ScrollReveal>
+        </section>
+      )}
 
       {/* ========================================================
           04. WEDDING GALLERY (시네마틱 룩북 갤러리 - 가로 스와이프 화보)
@@ -1276,6 +1394,13 @@ export default function CinematicTemplate({ invitation }) {
       </div>
 
       {/* 모달 연동 레이어 */}
+      {showContactModal && (
+        <EditorialContactModal 
+          invitation={invitation} 
+          isNightMode={isNightMode}
+          onClose={() => setShowContactModal(false)} 
+        />
+      )}
       {showRsvpModal && (
         <EditorialRsvpModal invitation={invitation} invitationId={invitation?.id} onClose={() => setShowRsvpModal(false)} />
       )}

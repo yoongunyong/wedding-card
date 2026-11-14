@@ -23,11 +23,8 @@
      - 시안 4, 5: 템플릿 고유 무드에 맞춘 미니멀 인용구 블록 렌더링 지원.
    - **대상 파일**: `components/templates/editorial/EditorialTemplate.jsx`, `components/templates/basic/BasicTemplate.jsx`, `components/templates/playlist/PlaylistTemplate.jsx`, `components/templates/cinematic/CinematicTemplate.jsx`, `components/templates/scene/SceneTemplate.jsx`
 
-2. **[TODO 2] 시안 4(시네마틱) 방명록(`show_guestbook`) 본문 섹션 및 작성 UI 신설 (기능 누락)**
-   - **문제점**: 제작/수정 폼에 '축하 방명록' 토글이 켜져 있고, `CinematicTemplate.jsx` 상단에 모달 import 및 최하단 모달 마운트 레이어(`EditorialGuestbookModal`)가 존재하나, 정작 본문에는 방명록 글 목록이나 `setShowGuestbookModal(true)`를 호출하는 방명록 섹션/버튼이 통째로 누락되어 하객이 축하 글을 작성하거나 볼 수 없음.
-   - **조치 방안**:
-     - 시안 4의 ☀️Day / 🌙Night 듀얼 테마에 맞춘 시네마틱 감성 방명록 섹션(메시지 카드 뷰어 및 '축하 메시지 남기기' 버튼) 신설.
-   - **대상 파일**: `components/templates/cinematic/CinematicTemplate.jsx`
+2. **[TODO 2 완료 (2026-11-14)] 시안 4(시네마틱) 방명록(`show_guestbook`) 본문 섹션 및 작성·삭제 UI 피그마 1:1 신설 완료**
+   - **조치 결과**: 피그마 실측 규격(`780px × 1659px` ➔ 1x `390px × 829.5px`, 그라디언트 배경 `#FEFEFE`~`#EAEAEA`, 3개 카드 세로 배치, X 삭제 모달, 페이지네이션 도트, '글 남기기' 알약 버튼) 1:1 반영 완료. 상세 내역은 본문 최신 안정화 내역 -16번 참조.
 
 3. **[TODO 3] 제작/수정 폼 '봉투 인트로 커버 (`show_intro`)' 토글 템플릿별 동적 정합화 (UX/논리 불일치)**
    - **문제점**: 제작/수정 폼에서 전 시안 공통으로 `봉투 인트로 커버`라는 고정 라벨의 체크박스가 노출되나, 시안 1만 실제 봉투 커버이고 시안 2는 매거진 슬리브 커버이며, 시안 3, 4, 5는 인트로 커버 자체가 없어 켜거나 꺼도 아무 변화가 없는 '유령 토글' 상태임.
@@ -54,6 +51,62 @@
 ---
 
 ## 0. 최근 핫픽스 & 서비스 안정화 내역 (2026-11-14 오너 관점 결함 전수 조치 & 시안 개편)
+
+
+-16. **[시안 4 (시네마틱) 방명록(Guestbook) 섹션 피그마 1:1 실측 CSS 신설 및 모달 연동 (2026-11-14)]**:
+   - **사용자 요청/제공 피그마 좌표 & 시안 이미지**:
+     - 방명록 영역: `780px × 1659px` (top: 13787px, bg: `linear-gradient(180deg, #FEFEFE 0%, #EAEAEA 100%)`)
+     - Guestbook: `214px × 36px` (top: 13979px, Cormorant Garamond 500 50px, line-height: 72%, color: `#292929`)
+     - 방명록: `103px × 26px` (top: 14088px, NanumSquare Neo OTF 400 36px, line-height: 72%, color: `#292929`)
+     - 본문 문구: `313px × 96px` (top: 14200px, NanumSquare Neo OTF 400 28px, line-height: 172%, color: `#333333`)
+     - 방명록 카드 1개당: `696px × 247px` (left: 42px, top: 14349px)
+       - From 작성자: `123px × 14px` (top: 14388px, NanumSquare Neo 20px, color: `#666666`)
+       - X 삭제 버튼: 우측 상단 모달 연동
+       - 본문: `324px × 74px` (top: 14427px, NanumSquare Neo 23px, line-height: 160%, color: `#333333`)
+       - 등록일: `115px × 29px` (top: 14528px, NanumSquare Neo 20px, color: `#999999`)
+     - 방명록 남기기 버튼: `268px × 78px` (top: 15239px, bg: `#393939`, radius: 49px, box-shadow: 0px 4px 14.2px rgba(0,0,0,0.09))
+       - 텍스트 "글 남기기": `114px × 20px` (top: 15268px, NanumSquare Neo 700 28px, color: `#F3F3F3`)
+     - 모달: 시안 2와 동일한 `EditorialGuestbookModal` 및 `EditorialGuestbookDeleteModal` 연동.
+   - **피그마 실측 CSS ➔ 1x 모바일 스펙 1:1 정밀 매핑**:
+     1. **섹션 컨테이너**:
+        - 2x: `780px × 1659px` (top: 13787px) ➔ 1x: `w-full pt-[96px] pb-[64.5px] px-[21px] text-center`
+        - 상단 패딩: `(13979 - 13787) / 2 = 96px` (`pt-[96px]`)
+        - 하단 패딩: `(15446 - 15317) / 2 = 64.5px` (`pb-[64.5px]`)
+        - 전체 높이: `96 + 18 + 36.5 + 13 + 43 + 48 + 26.5 + 445 + 39 + 64.5 = 829.5px` (`1659px / 2 = 829.5px` 오차 0.0px 완벽 일치).
+        - 배경 그라디언트: Day(`linear-gradient(180deg, #FEFEFE 0%, #EAEAEA 100%)`), Night(`linear-gradient(180deg, #1E1E1E 0%, #141414 100%)`).
+     2. **영문 타이틀 (`Guestbook`)**:
+        - 2x: `top: 13979px, 214px × 36px, Cormorant Garamond 500 50px`
+        - 1x 변환: `font-serif ('Cormorant Garamond') font-medium text-[25px] leading-[18px] text-center select-none`, Day(`#292929`), Night(`text-white`).
+     3. **한글 서브타이틀 (`방명록`)**:
+        - 2x: `top: 14088px, 103px × 26px, NanumSquare Neo OTF 400 36px`
+        - 여백: `(14088 - 14015) / 2 = 36.5px` (`mt-[36.5px]`)
+        - 1x 변환: `font-nanumsquare font-normal text-[18px] leading-[13px] text-center tracking-tight`, Day(`#292929`), Night(`text-[#E5E5E5]`).
+     4. **본문 안내 문구**:
+        - 2x: `top: 14200px, 313px × 96px, NanumSquare Neo OTF 400 28px, line-height 172% (48px)`
+        - 여백: `(14200 - 14114) / 2 = 43px` (`mt-[43px]`)
+        - 1x 변환: `w-[156.5px] max-w-full mx-auto font-nanumsquare font-normal text-[14px] leading-[24px] text-center whitespace-pre-line`, Day(`#333333`), Night(`text-[#D4D4D4]`).
+     5. **방명록 개별 카드 3개 세로 스택 (Figma 1:1 이미지 매칭)**:
+        - 2x: `696px × 247px` (left: 42px, top: 14349px) ➔ 1x: `w-full max-w-[348px] min-h-[123.5px] rounded-[14px] p-[18px] pb-[16px]`
+        - 여백: `(14349 - 14296) / 2 = 26.5px` (`mt-[26.5px]`), 카드 간 간격: `gap-[11px]`.
+        - 상단 From 작성자: `font-nanumsquare text-[10px]`, Day(`#666666`), Night(`#A3A3A3`).
+        - 우측 상단 X 삭제 버튼: `EditorialGuestbookDeleteModal` 연동.
+        - 본문 메시지: `font-nanumsquare text-[11.5px] leading-[1.6] my-[10px] text-left line-clamp-3`, Day(`#333333`), Night(`#E5E5E5`).
+        - 하단 등록일: `font-nanumsquare text-[10px]`, Day(`#999999`), Night(`#888888`), `formatGuestbookDate` 자동 포맷 (`2027. 10.21`).
+        - 카드 배경: Day(`bg-white border border-[#DCDCDC]`), Night(`bg-[#242424] border border-white/10`).
+     6. **페이지네이션 도트 & 스와이프**:
+        - 3개 이상 등록 시 3개씩 페이지 분할(`displayList.slice(page * 3, page * 3 + 3)`).
+        - 슬림 인디케이터 도트(`gap-[4px] mt-[18px]`) 및 모바일 좌우 터치 스와이프(`onTouchStart`, `onTouchEnd`) 지원.
+     7. **글 남기기 알약 버튼**:
+        - 2x: `top: 15239px, 268px × 78px, radius: 49px` ➔ 1x: `w-[134px] h-[39px] rounded-[24.5px] mt-[24px] mx-auto`
+        - 버튼 텍스트: `font-nanumsquare font-bold text-[14px] leading-none`
+        - 테마: Day(`bg-[#393939] text-[#F3F3F3]`), Night(`bg-white text-[#292929]`).
+        - 클릭 시 `EditorialGuestbookModal` 팝업 오픈 및 작성 완료 시 즉시 상단 프리펜드(`[newMsg, ...prev]`).
+     8. **모달 연동 및 결함(TODO 2) 해소**:
+        - `EditorialGuestbookModal` & `EditorialGuestbookDeleteModal` 정상 바인딩.
+        - `PROJECT_STATUS.md` 상단 [TODO 2] 항목 완료 처리.
+   - **검증 결과**:
+     - `npx eslint components/templates/cinematic/CinematicTemplate.jsx`: 0 errors
+     - `npm run build`: Exit Code 0 (전체 성공)
 
 
 -15. **[시안 4 (시네마틱) 포토쉐어링 섹션 피그마 1:1 실측 CSS 정밀 반영 (2026-11-14)]**:

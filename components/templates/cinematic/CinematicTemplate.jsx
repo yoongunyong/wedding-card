@@ -9,6 +9,7 @@ import KakaoMap from '@/components/KakaoMap';
 import CinematicIntro from './CinematicIntro';
 import EditorialRsvpModal from '../editorial/EditorialRsvpModal';
 import EditorialGuestbookModal from '../editorial/EditorialGuestbookModal';
+import EditorialGuestbookDeleteModal from '../editorial/EditorialGuestbookDeleteModal';
 import EditorialGalleryModal from '../editorial/EditorialGalleryModal';
 import EditorialContactModal from '../editorial/EditorialContactModal';
 import { supabase } from '@/lib/supabase';
@@ -70,6 +71,10 @@ export default function CinematicTemplate({ invitation }) {
   const [showContactModal, setShowContactModal] = useState(false);
   const [showRsvpModal, setShowRsvpModal] = useState(false);
   const [showGuestbookModal, setShowGuestbookModal] = useState(false);
+  const [deleteTargetMsg, setDeleteTargetMsg] = useState(null);
+  const [guestbookList, setGuestbookList] = useState([]);
+  const [guestbookPageIndex, setGuestbookPageIndex] = useState(0);
+  const guestbookTouchStartX = useRef(null);
   const [galleryModalOpen, setGalleryModalOpen] = useState(false);
   const [galleryModalIndex, setGalleryModalIndex] = useState(0);
   const [selectedGalleryIndex, setSelectedGalleryIndex] = useState(0);
@@ -98,6 +103,7 @@ export default function CinematicTemplate({ invitation }) {
   const showGallerySection = config.show_gallery !== false;
   const showAccountsSection = config.show_accounts !== false;
   const showRsvpSection = config.show_rsvp !== false;
+  const showGuestbookSection = config.show_guestbook !== false;
 
   const isModalPreview = Boolean(invitation?.is_modal_preview);
 
@@ -506,6 +512,24 @@ export default function CinematicTemplate({ invitation }) {
 
     handleCopy(currentUrl, '청첩장 링크가');
   };
+
+  // 방명록 로드
+  useEffect(() => {
+    if (!invitation?.id) return;
+    async function loadGuestbook() {
+      const { data, error } = await supabase
+        .from('guestbook')
+        .select('id, invitation_id, author, content, created_at')
+        .eq('invitation_id', invitation.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (!error && data) {
+        setGuestbookList(data);
+      }
+    }
+    loadGuestbook();
+  }, [invitation?.id]);
 
   // 폰트 스타일 헬퍼
   const scriptFont = { fontFamily: "'Pinyon Script', 'Alex Brush', cursive" };
@@ -1739,10 +1763,246 @@ export default function CinematicTemplate({ invitation }) {
       <GuestPhotoSnapSection invitation={invitation} isNightMode={isNightMode} isCinematic={true} />
 
       {/* ========================================================
-          11. 공유 2종 링크 & 브랜드 푸터
+          11. 방명록 (Guestbook - Figma 13787px~15446px: 780x1659 -> 1x 390x829.5 1:1 정밀 매칭)
+          ======================================================== */}
+      {showGuestbookSection && (() => {
+        const sampleGuestbooks = [
+          {
+            id: 'sample-1',
+            author: '장성경',
+            content: '두 사람 꽃길 결혼 생활 예약🌷\n행복과 축복으로 가득하길 바래🤍',
+            created_at: '2027. 10.21',
+          },
+          {
+            id: 'sample-2',
+            author: '민경훈',
+            content: '형, 드디어 장가갔네! 항상 좋은 일만 가득하길 바란다.\n형이 결혼할 줄 몰랐어. 나도 곧 따라갈게. 늘 행복해라~~~',
+            created_at: '2027. 10.21',
+          },
+          {
+            id: 'sample-3',
+            author: '강형욱',
+            content: '선남선녀끼리 잘만나 오래오래\n행복하길 기원해~~',
+            created_at: '2027. 10.21',
+          },
+        ];
+
+        const displayList = guestbookList.length > 0 ? guestbookList : (isSample ? sampleGuestbooks : []);
+        const totalPages = Math.max(isSample ? 3 : 1, Math.ceil(displayList.length / 3));
+        const safePageIndex = Math.min(guestbookPageIndex, Math.max(0, totalPages - 1));
+        const currentThree = displayList.slice(safePageIndex * 3, safePageIndex * 3 + 3);
+
+        const formatGuestbookDate = (dateStr) => {
+          if (!dateStr) return '2027. 10.21';
+          if (typeof dateStr === 'string' && dateStr.includes('.')) return dateStr;
+          try {
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return '2027. 10.21';
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}. ${m}.${day}`;
+          } catch {
+            return '2027. 10.21';
+          }
+        };
+
+        return (
+          <section
+            id="guestbook-section"
+            style={{
+              background: isNightMode
+                ? 'linear-gradient(180deg, #1E1E1E 0%, #141414 100%)'
+                : 'linear-gradient(180deg, #FEFEFE 0%, #EAEAEA 100%)',
+            }}
+            className="w-full pt-[96px] pb-[64.5px] px-[21px] text-center select-none overflow-hidden transition-colors duration-300"
+          >
+            <ScrollReveal>
+              {/* 상단 1: Guestbook (Figma: Cormorant Garamond 500, 50px -> 1x 25px, #292929, leading-[18px], top: 13979px) */}
+              <h2
+                style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                className={`text-[25px] font-medium leading-[18px] text-center select-none tracking-normal ${
+                  isNightMode ? 'text-white' : 'text-[#292929]'
+                }`}
+              >
+                Guestbook
+              </h2>
+
+              {/* 상단 2: 방명록 (Figma: NanumSquare Neo OTF 400, 36px -> 1x 18px, leading-[13px], mt-[36.5px], top: 14088px) */}
+              <p
+                className={`font-nanumsquare font-normal text-[18px] leading-[13px] text-center mt-[36.5px] tracking-tight ${
+                  isNightMode ? 'text-[#E5E5E5]' : 'text-[#292929]'
+                }`}
+              >
+                방명록
+              </p>
+
+              {/* 상단 3: 두 사람의 새로운 시작에 따뜻한 축복을 남겨주세요. (Figma: 28px -> 1x 14px, leading-[24px] 172%, mt-[43px], top: 14200px) */}
+              <p
+                className={`w-[156.5px] max-w-full mx-auto font-nanumsquare font-normal text-[14px] leading-[24px] text-center mt-[43px] tracking-tight whitespace-pre-line ${
+                  isNightMode ? 'text-[#D4D4D4]' : 'text-[#333333]'
+                }`}
+              >
+                두 사람의 새로운 시작에{'\n'}
+                따뜻한 축복을 남겨주세요.
+              </p>
+
+              {/* 중앙: 방명록 카드 3개 리스트 영역 (Figma: 1개당 696x247 -> 1x 348x123.5px, mt-[26.5px], top: 14349px) */}
+              <div
+                onTouchStart={(e) => {
+                  guestbookTouchStartX.current = e.touches[0].clientX;
+                }}
+                onTouchEnd={(e) => {
+                  if (guestbookTouchStartX.current === null) return;
+                  const deltaX = e.changedTouches[0].clientX - guestbookTouchStartX.current;
+                  guestbookTouchStartX.current = null;
+                  if (deltaX < -40 && safePageIndex < totalPages - 1) {
+                    setGuestbookPageIndex(safePageIndex + 1);
+                  } else if (deltaX > 40 && safePageIndex > 0) {
+                    setGuestbookPageIndex(safePageIndex - 1);
+                  }
+                }}
+                className="w-full max-w-[348px] mx-auto mt-[26.5px] flex flex-col gap-[11px] select-none touch-pan-y"
+              >
+                {currentThree.map((item, idx) => (
+                  <div
+                    key={item.id || idx}
+                    className={`w-full min-h-[123.5px] rounded-[14px] p-[18px] pb-[16px] flex flex-col justify-between text-left transition-colors duration-300 shadow-[0_2px_8px_rgba(0,0,0,0.04)] ${
+                      isNightMode
+                        ? 'bg-[#242424] border border-white/10 text-white'
+                        : 'bg-white border border-[#DCDCDC] text-stone-900'
+                    }`}
+                  >
+                    {/* 상단: 작성자 & 삭제 (X) 버튼 */}
+                    <div className="w-full flex items-center justify-between">
+                      <span
+                        className={`font-nanumsquare font-normal text-[10px] leading-none tracking-tight ${
+                          isNightMode ? 'text-[#A3A3A3]' : 'text-[#666666]'
+                        }`}
+                      >
+                        From : {item.author || item.name || '하객'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (isSample && String(item.id).startsWith('sample')) {
+                            alert('샘플 메시지입니다.');
+                            return;
+                          }
+                          setDeleteTargetMsg(item);
+                        }}
+                        className={`p-0.5 cursor-pointer transition-colors ${
+                          isNightMode
+                            ? 'text-stone-400 hover:text-white'
+                            : 'text-[#999999] hover:text-[#292929]'
+                        }`}
+                        title="메시지 삭제"
+                        aria-label="방명록 삭제"
+                      >
+                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                          <path
+                            d="M1 1L9 9M9 1L1 9"
+                            stroke="currentColor"
+                            strokeWidth="1.2"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+
+                    {/* 본문 메시지 (Figma: NanumSquare Neo OTF 23px -> 1x 11.5px, leading-[1.6], color: #333333) */}
+                    <p
+                      className={`font-nanumsquare font-normal text-[11.5px] leading-[1.6] my-[10px] whitespace-pre-line break-keep line-clamp-3 text-left ${
+                        isNightMode ? 'text-[#E5E5E5]' : 'text-[#333333]'
+                      }`}
+                    >
+                      {item.content}
+                    </p>
+
+                    {/* 하단: 등록 날짜 (Figma: NanumSquare Neo OTF 20px -> 1x 10px, color: #999999) */}
+                    <span
+                      className={`font-nanumsquare font-normal text-[10px] leading-none ${
+                        isNightMode ? 'text-[#888888]' : 'text-[#999999]'
+                      }`}
+                    >
+                      {formatGuestbookDate(item.created_at)}
+                    </span>
+                  </div>
+                ))}
+
+                {/* 메시지가 없을 때 (Empty State) */}
+                {currentThree.length === 0 && (
+                  <div
+                    onClick={() => setShowGuestbookModal(true)}
+                    className={`w-full min-h-[123.5px] rounded-[14px] p-[18px] flex flex-col justify-center items-center text-center cursor-pointer transition-all active:scale-[0.99] select-none border border-dashed ${
+                      isNightMode
+                        ? 'bg-[#242424]/60 border-white/10 hover:border-white/30 text-stone-400'
+                        : 'bg-white/80 border-[#DCDCDC] hover:border-[#999999] text-stone-500'
+                    }`}
+                  >
+                    <p className="font-nanumsquare text-[12px] tracking-tight">
+                      따뜻한 축하 메시지를 남겨주세요 ✍️
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* 페이지네이션 도트 (Figma 3 dots) */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-[4px] mt-[18px] select-none">
+                  {[...Array(totalPages)].map((_, pIdx) => (
+                    <button
+                      key={pIdx}
+                      type="button"
+                      onClick={() => setGuestbookPageIndex(pIdx)}
+                      className="px-[2px] py-1 flex items-center justify-center cursor-pointer bg-transparent border-none"
+                      aria-label={`방명록 페이지 ${pIdx + 1}`}
+                    >
+                      <span
+                        className={`w-[5px] h-[5px] rounded-full transition-all ${
+                          pIdx === (safePageIndex % totalPages)
+                            ? isNightMode
+                              ? 'bg-white scale-125'
+                              : 'bg-[#292929] scale-125'
+                            : isNightMode
+                            ? 'bg-white/30 hover:bg-white/50'
+                            : 'bg-[#CCCCCC] hover:bg-[#999999]'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* 하단: 글 남기기 버튼 (Figma: 268x78 -> 1x 134x39px, rounded-[24.5px], mt-[24px], bg: #393939) */}
+              <div className="mt-[24px] flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={() => setShowGuestbookModal(true)}
+                  style={{
+                    boxShadow: '0px 4px 14.2px rgba(0, 0, 0, 0.09)',
+                  }}
+                  className={`w-[134px] h-[39px] rounded-[24.5px] flex items-center justify-center transition-all cursor-pointer select-none active:scale-95 ${
+                    isNightMode
+                      ? 'bg-white hover:bg-stone-100 text-[#292929]'
+                      : 'bg-[#393939] hover:bg-[#252525] text-[#F3F3F3]'
+                  }`}
+                >
+                  <span className="font-nanumsquare font-bold text-[14px] leading-none text-center">
+                    글 남기기
+                  </span>
+                </button>
+              </div>
+            </ScrollReveal>
+          </section>
+        );
+      })()}
+
+      {/* ========================================================
+          12. 공유 2종 링크 & 브랜드 푸터
           ======================================================== */}
       <section className={`py-12 px-5 text-center transition-colors duration-300 ${
-        isNightMode ? 'bg-[#1E1E1E]' : 'bg-[#FEFEFE]'
+        isNightMode ? 'bg-[#141414]' : 'bg-[#EAEAEA]'
       }`}>
         <ScrollReveal>
           {/* 공유 2종 링크 */}
@@ -1802,7 +2062,14 @@ export default function CinematicTemplate({ invitation }) {
         <EditorialGuestbookModal
           invitationId={invitation?.id}
           onClose={() => setShowGuestbookModal(false)}
-          onSuccess={() => {}}
+          onSuccess={(newMsg) => setGuestbookList((prev) => [newMsg, ...prev])}
+        />
+      )}
+      {deleteTargetMsg && (
+        <EditorialGuestbookDeleteModal
+          targetMsg={deleteTargetMsg}
+          onClose={() => setDeleteTargetMsg(null)}
+          onDeleteSuccess={(delId) => setGuestbookList((prev) => prev.filter((m) => m.id !== delId))}
         />
       )}
       {galleryModalOpen && (

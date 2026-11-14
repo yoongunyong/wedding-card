@@ -200,6 +200,7 @@ function CreateInvitationContent() {
 
     bgm_url: BGM_OPTIONS[0].url,
     title_color: '#ffbe68',
+    default_theme: 'dark', // 시안 4 (시네마틱) 기본 테마 모드: 'dark' | 'light'
 
     show_intro: true,
     show_countdown: true,
@@ -1026,6 +1027,7 @@ function CreateInvitationContent() {
       interviews: interviews && interviews.length > 0 ? interviews : (!hasAnyName ? PREVIEW_FALLBACK.interviews : []),
       template_config: {
         title_color: formData.title_color,
+        default_theme: formData.default_theme || 'dark',
         show_intro: formData.show_intro,
         show_countdown: formData.show_countdown,
         show_gallery: formData.show_gallery,
@@ -1397,6 +1399,7 @@ function CreateInvitationContent() {
 
         template_config: {
           title_color: formData.title_color,
+          default_theme: formData.default_theme || 'dark',
           show_intro: formData.show_intro,
           show_countdown: formData.show_countdown,
           show_gallery: formData.show_gallery,
@@ -2016,6 +2019,82 @@ function CreateInvitationContent() {
                 </p>
               </div>
             </div>
+
+            {/* 시안 4 (시네마틱) 선택 시: 하객 첫 화면 기본 테마(다크모드 vs 라이트모드) 선택 */}
+            {formData.template_type === 'cinematic' && (
+              <div className="mt-6 pt-6 border-t border-[#F1F5F9] animate-fadeIn">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-[#0F172A]">하객 첫 화면 기본 테마 모드</span>
+                      <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-black text-white">시안 4 전용</span>
+                    </div>
+                    <p className="text-xs text-[#64748B] mt-0.5 font-light">
+                      하객이 청첩장 링크를 처음 열었을 때 보여줄 첫 화면 기본 무드를 선택해 주세요. (하객 화면 좌측 상단 버튼으로 언제든 자유롭게 전환 가능합니다)
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-[560px]">
+                  {/* 다크 모드 (Midnight) */}
+                  <button
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, default_theme: 'dark' }))}
+                    className={`p-4 rounded-2xl border-2 flex items-center justify-between text-left transition-all cursor-pointer ${
+                      formData.default_theme !== 'light'
+                        ? 'border-black bg-stone-950 text-white shadow-sm'
+                        : 'border-[#E5E8EB] bg-white hover:border-[#CBD5E1] text-[#334155]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">🌙</span>
+                      <div>
+                        <div className="text-xs font-semibold flex items-center gap-1.5">
+                          <span>다크 모드 (Midnight)</span>
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded font-normal ${
+                            formData.default_theme !== 'light' ? 'bg-white/20 text-stone-200' : 'bg-stone-100 text-stone-600'
+                          }`}>기본 추천</span>
+                        </div>
+                        <p className={`text-[11px] mt-0.5 font-light ${formData.default_theme !== 'light' ? 'text-stone-300' : 'text-[#64748B]'}`}>
+                          모노크롬 흑백 감성과 깊이감 있는 시네마틱 무드
+                        </p>
+                      </div>
+                    </div>
+                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ml-2 ${
+                      formData.default_theme !== 'light' ? 'border-white bg-white' : 'border-[#CBD5E1]'
+                    }`}>
+                      {formData.default_theme !== 'light' && <div className="w-1.5 h-1.5 bg-stone-950 rounded-full" />}
+                    </div>
+                  </button>
+
+                  {/* 라이트 모드 (Brightly) */}
+                  <button
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, default_theme: 'light' }))}
+                    className={`p-4 rounded-2xl border-2 flex items-center justify-between text-left transition-all cursor-pointer ${
+                      formData.default_theme === 'light'
+                        ? 'border-stone-900 bg-stone-50 text-stone-900 shadow-sm'
+                        : 'border-[#E5E8EB] bg-white hover:border-[#CBD5E1] text-[#334155]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">☀️</span>
+                      <div>
+                        <div className="text-xs font-semibold">라이트 모드 (Brightly)</div>
+                        <p className="text-[11px] text-[#64748B] mt-0.5 font-light">
+                          화사하고 밝은 아이보리 화이트 무드
+                        </p>
+                      </div>
+                    </div>
+                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ml-2 ${
+                      formData.default_theme === 'light' ? 'border-stone-900 bg-stone-900' : 'border-[#CBD5E1]'
+                    }`}>
+                      {formData.default_theme === 'light' && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                    </div>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           

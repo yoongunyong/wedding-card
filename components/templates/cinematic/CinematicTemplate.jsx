@@ -61,8 +61,14 @@ function renderTransitText(text) {
 }
 
 export default function CinematicTemplate({ invitation }) {
+  const config = invitation?.template_config || {};
+
   // 1. ☀️ Brightly (Day) ↔ 🌙 Midnight (Night) 듀얼 테마 스위처
-  const [isNightMode, setIsNightMode] = useState(false);
+  // 기본세팅: 고객(신랑신부)이 제작/수정 시 선택한 default_theme (기본값: 'dark' 다크모드)
+  const defaultIsNight = config.default_theme ? config.default_theme !== 'light' : true;
+  const [userNightMode, setUserNightMode] = useState(null);
+  const isNightMode = userNightMode !== null ? userNightMode : defaultIsNight;
+  const setIsNightMode = setUserNightMode;
 
   // 1-1. 커버 인트로 화면 상태 (기본값 true)
   const [showIntro, setShowIntro] = useState(true);
@@ -94,7 +100,6 @@ export default function CinematicTemplate({ invitation }) {
   // 실제 고객 청첩장에서는 고객이 미입력한 항목에 대해 타인의 정보나 더미가 절대 노출되지 않도록 공백/미노출 처리합니다.
   const isSample = invitation?.slug === 'cinematic' || invitation?.is_sample_preview === true;
 
-  const config = invitation?.template_config || {};
   const images = invitation?.images || {};
   const extra = invitation?.extra_data || {};
 

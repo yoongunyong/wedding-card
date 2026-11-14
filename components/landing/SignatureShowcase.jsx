@@ -52,8 +52,8 @@ export default function SignatureShowcase() {
   const [activeOpeningId, setActiveOpeningId] = useState('playlist');
   const [openingKey, setOpeningKey] = useState(0);
 
-  // 시안 4: 시네마틱 낮/밤 테마 상태
-  const [cinematicNight, setCinematicNight] = useState(false);
+  // 시안 4: 시네마틱 낮/밤 테마 상태 (기본값: 다크모드 Midnight)
+  const [cinematicNight, setCinematicNight] = useState(true);
 
   // 시안 5: 모던 씬 언블러 단계 제어
   const [sceneStep, setSceneStep] = useState(0);

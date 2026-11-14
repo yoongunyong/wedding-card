@@ -49,6 +49,14 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'VCR OSD Mono';
+  src: url('/fonts/VCROSDMono.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --background: #F7F8FA;
   --foreground: #171717;
@@ -133,6 +141,10 @@ body {
 
 .font-ownglyph {
   font-family: 'Ownglyph corncorn', 'OngleipKonkon', 'Caveat', cursive !important;
+}
+
+.font-vcr {
+  font-family: 'VCR OSD Mono', monospace !important;
 }
 
 /* 스크롤바 숨기기 유틸리티 */

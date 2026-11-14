@@ -3620,7 +3620,7 @@ function EditInvitationContent({ params }) {
               >
                 <BgmPlayer
                   bgmUrl={previewInvitation.bgm_url}
-                  hasIntro={['basic', 'editorial', 'playlist', 'cinematic'].includes(previewInvitation?.template_type) && previewInvitation?.template_config?.show_intro !== false}
+                  hasIntro={['basic', 'editorial', 'playlist', 'cinematic', 'scene'].includes(previewInvitation?.template_type) && previewInvitation?.template_config?.show_intro !== false}
                   template={previewInvitation?.template_type}
                 />
                 {previewInvitation?.template_type === 'scene' ? (

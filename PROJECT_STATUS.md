@@ -52,6 +52,101 @@
 
 ## 0. 최근 핫픽스 & 서비스 안정화 내역 (2026-11-14 오너 관점 결함 전수 조치 & 시안 개편)
 
+-29. **[시안 4(시네마틱) 최하단 카피라이트와 퀵 내비게이션 바 겹침 결함 수정 및 전 시안 전수 검증 (2026-11-14)]**:
+   - **사용자 문의/증상 보고**:
+     - "근데 시안3,5는 이 부분이 UI적으로 겹치지 않는데 시안4는 UI적으로 무키루 와 퀵 메뉴가 겹치더라고? 확인해볼래? 시안1,2 도 같이 확인해줘." (첨부 스크린샷: `DESIGNED BY ATELIER DE MUKIRU` 하단에 플로팅 퀵 메뉴가 10~15px 겹치는 현상)
+   - **원인 분석**:
+     - 플로팅 퀵 내비게이션(`QuickNavigationPill.jsx`)은 화면 하단 고정(`bottom-5` = 20px)에 자체 높이가 약 42px로 총 **62px** 높이 영역을 차지함.
+     - **시안 4 (`CinematicTemplate.jsx`)**: `ending-section`에 `pb-[50px]`가 완전히 누락되어 있었고 오직 `<p>` 태그에만 `pb-[50px]`가 적용되어 있어, 총 바닥 여백이 **50px**에 불과했음. 50px < 62px이므로 스크롤을 끝까지 내렸을 때 퀵 메뉴가 `DESIGNED BY ATELIER DE MUKIRU` 카피라이트를 직접 덮어버림.
+     - **시안 1, 2, 3, 5**: 모두 `<section>`에 `pb-[50px]`, `<p>`에 `pb-[40px]`가 적용되어 총 바닥 여백이 **90px**로 확보되어 있었음. 90px - 62px = 28px의 안전 마진이 있어 겹치지 않았음.
+   - **조치 상세 내역**:
+     - `components/templates/cinematic/CinematicTemplate.jsx`:
+       - `ending-section`에 `pt-0 pb-[50px]` 추가.
+       - 시안 4의 총 바닥 여백을 **100px**(`pb-[50px]` + `pb-[50px]`)로 확장하여 스크롤 최하단에서도 퀵 내비게이션 바 위로 약 38px의 넉넉하고 우아한 여백이 유지되도록 완전 해소.
+     - 시안 1(`BasicTemplate`), 시안 2(`EditorialTemplate`), 시안 3(`PlaylistTemplate`), 시안 5(`SceneTemplate`) 전수 점검 완료: 모두 90px의 바닥 여백이 적용되어 있어 퀵 메뉴와 겹침 없이 정상 렌더링 확인.
+   - **품질 검증**:
+     - `npx eslint components/templates/cinematic/CinematicTemplate.jsx`: 0 errors.
+     - `npm run build`: 성공 (Exit Code 0).
+
+-28. **[시안 5(모던 씬) 본문 섹션 2부터 11까지 시안 3(플레이리스트)과 100% 동일한 섹션 구조 및 타이포그래피 일치 (2026-11-14)]**:
+   - **사용자 요청/기획 의도**:
+     - "응 확인했어. 시안5 방금 수정한 섹션 이후로는 이제 시안3의 메인사진 들어가는 섹션 이후로 똑같이 구현해주면 될것같아. 구현할때 폰트도 시안3에서 사용하는 폰트 그대로."
+   - **조치 상세 내역**:
+     - `components/templates/scene/SceneTemplate.jsx`:
+       - **섹션 1 유지 및 마감선**: 시안 5 고유 레트로 캠코더 히어로 섹션(`CAMERA1 PLAY`, 4개 코너 브래킷, `Our Wedding Day!`, `Group 1275` 포커스 타겟, 일시, 장소, `4K 60FPS / HD`, `SCROLL TO OPEN ↓` 알약 버튼)은 그대로 보존하고, 하단에 0.5px solid #999999 구분선 추가.
+       - **섹션 2 (에디토리얼 스토리 / 모시는 글)**: `editorial-story-section` ID 부여로 상단 `SCROLL TO OPEN ↓` 클릭 시 스무스 스크롤 연동. `Cormorant Garamond` 영문 타이틀(`Welcome to / Minwoo & Yujin`), 신부/신랑 단독 포트레이트 카드 액자(`Bride.`, `Groom.` in `font-weddingday`), 혼주 정보 및 구분선 반영.
+       - **섹션 3 (커플 화보 & 초대합니다)**: 풀 와이드 커플 사진 화보, 모시는 글 제목(`초대합니다`), 본문, `연락하기` 버튼(`EditorialContactModal` 연동), 구분선.
+       - **섹션 4 (Wedding Day 캘린더)**: `Cormorant Garamond` 타이틀, 흑백 감성 화보, `NanumSquare Neo` 예식 일시, 7열 미니멀 달력, 구분선.
+       - **섹션 5 (gallery 사진 갤러리)**: `Cormorant Garamond` 타이틀, 메인 화보 대형 컷, 썸네일 8개 그리드, `더보기` 버튼(`EditorialGalleryModal` 전체화면 라이트박스 모달 연동), 구분선.
+       - **섹션 6 (location 식장 위치)**: 식장 이름, 주소 + 원클릭 복사, `KakaoMap` 지도, 네이버 지도 & 카카오내비 길안내 버튼, 지하철/버스 노선 공식 컬러 파서(`renderTransitText`) 기반 대중교통 안내, 구분선.
+       - **섹션 7 (Account 마음 전하실 곳)**: 신랑측/신부측 슬라이딩 인디케이터 탭, 계좌번호 복사하기 알약 버튼, 구분선.
+       - **섹션 8 (Notice 안내 사항)**: 186.5px × 236.5px 카드 캐러셀, 스와이프 및 도트 인디케이터, 구분선.
+       - **섹션 9 (R·S·V·P 참석 의사 전달)**: `참석 정보 전달하기` 버튼(`EditorialRsvpModal` 팝업 연동), 구분선.
+       - **섹션 9-2 (하객 현장 사진 선물)**: `GuestPhotoSnapSection` 연동 (`isEditorial={true}`).
+       - **섹션 10 (Guestbook 방명록)**: 3개 카드 세로 배치, 스와이프 터치 및 도트 페이지네이션, 방명록 삭제 모달(`EditorialGuestbookDeleteModal`), `글 남기기` 버튼(`EditorialGuestbookModal`), 구분선.
+       - **섹션 11 (Thank you 엔딩 감사)**: 풀 와이드 엔딩 화보, `Thank you` 타이틀, 감사 인사, 신랑·신부 드림, `DESIGNED BY ATELIER DE MUKIRU`.
+       - **타이포그래피 통일**: 영문 섹션 타이틀(`Cormorant Garamond`, #292929), 한글 타이틀 및 본문(`NanumSquare Neo`, #292929 / #333333), 영문 포트레이트 스크립트(`Weddingday Personal Use`).
+   - **품질 검증**:
+     - `npx eslint components/templates/scene/SceneTemplate.jsx`: 0 errors, 0 warnings.
+     - `npm run build`: 성공 (Exit Code 0).
+
+-27. **[시안 5(모던 씬) 본문 첫 화면(섹션 1) 메인 화보 피그마 1:1 실측 규격 및 CAMERA1 PLAY / SCROLL TO OPEN 반영 (2026-11-14)]**:
+   - **사용자 요청/기획 의도**:
+     - "이제 시안5의 본문 수정하자. 섹션1이야 (첫번째 이미지 참고). 메인사진이 들어갈 곳이야. 방금 수정했던 커버화면과 비슷한 UI인데 약간만 달라."
+     - 제공된 2x 피그마 CSS 좌표 및 첨부 시안 이미지 (`media_1794642221421_80009503.png`):
+       - 전체 캔버스: `780px × 1413px` (`#1C1C1C`) ➔ 1x `390px × 706.5px`
+       - 좌상단: `CAMERA1` / `PLAY` ('VCR OSD Mono' 40px -> 1x 20px, line-height 48px -> 24px, top 84px -> 42px, left: calc(50% - 165px/2 - 231.5px) -> 38px)
+       - PLAY 옆 삼각 재생 아이콘: 피그마 실측 `left: 179px, top: 139px, width: 41px, height: 34px, rotate: 90deg, r: 3px` ➔ 1x `left: 89.5px, top: 69.5px, width: 17px, height: 20.5px` 부드러운 라운드 SVG 삼각 아이콘 배치
+       - 우상단: 이름/REC 없이 코너 브래킷만 깔끔하게 유지
+       - 중앙 타이틀: `Our Wedding Day!` ('VCR OSD Mono' 60px -> 30px, top 319px -> 159.5px)
+       - 중앙 오토포커스 타겟 브래킷: Group 1275 실측 (`149.25px × 225.25px`, left: 120.5px, top: 234px)
+       - 일시 및 장소: `2027.May 15. 14:00 pm` / `서울 크리스탈 볼룸 1층`
+       - 하단 스펙: `4K 60FPS` / `HD`
+       - 하단 오픈 버튼: `SCROLL TO OPEN ↓` (232.4px × 55.3px -> 1x 116.2px × 27.65px, top 1298px -> 649px, border 0.7px solid #FEFEFE, rounded-full)
+   - **구현 및 정밀 개발 내역**:
+     1. **`SceneTemplate.jsx` 섹션 1 전면 개편**:
+        - 구버전 텍스트 페이드/펼쳐짐(`heroStep`) 제거 ➔ 피그마 실측 캔버스(`390px × 706.5px`) 기반 레트로 캠코더 재생 UI로 전면 교체.
+        - `CAMERA1 \n PLAY ▶` ('VCR OSD Mono') 좌상단 정밀 배치.
+        - 풀스크린 화보 배경 위에 뷰파인더 코너 브래킷 및 Group 1275 타겟 브래킷 1:1 정렬.
+        - `SCROLL TO OPEN ↓` 알약 버튼 클릭 시 본문 2섹션(초대합니다)으로 부드럽게 스크롤 이동(`handleScrollToOpen`).
+     2. **빌드 무결성 검증**:
+        - `npx eslint components/templates/scene/SceneTemplate.jsx`: 0 errors
+        - `npm run build`: Exit Code 0 통과
+
+-26. **[시안 5(모던 씬) 레트로 캠코더/뷰파인더 커버 화면(SceneIntro) 신설 및 1:1 피그마 규격 반영 (2026-11-14)]**:
+   - **사용자 요청/기획 의도**:
+     - "시안5 리뉴얼 작업하자. 이것도 마찬가지로 커버화면과 청첩장 본문의 구조를 가지고 있어. 그리고 화면을 터치하면 청첩장 본문으로 들어가는거지."
+     - 제공된 2x 피그마 CSS 좌표 및 2종 첨부 이미지(뷰파인더 UI 전체 레이아웃 및 Line 159 브래킷 실측):
+       - 전체 캔버스: `780px × 1386px` (`#1C1C1C`) ➔ 1x `390px × 693px`
+       - 뷰파인더 내부 영역: `695px × 1302px` ➔ 1x `347.5px × 651px` (상하 21px, 좌우 21.25px 여백)
+       - 4개 외곽 코너 브래킷(Line 159 등): `153px` (1x `76.5px`), `border: 4px solid #FEFEFE` (1x `2px`)
+       - 녹화 인디케이터: 빨간 점 `24px` (1x `12px`, `#F80602`, 펄스) + `REC` ('VCR OSD Mono' 32px -> 16px)
+       - 신랑/신부 성함: 권기득(신부) & 장민기(신랑) ('NanumSquare Neo' 34px -> 17px, top 142px -> 71px)
+       - 타이틀: `Our Wedding Day!` ('VCR OSD Mono' 60px -> 30px, top 319px -> 159.5px)
+       - 내부 포커싱 타겟 브래킷: `[  ]` (`38.25px` -> 1x `19.1px`, top 468px -> 234px, border 2px -> 1.5px)
+       - 일시: `2027.May 15. 14:00 pm` ('VCR OSD Mono' 34px -> 17px, top 1084px -> 542px)
+       - 장소: `서울 크리스탈 볼룸 1층` ('NanumSquare Neo' 30px -> 15px, top 1141px -> 570.5px)
+       - 캠코더 사양: `4K 60FPS` (top 1285px -> 642.5px), `HD` (top 1285px -> 642.5px)
+       - 하단 터치 힌트: `화면을 터치해주세요` ('NanumMyeongjo' 20px -> 10px, top 1335px -> 667.5px)
+   - **구현 및 정밀 개발 내역**:
+     1. **`VCR OSD Mono` 폰트 에셋 탑재 및 전역 설정**:
+        - `public/fonts/VCROSDMono.woff2` 경량 웹폰트 탑재 및 `app/globals.css` 내 `@font-face` 및 `.font-vcr` 유틸리티 클래스 등록.
+     2. **`SceneIntro.jsx` 피그마 1:1 실측 컴포넌트 신설 (`components/templates/scene/SceneIntro.jsx`)**:
+        - 반응형 자동 스케일러(scale calculation)를 통해 모바일/태블릿/데스크톱 미리보기 모달 전 환경에서 `390px × 693px` 비율 완벽 유지.
+        - 풀스크린 화보 배경(`photo-07-grass-run.jpg` 등) 위에 뷰파인더 4개 코너 브래킷 및 중앙 오토포커스 타겟 마크 정밀 렌더링.
+        - 깜빡이는 녹화 빨간 점(`animate-pulse`)과 `REC`, `4K 60FPS`, `HD` 레트로 캠코더 OSD 완벽 구현.
+        - **신랑/신부 성함 위치 정밀 보정**: 피그마 2x 실측 공식 `calc(50% - 97px/2 - 235.5px)`를 1x로 `calc(50% - 48.5px/2 - 117.75px)` (좌측 53px 위치, 상단 71px)로 정밀 변환하여 브래킷 안쪽에 완벽한 여백으로 안착하도록 수정 (우측 `장민기` 또한 `calc(50% - 48.5px/2 + 117.75px)`로 대칭 일치).
+        - **중앙 오토포커스 타겟 영역 피그마 Group 1275 1:1 실측 반영**: `width: 298.5px, height: 450.5px, left: 241px, top: calc(50% - 450.5px/2 + 0.25px)` (1x: `149.25px × 225.25px`, `left: 120.5px`, `top: 234px`) 컨테이너를 구성하고, 4개 모서리에 `19.125px` L자 브래킷을 정확히 배치하여 신랑신부 전신을 감싸는 시안 비율 100% 일치.
+     3. **시안 1~4와 100% 동일한 3단계 시네마틱 암전 트랜지션 & BGM 자동 재생**:
+        - 하객의 첫 화면 터치 시 브라우저 정책을 충족하며 `play-wedding-bgm` 이벤트 디스패치.
+        - 800ms 화면 암전(`darkening`) ➔ 850ms 본문 전환 및 최상단 스크롤 리셋 ➔ 1200ms 안개 걷힘(`revealing`) ➔ 1250ms 언마운트 완료.
+     4. **`SceneTemplate.jsx` 및 플랫폼 시스템 동기화**:
+        - `SceneTemplate.jsx` 내 `showIntro` 상태 및 모달 스크롤 락 연동, 인트로가 닫히기 전까지 본문 오프닝 텍스트 애니메이션 대기 처리.
+        - `app/[slug]/page.js`, `app/create/page.js`, `app/manage/[slug]/edit/page.js`의 `hasIntro` / `hasActualIntro` 배열에 `'scene'`을 포함하여 전체 5대 시안의 인트로 지원 정합성 완성.
+   - **검증 결과**:
+     - `npx eslint components/templates/scene/SceneIntro.jsx components/templates/scene/SceneTemplate.jsx`: 0 errors
+     - `npm run build`: Exit Code 0 (전체 8개 라우트 빌드 성공)
+
 -25. **[시안 3(플레이리스트) & 시안 4(시네마틱) 커버 터치 시 암전 페이드 및 음악 자동 재생 동기화 (2026-11-14)]**:
    - **사용자 요청/기획 의도**:
      - "지금 시안3,4 화면 터치하면 본문으로 들어가잖아. 그 구간을 시안1,2 처럼 화면 어두워졌다가 다시 나타나면서 음악 자동 재생되는 것처럼 그렇게 해줘. 현재 시안1,2가 그렇게 되어있지?"

@@ -201,10 +201,9 @@ export default async function WeddingCardPage({ params }) {
   const isCinematic = invitation.template_type === 'cinematic';
   const templateType = invitation.template_type || 'basic';
 
-  // 시안 1, 2, 3, 4는 별도 오프닝 커버 화면(수락/OPEN/터치)이 있고, 시안 5는 바로 본문 시작
-  // 오프닝 커버가 있는 경우: '수락/오픈/터치' 인터랙션 시 BGM 시작
-  // 오프닝 커버가 없는 경우(시안 5): 하객의 첫 화면 터치(click/touchstart) 시 BGM 자동 시작
-  const hasActualIntro = ['basic', 'editorial', 'playlist', 'cinematic'].includes(templateType) && invitation?.template_config?.show_intro !== false;
+  // 전 시안(시안 1~5) 모두 별도 오프닝 커버 화면(수락/OPEN/터치)이 있으며,
+  // '수락/오픈/터치' 인터랙션 시 BGM 시작
+  const hasActualIntro = ['basic', 'editorial', 'playlist', 'cinematic', 'scene'].includes(templateType) && invitation?.template_config?.show_intro !== false;
 
   // 하객 화면에는 관리자 비밀번호, 토큰, 주문 코드가 절대 노출되지 않도록 철저히 삭제
   const safeConfig = { ...(invitation.template_config || {}) };

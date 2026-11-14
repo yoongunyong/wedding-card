@@ -2011,7 +2011,7 @@ export default function CinematicTemplate({ invitation }) {
           ======================================================== */}
       <section 
         id="ending-section"
-        className={`w-full max-w-[430px] mx-auto text-center select-none overflow-hidden transition-colors duration-300 ${
+        className={`w-full max-w-[430px] mx-auto pt-0 pb-[50px] text-center select-none overflow-hidden transition-colors duration-300 ${
           isNightMode ? 'bg-[#141414]' : 'bg-[#FEFEFE]'
         }`}
       >

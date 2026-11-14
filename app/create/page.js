@@ -1878,7 +1878,7 @@ function CreateInvitationContent() {
                    formData.template_type === 'editorial' ? 'OPTION 02 · 에디토리얼' :
                    formData.template_type === 'playlist' ? 'OPTION 03 · 플레이리스트' :
                    formData.template_type === 'cinematic' ? 'OPTION 04 · 시네마틱' :
-                   formData.template_type === 'scene' ? 'OPTION 05 · 모던 씬' : '시안 선택'}
+                   formData.template_type === 'scene' ? 'OPTION 05 · 레트로 캠코더' : '시안 선택'}
                 </span>
               </div>
             </div>
@@ -2012,10 +2012,10 @@ function CreateInvitationContent() {
                   </div>
                 </div>
                 <h3 className="text-sm font-semibold text-[#0F172A] mb-1">
-                  모던 씬 (Scene 02)
+                  레트로 캠코더 (Retro 90s)
                 </h3>
                 <p className="text-xs text-[#64748B] font-light leading-relaxed">
-                  우아하고 차분한 모던 클래식 & 인터뷰 Q&A, 3열 캘린더, 전세버스/식사 RSVP
+                  90년대 빈티지 캠코더 뷰파인더 & VCR OSD 비네팅 화보, 에디토리얼 스토리 & 참석 RSVP
                 </p>
               </div>
             </div>

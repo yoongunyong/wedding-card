@@ -14,8 +14,8 @@ const OFFICIAL_TEMPLATES = [
     subTitle: 'AirDrop Edition',
     badge: '인스타 화제 1위',
     dateText: '2026. 12. 05 SAT',
-    names: '김도현 · 이서연',
-    venue: '그랜드 힐튼 서울',
+    names: '현빈 · 손예진',
+    venue: '워커힐 애스톤하우스',
     image: '/airdrop-couple.png',
     concept: '아이폰 AirDrop 팝업 & 인스타 오프닝',
     accentColor: 'from-slate-950/85 via-slate-900/40 to-transparent',
@@ -29,7 +29,7 @@ const OFFICIAL_TEMPLATES = [
     subTitle: 'Editorial Lookbook',
     badge: '매거진 룩북형',
     dateText: '2027. 05. 15 SUN',
-    names: '강민준 · 박지민',
+    names: '원빈 · 이나영',
     venue: '반얀트리 클럽 앤 스파 서울',
     image: '/samples/main-02-editorial.jpg',
     concept: '우아한 캘리그래피 & 화이트 룩북 오프닝',
@@ -44,7 +44,7 @@ const OFFICIAL_TEMPLATES = [
     subTitle: 'Wedding Playlist',
     badge: '뮤직 앨범형',
     dateText: '2027. 05. 23 SUN',
-    names: '강민우 · 서유진',
+    names: '조정석 · 거미',
     venue: '빌라드지디 청담',
     image: '/samples/main-03-playlist.jpg',
     concept: '미니멀 뮤직 플레이어 카드 & 실시간 BGM',
@@ -59,7 +59,7 @@ const OFFICIAL_TEMPLATES = [
     subTitle: 'Cinematic Monolith',
     badge: '영화 포스터 룩',
     dateText: '2027. 11. 07 SUN',
-    names: '이진호 · 김나은',
+    names: '이병헌 · 이민정',
     venue: '신라호텔 서울',
     image: '/samples/cinematic-cover.jpg',
     concept: '35mm 필름 영화 포스터 감성 화보 & Day/Night 모드',
@@ -70,15 +70,15 @@ const OFFICIAL_TEMPLATES = [
     id: 'scene',
     templateId: 'scene',
     category: 'OPTION 05',
-    title: '모던 씬 (Scene 02)',
-    subTitle: 'Modern Elegance & Scene',
-    badge: 'NEW 시안',
-    dateText: '2027. 04. 24 SAT',
-    names: '최현우 · 윤서아',
-    venue: '더채플앳논현',
-    image: '/samples/scene-cover.jpg',
-    concept: '은은한 블러 배경 & 3줄 감성 초대글 오프닝',
-    accentColor: 'from-warm-gray-950/85 via-stone-900/40 to-transparent',
+    title: '레트로 캠코더',
+    subTitle: 'Retro Camcorder & Viewfinder',
+    badge: 'NEW 90s 감성',
+    dateText: '2027. 05. 15 SAT',
+    names: '연정훈 · 한가인',
+    venue: '서울 크리스탈 볼룸 1층',
+    image: '/samples/photo-07-grass-run.jpg',
+    concept: '90년대 레트로 캠코더 뷰파인더 & VCR OSD 비네팅 화보',
+    accentColor: 'from-neutral-950/90 via-stone-900/40 to-transparent',
     type: 'scene',
   },
 ];
@@ -411,7 +411,7 @@ export default function HeroCardSwiper() {
                   <img
                     src={card.image}
                     alt={card.title}
-                    className={`absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${card.type === 'playlist' ? 'grayscale contrast-105' : ''}`}
+                    className={`absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${card.type === 'cinematic' ? 'grayscale contrast-105' : ''}`}
                     loading="lazy"
                   />
 
@@ -432,7 +432,7 @@ export default function HeroCardSwiper() {
                           📡
                         </div>
                         <p className="text-[11px] font-bold text-slate-800">AirDrop 공유 요청</p>
-                        <p className="text-[9px] text-slate-500 mt-0.5">김도현 님이 청첩장을 공유합니다</p>
+                        <p className="text-[9px] text-slate-500 mt-0.5">현빈 님이 청첩장을 공유합니다</p>
                       </div>
                     </div>
                   )}
@@ -455,112 +455,219 @@ export default function HeroCardSwiper() {
                     </div>
                   )}
 
+                  {/* [시안 03: 감성 플레이리스트 - 실제 시안 3 뮤직 플레이어 UI 카드] */}
                   {card.type === 'playlist' && (
-                    <div className="absolute inset-x-3.5 sm:inset-x-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
-                      <div className="bg-[#FAF8F5]/95 backdrop-blur-md p-4 sm:p-4.5 rounded-[26px] shadow-xl border border-stone-200/80 text-left select-none">
-                        {/* 1. 영문 날짜 */}
-                        <span className="text-[10px] font-sans tracking-[0.24em] text-[#8E8E93] font-normal uppercase block mb-1">
-                          MAY 23, 2027
-                        </span>
-
-                        {/* 2. 신랑 💗 신부 (정통 본명조 Noto Serif KR) & 우측 라인 하트 (시안 3 원본 100% 일치) */}
-                        <div className="flex items-center justify-between">
-                          <h4 
-                            style={{ fontFamily: "'Noto Serif KR', 'Nanum Myeongjo', serif" }}
-                            className="text-[17px] sm:text-[18px] font-normal text-[#1C1C1E] tracking-tight flex items-center gap-1"
+                    <div className="absolute inset-x-3.5 top-1/2 -translate-y-1/2 z-10 pointer-events-none select-none">
+                      <div className="bg-white/95 backdrop-blur-md p-3.5 sm:p-4 rounded-[24px] shadow-2xl border border-white/60 text-[#292929] flex flex-col items-center">
+                        {/* 상단 성함 & 구분선 (시안 3 정통 헤더) */}
+                        <div className="w-full flex items-center justify-between px-1 mb-2">
+                          <span 
+                            className="text-[12px] text-[#292929] font-medium tracking-tight"
+                            style={{ fontFamily: "'NanumMyeongjo', 'Noto Serif KR', serif" }}
                           >
-                            <span>강민우</span>
-                            <span className="text-[13px] mx-0.5">💗</span>
-                            <span>서유진</span>
-                          </h4>
-
-                          {/* 시안 3 원본 얇은 미니멀 라인 하트 SVG */}
-                          <svg
-                            className="w-4 h-4 text-[#1C1C1E]"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth="1.3"
-                            fill="none"
+                            조정석
+                          </span>
+                          <div className="flex-1 mx-2.5 border-t border-[#999999]/60" />
+                          <span 
+                            className="text-[12px] text-[#292929] font-medium tracking-tight"
+                            style={{ fontFamily: "'NanumMyeongjo', 'Noto Serif KR', serif" }}
                           >
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-                          </svg>
+                            거미
+                          </span>
                         </div>
 
-                        {/* 3. 실제 시안 3 원본 1줄 서브카피: '저희  결혼합니다.' (자간 0.18em Noto Serif KR) */}
+                        {/* Getting married 감성 손글씨 */}
                         <p 
-                          style={{ fontFamily: "'Noto Serif KR', 'Nanum Myeongjo', serif" }}
-                          className="text-[11.5px] text-[#8E8E93] tracking-[0.18em] font-normal mt-1"
+                          className="text-[18px] text-[#292929] leading-none mb-3 text-center"
+                          style={{ fontFamily: "'Weddingday Personal Use', 'Bickham Script Pro', cursive" }}
                         >
-                          저희  결혼합니다.
+                          Getting married
                         </p>
 
-                        {/* 4. 프로그레스 바 (트랙 높이 3px, 정밀 핸들 점, 시간 3:19 / - 4:26) */}
-                        <div className="mt-3.5">
-                          <div className="relative w-full h-[3px] bg-[#E5E5EA] rounded-full flex items-center">
-                            <div 
-                              className="h-full bg-[#1C1C1E] rounded-full relative flex items-center justify-end"
-                              style={{ width: '38%' }}
-                            >
-                              <div className="w-2 h-2 rounded-full bg-[#1C1C1E] shadow-xs shrink-0 -mr-1" />
-                            </div>
+                        {/* 프로그레스 바 & 재생 점 */}
+                        <div className="w-full space-y-1 mb-2.5">
+                          <div className="relative w-full h-[2px] bg-[#292929]/20 rounded-full">
+                            <div className="absolute left-0 top-0 h-full bg-[#292929] rounded-full" style={{ width: '42%' }} />
+                            <div className="absolute -top-[3px] left-[42%] w-[8px] h-[8px] rounded-full bg-[#292929] shadow-xs" />
                           </div>
-
-                          <div className="mt-1.5 flex items-center justify-between text-[9px] font-mono text-[#8E8E93]">
-                            <span>3:19</span>
-                            <span>- 4:26</span>
+                          <div className="flex justify-between text-[7.5px] text-[#292929] font-mono leading-none">
+                            <span>0:16</span>
+                            <span>3:37</span>
                           </div>
                         </div>
 
-                        {/* 5. 실제 시안 3 원본 미디어 컨트롤러 (셔플, 이전곡, 재생 원형 버튼, 다음곡, 반복) 1:1 일치 */}
-                        <div className="mt-3 flex items-center justify-between px-1 text-[#1C1C1E]">
-                          {/* 셔플 */}
-                          <svg className="w-3.5 h-3.5 stroke-current fill-none" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                            <path d="M16 3h5v5" /><path d="M4 20L21 3" /><path d="M21 16v5h-5" /><path d="M15 15l6 6" /><path d="M4 4l5 5" />
+                        {/* 5대 컨트롤러 (하트, 이전곡, 재생원형, 다음곡, 더보기) */}
+                        <div className="w-full flex items-center justify-between px-1 mb-2 text-[#292929]">
+                          {/* 하트 */}
+                          <svg width="13" height="12" viewBox="0 0 24 22" fill="none" stroke="#292929" strokeWidth="2">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                           </svg>
                           {/* 이전곡 */}
-                          <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                            <rect x="4" y="4" width="3" height="16" rx="1.2" />
-                            <path d="M20 5.2v13.6a1 1 0 0 1-1.6.8L9.2 12.8a1 1 0 0 1 0-1.6L18.4 4.4a1 1 0 0 1 1.6.8z" />
+                          <svg width="13" height="12" viewBox="0 0 24 24" fill="#292929">
+                            <rect x="3" y="4" width="2.5" height="16" rx="0.5" />
+                            <polygon points="21,4 8,12 21,20" />
                           </svg>
-                          {/* 중앙 재생 원형 버튼 */}
-                          <div className="w-7 h-7 rounded-full bg-[#1C1C1E] text-white flex items-center justify-center shadow-xs">
-                            <svg className="w-3 h-3 fill-current ml-0.5" viewBox="0 0 24 24">
-                              <path d="M8 5v14l11-7z" />
-                            </svg>
+                          {/* 재생원형 (26px) */}
+                          <div className="w-7 h-7 rounded-full bg-[#292929] flex items-center justify-center shadow-xs">
+                            <div className="flex items-center gap-[2px]">
+                              <div className="w-[1.6px] h-2.5 bg-[#FAFAFA] rounded-xs" />
+                              <div className="w-[1.6px] h-2.5 bg-[#FAFAFA] rounded-xs" />
+                            </div>
                           </div>
                           {/* 다음곡 */}
-                          <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                            <rect x="17" y="4" width="3" height="16" rx="1.2" />
-                            <path d="M4 5.2v13.6a1 1 0 0 0 1.6.8L14.8 12.8a1 1 0 0 0 0-1.6L5.6 4.4A1 1 0 0 0 4 5.2z" />
+                          <svg width="13" height="12" viewBox="0 0 24 24" fill="#292929">
+                            <polygon points="3,4 16,12 3,20" />
+                            <rect x="18.5" y="4" width="2.5" height="16" rx="0.5" />
                           </svg>
-                          {/* 반복 */}
-                          <svg className="w-3.5 h-3.5 stroke-current fill-none" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                            <path d="M17 1l4 4-4 4" /><path d="M3 11V9a4 4 0 0 1 4-4h14" /><path d="M7 23l-4-4 4-4" /><path d="M21 13v2a4 4 0 0 1-4 4H3" />
+                          {/* 더보기 */}
+                          <svg width="13" height="4" viewBox="0 0 24 6" fill="#292929">
+                            <circle cx="4" cy="3" r="2.2" />
+                            <circle cx="12" cy="3" r="2.2" />
+                            <circle cx="20" cy="3" r="2.2" />
+                          </svg>
+                        </div>
+
+                        {/* 보조 컨트롤: 셔플 & 터치 안내 & 반복재생 */}
+                        <div className="w-full flex items-center justify-between px-2 pt-1 border-t border-[#292929]/10 text-[#292929]/70">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="16 3 21 3 21 8" /><line x1="4" y1="20" x2="21" y2="3" /><polyline points="21 16 21 21 16 21" /><line x1="15" y1="15" x2="21" y2="21" /><line x1="4" y1="4" x2="9" y2="9" />
+                          </svg>
+                          <span 
+                            className="text-[8px] text-[#666666] tracking-wider animate-pulse font-serif"
+                            style={{ fontFamily: "'NanumMyeongjo', serif" }}
+                          >
+                            화면을 터치해주세요
+                          </span>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14" /><polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 0 1-4 4H3" />
                           </svg>
                         </div>
                       </div>
                     </div>
                   )}
 
+                  {/* [시안 04: 시네마틱 모노리스 - 영화 포스터 룩] */}
                   {card.type === 'cinematic' && (
-                    <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none text-center">
-                      <p className="font-mono text-[9px] tracking-[0.3em] text-amber-200/90 uppercase mb-1">
-                        A FILM BY ATELIER MUKIRU
-                      </p>
-                      <p className="font-editorial-serif text-lg tracking-widest text-white font-bold drop-shadow-md">
-                        OUR FIRST PAGE
-                      </p>
+                    <div className="absolute inset-0 pointer-events-none p-5 select-none flex flex-col justify-between items-center text-center z-10">
+                      {/* 상단: The marriage of & 영문 이름 */}
+                      <div className="pt-3">
+                        <p
+                          className="text-[25px] sm:text-[27px] text-white leading-none font-normal drop-shadow-md"
+                          style={{ fontFamily: "'Weddingday Personal Use', 'Bickham Script Pro', cursive" }}
+                        >
+                          The marriage of
+                        </p>
+                        <h4
+                          className="text-[12px] sm:text-[13px] text-white/95 font-medium tracking-[0.14em] uppercase mt-2 drop-shadow-sm"
+                          style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                        >
+                          BYUNG HUN & MIN JUNG
+                        </h4>
+                      </div>
+
+                      {/* 하단 메타: Welcome to our Wedding Day & 터치 안내 (하단 바닥 정보 바로 위 pb-20) */}
+                      <div className="pb-20 space-y-1">
+                        <p
+                          className="text-[12px] text-stone-200 tracking-[0.08em] font-light drop-shadow-sm"
+                          style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                        >
+                          Welcome to our Wedding Day
+                        </p>
+                        <p
+                          className="text-[8.5px] text-stone-300 tracking-wider font-nanummyeongjo animate-pulse pt-0.5"
+                          style={{ fontFamily: "'NanumMyeongjo', serif" }}
+                        >
+                          화면을 터치해주세요
+                        </p>
+                      </div>
                     </div>
                   )}
 
+                  {/* [시안 05: 레트로 캠코더 - 4귀퉁이 음영 & VCR OSD 뷰파인더] */}
                   {card.type === 'scene' && (
-                    <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none text-center">
-                      <div className="bg-black/30 backdrop-blur-xs p-3 rounded-2xl border border-white/10">
-                        <p className="text-[11px] text-white/90 font-serif leading-relaxed">
-                          가장 눈부신 날,<br />
-                          두 사람이 하나 되어<br />
-                          소중한 분들을 모십니다.
+                    <div className="absolute inset-0 pointer-events-none p-3 select-none flex flex-col justify-between z-10">
+                      {/* 4귀퉁이 레트로 캠코더 딥 비네팅 음영 */}
+                      <div
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                          background: `
+                            radial-gradient(circle 120px at 0% 0%, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.5) 35%, transparent 75%),
+                            radial-gradient(circle 120px at 100% 0%, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.5) 35%, transparent 75%),
+                            radial-gradient(circle 120px at 0% 100%, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.5) 35%, transparent 75%),
+                            radial-gradient(circle 120px at 100% 100%, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.5) 35%, transparent 75%),
+                            linear-gradient(to bottom, rgba(0, 0, 0, 0.25) 0%, transparent 18%, transparent 82%, rgba(0, 0, 0, 0.35) 100%)
+                          `,
+                        }}
+                      />
+
+                      {/* 4개 코너 브래킷 ┌ ┐ └ ┘ */}
+                      <div className="absolute top-3 left-3 w-5 h-5 border-t-[1.5px] border-l-[1.5px] border-[#FEFEFE] pointer-events-none" />
+                      <div className="absolute top-3 right-3 w-5 h-5 border-t-[1.5px] border-r-[1.5px] border-[#FEFEFE] pointer-events-none" />
+                      <div className="absolute bottom-20 left-3 w-5 h-5 border-b-[1.5px] border-l-[1.5px] border-[#FEFEFE] pointer-events-none" />
+                      <div className="absolute bottom-20 right-3 w-5 h-5 border-b-[1.5px] border-r-[1.5px] border-[#FEFEFE] pointer-events-none" />
+
+                      {/* 상단: REC 녹화 인디케이터 & 신랑신부 (브래킷 아래 top-9에 정돈 배치하여 브래킷과 완전 분리) */}
+                      <div className="absolute top-9 inset-x-6 z-10 flex items-center justify-between pointer-events-none">
+                        <span
+                          className="text-[10px] text-white/90 tracking-wide"
+                          style={{ fontFamily: "'NanumSquare Neo', sans-serif" }}
+                        >
+                          한가인
+                        </span>
+                        <div className="flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-xs">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#F80602] animate-pulse" />
+                          <span
+                            className="text-[10px] text-[#FEFEFE]"
+                            style={{ fontFamily: "'VCR OSD Mono', monospace" }}
+                          >
+                            REC
+                          </span>
+                        </div>
+                        <span
+                          className="text-[10px] text-white/90 tracking-wide"
+                          style={{ fontFamily: "'NanumSquare Neo', sans-serif" }}
+                        >
+                          연정훈
+                        </span>
+                      </div>
+
+                      {/* 중앙: Our Wedding Day! + 타겟 오토포커스 브래킷 */}
+                      <div className="absolute inset-x-3 top-1/2 -translate-y-1/2 z-10 pointer-events-none text-center flex flex-col items-center">
+                        <p
+                          className="text-[18px] sm:text-[20px] text-[#FEFEFE] tracking-tight drop-shadow-md mb-2.5"
+                          style={{ fontFamily: "'VCR OSD Mono', monospace" }}
+                        >
+                          Our Wedding Day!
                         </p>
+                        {/* 타겟 포커스 브래킷 */}
+                        <div className="relative w-16 h-22 pointer-events-none flex items-center justify-center">
+                          <div className="absolute top-0 left-0 w-2.5 h-2.5 border-t-[1.5px] border-l-[1.5px] border-[#FEFEFE]" />
+                          <div className="absolute top-0 right-0 w-2.5 h-2.5 border-t-[1.5px] border-r-[1.5px] border-[#FEFEFE]" />
+                          <div className="absolute bottom-0 left-0 w-2.5 h-2.5 border-b-[1.5px] border-l-[1.5px] border-[#FEFEFE]" />
+                          <div className="absolute bottom-0 right-0 w-2.5 h-2.5 border-b-[1.5px] border-r-[1.5px] border-[#FEFEFE]" />
+                        </div>
+                      </div>
+
+                      {/* 하단: 4K 60FPS / 화면을 터치해주세요 / HD (바닥 정보 바 위 bottom-20에 정렬) */}
+                      <div className="absolute bottom-20 inset-x-5 z-10 flex items-center justify-between text-[#FEFEFE] pointer-events-none">
+                        <span
+                          className="text-[8.5px]"
+                          style={{ fontFamily: "'VCR OSD Mono', monospace" }}
+                        >
+                          4K 60FPS
+                        </span>
+                        <span
+                          className="text-[9px] tracking-wider font-serif animate-pulse opacity-90"
+                          style={{ fontFamily: "'NanumMyeongjo', serif" }}
+                        >
+                          화면을 터치해주세요
+                        </span>
+                        <span
+                          className="text-[8.5px]"
+                          style={{ fontFamily: "'VCR OSD Mono', monospace" }}
+                        >
+                          HD
+                        </span>
                       </div>
                     </div>
                   )}

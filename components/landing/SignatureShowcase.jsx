@@ -34,16 +34,16 @@ const OPENING_PREVIEWS = [
     name: '시네마틱',
     fullName: '시안 04 · 시네마틱 모노리스',
     badge: '영화 포스터 룩',
-    tag: 'Our First Page & 필름 룩',
-    desc: '좌측 상단 Day/Night 테마 스위처와 신랑신부 상단에 얹힌 유려한 Our First Page 필기체 타이포가 돋보입니다.',
+    tag: 'The marriage of & 웰컴 타이포',
+    desc: '유려한 The marriage of 영문 필기체와 모던 세리프 성함, 흑백 모노톤 화보와 "Welcome to our Wedding Day" 웰컴 문구가 돋보이는 영화 포스터 룩입니다.',
   },
   {
     id: 'scene',
-    name: '모던 씬',
-    fullName: '시안 05 · 모던 씬 (Scene 02)',
-    badge: 'NEW 시안',
-    tag: '몽환적 블러 & 3줄 감성 오프닝',
-    desc: '사진 전체가 블러된 몽환적 배경에서 3줄의 초대글이 떠오른 뒤, 중앙의 사진이 쫘아악 선명하게 펼쳐집니다.',
+    name: '레트로 캠코더',
+    fullName: '시안 05 · 레트로 캠코더 (Retro 90s)',
+    badge: 'NEW 90s 감성',
+    tag: '90s VCR 뷰파인더 & 비네팅 화보',
+    desc: '4코너 브래킷과 REC 녹화 인디케이터, VCR OSD 폰트 및 4귀퉁이 비네팅 음영이 돋보이는 90년대 빈티지 캠코더 뷰파인더 오프닝입니다.',
   },
 ];
 
@@ -55,8 +55,8 @@ export default function SignatureShowcase() {
   // 시안 4: 시네마틱 낮/밤 테마 상태 (기본값: 다크모드 Midnight)
   const [cinematicNight, setCinematicNight] = useState(true);
 
-  // 시안 5: 모던 씬 언블러 단계 제어
-  const [sceneStep, setSceneStep] = useState(0);
+  // 시안 5: 레트로 캠코더 뷰파인더 깜빡임 및 녹화 펄스 제어
+  const [sceneBlink, setSceneBlink] = useState(false);
 
   // 피처 4: BGM 플레이어 상태 (실제 음원 및 재생/정지 토글)
   const [isPlayingBgm, setIsPlayingBgm] = useState(false);
@@ -80,32 +80,26 @@ export default function SignatureShowcase() {
 
   const activeOpening = OPENING_PREVIEWS.find((p) => p.id === activeOpeningId) || OPENING_PREVIEWS[2];
 
-  // 시안 5 전환 시 실제 템플릿의 단계별 타이머 재현
+  // 시안 5 전환 및 다시보기 시 캠코더 깜빡임(Blink) 효과
   useEffect(() => {
     if (activeOpeningId === 'scene') {
-      const t0 = setTimeout(() => setSceneStep(0), 0);
-      const t1 = setTimeout(() => setSceneStep(1), 300);
-      const t2 = setTimeout(() => setSceneStep(2), 1100);
-      const t3 = setTimeout(() => setSceneStep(3), 1900);
-      const t4 = setTimeout(() => setSceneStep(4), 2800);
+      const t1 = setTimeout(() => setSceneBlink(true), 0);
+      const t2 = setTimeout(() => setSceneBlink(false), 450);
       return () => {
-        clearTimeout(t0);
         clearTimeout(t1);
         clearTimeout(t2);
-        clearTimeout(t3);
-        clearTimeout(t4);
       };
     }
   }, [activeOpeningId, openingKey]);
 
   const handleCopyAddress = () => {
-    navigator.clipboard?.writeText('서울 강남구 압구정로 123 더채플앳청담');
+    navigator.clipboard?.writeText('서울 광진구 워커힐로 177 워커힐 애스톤하우스');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleReplayOpening = () => {
-    setSceneStep(0);
+    setSceneBlink(true);
     setOpeningKey((prev) => prev + 1);
   };
 
@@ -310,7 +304,7 @@ export default function SignatureShowcase() {
                           {/* 성함(Noto Serif KR), 웨딩홀(Noto Serif KR #8a8a8a), 버튼(Bodoni 72 Bold #D7E3EF #282828) */}
                           <div className="w-full text-center pt-2.5 pb-2 flex flex-col items-center">
                             <p className="font-serif text-[11px] text-black font-normal tracking-tight">
-                              강민준 · 박지민
+                              원빈 · 이나영
                             </p>
                             <p className="font-serif text-[8.5px] text-[#8a8a8a] font-normal tracking-tight mt-1 mb-2">
                               반얀트리 클럽 앤 스파 서울
@@ -343,7 +337,7 @@ export default function SignatureShowcase() {
                      ===================================================== */}
                   {/* =====================================================
                       [시안 03: 감성 플레이리스트 실제 실물 1:1 일치]
-                      (PlaylistIntro.jsx 실제 화면: 장민기---권기득 + Getting married + 뮤직 플레이어 컨트롤)
+                      (PlaylistIntro.jsx 실제 화면: 조정석---거미 + Getting married + 뮤직 플레이어 컨트롤)
                      ===================================================== */}
                   {activeOpeningId === 'playlist' && (
                     <div 
@@ -364,9 +358,9 @@ export default function SignatureShowcase() {
                       <div className="relative z-10 w-full max-w-[260px] h-full max-h-[96%] bg-[#FEFEFE] rounded-2xl shadow-2xl p-2.5 flex flex-col justify-between items-center text-[#292929]">
                         {/* 상단 성함 & 구분선 */}
                         <div className="w-full flex items-center justify-between px-2 pt-1">
-                          <span className="font-nanummyeongjo text-[11px] text-[#292929]">장민기</span>
+                          <span className="font-nanummyeongjo text-[11px] text-[#292929]">조정석</span>
                           <div className="flex-1 mx-2 border-t border-[#999999]" />
-                          <span className="font-nanummyeongjo text-[11px] text-[#292929]">권기득</span>
+                          <span className="font-nanummyeongjo text-[11px] text-[#292929]">거미</span>
                         </div>
 
                         {/* 중앙 화보 + Getting married + 양옆 세로 텍스트 */}
@@ -380,7 +374,7 @@ export default function SignatureShowcase() {
                             }}
                           >
                             <span className="font-nanummyeongjo text-[7.5px] text-[#333333]">
-                              서울 크리스탈 볼룸 1층
+                              빌라드지디 청담
                             </span>
                           </div>
 
@@ -474,17 +468,17 @@ export default function SignatureShowcase() {
 
                   {/* =====================================================
                       [시안 04: 시네마틱 모노리스 실제 실물 1:1 일치]
-                      (CinematicTemplate.jsx 실제 화면: Brightly/Midnight 토글 + Our First Page 필기체)
+                      (CinematicIntro.jsx 실제 화면: The marriage of + 영문 성함 + 흑백 화보 + Welcome to our Wedding Day)
                      ===================================================== */}
                   {activeOpeningId === 'cinematic' && (
                     <div 
-                      className={`relative w-full h-full p-4 flex flex-col justify-between transition-colors duration-500 select-none ${
-                        cinematicNight ? 'bg-black text-white' : 'bg-white text-stone-900'
+                      className={`relative w-full h-full p-3.5 flex flex-col justify-between transition-colors duration-500 select-none ${
+                        cinematicNight ? 'bg-[#1C1C1C] text-white' : 'bg-[#FFFFFF] text-[#292929]'
                       }`}
                       style={{ animation: 'fadeInScale 0.6s ease-out forwards' }}
                     >
                       {/* 좌측 상단 Brightly ↔ Midnight 실제 스위처 */}
-                      <div className="flex items-center justify-between z-10 pt-1">
+                      <div className="flex items-center justify-between z-10 pt-1 shrink-0">
                         <div className={`inline-flex items-center p-0.5 rounded-full border shadow-2xs backdrop-blur-md text-[8px] ${
                           cinematicNight ? 'bg-stone-900 border-stone-700' : 'bg-stone-100 border-stone-200'
                         }`}>
@@ -503,93 +497,210 @@ export default function SignatureShowcase() {
                             Midnight
                           </button>
                         </div>
-                        <span className="text-[8px] font-serif italic text-stone-400 lowercase">jinho · naeun</span>
+                        <span className={`text-[8px] font-mono tracking-wider ${cinematicNight ? 'text-stone-500' : 'text-stone-400'}`}>
+                          CINEMATIC
+                        </span>
                       </div>
 
-                      {/* 중앙 4:5 흑백 화보 + Our First Page 필기체 오버레이 */}
-                      <div className="relative w-full aspect-[4/4.8] overflow-hidden my-auto border border-stone-200/50">
-                        <img
-                          src="/samples/cinematic-cover.jpg"
-                          alt="Cinematic"
-                          className="w-full h-full object-cover grayscale contrast-105"
-                        />
-                        <div className={`absolute inset-0 pointer-events-none ${
-                          cinematicNight 
-                            ? 'bg-gradient-to-t from-black via-transparent to-black/30' 
-                            : 'bg-gradient-to-t from-white via-white/30 to-transparent'
-                        }`} />
+                      {/* 상단 타이틀: The marriage of + 영문 성함 */}
+                      <div className="w-full flex flex-col items-center shrink-0 pt-1">
+                        <h4 
+                          className={`text-[20px] leading-tight select-none ${
+                            cinematicNight ? 'text-[#FFFFFF]' : 'text-[#292929]'
+                          }`}
+                          style={{ fontFamily: "'Weddingday Personal Use', 'Bickham Script Pro', cursive" }}
+                        >
+                          The marriage of
+                        </h4>
+                        <p 
+                          className={`text-[11.5px] font-medium tracking-[0.05em] uppercase mt-1 select-none ${
+                            cinematicNight ? 'text-[#FFFFFF]' : 'text-[#292929]'
+                          }`}
+                          style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', serif" }}
+                        >
+                          BYUNG HUN & MIN JUNG
+                        </p>
+                      </div>
 
-                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-3">
-                          <h4 
-                            style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}
-                            className={`text-2xl sm:text-3xl leading-tight font-normal mb-1 ${
-                              cinematicNight ? 'text-white drop-shadow-md' : 'text-stone-900'
-                            }`}
-                          >
-                            Our First Page
-                          </h4>
-                          <p className={`text-[8px] tracking-[0.25em] uppercase font-light ${
-                            cinematicNight ? 'text-stone-300' : 'text-stone-700'
-                          }`}>
-                            We&apos;re Getting Married
-                          </p>
+                      {/* 중앙 흑백 화보 (aspect-[524/484] 실물 비율) */}
+                      <div className="w-full flex justify-center items-center my-auto shrink-0">
+                        <div className={`relative w-[150px] aspect-[524/484] overflow-hidden shadow-md ${
+                          cinematicNight ? 'ring-1 ring-white/10' : 'ring-1 ring-black/5'
+                        }`}>
+                          <img
+                            src="/samples/cinematic-cover.jpg"
+                            alt="Cinematic Cover"
+                            className="w-full h-full object-cover grayscale contrast-105"
+                          />
                         </div>
                       </div>
 
-                      {/* 하단 성함 & 날짜 */}
-                      <div className="text-center pb-1 text-[9px] font-mono tracking-wider text-stone-400">
-                        <span>2027. 11. 07 · THE SHILLA</span>
+                      {/* 하단 일시 & 장소 & Welcome 문구 & 터치 안내 */}
+                      <div className="w-full flex flex-col items-center shrink-0 pb-0.5 space-y-1 text-center">
+                        <p 
+                          className={`text-[11px] tracking-[0.04em] ${
+                            cinematicNight ? 'text-[#F0F0F0]' : 'text-[#292929]'
+                          }`}
+                          style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', serif" }}
+                        >
+                          2027.Nov 07. 17:00 pm
+                        </p>
+                        <p 
+                          className={`text-[9.5px] font-light tracking-[0.02em] ${
+                            cinematicNight ? 'text-[#B5B5B5]' : 'text-[#333333]'
+                          }`}
+                          style={{ fontFamily: "'Spoqa Han Sans Neo', sans-serif" }}
+                        >
+                          신라호텔 서울 다이너스티홀
+                        </p>
+                        <p 
+                          className={`text-[9px] tracking-[0.06em] pt-1 ${
+                            cinematicNight ? 'text-[#9E9E9E]' : 'text-[#444444]'
+                          }`}
+                          style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', serif" }}
+                        >
+                          Welcome to our Wedding Day
+                        </p>
+                        <p
+                          className={`text-[8px] tracking-wider animate-pulse pt-0.5 ${
+                            cinematicNight ? 'text-stone-400' : 'text-stone-500'
+                          }`}
+                          style={{ fontFamily: "'NanumMyeongjo', serif" }}
+                        >
+                          화면을 터치해주세요
+                        </p>
                       </div>
                     </div>
                   )}
 
                   {/* =====================================================
-                      [시안 05: 모던 씬 실제 실물 1:1 일치]
-                      (SceneTemplate.jsx 실제 화면: 몽환적 블러 배경 + 3줄 소개글 + 사진 언블러 펼침)
+                      [시안 05: 레트로 캠코더 실제 실물 1:1 일치]
+                      (SceneIntro.jsx 실제 화면: 90s 캠코더 뷰파인더 + 4코너 브래킷 + REC + 4귀퉁이 비네팅)
                      ===================================================== */}
                   {activeOpeningId === 'scene' && (
-                    <div className="relative w-full h-full flex flex-col justify-between items-center p-4 bg-stone-100 overflow-hidden text-center">
-                      {/* 배경 블러 사진 (몽환적 실루엣) */}
-                      <div 
-                        className="absolute inset-0 bg-cover bg-center filter blur-[14px] scale-105 opacity-85 pointer-events-none"
-                        style={{ backgroundImage: 'url(/samples/scene-cover.jpg)' }}
+                    <div 
+                      onClick={handleReplayOpening}
+                      className="relative w-full h-full p-2.5 bg-[#1C1C1C] flex flex-col justify-between items-center select-none overflow-hidden cursor-pointer"
+                      style={{ animation: 'fadeInScale 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}
+                    >
+                      {/* 배경 커버 화보 */}
+                      <img
+                        src="/samples/photo-07-grass-run.jpg"
+                        alt="Retro Camcorder Cover"
+                        className={`absolute inset-0 w-full h-full object-cover object-center pointer-events-none transition-transform duration-700 ${
+                          sceneBlink ? 'scale-105' : 'scale-100'
+                        }`}
                       />
-                      <div className="absolute inset-0 bg-white/20 pointer-events-none" />
 
-                      {/* 1. 상단 3줄 감성 초대글 (단계별 페이드인) */}
-                      <div className={`relative z-10 text-[11px] leading-relaxed text-stone-800 font-light transition-all duration-700 pt-3 ${
-                        sceneStep >= 4 ? 'mb-1 translate-y-0' : 'mb-3 translate-y-6'
-                      }`}>
-                        <p className={`transition-opacity duration-500 ${sceneStep >= 1 ? 'opacity-100' : 'opacity-0'}`}>
-                          함께하는 오늘이
+                      {/* 4귀퉁이 모서리 비네팅 음영 오버레이 (SceneIntro 1:1) */}
+                      <div 
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                          background: `
+                            radial-gradient(circle 130px at 0% 0%, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.5) 35%, transparent 75%),
+                            radial-gradient(circle 130px at 100% 0%, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.5) 35%, transparent 75%),
+                            radial-gradient(circle 130px at 0% 100%, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.5) 35%, transparent 75%),
+                            radial-gradient(circle 130px at 100% 100%, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.5) 35%, transparent 75%),
+                            linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, transparent 18%, transparent 82%, rgba(0, 0, 0, 0.4) 100%)
+                          `,
+                        }}
+                      />
+
+                      {/* 4개 코너 브래킷 ┌ ┐ └ ┘ */}
+                      <div className="absolute top-2.5 left-2.5 w-10 h-10 border-t-[1.5px] border-l-[1.5px] border-[#FEFEFE] pointer-events-none" />
+                      <div className="absolute top-2.5 right-2.5 w-10 h-10 border-t-[1.5px] border-r-[1.5px] border-[#FEFEFE] pointer-events-none" />
+                      <div className="absolute bottom-2.5 left-2.5 w-10 h-10 border-b-[1.5px] border-l-[1.5px] border-[#FEFEFE] pointer-events-none" />
+                      <div className="absolute bottom-2.5 right-2.5 w-10 h-10 border-b-[1.5px] border-r-[1.5px] border-[#FEFEFE] pointer-events-none" />
+
+                      {/* 상단: 신랑/신부 성함 & REC 녹화 표시 */}
+                      <div className="relative z-10 w-full pt-1 px-3 flex items-center justify-between pointer-events-none">
+                        <span 
+                          className="text-[12px] text-[#FAFAFA] tracking-wide"
+                          style={{ fontFamily: "'NanumSquare Neo', sans-serif" }}
+                        >
+                          한가인
+                        </span>
+                        <div className="flex items-center gap-1.5 bg-black/40 px-2 py-0.5 rounded-full">
+                          <span className="w-2 h-2 rounded-full bg-[#F80602] animate-pulse" />
+                          <span 
+                            className="text-[11px] text-[#FEFEFE]"
+                            style={{ fontFamily: "'VCR OSD Mono', monospace" }}
+                          >
+                            REC
+                          </span>
+                        </div>
+                        <span 
+                          className="text-[12px] text-[#FAFAFA] tracking-wide"
+                          style={{ fontFamily: "'NanumSquare Neo', sans-serif" }}
+                        >
+                          연정훈
+                        </span>
+                      </div>
+
+                      {/* 중앙: Our Wedding Day! + 타겟 브래킷 */}
+                      <div className="relative z-10 my-auto text-center flex flex-col items-center pointer-events-none">
+                        <p 
+                          className="text-[20px] text-[#FEFEFE] tracking-tight drop-shadow-md mb-2.5"
+                          style={{ fontFamily: "'VCR OSD Mono', monospace" }}
+                        >
+                          Our Wedding Day!
                         </p>
-                        <p className={`transition-opacity duration-500 ${sceneStep >= 2 ? 'opacity-100' : 'opacity-0'}`}>
-                          오래도록 기억될 순간이 되기를 바라며
+
+                        {/* 중앙 타겟 오토포커스 브래킷 (Group 1275 실측 축소) */}
+                        <div className="relative w-24 h-32 pointer-events-none flex items-center justify-center">
+                          <div className="absolute top-0 left-0 w-3 h-3 border-t-[1.5px] border-l-[1.5px] border-[#FEFEFE]" />
+                          <div className="absolute top-0 right-0 w-3 h-3 border-t-[1.5px] border-r-[1.5px] border-[#FEFEFE]" />
+                          <div className="absolute bottom-0 left-0 w-3 h-3 border-b-[1.5px] border-l-[1.5px] border-[#FEFEFE]" />
+                          <div className="absolute bottom-0 right-0 w-3 h-3 border-b-[1.5px] border-r-[1.5px] border-[#FEFEFE]" />
+                        </div>
+                      </div>
+
+                      {/* 하단 메타 정보 & 터치 안내 */}
+                      <div className="relative z-10 w-full pb-1 px-2 text-center space-y-1 pointer-events-none">
+                        {/* 일시 */}
+                        <p 
+                          className="text-[12px] tracking-[0.04em] text-[#FEFEFE]"
+                          style={{ fontFamily: "'VCR OSD Mono', monospace" }}
+                        >
+                          2027.May 15. 14:00 pm
                         </p>
-                        <p className={`transition-opacity duration-500 ${sceneStep >= 3 ? 'opacity-100' : 'opacity-0'}`}>
-                          저희의 결혼식에 초대합니다
+                        {/* 장소 */}
+                        <p 
+                          className="text-[10.5px] text-[#FEFEFE]"
+                          style={{ fontFamily: "'NanumSquare Neo', sans-serif" }}
+                        >
+                          서울 크리스탈 볼룸 1층
+                        </p>
+
+                        {/* 스펙 & 안내 */}
+                        <div className="flex items-center justify-between text-[#FEFEFE] pt-0.5 px-1">
+                          <span 
+                            className="text-[10px]"
+                            style={{ fontFamily: "'VCR OSD Mono', monospace" }}
+                          >
+                            4K 60FPS
+                          </span>
+                          <span 
+                            className="text-[10px]"
+                            style={{ fontFamily: "'VCR OSD Mono', monospace" }}
+                          >
+                            HD
+                          </span>
+                        </div>
+
+                        {/* 화면을 터치해주세요 */}
+                        <p 
+                          className="text-[9.5px] leading-none tracking-[0.09em] text-[#FEFEFE] animate-pulse pt-0.5"
+                          style={{ fontFamily: "'NanumMyeongjo', serif" }}
+                        >
+                          화면을 터치해주세요
                         </p>
                       </div>
 
-                      {/* 2. 중앙 언블러 사진 펼침 애니메이션 */}
-                      <div className={`relative z-10 w-full max-w-[210px] aspect-[4/4.6] overflow-hidden shadow-lg transition-all duration-1000 ${
-                        sceneStep >= 4 
-                          ? 'opacity-100 scale-100 filter-none' 
-                          : 'opacity-40 scale-95 filter blur-md'
-                      }`}>
-                        <img
-                          src="/samples/scene-cover.jpg"
-                          alt="Scene"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-
-                      {/* 3. 하단 신랑 💍 신부 */}
-                      <div className="relative z-10 pb-2 text-stone-900 font-serif text-[11px] flex items-center justify-center gap-1.5">
-                        <span>최현우</span>
-                        <span className="text-[9px] text-amber-700">💍</span>
-                        <span>윤서아</span>
-                      </div>
+                      {/* 터치/재생 시 시네마틱 껌뻑(Blink) 효과 */}
+                      {sceneBlink && (
+                        <div className="absolute inset-0 bg-black pointer-events-none animate-fadeIn transition-opacity duration-300 z-20" />
+                      )}
                     </div>
                   )}
 
@@ -702,7 +813,7 @@ export default function SignatureShowcase() {
                   <div className="grid grid-cols-4 text-xs items-center px-1 py-1 bg-slate-50 rounded-lg">
                     <span className="font-medium text-slate-800 text-[11px] flex items-center gap-1">
                       <span className="text-[9px] px-1 py-0.5 rounded bg-blue-100 text-blue-700">신랑</span>
-                      김도현
+                      현빈
                     </span>
                     <span className="text-center text-emerald-600 font-bold text-xs">○</span>
                     <span className="text-center text-[11px] text-slate-600">2명</span>
@@ -711,7 +822,7 @@ export default function SignatureShowcase() {
                   <div className="grid grid-cols-4 text-xs items-center px-1 py-1">
                     <span className="font-medium text-slate-800 text-[11px] flex items-center gap-1">
                       <span className="text-[9px] px-1 py-0.5 rounded bg-rose-100 text-rose-700">신부</span>
-                      이서연
+                      손예진
                     </span>
                     <span className="text-center text-emerald-600 font-bold text-xs">○</span>
                     <span className="text-center text-[11px] text-slate-600">1명</span>
@@ -808,7 +919,7 @@ export default function SignatureShowcase() {
                         </span>
                       </div>
                       <h4 className="text-xs font-serif font-bold text-stone-900">
-                        민준 ♥ 지민
+                        현빈 ♥ 손예진
                       </h4>
                     </div>
                     <span className="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200/60 rounded-full text-[9px] font-semibold">
@@ -830,11 +941,11 @@ export default function SignatureShowcase() {
                   <div className="p-2.5 bg-stone-50 rounded-xl border border-stone-200/70 text-xs">
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-bold text-stone-900 text-[11px] truncate">
-                        📍 더채플앳청담 3층 커스티홀
+                        📍 워커힐 애스톤하우스
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-[10px] text-stone-500 pt-1 border-t border-stone-200/60">
-                      <span className="truncate pr-1">서울 강남구 압구정로 123</span>
+                      <span className="truncate pr-1">서울 광진구 워커힐로 177</span>
                       <button
                         type="button"
                         onClick={handleCopyAddress}
@@ -1063,7 +1174,7 @@ export default function SignatureShowcase() {
                       Two of Us
                     </p>
                     <h4 className="font-serif text-2xl font-normal tracking-wide mt-1.5 drop-shadow-md">
-                      Minjun & Jimin
+                      Wonbin & Nayoung
                     </h4>
                     <p className="font-serif text-[10px] text-white/70 tracking-widest uppercase mt-1">
                       May 15, 2027
@@ -1073,7 +1184,7 @@ export default function SignatureShowcase() {
                   {/* 3. 하단 실제 청첩장 커버 푸터 안내 (가상 플레이어 카드 없이 시야를 가리지 않는 단정한 화면) */}
                   <div className="relative z-20 text-center pb-2 text-white/80 space-y-1">
                     <p className="text-[11px] font-serif tracking-wider">
-                      강민준 · 박지민의 결혼식에 초대합니다
+                      원빈 · 이나영의 결혼식에 초대합니다
                     </p>
                     <p className="text-[9px] font-mono tracking-widest text-white/50 uppercase">
                       Scroll down to view invitation ↓

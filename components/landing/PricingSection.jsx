@@ -17,7 +17,7 @@ export default function PricingSection() {
   const features = [
     {
       title: '5대 독창적인 시안 자유 변경',
-      desc: '모던 클래식, 에디토리얼, 플레이리스트, 시네마틱, 모던 씬 전 시안 무제한 교체',
+      desc: '에어드랍 클래식, 에디토리얼, 플레이리스트, 시네마틱, 레트로 캠코더 전 시안 무제한 교체',
       icon: '✨',
     },
     {

@@ -1623,9 +1623,9 @@ function EditInvitationContent({ params }) {
                     <span className="w-2 h-2 rounded-full bg-stone-900" />
                   )}
                 </div>
-                <h3 className="text-sm font-semibold text-[#0F172A] mb-1">모던 씬 (Scene 02)</h3>
+                <h3 className="text-sm font-semibold text-[#0F172A] mb-1">레트로 캠코더 (Retro 90s)</h3>
                 <p className="text-xs text-[#64748B] font-light leading-relaxed">
-                  우아하고 차분한 모던 클래식 & 인터뷰 Q&A, 3열 캘린더, 전세버스/식사 RSVP
+                  90년대 빈티지 캠코더 뷰파인더 & VCR OSD 비네팅 화보, 에디토리얼 스토리 & 참석 RSVP
                 </p>
               </div>
             </div>

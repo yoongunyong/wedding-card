@@ -52,6 +52,12 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
     const cleanPhone = phone.trim().replace(/\D/g, '');
     if (cleanPhone.length !== 4) return alert('휴대전화 번호 뒤 4자리를 정확히 입력해 주세요.');
 
+    if (String(targetInvitationId).startsWith('sample-')) {
+      alert('소중한 참석 의사가 전달되었습니다. 진심으로 감사드립니다.');
+      if (onClose) onClose();
+      return;
+    }
+
     setLoading(true);
     const cleanName = name.trim();
     const phoneDigits = cleanPhone;

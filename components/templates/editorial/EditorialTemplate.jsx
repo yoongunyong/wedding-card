@@ -94,7 +94,7 @@ export default function EditorialTemplate({ invitation }) {
   // 6. 데이터 언패킹 & fallback
   const config = invitation?.template_config || {};
   const images = invitation?.images || {};
-  const extra = invitation?.extra_data || {};
+  const extra = useMemo(() => invitation?.extra_data || {}, [invitation?.extra_data]);
 
   const showIntroSection = config.show_intro !== false;
   const showCountdownSection = config.show_countdown !== false;
@@ -109,7 +109,7 @@ export default function EditorialTemplate({ invitation }) {
   const groomName = invitation?.groom_name || '';
   const brideName = invitation?.bride_name || '';
   const coupleKo = [groomName, brideName].filter(Boolean).join(' · ');
-  const coupleHeartText = [groomName, brideName].filter(Boolean).join(' ♥ ') || (isSample ? '기득 ♥ 민기' : '');
+  const coupleHeartText = [groomName, brideName].filter(Boolean).join(' ♥ ') || (isSample ? '민준 ♥ 지민' : '');
 
   // 대표 이미지 매핑 (실제 고객 청첩장에서는 미등록 사진이 타인의 샘플 사진으로 대체되지 않도록 철저히 차단)
   const mainImage = images.main || images.cover || invitation?.main_image || (isSample ? '/samples/main-02-editorial.jpg' : '');
@@ -712,7 +712,7 @@ export default function EditorialTemplate({ invitation }) {
               Welcome to
             </p>
             <p className="font-weddingday text-[27.5px] text-[#292929] tracking-normal leading-[1.14] select-none mt-1 whitespace-nowrap">
-              {fullNamesEn || coupleKo || (isSample ? 'Jang Min-ki & Kwon Ki-deuk' : '')}
+              {fullNamesEn || coupleKo || (isSample ? 'Minjun Kang & Jimin Park' : '')}
             </p>
           </div>
 
@@ -1102,18 +1102,18 @@ export default function EditorialTemplate({ invitation }) {
 
             {/* 상단 3: 웨딩홀 명칭 (Figma: NanumSquare Neo OTF 30px -> 1x 15px, #333333, mt-[43px]) */}
             <h3 className="font-nanumsquare font-normal text-[15px] text-[#333333] leading-none text-center mt-[43px] tracking-tight">
-              {venueFullName || (isSample ? '호텔금오산 컨벤션센터' : '')}
+              {venueFullName || (isSample ? '빌라드지디 청담' : '')}
             </h3>
 
             {/* 상단 4: 식장 주소 & 주소 복사 (Figma: NanumSquare Neo OTF 28px -> 1x 14px, #999999, mt-[23.5px]) */}
             <div className="mt-[23.5px] flex items-center justify-center gap-1">
               <span className="font-nanumsquare font-normal text-[14px] text-[#999999] leading-none tracking-tight">
-                {invitation?.venue_address || (isSample ? '경북 구미시 금오산로 400' : '')}
+                {invitation?.venue_address || (isSample ? '서울 강남구 학동로 519' : '')}
               </span>
               <button
                 type="button"
                 onClick={() => {
-                  const addr = invitation?.venue_address || (isSample ? '경북 구미시 금오산로 400' : '');
+                  const addr = invitation?.venue_address || (isSample ? '서울 강남구 학동로 519' : '');
                   handleCopyText(addr, '식장 주소가 복사되었습니다.');
                 }}
                 className="inline-flex items-center justify-center p-0.5 text-[#999999] hover:text-[#333333] transition-colors cursor-pointer select-none"
@@ -1130,8 +1130,8 @@ export default function EditorialTemplate({ invitation }) {
             {/* 지도 컴포넌트 (Figma: 607x433 -> 1x 303.5x216.5, mt-[40.5px]) */}
             <div className="mt-[40.5px] w-[303.5px] h-[216.5px] max-w-full mx-auto overflow-hidden bg-stone-100 border border-stone-200">
               <KakaoMap
-                address={invitation?.venue_address || (isSample ? '경북 구미시 금오산로 400' : '')}
-                venueName={venueFullName || (isSample ? '호텔금오산 컨벤션센터' : '')}
+                address={invitation?.venue_address || (isSample ? '서울 강남구 학동로 519' : '')}
+                venueName={venueFullName || (isSample ? '빌라드지디 청담' : '')}
                 className="w-full h-full"
               />
             </div>
@@ -1142,7 +1142,7 @@ export default function EditorialTemplate({ invitation }) {
               <button
                 type="button"
                 onClick={() => {
-                  const query = venueFullName || invitation?.venue_address || (isSample ? '호텔금오산 컨벤션센터' : '');
+                  const query = venueFullName || invitation?.venue_address || (isSample ? '빌라드지디 청담' : '');
                   window.open(`https://map.naver.com/p/search/${encodeURIComponent(query)}`, '_blank');
                 }}
                 style={{ boxShadow: '0px 2px 2px rgba(0, 0, 0, 0.11)' }}
@@ -1162,7 +1162,7 @@ export default function EditorialTemplate({ invitation }) {
               <button
                 type="button"
                 onClick={() => {
-                  const query = venueFullName || invitation?.venue_address || (isSample ? '호텔금오산 컨벤션센터' : '');
+                  const query = venueFullName || invitation?.venue_address || (isSample ? '빌라드지디 청담' : '');
                   window.open(`https://map.kakao.com/link/search/${encodeURIComponent(query)}`, '_blank');
                 }}
                 style={{ boxShadow: '0px 2px 2px rgba(0, 0, 0, 0.11)' }}
@@ -1255,14 +1255,10 @@ export default function EditorialTemplate({ invitation }) {
         const currentAccounts = activeAccountTab === 'groom' ? groomAccounts : brideAccounts;
         const sampleAccounts = activeAccountTab === 'groom'
           ? [
-              { relation: '신랑', holder: isSample ? '예금주' : (groomName || '예금주'), bank: '하나은행', number: '504-910579-89707' },
-              { relation: '신랑', holder: isSample ? '예금주' : (groomName || '예금주'), bank: '하나은행', number: '504-910579-89707' },
-              { relation: '신랑', holder: isSample ? '예금주' : (groomName || '예금주'), bank: '하나은행', number: '504-910579-89707' },
+              { relation: '신랑', holder: isSample ? '강민준' : (groomName || '예금주'), bank: '하나은행', number: '504-910579-89707' },
             ]
           : [
-              { relation: '신부', holder: isSample ? '예금주' : (brideName || '예금주'), bank: '하나은행', number: '504-910579-89707' },
-              { relation: '신부', holder: isSample ? '예금주' : (brideName || '예금주'), bank: '하나은행', number: '504-910579-89707' },
-              { relation: '신부', holder: isSample ? '예금주' : (brideName || '예금주'), bank: '하나은행', number: '504-910579-89707' },
+              { relation: '신부', holder: isSample ? '박지민' : (brideName || '예금주'), bank: '하나은행', number: '504-910579-89707' },
             ];
         const displayAccounts = currentAccounts.length > 0 ? currentAccounts : (isSample ? sampleAccounts : []);
 
@@ -1590,17 +1586,21 @@ export default function EditorialTemplate({ invitation }) {
         const currentThree = displayList.slice(safePageIndex * 3, safePageIndex * 3 + 3);
 
         const formatGuestbookDate = (dateStr) => {
-          if (!dateStr) return '2027. 10.21';
+          if (!dateStr) {
+            if (isSample) return '2027. 10.21';
+            const now = new Date();
+            return `${now.getFullYear()}. ${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
+          }
           if (typeof dateStr === 'string' && dateStr.includes('.')) return dateStr;
           try {
             const d = new Date(dateStr);
-            if (isNaN(d.getTime())) return '2027. 10.21';
+            if (isNaN(d.getTime())) return isSample ? '2027. 10.21' : '';
             const year = d.getFullYear();
             const month = String(d.getMonth() + 1).padStart(2, '0');
             const day = String(d.getDate()).padStart(2, '0');
             return `${year}. ${month}.${day}`;
           } catch {
-            return '2027. 10.21';
+            return isSample ? '2027. 10.21' : '';
           }
         };
 

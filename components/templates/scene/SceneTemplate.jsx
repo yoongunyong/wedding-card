@@ -248,7 +248,7 @@ export default function SceneTemplate({ invitation }) {
     const brideFull = [invitation?.bride_last_name_en, invitation?.bride_first_name_en].filter(Boolean).join(' ') || invitation?.bride_name_en;
     if (groomFull && brideFull) return `${groomFull} & ${brideFull}`;
     if (groomFull || brideFull) return groomFull || brideFull;
-    if (isSample && !groomName && !brideName) return 'Minwoo Kang & Yujin Seo';
+    if (isSample && !groomName && !brideName) return 'Minki Jang & Kideuk Kwon';
     return '';
   }, [invitation, extra, isSample, groomName, brideName]);
 
@@ -303,11 +303,10 @@ export default function SceneTemplate({ invitation }) {
 
   // 예식장 장소 (피그마 1:1, 예: 서울 크리스탈 볼룸 1층)
   const venueText = useMemo(() => {
-    if (isSample) return '서울 크리스탈 볼룸 1층';
     const hall = config.venue_hall || invitation?.venue_hall;
     const parts = [invitation?.venue_name, hall].filter(Boolean);
     if (parts.length > 0) return parts.join(' ');
-    return '서울 크리스탈 볼룸 1층';
+    return isSample ? '서울 크리스탈 볼룸 1층' : '';
   }, [invitation?.venue_name, config.venue_hall, invitation?.venue_hall, isSample]);
 
   // 날짜 포맷 (피그마 1:1, 예: 2027.May 15. 14:00 pm)
@@ -733,7 +732,7 @@ export default function SceneTemplate({ invitation }) {
               >
                 <div>Welcome to</div>
                 <div className="mt-1 whitespace-nowrap">
-                  {fullNamesEn || coupleKo || (isSample ? 'Minwoo & Yujin' : '')}
+                  {fullNamesEn || coupleKo || (isSample ? 'Minki & Kideuk' : '')}
                 </div>
               </h2>
             </div>
@@ -1608,17 +1607,21 @@ export default function SceneTemplate({ invitation }) {
           const currentThree = displayList.slice(safePageIndex * 3, safePageIndex * 3 + 3);
 
           const formatGuestbookDate = (dateStr) => {
-            if (!dateStr) return '2027. 10.21';
+            if (!dateStr) {
+              if (isSample) return '2027. 10.21';
+              const now = new Date();
+              return `${now.getFullYear()}. ${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
+            }
             if (typeof dateStr === 'string' && dateStr.includes('.')) return dateStr;
             try {
               const d = new Date(dateStr);
-              if (isNaN(d.getTime())) return '2027. 10.21';
+              if (isNaN(d.getTime())) return isSample ? '2027. 10.21' : '';
               const year = d.getFullYear();
               const month = String(d.getMonth() + 1).padStart(2, '0');
               const day = String(d.getDate()).padStart(2, '0');
               return `${year}. ${month}.${day}`;
             } catch {
-              return '2027. 10.21';
+              return isSample ? '2027. 10.21' : '';
             }
           };
 

@@ -26,7 +26,7 @@ export default function EditorialIntro({ invitation, onOpen, isInModal: propIsIn
   const coupleKo = [groomName, brideName].filter(Boolean).join(' · ') || (isSample ? '강민준 · 박지민' : '');
 
   // 웨딩홀 (피그마 2832:2137 -> Noto Serif KR 13px #666666)
-  const venueName = invitation?.venue_name || (isSample ? '반얀트리 클럽 앤 스파 서울' : '');
+  const venueName = invitation?.venue_name || (isSample ? '빌라드지디 청담' : '');
 
   // 날짜 포맷 (예: May 15. 2027 / 피그마 2832:2139 -> Noto Serif KR 13px #f3f3f3)
   const weddingDateStr = invitation?.wedding_date;

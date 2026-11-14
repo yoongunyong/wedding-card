@@ -103,12 +103,12 @@ export default function CinematicIntro({
     return `${y}.${m} ${day}. ${hourStr}:${minutes} ${period}`;
   }, [weddingDateStr, isSample]);
 
-  // 4. 예식장 장소 (피그마 예: 반얀트리 클럽 앤 스파 서울)
+  // 4. 예식장 장소 (피그마 예: 더채플앳청담 커스티홀)
   const venueText = useMemo(() => {
     const hall = invitation?.template_config?.venue_hall || invitation?.venue_hall;
     const parts = [invitation?.venue_name, hall].filter(Boolean);
     if (parts.length > 0) return parts.join(' ');
-    return isSample ? '반얀트리 클럽 앤 스파 서울' : '';
+    return isSample ? '더채플앳청담 커스티홀' : '';
   }, [invitation?.venue_name, invitation?.template_config?.venue_hall, invitation?.venue_hall, isSample]);
 
   // 5. 스크롤 락 및 복원

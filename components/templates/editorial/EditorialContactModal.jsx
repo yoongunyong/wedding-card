@@ -5,9 +5,17 @@ import ParentDeceasedName from '@/components/ParentDeceasedName';
 
 export default function EditorialContactModal({ invitation, onClose, isNightMode = false }) {
   const config = invitation?.template_config || {};
-  const isOfficialDemo = invitation?.slug === 'editorial';
+  const isOfficialDemo = ['basic', 'editorial', 'playlist', 'cinematic', 'scene'].includes(invitation?.slug);
   const hasUserEnteredNames = Boolean(invitation?.groom_name || invitation?.bride_name || invitation?.groom_father || invitation?.bride_father);
   const allowSampleFallback = isOfficialDemo || (!hasUserEnteredNames && Boolean(invitation?.is_sample_preview));
+
+  const isPlaylistOrScene = invitation?.slug === 'playlist' || invitation?.slug === 'scene';
+  const sampleGroomName = isPlaylistOrScene ? '장민기' : '강민준';
+  const sampleBrideName = isPlaylistOrScene ? '권기득' : '박지민';
+  const sampleGroomFather = isPlaylistOrScene ? '강대현' : '강오진';
+  const sampleGroomMother = isPlaylistOrScene ? '문영희' : '류창희';
+  const sampleBrideFather = isPlaylistOrScene ? '서병철' : '장철규';
+  const sampleBrideMother = isPlaylistOrScene ? '한정숙' : '이정자';
 
   const isGroomFatherDeceased = invitation?.groom_father_deceased ?? config.groom_father_deceased ?? false;
   const isGroomMotherDeceased = invitation?.groom_mother_deceased ?? config.groom_mother_deceased ?? false;
@@ -43,7 +51,7 @@ export default function EditorialContactModal({ invitation, onClose, isNightMode
     {
       role: '신랑',
       side: 'groom',
-      name: invitation?.groom_name || (allowSampleFallback ? '권기득' : ''),
+      name: invitation?.groom_name || (allowSampleFallback ? sampleGroomName : ''),
       phone: invitation?.groom_phone || (allowSampleFallback ? '010-2345-6789' : ''),
     },
     {
@@ -51,7 +59,7 @@ export default function EditorialContactModal({ invitation, onClose, isNightMode
       side: 'groom',
       name: (invitation?.groom_father || allowSampleFallback) ? (
         <ParentDeceasedName
-          name={invitation?.groom_father || (allowSampleFallback ? '권순민' : '')}
+          name={invitation?.groom_father || (allowSampleFallback ? sampleGroomFather : '')}
           isDeceased={isGroomFatherDeceased}
           markerType={deceasedMarker}
           iconClassName="w-[14px] h-[16px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0"
@@ -64,7 +72,7 @@ export default function EditorialContactModal({ invitation, onClose, isNightMode
       side: 'groom',
       name: (invitation?.groom_mother || allowSampleFallback) ? (
         <ParentDeceasedName
-          name={invitation?.groom_mother || (allowSampleFallback ? '이미자' : '')}
+          name={invitation?.groom_mother || (allowSampleFallback ? sampleGroomMother : '')}
           isDeceased={isGroomMotherDeceased}
           markerType={deceasedMarker}
           iconClassName="w-[14px] h-[16px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0"
@@ -79,7 +87,7 @@ export default function EditorialContactModal({ invitation, onClose, isNightMode
     {
       role: '신부',
       side: 'bride',
-      name: invitation?.bride_name || (allowSampleFallback ? '장민기' : ''),
+      name: invitation?.bride_name || (allowSampleFallback ? sampleBrideName : ''),
       phone: invitation?.bride_phone || (allowSampleFallback ? '010-8765-4321' : ''),
     },
     {
@@ -87,7 +95,7 @@ export default function EditorialContactModal({ invitation, onClose, isNightMode
       side: 'bride',
       name: (invitation?.bride_father || allowSampleFallback) ? (
         <ParentDeceasedName
-          name={invitation?.bride_father || (allowSampleFallback ? '장철규' : '')}
+          name={invitation?.bride_father || (allowSampleFallback ? sampleBrideFather : '')}
           isDeceased={isBrideFatherDeceased}
           markerType={deceasedMarker}
           iconClassName="w-[14px] h-[16px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0"
@@ -100,7 +108,7 @@ export default function EditorialContactModal({ invitation, onClose, isNightMode
       side: 'bride',
       name: (invitation?.bride_mother || allowSampleFallback) ? (
         <ParentDeceasedName
-          name={invitation?.bride_mother || (allowSampleFallback ? '이정자' : '')}
+          name={invitation?.bride_mother || (allowSampleFallback ? sampleBrideMother : '')}
           isDeceased={isBrideMotherDeceased}
           markerType={deceasedMarker}
           iconClassName="w-[14px] h-[16px] inline-block align-[-2px] mr-1 text-stone-500 shrink-0"

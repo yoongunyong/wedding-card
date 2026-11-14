@@ -349,9 +349,9 @@ export default function CinematicTemplate({ invitation }) {
     };
   }, [targetDate]);
 
-  // 예식장 정보 (하드코딩 더미 완전 제거 -> 미입력 시 공백 처리)
-  const venueFullName = [invitation?.venue_name, config?.venue_hall || invitation?.venue_hall].filter(Boolean).join(' ');
-  const venueAddress = invitation?.venue_address || '';
+  // 예식장 정보 (하드코딩 더미 완전 제거 -> 미입력 시 공백 처리, 샘플 시 더채플앳청담 커스티홀)
+  const venueFullName = [invitation?.venue_name, config?.venue_hall || invitation?.venue_hall].filter(Boolean).join(' ') || (isSample ? '더채플앳청담 커스티홀' : '');
+  const venueAddress = invitation?.venue_address || (isSample ? '서울 강남구 선릉로 757' : '');
 
   // 안내 사항 카드 리스트 (Figma 섹션 8 Notice 매칭 - 미등록 시 실제 고객 청첩장에서는 미노출)
   const rawInfoNotices = invitation?.info_notices;
@@ -401,12 +401,8 @@ export default function CinematicTemplate({ invitation }) {
     } catch {}
     if (isSample) {
       return [
-        { group: '신랑측', relation: '신랑', title: '신랑', holder: '예금주', name: '예금주', bank: '하나은행', number: '504-910579-89707' },
-        { group: '신랑측', relation: '신랑', title: '신랑', holder: '예금주', name: '예금주', bank: '하나은행', number: '504-910579-89707' },
-        { group: '신랑측', relation: '신랑', title: '신랑', holder: '예금주', name: '예금주', bank: '하나은행', number: '504-910579-89707' },
-        { group: '신부측', relation: '신부', title: '신부', holder: '예금주', name: '예금주', bank: '하나은행', number: '504-910579-89707' },
-        { group: '신부측', relation: '신부', title: '신부', holder: '예금주', name: '예금주', bank: '하나은행', number: '504-910579-89707' },
-        { group: '신부측', relation: '신부', title: '신부', holder: '예금주', name: '예금주', bank: '하나은행', number: '504-910579-89707' },
+        { group: '신랑측', relation: '신랑', title: '신랑', holder: '장민기', name: '장민기', bank: '하나은행', number: '504-910579-89707' },
+        { group: '신부측', relation: '신부', title: '신부', holder: '권기득', name: '권기득', bank: '하나은행', number: '504-910579-89707' },
       ];
     }
     return [];
@@ -801,7 +797,7 @@ export default function CinematicTemplate({ invitation }) {
                 <span className={`font-nanumsquare text-[13px] sm:text-[13.5px] font-normal transition-colors duration-300 ${
                   isNightMode ? 'text-stone-200' : 'text-[#333333]'
                 }`}>
-                  {groomName || (isSample ? '강민준' : '')}
+                  {groomName || (isSample ? '장민기' : '')}
                 </span>
               </div>
             </div>
@@ -810,22 +806,22 @@ export default function CinematicTemplate({ invitation }) {
           {/* 하단 혼주 & 서열 & 신랑신부 한글 성함 (Figma 447px * 74px 1:1 정밀 매칭) */}
           {(hasGroomParents || hasBrideParents || isSample) && (
             <div className="w-fit mx-auto flex flex-col space-y-3 select-none text-[13.5px] sm:text-[14px] font-nanumsquare font-normal">
-              {/* 1행: 신랑측 (강오진 · 류창희      아들    강민준) */}
+              {/* 1행: 신랑측 (권순민 · 이미자      아들    장민기) */}
               {(hasGroomParents || isSample) && (
                 <div className="grid grid-cols-[105px_42px_55px] gap-x-6 sm:gap-x-7 items-center text-left">
                   <div className={`transition-colors duration-300 whitespace-nowrap ${isNightMode ? 'text-stone-200' : 'text-[#333333]'}`}>
-                    {hasGroomParents ? groomParentsNode : '강오진 · 류창희'}
+                    {hasGroomParents ? groomParentsNode : '권순민 · 이미자'}
                   </div>
                   <div className={`text-[12.5px] sm:text-[13px] text-center transition-colors duration-300 ${isNightMode ? 'text-stone-400' : 'text-[#999999]'}`}>
                     {groomRelation || (isSample ? '아들' : '장남')}
                   </div>
                   <div className={`transition-colors duration-300 whitespace-nowrap ${isNightMode ? 'text-stone-200' : 'text-[#333333]'}`}>
-                    {groomName || (isSample ? '강민준' : '')}
+                    {groomName || (isSample ? '장민기' : '')}
                   </div>
                 </div>
               )}
 
-              {/* 2행: 신부측 (장철규 · 이정자      딸      박지민) */}
+              {/* 2행: 신부측 (장철규 · 이정자      딸      권기득) */}
               {(hasBrideParents || isSample) && (
                 <div className="grid grid-cols-[105px_42px_55px] gap-x-6 sm:gap-x-7 items-center text-left">
                   <div className={`transition-colors duration-300 whitespace-nowrap ${isNightMode ? 'text-stone-200' : 'text-[#333333]'}`}>
@@ -835,7 +831,7 @@ export default function CinematicTemplate({ invitation }) {
                     {brideRelation || (isSample ? '딸' : '장녀')}
                   </div>
                   <div className={`transition-colors duration-300 whitespace-nowrap ${isNightMode ? 'text-stone-200' : 'text-[#333333]'}`}>
-                    {brideName || (isSample ? '박지민' : '')}
+                    {brideName || (isSample ? '권기득' : '')}
                   </div>
                 </div>
               )}
@@ -1183,24 +1179,24 @@ export default function CinematicTemplate({ invitation }) {
               식장 위치
             </p>
 
-            {/* 상단 3: 호텔금오산 컨벤션센터 (웨딩홀 명칭) (Figma: NanumSquare Neo OTF 400 30px -> 1x 15px, #333333, mt-[43px]) */}
+            {/* 상단 3: 더채플앳청담 커스티홀 (웨딩홀 명칭) (Figma: NanumSquare Neo OTF 400 30px -> 1x 15px, #333333, mt-[43px]) */}
             <h3 className={`font-nanumsquare font-normal text-[15px] leading-[72%] text-center mt-[43px] tracking-tight ${
               isNightMode ? 'text-white' : 'text-[#333333]'
             }`}>
-              {venueFullName || (isSample ? '호텔금오산 컨벤션센터' : '')}
+              {venueFullName || (isSample ? '더채플앳청담 커스티홀' : '')}
             </h3>
 
-            {/* 상단 4: 경북 구미시 금오산로 400 (식장 주소) & 주소 복사 (Figma: NanumSquare Neo 28px -> 1x 14px, #999999, mt-[23.5px]) */}
+            {/* 상단 4: 서울 강남구 선릉로 757 (식장 주소) & 주소 복사 (Figma: NanumSquare Neo 28px -> 1x 14px, #999999, mt-[23.5px]) */}
             <div className="mt-[23.5px] flex items-center justify-center gap-1.5">
               <span className={`font-nanumsquare font-normal text-[14px] leading-[72%] tracking-tight ${
                 isNightMode ? 'text-[#A3A3A3]' : 'text-[#999999]'
               }`}>
-                {venueAddress || (isSample ? '경북 구미시 금오산로 400' : '')}
+                {venueAddress || (isSample ? '서울 강남구 선릉로 757' : '')}
               </span>
               <button
                 type="button"
                 onClick={() => {
-                  const addr = venueAddress || (isSample ? '경북 구미시 금오산로 400' : '');
+                  const addr = venueAddress || (isSample ? '서울 강남구 선릉로 757' : '');
                   handleCopy(addr, '식장 주소가');
                 }}
                 className={`inline-flex items-center justify-center p-0.5 transition-colors cursor-pointer select-none ${
@@ -1222,8 +1218,8 @@ export default function CinematicTemplate({ invitation }) {
               isNightMode ? 'bg-stone-900 border-stone-800' : 'bg-stone-100 border-stone-200'
             }`}>
               <KakaoMap
-                address={venueAddress || (isSample ? '경북 구미시 금오산로 400' : '')}
-                venueName={venueFullName || (isSample ? '호텔금오산 컨벤션센터' : '')}
+                address={venueAddress || (isSample ? '서울 강남구 선릉로 757' : '')}
+                venueName={venueFullName || (isSample ? '더채플앳청담' : '')}
                 className="w-full h-full"
               />
             </div>
@@ -1234,7 +1230,7 @@ export default function CinematicTemplate({ invitation }) {
               <button
                 type="button"
                 onClick={() => {
-                  const query = venueFullName || venueAddress || (isSample ? '호텔금오산 컨벤션센터' : '');
+                  const query = venueFullName || venueAddress || (isSample ? '더채플앳청담' : '');
                   window.open(`https://map.naver.com/p/search/${encodeURIComponent(query)}`, '_blank');
                 }}
                 style={{
@@ -1260,7 +1256,7 @@ export default function CinematicTemplate({ invitation }) {
               <button
                 type="button"
                 onClick={() => {
-                  const query = venueFullName || venueAddress || (isSample ? '호텔금오산 컨벤션센터' : '');
+                  const query = venueFullName || venueAddress || (isSample ? '더채플앳청담' : '');
                   window.open(`https://map.kakao.com/link/search/${encodeURIComponent(query)}`, '_blank');
                 }}
                 style={{
@@ -1801,17 +1797,21 @@ export default function CinematicTemplate({ invitation }) {
         const currentThree = displayList.slice(safePageIndex * 3, safePageIndex * 3 + 3);
 
         const formatGuestbookDate = (dateStr) => {
-          if (!dateStr) return '2027. 10.21';
+          if (!dateStr) {
+            if (isSample) return '2027. 10.21';
+            const now = new Date();
+            return `${now.getFullYear()}. ${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
+          }
           if (typeof dateStr === 'string' && dateStr.includes('.')) return dateStr;
           try {
             const d = new Date(dateStr);
-            if (isNaN(d.getTime())) return '2027. 10.21';
+            if (isNaN(d.getTime())) return isSample ? '2027. 10.21' : '';
             const y = d.getFullYear();
             const m = String(d.getMonth() + 1).padStart(2, '0');
             const day = String(d.getDate()).padStart(2, '0');
             return `${y}. ${m}.${day}`;
           } catch {
-            return '2027. 10.21';
+            return isSample ? '2027. 10.21' : '';
           }
         };
 
@@ -2063,7 +2063,7 @@ export default function CinematicTemplate({ invitation }) {
           }`}>
             {groomShort && brideShort 
               ? `${groomShort} · ${brideShort} 드림`
-              : (groomName && brideName ? `${groomName} · ${brideName} 드림` : (isSample ? '민준 · 지민 드림' : '신랑 · 신부 드림'))}
+              : (groomName && brideName ? `${groomName} · ${brideName} 드림` : (isSample ? '민기 · 기득 드림' : '신랑 · 신부 드림'))}
           </p>
 
           {/* 브랜드 카피라이트 (Figma: Poppins 24px -> 1x 12px, line-height 162%, #999999, mt-[138px], pb-[50px]) */}

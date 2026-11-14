@@ -49,15 +49,14 @@ export default function SceneIntro({
     images.main ||
     invitation?.main_image ||
     images.couple_profile ||
-    (isSample ? '/samples/photo-07-grass-run.jpg' : '/samples/main-05-scene.jpg');
+    (isSample ? '/samples/photo-07-grass-run.jpg' : '');
 
   // 3. 예식장 장소 (피그마 예: 서울 크리스탈 볼룸 1층)
   const venueText = useMemo(() => {
-    if (isSample) return '서울 크리스탈 볼룸 1층';
     const hall = config.venue_hall || invitation?.venue_hall;
     const parts = [invitation?.venue_name, hall].filter(Boolean);
     if (parts.length > 0) return parts.join(' ');
-    return '서울 크리스탈 볼룸 1층';
+    return isSample ? '서울 크리스탈 볼룸 1층' : '';
   }, [invitation?.venue_name, config.venue_hall, invitation?.venue_hall, isSample]);
 
   // 4. 날짜 포맷 (피그마 예: 2027.May 15. 14:00 pm)

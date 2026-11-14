@@ -20,6 +20,13 @@ export default function EditorialGuestbookDeleteModal({ targetMsg, onClose, onDe
     e.preventDefault();
     if (!password.trim()) return alert('비밀번호를 입력해 주세요.');
 
+    if (String(targetMsg?.id).startsWith('sample-')) {
+      alert('메시지가 삭제되었습니다.');
+      if (onDeleteSuccess) onDeleteSuccess(targetMsg.id);
+      if (onClose) onClose();
+      return;
+    }
+
     setLoading(true);
     const trimmedPw = password.trim();
 

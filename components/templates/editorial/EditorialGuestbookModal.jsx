@@ -29,6 +29,21 @@ export default function EditorialGuestbookModal({ invitationId, onClose, onSucce
     if (!password.trim()) return alert('비밀번호(삭제용)를 입력해 주세요.');
     if (!content.trim()) return alert('축하 메시지를 입력해 주세요.');
 
+    if (String(invitationId).startsWith('sample-')) {
+      alert('따뜻한 축하의 메시지가 등록되었습니다. 감사합니다!');
+      if (onSuccess) {
+        onSuccess({
+          id: 'sample-gb-' + Date.now(),
+          invitation_id: invitationId,
+          author: author.trim(),
+          content: content.trim(),
+          created_at: new Date().toISOString(),
+        });
+      }
+      if (onClose) onClose();
+      return;
+    }
+
     setLoading(true);
     const { data, error } = await supabase
       .from('guestbook')

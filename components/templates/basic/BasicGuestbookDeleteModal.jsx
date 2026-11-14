@@ -17,6 +17,13 @@ export default function BasicGuestbookDeleteModal({ targetMsg, onClose, onDelete
       return;
     }
 
+    if (String(targetMsg?.id).startsWith('sample-')) {
+      alert('방명록이 삭제되었습니다.');
+      if (onDeleteSuccess) onDeleteSuccess(targetMsg.id);
+      if (onClose) onClose();
+      return;
+    }
+
     setLoading(true);
     setErrorMsg('');
 

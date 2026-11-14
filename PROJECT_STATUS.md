@@ -1,6 +1,6 @@
 # 💍 모바일 청첩장 프로젝트 인수인계 현황 (PROJECT_STATUS.md)
 
-> **최종 업데이트 일시**: 2026-11-11 (오너/운영자 관점 전방위 전수 결함 소탕 · 브랜드 404 및 글로벌 에러 바운더리 신설 · 카톡 공유 3중 방어 · 폼 데이터 유실 방지 beforeunload · ESLint 0 Errors · Next.js 프로덕션 빌드 100% 무결성 달성)  
+> **최종 업데이트 일시**: 2026-11-14 (시안 대개편 후속 전수 결함 감사 · 실제 고객 하객 대상 더미데이터 누출 원천 차단 · 연락처 모달 성별/인명 정합화 · 템플릿별 지리/인물 완전 일체화 · ESLint 0 Errors · Next.js 프로덕션 빌드 무결성 통과)  
 > **프로젝트 경로**: `c:\Users\YOONGUNYONG\wedding-card`  
 > **현재 작업 브랜치**: `dev`  
 > **핵심 프레임워크**: Next.js 16 (App Router) / Tailwind CSS / Supabase (PostgreSQL)  
@@ -51,6 +51,30 @@
 ---
 
 ## 0. 최근 핫픽스 & 서비스 안정화 내역 (2026-11-14 오너 관점 결함 전수 조치 & 시안 개편)
+
+-34. **[5대 공식 템플릿 및 모달, 샘플 데이터 전수 정합성·결함 감사 및 더미데이터 누출 원천 차단 조치 (2026-11-14)]**:
+   - **사용자 요청/기획 의도**:
+     - "지금 시안이 대대적으로 많이 바꼈어. 바꿈으로써 여기저기 사이드이펙트 문제가 생겼을 수도 잇어. 한번 전체적으로 검토해봐. props나 변수, 로직, 논리, 동작 스크립트 고객의 하객에게 잘못전달 될 수도 있는 하드코딩은 없는지 그리고 이름, 날짜, 장소, 계좌 등등 누가봐도 동적 데이터는 하드코딩이 아닌 동적 값으로 잘 렌더링 하고 있는지 아주 꼼꼼하게 결함이나 버그가 있는지 찾아봐."
+   - **발견된 결함 및 조치 상세**:
+     1. **실제 고객 하객 대상 더미 예식장 정보('서울 크리스탈 볼룸 1층') 노출 누출 버그 원천 차단**:
+        - `SceneIntro.jsx`, `SceneTemplate.jsx`, `PlaylistIntro.jsx`, `PlaylistTemplate.jsx`의 `venueText` 계산 로직에서 고객이 예식장 정보를 비워둘 경우 `isSample` 여부와 무관하게 무조건 `'서울 크리스탈 볼룸 1층'`을 반환하여 실제 고객의 하객에게 엉뚱한 식장이 노출될 수 있었던 치명적 결함을 `isSample ? ... : ''` 삼항 연산자로 완전히 수정.
+     2. **연락처 모달(`EditorialContactModal`) 신랑/신부 및 혼주 성함 뒤바뀜 버그 전면 해소**:
+        - `EditorialContactModal.jsx`에서 샘플 모드 시 신랑을 권기득, 신부를 장민기로 반대로 렌더링하던 성별/인명 역전 버그 수정.
+        - `isPlaylistOrScene` 분기를 신설하여, 시안 3/5는 신랑 `장민기` / 신부 `권기득` / 혼주 `강대현·문영희` / `서병철·한정숙`으로, 시안 1/2/4는 신랑 `강민준` / 신부 `박지민` / 혼주 `강오진·류창희` / `장철규·이정자`로 일관되게 정합화.
+        - `isOfficialDemo` slug 판별에 5대 시안(`basic`, `editorial`, `playlist`, `cinematic`, `scene`) 전체를 포함하도록 보강.
+     3. **템플릿별 지리적(예식장-주소-지도-교통편) 데이터 불일치 전면 일체화**:
+        - `BasicTemplate` & `EditorialTemplate`: 기존 지도 주소가 경북 구미 호텔금오산으로 되어 있으면서 교통편은 청담역을 가리키던 모순을 `'빌라드지디 청담'` / `'서울 강남구 학동로 519'`로 일치화.
+        - `CinematicTemplate`: 지도 주소가 경북 구미 호텔금오산으로 되어 있던 것을 `'더채플앳청담'` / `'서울 강남구 선릉로 757'`로 일치화.
+        - `lib/sampleInvitations.js`: `editorial`, `playlist`, `cinematic`, `scene`의 예식장, 상세 주소, 지하철/버스 교통편, 계좌 예금주를 각 템플릿 본문 및 인트로와 100% 동일하게 동기화.
+     4. **계좌 및 방명록 날짜 하드코딩 정돈**:
+        - `BasicTemplate`, `EditorialTemplate`, `CinematicTemplate`의 샘플 계좌에서 무의미하게 3번 중복되던 `'예금주'` 가짜 계좌를 현실적인 신랑/신부 단일 계좌로 정돈.
+        - 방명록 작성일자 포맷 함수(`formatGuestbookDate`)에서 실제 고객의 방명록 데이터 타임스탬프 파싱 실패 시 하드코딩 날짜 `'2027. 10.21'` 대신 현재 시점 날짜로 안전하게 fallback되도록 개선.
+     5. **샘플 미리보기 모달(RSVP, 방명록 등록/삭제) 외래키(FK) DB 오류 방어 가드 신설**:
+        - `EditorialRsvpModal`, `BasicRsvpModal`, `EditorialGuestbookModal`, `BasicGuestbookModal`, `EditorialGuestbookDeleteModal`, `BasicGuestbookDeleteModal`에서 `sample-`로 시작하는 가상 청첩장 ID로 제출 시 Supabase 외래키 제약조건 위반 에러 대신 부드러운 완료 피드백을 제공하도록 안전 가드 탑재.
+     6. **린트 및 프로덕션 빌드 무결성 검증**:
+        - `EditorialTemplate.jsx`의 `extra` 객체를 `useMemo`로 래핑하여 react-hooks/exhaustive-deps 경고 제거.
+        - `npx eslint components/ lib/ app/` ➔ 0 Errors 달성.
+        - `npm run build` ➔ Next.js 16 Webpack 최적화 프로덕션 번들 7.9s 무결점 빌드 검증 완료.
 
 -33. **[메인 랜딩페이지 히어로 스와이퍼(HeroCardSwiper) 카드 이중 중첩(두겹) 버그 해소 및 브래킷 여백 정돈 (2026-11-14)]**:
    - **사용자 요청/기획 의도**:

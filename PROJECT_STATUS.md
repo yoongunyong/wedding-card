@@ -56,6 +56,37 @@
 ## 0. 최근 핫픽스 & 서비스 안정화 내역 (2026-11-11 오너 관점 결함 전수 조치 & 시안 개편)
 
 
+-12. **[시안 4 (시네마틱) 안내사항(Notice) 캐러셀 카드 피그마 CSS 스펙 1:1 정밀 반영 (2026-11-14)]**:
+   - **사용자 요청**:
+     - "css가 조금 수정되어서 다시 반영부탁해." (개별 안내카드 373x473, 번호 02, 제목 화환 안내, 구분선, 다이너스티홀 원형 영역 207x38, 글자 211x18 #575757 18px 350, 본문 328x87 20px 145% #333333 실측 좌표 제공)
+   - **피그마 실측 CSS ➔ 1x 모바일 스펙 정밀 매핑**:
+     1. **개별 안내카드 컨테이너 (Card Box)**:
+        - 2x: `width: 373px; height: 473px; top: 10807px; background: #F3F3F3; border: 1px solid #DCDCDC;`
+        - 1x 변환: `w-[186.5px] h-[236.5px]`
+        - 상하 대칭 패딩: 상단 번호 시작(10886px - 10807px = 79px ➔ `pt-[39.5px]`), 하단 본문 여백(11280px - 11201px = 79px ➔ `pb-[39.5px]`). 완벽한 수직 대칭 황금비율 적용.
+     2. **번호 (01, 02 등)**:
+        - 2x: `top: 10886px; font-size: 26px; line-height: 72% (19px); color: #292929;`
+        - 1x 변환: `text-[13px] leading-[9.5px]` (`#292929` / 다크모드 `#D4D4D4`).
+     3. **제목 (화환 안내 등)**:
+        - 2x: `top: 10951px; font-size: 26px; line-height: 72% (19px); color: #292929;`
+        - 1x 변환: `mt-[23px]` (46px/2), `text-[13px] leading-[9.5px]` (`#292929` / 다크모드 `text-white`).
+     4. **제목 ↔ 소제목/시간 구분선 (Divider)**:
+        - 2x: `top: 10992px; width: 255px; border: 0.5px solid #999999;`
+        - 1x 변환: `mt-[11px]` (22px/2), `w-[127.5px]`, `borderTop: 0.5px solid #999999` (다크모드 `0.5px solid rgba(255, 255, 255, 0.2)`).
+     5. **소제목/시간 원형 영역 (Subtitle/Time Pill)**:
+        - 2x: `top: 11038px; width: 207px; height: 38px; border: 1px solid #999999; border-radius: 26.5px;`
+        - 2x 폰트: `top: 11048px; font-weight: 350; font-size: 18px; line-height: 100%; color: #575757;`
+        - 1x 변환: `mt-[23px]` (46px/2), `w-[103.5px] h-[19px] rounded-[13.25px] border border-[#999999]`, 텍스트 `text-[9px] leading-none text-[#575757]` (다크모드 `border-stone-600 bg-stone-800/40 text-stone-300`).
+     6. **안내사항 본문 (Content Text)**:
+        - 2x: `top: 11114px; width: 328px; height: 87px; font-size: 20px; line-height: 145%; color: #333333;`
+        - 1x 변환: `mt-[19px]` (38px/2), `w-[164px] max-w-full text-[10px] leading-[14.5px] text-[#333333] text-center` (다크모드 `text-[#C7C7C7]`).
+     7. **하단 구분선**:
+        - 오너 지시에 따라 본문 하단 구분선 완전 제거 유지 (카드 내 개방감 및 깔끔한 여백 확보).
+   - **조치 대상 파일**: `components/templates/cinematic/CinematicTemplate.jsx`
+   - **검증 결과**:
+     - `npx eslint components/templates/cinematic/CinematicTemplate.jsx`: 0 errors
+     - `npm run build`: Exit Code 0 (컴파일 및 최적화 전 라우트 100% 무결성 통과).
+
 -11. **[시안 2 에디토리얼 인트로 손글씨 획순 드로잉 시험 적용 ➔ 원복 및 미사용 파일 정리 완료 (2026-11-13)]**:
    - **배경 및 사용자 요청**:
      - 에어스튜디오 등 프리미엄 청첩장의 '필기체 이름 써지는 영상'을 참고하여, 시안 2 인트로 `We are getting married`에 실제 사람의 획순을 따르는 손글씨 드로잉(방안 B) 시험 적용.

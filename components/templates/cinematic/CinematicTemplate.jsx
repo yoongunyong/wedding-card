@@ -363,9 +363,9 @@ export default function CinematicTemplate({ invitation }) {
           content: '식사는 12시부터 가능합니다.\n맛있게 식사해주세요!',
         },
         {
-          title: '주차장 안내',
-          time: '',
-          content: '주차는 14시부터 가능합니다.\n편하게 오셔서 주차하세요!',
+          title: '화환 안내',
+          time: 'PM 12:00~16:00',
+          content: '예식장 공간이 좁아\n화환은 정중히 사양하오니\n너른 양해 부탁드립니다.',
         },
         {
           title: '사진부스 안내',
@@ -1574,47 +1574,51 @@ export default function CinematicTemplate({ invitation }) {
                   return (
                     <div
                       key={idx}
-                      className={`snap-center shrink-0 w-[186.5px] h-[236.5px] border box-border flex flex-col justify-start items-center text-center pt-[28px] pb-[20px] px-3.5 transition-colors duration-300 ${
+                      className={`snap-center shrink-0 w-[186.5px] h-[236.5px] border box-border flex flex-col justify-start items-center text-center pt-[39.5px] pb-[39.5px] px-2 transition-colors duration-300 ${
                         isNightMode
                           ? 'bg-[#252525] border-[#3D3D3D]'
                           : 'bg-[#F3F3F3] border-[#DCDCDC]'
                       }`}
                     >
-                      {/* 번호 (Figma: 01, 02 등 - NanumSquare Neo 26px -> 1x 13px, leading-[72%], #292929) */}
-                      <p className={`font-nanumsquare font-normal text-[13px] leading-[72%] ${
+                      {/* 번호 (Figma: 01, 02 등 - NanumSquare Neo 26px -> 1x 13px, leading-[72%], top: 10886px, #292929) */}
+                      <p className={`font-nanumsquare font-normal text-[13px] leading-[9.5px] ${
                         isNightMode ? 'text-[#D4D4D4]' : 'text-[#292929]'
                       }`}>
                         {numStr}
                       </p>
 
-                      {/* 제목 (Figma: 주차장 안내 등 - NanumSquare Neo 26px -> 1x 13px, leading-[72%], mt-[16px], #292929) */}
-                      <h3 className={`font-nanumsquare font-normal text-[13px] leading-[72%] mt-[16px] tracking-tight ${
+                      {/* 제목 (Figma: 화환 안내 등 - NanumSquare Neo 26px -> 1x 13px, leading-[72%], top: 10951px, #292929) */}
+                      <h3 className={`font-nanumsquare font-normal text-[13px] leading-[9.5px] mt-[23px] tracking-tight ${
                         isNightMode ? 'text-white' : 'text-[#292929]'
                       }`}>
                         {card.title}
                       </h3>
 
-                      {/* 제목과 본문 사이 구분선 (Figma: 255px -> 1x 127.5px, border: 0.5px solid #999999, mt-[12px] mb-[14px]) */}
+                      {/* 제목과 소제목/시간 사이 구분선 (Figma: width 255px -> 1x 127.5px, border: 0.5px solid #999999, top: 10992px) */}
                       <div 
                         style={{ 
                           borderTop: isNightMode ? '0.5px solid rgba(255, 255, 255, 0.2)' : '0.5px solid #999999' 
                         }}
-                        className="w-[127.5px] max-w-full my-[13px] shrink-0" 
+                        className="w-[127.5px] max-w-full mt-[11px] shrink-0" 
                       />
 
-                      {/* 시간 알약 태그 (옵션: PM 12:00 ~ 16:00 등) */}
+                      {/* 소제목/시간 원형 영역 (Figma: width 207px -> 1x 103.5px, height 38px -> 1x 19px, border 1px solid #999999, border-radius 26.5px -> 1x 13.25px, top: 11038px) */}
                       {timeText ? (
-                        <div className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-full border mb-[10px] shrink-0 ${
-                          isNightMode ? 'border-stone-600 bg-stone-800/60 text-stone-300' : 'border-[#C4C4C4] bg-white/70 text-[#666666]'
+                        <div className={`w-[103.5px] h-[19px] rounded-[13.25px] border box-border flex items-center justify-center shrink-0 mt-[23px] ${
+                          isNightMode
+                            ? 'border-stone-600 bg-stone-800/40 text-stone-300'
+                            : 'border-[#999999] bg-transparent text-[#575757]'
                         }`}>
-                          <span className="font-nanumsquare font-normal text-[9.5px] leading-none tracking-tight">
+                          <span className="font-nanumsquare font-normal text-[9px] leading-none tracking-tight text-center">
                             {timeText}
                           </span>
                         </div>
                       ) : null}
 
-                      {/* 본문 (Figma: NanumSquare Neo 20px -> 1x 10px, leading-[145%], #333333) */}
-                      <p className={`font-nanumsquare font-normal text-[10px] leading-[145%] text-center whitespace-pre-line break-keep px-1 ${
+                      {/* 안내사항 본문 (Figma: width 328px -> 1x 164px, height 87px -> 1x 43.5px, top 11114px, NanumSquare Neo 20px -> 1x 10px, line-height 145%, color #333333) */}
+                      <p className={`w-[164px] max-w-full font-nanumsquare font-normal text-[10px] leading-[14.5px] text-center whitespace-pre-line break-keep px-0.5 ${
+                        timeText ? 'mt-[19px]' : 'mt-[23px]'
+                      } ${
                         isNightMode ? 'text-[#C7C7C7]' : 'text-[#333333]'
                       }`}>
                         {card.content}

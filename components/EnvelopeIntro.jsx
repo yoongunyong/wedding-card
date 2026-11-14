@@ -30,8 +30,8 @@ export default function EnvelopeIntro({ invitation, onOpen, isInModal: propIsInM
 
   const couplePhoto = !isInvalidCover ? rawCover : (isSample ? '/airdrop-couple.png' : '');
 
-  // 뒷배경: 고객 업로드 사진 또는 샘플 배경
-  const bgImage = invitation?.extra_data?.bg_image || (!isInvalidCover ? rawCover : (isSample ? '/airdrop-bg.jpg' : ''));
+  // 뒷배경: 커버 화면(AirDrop 카드)에 쓰이는 커버 사진을 50% 줌인하여 배경으로 일치화
+  const bgImage = couplePhoto || (isSample ? '/airdrop-couple.png' : '');
 
   useEffect(() => {
     // 모달 미리보기 중에는 부모 페이지의 전체 창 스크롤 및 overflow를 방해하지 않음
@@ -144,24 +144,24 @@ export default function EnvelopeIntro({ invitation, onOpen, isInModal: propIsInM
           }
         `}</style>
 
-        {/* 원본 스크린샷 기반 시그니처 웜 브라운 아치 햇살 배경 (고정 레이어) */}
+        {/* 커버 사진 기반 10% 줌인 배경 (고정 레이어) */}
         <div className={`${isInModal ? 'absolute inset-0' : 'fixed inset-0'} -z-10 bg-[#2D2018] overflow-hidden pointer-events-none`}>
           {bgImage && (
             <img
               src={bgImage}
               alt="Wedding Signature Background"
-              className="w-full h-full object-cover object-center pointer-events-none"
+              className="w-full h-full object-cover object-center scale-[1.10] pointer-events-none"
               onError={(e) => {
-                if (isSample && e.currentTarget.src !== '/airdrop-bg.jpg') {
-                  e.currentTarget.src = '/airdrop-bg.jpg';
+                if (isSample && e.currentTarget.src !== '/airdrop-couple.png') {
+                  e.currentTarget.src = '/airdrop-couple.png';
                 } else {
                   e.currentTarget.style.display = 'none';
                 }
               }}
             />
           )}
-          {/* 원본의 따뜻한 감성을 그대로 보존하기 위한 미세 비네팅 */}
-          <div className="absolute inset-0 bg-black/5 pointer-events-none" />
+          {/* 부드러운 틴트 오버레이 (카드 대비 및 가독성 확보) */}
+          <div className="absolute inset-0 bg-black/20 pointer-events-none" />
         </div>
 
         {/* iOS 정통 AirDrop 모달 카드 (576x1024 스크린샷 100% 픽셀 매칭) */}

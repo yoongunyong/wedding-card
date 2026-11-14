@@ -17,8 +17,8 @@ export default function EditorialIntro({ invitation, onOpen, isInModal: propIsIn
     invitation?.extra_data?.cover_image ||
     (isSample ? '/samples/main-02-editorial.jpg' : (invitation?.images?.main || ''));
 
-  // 배경 이미지: 프로젝트에 영구 저장된 피그마 원본 텍스처 배경(image 735) 사용
-  const coverBgImage = '/samples/editorial_intro_background.png';
+  // 배경 이미지: 커버 화면(화이트 프레임 카드)에 쓰이는 커버 사진을 50% 줌인하여 배경으로 일치화
+  const coverBgImage = coverImage || (isSample ? '/samples/main-02-editorial.jpg' : '');
 
   // 신랑·신부 한글 성함 (피그마 2832:2135 -> Noto Serif KR 15px #292929)
   const groomName = invitation?.groom_name || '';
@@ -129,13 +129,20 @@ export default function EditorialIntro({ invitation, onOpen, isInModal: propIsIn
         }`}
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
-        {/* 1-1. 백그라운드 텍스처 (피그마 원본 image 735 + rgba(0,0,0,0.49) 틴트) */}
+        {/* 1-1. 백그라운드 이미지: 커버 사진 10% 줌인 (scale-[1.10]) & 딥 틴트 오버레이 */}
         <div className={`${isInModal ? 'absolute inset-0' : 'fixed inset-0'} pointer-events-none select-none overflow-hidden -z-10 bg-[#1c1c1c]`}>
-          <img
-            src={coverBgImage}
-            alt="Editorial Background"
-            className="w-full h-full object-cover object-center"
-          />
+          {coverBgImage && (
+            <img
+              src={coverBgImage}
+              alt="Editorial Background"
+              className="w-full h-full object-cover object-center scale-[1.10]"
+              onError={(e) => {
+                if (isSample && e.currentTarget.src !== '/samples/main-02-editorial.jpg') {
+                  e.currentTarget.src = '/samples/main-02-editorial.jpg';
+                }
+              }}
+            />
+          )}
           {/* 피그마 원본 딥 틴트 오버레이 (rgba(0,0,0,0.49)) */}
           <div className="absolute inset-0 bg-black/[0.49]" />
         </div>

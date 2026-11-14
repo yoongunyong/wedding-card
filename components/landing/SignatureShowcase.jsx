@@ -219,13 +219,13 @@ export default function SignatureShowcase() {
                      ===================================================== */}
                   {activeOpeningId === 'basic' && (
                     <div className="relative w-full h-full flex flex-col justify-between p-4 bg-[#2D2018] overflow-hidden text-center">
-                      {/* 배경 웜 브라운 아치 햇살 이미지 */}
+                      {/* 배경 커버 화보 10% 줌인 이미지 */}
                       <img
-                        src="/airdrop-bg.jpg"
+                        src="/airdrop-couple.png"
                         alt=""
-                        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none opacity-90"
+                        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none opacity-90 scale-[1.10]"
                       />
-                      <div className="absolute inset-0 bg-black/15 pointer-events-none" />
+                      <div className="absolute inset-0 bg-black/20 pointer-events-none" />
 
                       {/* 중앙 iOS 정통 AirDrop 모달 카드 (실제 EnvelopeIntro 1:1) */}
                       <div
@@ -269,12 +269,12 @@ export default function SignatureShowcase() {
                      ===================================================== */}
                   {activeOpeningId === 'editorial' && (
                     <div className="relative w-full h-full p-2.5 overflow-hidden flex flex-col items-center justify-center select-none">
-                      {/* 배경 이미지 (Figma image 735: 블러 없는 선명한 화보 + rgba(0,0,0,0.49) 틴트) */}
+                      {/* 배경 이미지 (커버 화보 10% 줌인 + rgba(0,0,0,0.49) 틴트) */}
                       <div className="absolute inset-0 pointer-events-none overflow-hidden">
                         <img
-                          src="/samples/editorial_intro_background.png"
+                          src="/samples/main-02-editorial.jpg"
                           alt="Editorial Background"
-                          className="w-full h-full object-cover object-center"
+                          className="w-full h-full object-cover object-center scale-[1.10]"
                         />
                         <div className="absolute inset-0 bg-black/[0.49]" />
                       </div>

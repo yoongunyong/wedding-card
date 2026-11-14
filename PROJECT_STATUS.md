@@ -56,6 +56,47 @@
 ## 0. 최근 핫픽스 & 서비스 안정화 내역 (2026-11-14 오너 관점 결함 전수 조치 & 시안 개편)
 
 
+-15. **[시안 4 (시네마틱) 포토쉐어링 섹션 피그마 1:1 실측 CSS 정밀 반영 (2026-11-14)]**:
+   - **사용자 요청/제공 피그마 좌표**:
+     - 섹션 컨테이너: `780px × 1200px` (top: 12587px, bg: `#FEFEFE`)
+     - Photo Sharing: `281px × 36px` (top: 12728px, Cormorant Garamond 500 50px, line-height: 72%, color: `#292929`)
+     - 사진 공유: `146px × 26px` (top: 12837px, NanumSquare Neo OTF 400 36px, line-height: 72%, color: `#292929`)
+     - 본문 문구: `506px × 147px` (top: 12949px, NanumSquare Neo OTF 400 28px, line-height: 174%, color: `#333333`)
+     - 사진 업로드하기: `193px × 20px` (top: 13608px, NanumSquare Neo OTF 700 28px, line-height: 72%, color: `#F3F3F3`)
+   - **피그마 실측 CSS ➔ 1x 모바일 스펙 1:1 정밀 매핑**:
+     1. **섹션 컨테이너**:
+        - 2x: `780px × 1200px` (top: 12587px) ➔ 1x: `w-full pt-[70.5px] pb-[65px] text-center`
+        - 상단 패딩: `(12728 - 12587) / 2 = 70.5px` (`pt-[70.5px]`)
+        - 하단 패딩: `(13787 - 13657) / 2 = 65px` (`pb-[65px]`)
+        - 전체 높이: `70.5 + 18 + 36.5 + 13 + 43 + 73.5 + 22.5 + 192.5 + 26.5 + 39 + 65 = 600px` (`1200px / 2 = 600px` 오차 0.0px 완벽 일치).
+        - ☀️Day: `bg-[#FEFEFE]` / 🌙Night: `bg-[#1E1E1E]`.
+     2. **영문 타이틀 (`Photo Sharing`)**:
+        - 2x: `top: 12728px, 281px × 36px, Cormorant Garamond 500 50px`
+        - 1x 변환: `font-serif ('Cormorant Garamond') font-medium text-[25px] leading-[18px] text-center select-none`, Day(`#292929`), Night(`text-white`).
+     3. **한글 서브타이틀 (`사진 공유`)**:
+        - 2x: `top: 12837px, 146px × 26px, NanumSquare Neo OTF 400 36px`
+        - 여백: `(12837 - 12764) / 2 = 36.5px` (`mt-[36.5px]`)
+        - 1x 변환: `font-nanumsquare font-normal text-[18px] leading-[13px] text-center tracking-tight`, Day(`#292929`), Night(`text-[#E5E5E5]`).
+     4. **본문 안내 문구**:
+        - 2x: `top: 12949px, 506px × 147px, NanumSquare Neo OTF 400 28px, line-height 174% (49px)`
+        - 여백: `(12949 - 12863) / 2 = 43px` (`mt-[43px]`)
+        - 1x 변환: `w-[253px] max-w-full mx-auto font-nanumsquare font-normal text-[14px] leading-[24.5px] text-center whitespace-pre-line`, Day(`#333333`), Night(`text-[#D4D4D4]`).
+     5. **폴라로이드 액자 카드**:
+        - 1x: `w-[159px] pt-[8.6px] px-[8.6px] pb-[10px] mt-[22.5px] mx-auto`, `box-shadow: 0px 2.7px 5.1px rgba(0,0,0,0.35)`.
+        - 내부 사진: `141.75px × 144.23px`, 하단 캡션: `font-nanumsquare text-[9px] mt-[8px]`.
+        - ☀️Day: `bg-[#FEFEFE]` / 🌙Night: `bg-[#282828]`.
+     6. **사진 업로드하기 버튼**:
+        - 2x: `top: 13608px, text: 193px × 20px, font 700 28px, line-height: 72%`
+        - 여백: `mt-[26.5px]`
+        - 1x: `w-[164.5px] h-[39px] rounded-full mx-auto flex items-center justify-center`, Day(`bg-[#393939] text-[#F3F3F3]`), Night(`bg-white text-[#292929]`), `box-shadow: 0px 4px 14.2px rgba(0,0,0,0.09)`.
+        - 버튼 텍스트: `font-nanumsquare font-bold text-[14px] leading-none`.
+     7. **구분선 최적화**:
+        - 시안 2 전용 하단 구분선(`mt-[70px] mb-[50px]`)을 시안 4에서는 자동 숨김 처리하여 1200px 규격과 단아한 여백 보장.
+   - **검증 결과**:
+     - `npx eslint components/GuestPhotoSnapSection.jsx components/templates/cinematic/CinematicTemplate.jsx`: 0 errors
+     - `npm run build`: Exit Code 0 (전체 성공)
+
+
 -14. **[RSVP 모달 전세버스 탑승 조사 전 시안 일관성 보완 및 샘플 프리뷰 동기화 (2026-11-14)]**:
    - **사용자 질문/발견 결함**:
      - "근데 지금 모든 시안에서 참석의사 전달받을때 (모달) 전세버스까지 다 받고 있는거 맞아? 지금 시안4에서는 시안2와 달리 전세버스 탑승 여부는 조사 안받고 있는 것 같은데."

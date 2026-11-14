@@ -1736,7 +1736,7 @@ export default function CinematicTemplate({ invitation }) {
       )}
 
       {/* 10. 하객 현장 사진 선물 (포토쉐어링) 섹션 */}
-      <GuestPhotoSnapSection invitation={invitation} isNightMode={isNightMode} />
+      <GuestPhotoSnapSection invitation={invitation} isNightMode={isNightMode} isCinematic={true} />
 
       {/* ========================================================
           11. 공유 2종 링크 & 브랜드 푸터

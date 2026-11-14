@@ -8,6 +8,7 @@ export default function GuestPhotoSnapSection({
   invitation, 
   isNightMode = false,
   isEditorial = false,
+  isCinematic = false,
   className = ''
 }) {
   const [showModal, setShowModal] = useState(false);
@@ -19,6 +20,14 @@ export default function GuestPhotoSnapSection({
   const isSample = Boolean(
     invitation?.is_sample_preview || 
     ['basic', 'editorial', 'playlist', 'cinematic', 'scene'].includes(invitation?.slug)
+  );
+
+  // 시네마틱 모드 판별 (명시적 prop 또는 template_id/slug 감지)
+  const isCinematicMode = Boolean(
+    isCinematic || 
+    invitation?.template_type === 'cinematic' || 
+    invitation?.template_id === 'cinematic' || 
+    invitation?.slug === 'cinematic'
   );
 
   // 에디토리얼 모드 판별 (명시적 prop 또는 template_id/slug 감지)
@@ -85,56 +94,90 @@ export default function GuestPhotoSnapSection({
 
   if (!isEnabled || (!invitation?.id && !invitation?.slug)) return null;
 
-  // 1. 에디토리얼(시안 2) 피그마 실측 1:1 정밀 렌더링
-  if (isEditorialMode) {
-    const displayImage = photoSharingImage || images.couple_profile || images.couple || extra.couple_profile_image || (isSample ? '/samples/couple-profile-01.jpg' : (images.main || images.cover || invitation?.main_image || ''));
+  // 1. 에디토리얼(시안 2) 및 시네마틱(시안 4) 피그마 실측 1:1 정밀 렌더링
+  if (isEditorialMode || isCinematicMode) {
+    const defaultSampleImage = isCinematicMode 
+      ? '/samples/photo-10-orchid-night.jpg' 
+      : '/samples/couple-profile-01.jpg';
+    const displayImage = photoSharingImage || images.couple_profile || images.couple || extra.couple_profile_image || (isSample ? defaultSampleImage : (images.main || images.cover || invitation?.main_image || ''));
 
     return (
       <section
         id="guest-photo-snap"
-        className={`w-full bg-[#FEFEFE] pt-[65.5px] pb-0 text-center select-none overflow-hidden ${className}`}
+        className={`w-full ${
+          isCinematicMode ? 'pt-[70.5px] pb-[65px]' : 'pt-[65.5px] pb-0'
+        } text-center select-none overflow-hidden transition-colors duration-300 ${
+          isNightMode ? 'bg-[#1E1E1E]' : 'bg-[#FEFEFE]'
+        } ${className}`}
       >
         <ScrollReveal>
-          {/* 상단 1: Photo Sharing 영문 필기체 (Figma: Weddingday Personal Use 70px -> 1x 35px, #292929, leading-[72%]) */}
-          <h2 className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal">
-            Photo Sharing
-          </h2>
+          {/* 상단 1: Photo Sharing 영문
+              - 시안 2: Weddingday Personal Use 35px
+              - 시안 4: Cormorant Garamond 500 25px leading-[18px] (Figma 50px / 36px) */}
+          {isCinematicMode ? (
+            <h2 
+              style={{ fontFamily: "'Cormorant Garamond', serif" }}
+              className={`text-[25px] font-medium leading-[18px] text-center select-none tracking-normal ${
+                isNightMode ? 'text-white' : 'text-[#292929]'
+              }`}
+            >
+              Photo Sharing
+            </h2>
+          ) : (
+            <h2 className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal">
+              Photo Sharing
+            </h2>
+          )}
 
-          {/* 상단 2: 사진 공유 (Figma: NanumSquare Neo OTF 36px -> 1x 18px, #292929, mt-[34.5px]) */}
-          <p className="font-nanumsquare font-normal text-[18px] text-[#292929] leading-none text-center mt-[34.5px] tracking-tight">
+          {/* 상단 2: 사진 공유 (Figma: NanumSquare Neo OTF 36px -> 1x 18px, leading-[13px], mt: 36.5px) */}
+          <p className={`font-nanumsquare font-normal text-[18px] leading-[13px] text-center ${
+            isCinematicMode ? 'mt-[36.5px]' : 'mt-[34.5px]'
+          } tracking-tight ${
+            isNightMode ? 'text-[#E5E5E5]' : 'text-[#292929]'
+          }`}>
             사진 공유
           </p>
 
-          {/* 상단 3: 감성 안내 문구 (Figma: NanumSquare Neo OTF 28px -> 1x 14px, #333333, leading-[1.74], mt-[43px]) */}
-          <p className="font-nanumsquare font-normal text-[14px] text-[#333333] leading-[1.74] text-center mt-[43px] tracking-tight whitespace-pre-line max-w-[280px] mx-auto">
+          {/* 상단 3: 감성 안내 문구 (Figma: NanumSquare Neo OTF 28px -> 1x 14px, leading-[24.5px] 174%, mt: 43px, w: 253px) */}
+          <p className={`${
+            isCinematicMode ? 'w-[253px]' : 'max-w-[280px]'
+          } max-w-full mx-auto font-nanumsquare font-normal text-[14px] leading-[24.5px] text-center mt-[43px] tracking-tight whitespace-pre-line ${
+            isNightMode ? 'text-[#D4D4D4]' : 'text-[#333333]'
+          }`}>
             저희의 소중한 순간을 함께 담아주세요.{'\n'}
             여러분의 시선으로 기록된 특별한 순간들을{'\n'}
             오래도록 간직하고 싶습니다.
           </p>
 
-          {/* 중앙: 폴라로이드 액자 카드 (Figma: 318x385 -> 1x 159x192.5px, bg #FEFEFE, shadow, mt-[22.5px]) */}
+          {/* 중앙: 폴라로이드 액자 카드 (Figma: 318x385 -> 1x 159x192.5px, shadow, mt-[22.5px]) */}
           <div className="mt-[22.5px] flex items-center justify-center">
             <div
               style={{
                 boxShadow: '0px 2.7px 5.1px rgba(0, 0, 0, 0.35)',
               }}
-              className="w-[159px] bg-[#FEFEFE] pt-[8.6px] px-[8.6px] pb-[10px] flex flex-col items-center select-none"
+              className={`w-[159px] pt-[8.6px] px-[8.6px] pb-[10px] flex flex-col items-center select-none transition-colors duration-300 ${
+                isNightMode ? 'bg-[#282828]' : 'bg-[#FEFEFE]'
+              }`}
             >
               {/* 폴라로이드 내부 상단 이미지 (Figma: 283.5x288.46 -> 1x 141.75x144.23px) */}
-              <div className="w-[141.75px] h-[144.23px] bg-stone-100 overflow-hidden flex items-center justify-center">
+              <div className={`w-[141.75px] h-[144.23px] overflow-hidden flex items-center justify-center ${
+                isNightMode ? 'bg-stone-800' : 'bg-stone-100'
+              }`}>
                 {displayImage ? (
                   <img
                     src={displayImage}
                     alt="Photo Sharing Frame"
                     className="w-full h-full object-cover select-none"
                     onError={(e) => {
-                      if (isSample && e.currentTarget.src !== '/samples/couple-profile-01.jpg') {
-                        e.currentTarget.src = '/samples/couple-profile-01.jpg';
+                      if (isSample && e.currentTarget.src !== defaultSampleImage) {
+                        e.currentTarget.src = defaultSampleImage;
                       }
                     }}
                   />
                 ) : (
-                  <div className="flex flex-col items-center justify-center text-stone-400 gap-1">
+                  <div className={`flex flex-col items-center justify-center gap-1 ${
+                    isNightMode ? 'text-stone-500' : 'text-stone-400'
+                  }`}>
                     <svg className="w-6 h-6 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
                       <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
@@ -144,14 +187,16 @@ export default function GuestPhotoSnapSection({
                 )}
               </div>
 
-              {/* 폴라로이드 내부 하단 문구: 예식 당일 부터 업로드 가능합니다. (Figma: 18px -> 1x 9px, #999999, mt-[8px]) */}
-              <p className="font-nanumsquare font-normal text-[9px] text-[#999999] leading-none text-center mt-[8px]">
+              {/* 폴라로이드 내부 하단 문구: 예식 당일 부터 업로드 가능합니다. (Figma: 18px -> 1x 9px, mt-[8px]) */}
+              <p className={`font-nanumsquare font-normal text-[9px] leading-none text-center mt-[8px] ${
+                isNightMode ? 'text-[#A0A0A0]' : 'text-[#999999]'
+              }`}>
                 예식 당일 부터 업로드 가능합니다.
               </p>
             </div>
           </div>
 
-          {/* 하단 버튼: 사진 업로드하기 (Figma: 329x78 -> 1x 164.5x39px, bg #393939, rounded-full, mt-[26.5px]) */}
+          {/* 하단 버튼: 사진 업로드하기 (Figma: 329x78 -> 1x 164.5x39px, rounded-full, mt-[26.5px]) */}
           <div className="mt-[26.5px] flex items-center justify-center">
             <button
               type="button"
@@ -159,19 +204,25 @@ export default function GuestPhotoSnapSection({
               style={{
                 boxShadow: '0px 4px 14.2px rgba(0, 0, 0, 0.09)',
               }}
-              className="w-[164.5px] h-[39px] bg-[#393939] hover:bg-[#2c2c2c] active:scale-[0.98] rounded-full flex items-center justify-center transition-all cursor-pointer select-none"
+              className={`w-[164.5px] h-[39px] rounded-full flex items-center justify-center transition-all cursor-pointer select-none active:scale-[0.98] ${
+                isNightMode 
+                  ? 'bg-white hover:bg-stone-100 text-[#292929]' 
+                  : 'bg-[#393939] hover:bg-[#2c2c2c] text-[#F3F3F3]'
+              }`}
             >
-              <span className="font-nanumsquare font-bold text-[14px] text-[#F3F3F3] leading-none tracking-tight">
+              <span className="font-nanumsquare font-bold text-[14px] leading-none tracking-tight">
                 사진 업로드하기
               </span>
             </button>
           </div>
 
-          {/* 사진 공유 섹션 바닥 공통 구분선 (인수인계서 필수 원칙: w-[280.5px], borderTop: 0.5px solid #999999) */}
-          <div 
-            style={{ borderTop: '0.5px solid #999999' }}
-            className="w-[280.5px] max-w-[75%] mt-[70px] mb-[50px] mx-auto shrink-0" 
-          />
+          {/* 사진 공유 섹션 바닥 공통 구분선 (시안 2 에디토리얼 전용 원칙, 시안 4는 1200px 섹션 여백으로 완결) */}
+          {!isCinematicMode && (
+            <div 
+              style={{ borderTop: isNightMode ? '0.5px solid #444444' : '0.5px solid #999999' }}
+              className="w-[280.5px] max-w-[75%] mt-[70px] mb-[50px] mx-auto shrink-0" 
+            />
+          )}
         </ScrollReveal>
 
         {/* 업로드 모달 레이어 */}

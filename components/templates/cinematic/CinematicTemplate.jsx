@@ -165,10 +165,13 @@ export default function CinematicTemplate({ invitation }) {
   const groomPhoto = images.groom_profile || extra.groom_profile_image || invitation?.groom_photo || (isSample ? '/samples/groom-solo.jpg' : '');
   const couplePhoto = images.couple_photo || images.couple || images.couple_profile || extra.couple_photo || (userGallery && userGallery.length > 0 ? userGallery[0] : null) || (isSample ? '/samples/couple-profile-01.jpg' : '');
   const datePhoto = images.calendar || images.calendar_photo || images.ending || (userGallery && userGallery.length > 1 ? userGallery[1] : null) || (isSample ? '/samples/ending-04-classic.jpg' : '');
+  const endingImage = images.ending || extra.ending_image || invitation?.ending_image || (isSample ? '/samples/couple-profile-01.jpg' : (couplePhoto || mainImage));
 
   // 성함 데이터 (하드코딩 더미 성함 완전 제거)
   const groomName = invitation?.groom_name || '';
   const brideName = invitation?.bride_name || '';
+  const groomShort = invitation?.groom_name && invitation.groom_name.length === 3 ? invitation.groom_name.slice(1) : (invitation?.groom_name || '');
+  const brideShort = invitation?.bride_name && invitation.bride_name.length === 3 ? invitation.bride_name.slice(1) : (invitation?.bride_name || '');
   const groomFirstEn = invitation?.groom_first_name_en || (invitation?.groom_name_en || '').split(' ')[0] || '';
   const brideFirstEn = invitation?.bride_first_name_en || (invitation?.bride_name_en || '').split(' ')[0] || '';
   const displayNamesEn = invitation?.main_names_en || (groomFirstEn && brideFirstEn ? `${groomFirstEn} & ${brideFirstEn}` : '');
@@ -1999,50 +2002,71 @@ export default function CinematicTemplate({ invitation }) {
       })()}
 
       {/* ========================================================
-          12. 공유 2종 링크 & 브랜드 푸터
+          12. 엔딩 사진 & 감사 인사 (Figma 15446px~16787px: 780x1341 -> 1x 390x670.5 1:1 정밀 매칭)
           ======================================================== */}
-      <section className={`py-12 px-5 text-center transition-colors duration-300 ${
-        isNightMode ? 'bg-[#141414]' : 'bg-[#EAEAEA]'
-      }`}>
-        <ScrollReveal>
-          {/* 공유 2종 링크 */}
-          <div id="share-section" className={`flex flex-col items-center gap-3 text-xs font-sans mb-12 ${
-            isNightMode ? 'text-stone-400' : 'text-stone-500'
-          }`}>
-            <button
-              type="button"
-              onClick={handleKakaoShare}
-              className={`transition-colors flex items-center gap-1.5 cursor-pointer ${
-                isNightMode ? 'hover:text-white' : 'hover:text-stone-900'
-              }`}
-            >
-              <span>💬</span>
-              <span>Share KakaoTalk</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleCopy(window.location.href, '청첩장 주소가')}
-              className={`transition-colors flex items-center gap-1.5 cursor-pointer ${
-                isNightMode ? 'hover:text-white' : 'hover:text-stone-900'
-              }`}
-            >
-              <span>🔗</span>
-              <span>Copy Link</span>
-            </button>
+      <section 
+        id="ending-section"
+        className={`w-full max-w-[430px] mx-auto text-center select-none overflow-hidden transition-colors duration-300 ${
+          isNightMode ? 'bg-[#141414]' : 'bg-[#FEFEFE]'
+        }`}
+      >
+        <ScrollReveal duration={1000}>
+          {/* 상단: 엔딩 사진 + 그라데이션 오버레이 (Figma: 782px x 593px -> 1x 391x296.5px, aspect-[782/593]) */}
+          <div className="w-full relative aspect-[782/593] overflow-hidden bg-stone-100 select-none">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={endingImage || couplePhoto || mainImage || (isSample ? '/samples/couple-profile-01.jpg' : '')}
+              alt="Wedding Ending"
+              className="w-full h-full object-cover object-center select-none"
+              onError={(e) => {
+                if (isSample && e.currentTarget.src !== '/samples/couple-profile-01.jpg') {
+                  e.currentTarget.src = '/samples/couple-profile-01.jpg';
+                }
+              }}
+            />
+            {/* 그라데이션 오버레이 (Figma: linear-gradient(180deg, rgba(217, 217, 217, 0) 68.73%, rgba(236, 236, 236, 0.23) 82.26%, #FEFEFE 100%)) */}
+            <div 
+              style={{
+                background: isNightMode
+                  ? 'linear-gradient(180deg, rgba(20, 20, 20, 0) 68.73%, rgba(20, 20, 20, 0.5) 82.26%, #141414 100%)'
+                  : 'linear-gradient(180deg, rgba(217, 217, 217, 0) 68.73%, rgba(236, 236, 236, 0.23) 82.26%, #FEFEFE 100%)',
+              }}
+              className="absolute inset-0 pointer-events-none"
+            />
           </div>
 
-          {/* 푸터 (Ways to send your love / 브랜드) */}
-          <div className="pt-4 text-center select-none">
-            <p 
-              style={serifItalic}
-              className="text-xs text-stone-400 mb-1"
-            >
-              Ways to send your love
-            </p>
-            <p className="font-mono text-[10px] text-stone-400 tracking-widest uppercase mb-6">
-              Designed by ATELIER DE MUKIRU
-            </p>
-          </div>
+          {/* Thank you (Figma: Cormorant Garamond 500 50px -> 1x 25px, #292929, leading-[18px], mt-[47px]) */}
+          <h2 
+            style={{ fontFamily: "'Cormorant Garamond', serif" }}
+            className={`font-medium text-[25px] leading-[18px] text-center select-none tracking-normal mt-[47px] ${
+              isNightMode ? 'text-white' : 'text-[#292929]'
+            }`}
+          >
+            Thank you
+          </h2>
+
+          {/* 함께해 주셔서 감사합니다. (Figma: NanumSquare Neo OTF 400 30px -> 1x 15px, #333333, leading-[24.5px], mt-[49px]) */}
+          <p className={`font-nanumsquare font-normal text-[15px] leading-[24.5px] text-center mt-[49px] tracking-tight ${
+            isNightMode ? 'text-[#D4D4D4]' : 'text-[#333333]'
+          }`}>
+            함께해 주셔서 감사합니다.
+          </p>
+
+          {/* 민준 · 지민 드림 (Figma: NanumSquare Neo OTF 400 30px -> 1x 15px, #999999, leading-[24.5px], mt-[3px]) */}
+          <p className={`font-nanumsquare font-normal text-[15px] leading-[24.5px] text-center mt-[3px] tracking-tight ${
+            isNightMode ? 'text-[#888888]' : 'text-[#999999]'
+          }`}>
+            {groomShort && brideShort 
+              ? `${groomShort} · ${brideShort} 드림`
+              : (groomName && brideName ? `${groomName} · ${brideName} 드림` : (isSample ? '민준 · 지민 드림' : '신랑 · 신부 드림'))}
+          </p>
+
+          {/* 브랜드 카피라이트 (Figma: Poppins 24px -> 1x 12px, line-height 162%, #999999, mt-[138px], pb-[50px]) */}
+          <p className={`font-sans font-normal text-[12px] leading-[19.5px] tracking-[0.05em] uppercase text-center mt-[138px] pb-[50px] select-none ${
+            isNightMode ? 'text-[#777777]' : 'text-[#999999]'
+          }`}>
+            DESIGNED BY ATELIER DE MUKIRU
+          </p>
         </ScrollReveal>
       </section>
       </div>

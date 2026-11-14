@@ -1800,31 +1800,10 @@ export default function SceneTemplate({ invitation }) {
       })()}
 
       {/* ========================================================
-          11. FOOTER & 공유 버튼 (영상 frame_040, frame_042 1:1 일치)
+          11. FOOTER (브랜드 카피라이트)
           ======================================================== */}
-      <footer className="py-16 px-6 bg-white border-t border-stone-100 text-center select-none">
+      <footer className="py-12 px-6 bg-white border-t border-stone-100 text-center select-none">
         <ScrollReveal>
-          <div id="share-section" className="max-w-[370px] mx-auto space-y-3 mb-12">
-            <button
-              type="button"
-              onClick={handleKakaoShare}
-              className="w-full py-3.5 sm:py-4 bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 text-xs sm:text-sm font-normal rounded-xl transition-all cursor-pointer shadow-2xs active:scale-98"
-            >
-              카카오톡으로 공유하기
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (typeof window !== 'undefined') {
-                  handleCopy(window.location.href, '청첩장 링크가');
-                }
-              }}
-              className="w-full py-3.5 sm:py-4 bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 text-xs sm:text-sm font-normal rounded-xl transition-all cursor-pointer shadow-2xs active:scale-98"
-            >
-              청첩장 링크 복사하기
-            </button>
-          </div>
-
           <p className="text-[10px] text-stone-400 font-mono tracking-widest uppercase select-none">
             Designed by ATELIER DE MUKIRU
           </p>

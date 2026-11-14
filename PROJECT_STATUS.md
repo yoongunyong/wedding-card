@@ -53,6 +53,68 @@
 ## 0. 최근 핫픽스 & 서비스 안정화 내역 (2026-11-14 오너 관점 결함 전수 조치 & 시안 개편)
 
 
+-19. **[전체 템플릿(시안 1~5) 하단 인라인 공유 버튼 제거 및 플로팅 퀵 메뉴(`QuickNavigationPill`) 단일화 (2026-11-14)]**:
+   - **사용자 요청/질문**:
+     - "혹시 모든 시안에 첫번째 이미지(`media_1794626402406_3eb18c25.png`: 카카오톡 공유하기 / 링크 복사 버튼)와 같은 이런 부분이 있다면 지워줄래?"
+     - "2번째 이미지(`media_1794626426374_44a632e7.png`: 오시는 길 | 마음 전하기 | 공유하기 | ^ x 플로팅 퀵 메뉴)와 같이 퀵 메뉴가 모든 메뉴에 반영되어있는지 확인해줘. 2번째 이미지처럼 구현되어있다면 첫번째 이미지의 부분은 필요없을 것 같아서."
+   - **플로팅 퀵 메뉴 전수 검증 및 확인 결과**:
+     1. **전 시안 및 모든 페이지 마운트 완료 확인**:
+        - `app/[slug]/page.js:248`: 시안 1~5(기본 샘플 및 고객 실제 청첩장 전체)에 `<QuickNavigationPill />`이 글로벌로 마운트되어 항상 동작함.
+        - `app/create/page.js:4620`: 제작 폼 모바일 실시간 프리뷰에 반영 완료.
+        - `app/manage/[slug]/edit/page.js:3549`: 수정 폼 모바일 실시간 프리뷰에 반영 완료.
+     2. **UI & 기능 일치 검증 (2번째 이미지 100% 동일)**:
+        - `📍 오시는 길`: 터치 시 식장 안내/지도 섹션으로 부드러운 스크롤.
+        - `✉️ 마음 전하기`: 터치 시 축의금/계좌번호 섹션으로 부드러운 스크롤.
+        - `🔗 공유하기`: 터치 시 바텀시트 모달(`showShareModal`) 노출 (카카오톡 공유, 링크 복사, 시스템 네이티브 공유, 복사 완료 토스트 포함).
+        - `^` (최상단 스크롤), `x` (미니멀 원형 아이콘으로 접기).
+   - **5대 시안 하단 인라인 공유 버튼(`share-section`) 전수 제거 및 푸터 정리**:
+     - **시안 1 (`BasicTemplate.jsx`)**: 하단 인라인 카카오톡/링크 복사 버튼 제거 ➔ `DESIGNED BY ATELIER DE MUKIRU`를 피그마 실측에 맞춘 `mt-[95px] pb-[40px]` 여백으로 정돈.
+     - **시안 2 (`EditorialTemplate.jsx`)**: 하단 인라인 카카오톡/링크 복사 버튼 제거 ➔ 브랜드 로고 `mt-[95px] pb-[40px]` 간격 최적화.
+     - **시안 3 (`PlaylistTemplate.jsx`)**: 하단 인라인 카카오톡/링크 복사 버튼 제거 ➔ 브랜드 로고 `mt-[95px] pb-[40px]` 간격 최적화.
+     - **시안 4 (`CinematicTemplate.jsx`)**: 이전 엔딩 섹션 피그마 실측 구현 시 기 제거 완료.
+     - **시안 5 (`SceneTemplate.jsx`)**: 하단 인라인 카카오톡/링크 복사 버튼 제거 ➔ 푸터 패딩을 `py-12 px-6`으로 단아하게 조정.
+   - **검증 결과**:
+     - `npx eslint`: 0 errors
+     - `npm run build`: Exit Code 0 (전체 8개 라우트 빌드 성공)
+
+
+-18. **[시안 4 (시네마틱) 엔딩 사진 & Thank you 푸터 섹션 피그마 1:1 실측 CSS 구현 및 퀵 버튼 대체 (2026-11-14)]**:
+   - **사용자 요청/제공 피그마 좌표 & 시안 이미지** (`media_1794625859331_25406e44.png`):
+     - 섹션 영역: `780px × 1341px` (top: 15446px, bg: `#FEFEFE`)
+     - 엔딩 사진: `782px × 593px` (top: 15448px, overlay: `linear-gradient(180deg, rgba(217, 217, 217, 0) 68.73%, rgba(236, 236, 236, 0.23) 82.26%, #FEFEFE 100%)`)
+     - Thank you: `206px × 36px` (top: 16135px, Cormorant Garamond 500 50px, line-height: 72%, color: `#292929`)
+     - 함께해 주셔서 감사합니다.: `335px × 49px` (top: 16269px, NanumSquare Neo OTF 400 30px, line-height: 162%, color: `#333333`)
+     - 민준 · 지민 드림: `201px × 49px` (top: 16323px, NanumSquare Neo OTF 400 30px, line-height: 162%, color: `#999999`)
+     - DESIGNED BY ATELIER DE MUKIRU: `371px × 39px` (top: 16648px, Poppins 400 24px, line-height: 162%, color: `#999999`)
+     - 공유/복사 기능: 인라인 구형 텍스트 링크 제거 ➔ 시안 2와 동일하게 화면 우하단 플로팅 퀵 버튼(`QuickNavigationPill`)으로 단일화.
+   - **피그마 실측 CSS ➔ 1x 모바일 스펙 1:1 정밀 매핑**:
+     1. **섹션 컨테이너**:
+        - 2x: `780px × 1341px` (top: 15446px) ➔ 1x: `w-full max-w-[430px] mx-auto text-center select-none overflow-hidden`, Day(`bg-[#FEFEFE]`), Night(`bg-[#141414]`).
+        - 전체 높이: `296.5 (사진) + 47 + 18 (Thank you) + 49 + 24.5 (문구) + 2.5 + 24.5 (드림) + 138 + 19.5 (브랜드) + 50.5 (바닥 여백) = 670.5px` (`1341px / 2 = 670.5px` 오차 0.0px 완벽 일치).
+     2. **엔딩 사진 & 그라데이션 오버레이**:
+        - 2x: `782px × 593px` ➔ 1x: `w-full aspect-[782/593] overflow-hidden relative`
+        - 오버레이: Day(`linear-gradient(180deg, rgba(217, 217, 217, 0) 68.73%, rgba(236, 236, 236, 0.23) 82.26%, #FEFEFE 100%)`), Night(`linear-gradient(180deg, rgba(20, 20, 20, 0) 68.73%, rgba(20, 20, 20, 0.5) 82.26%, #141414 100%)`).
+     3. **Thank you**:
+        - 여백: `(16135 - 16041) / 2 = 47px` (`mt-[47px]`)
+        - 폰트: `font-serif ('Cormorant Garamond') font-medium text-[25px] leading-[18px] text-center`, Day(`#292929`), Night(`text-white`).
+     4. **함께해 주셔서 감사합니다.**:
+        - 여백: `(16269 - 16171) / 2 = 49px` (`mt-[49px]`)
+        - 폰트: `font-nanumsquare font-normal text-[15px] leading-[24.5px] text-center`, Day(`#333333`), Night(`#D4D4D4`).
+     5. **민준 · 지민 드림**:
+        - 여백: `(16323 - 16318) / 2 = 2.5px` (`mt-[3px]`)
+        - 폰트: `font-nanumsquare font-normal text-[15px] leading-[24.5px] text-center`, Day(`#999999`), Night(`#888888`).
+        - 데이터: 성함 3자 슬라이스(`groomShort`, `brideShort`) 동적 적용 (샘플: '민준 · 지민 드림').
+     6. **DESIGNED BY ATELIER DE MUKIRU**:
+        - 여백: `(16648 - 16372) / 2 = 138px` (`mt-[138px] pb-[50px]`)
+        - 폰트: `font-sans font-normal text-[12px] leading-[19.5px] tracking-[0.05em] uppercase text-center`, Day(`#999999`), Night(`#777777`).
+     7. **인라인 공유 링크 제거 및 플로팅 퀵 버튼 통합**:
+        - 구형 인라인 링크(`💬 Share KakaoTalk`, `🔗 Copy Link`) 완전 제거.
+        - 화면 전체에 상시 배치된 `QuickNavigationPill`로 깔끔하게 단일화.
+   - **검증 결과**:
+     - `npx eslint components/templates/cinematic/CinematicTemplate.jsx`: 0 errors.
+     - `npm run build`: 성공 (Exit Code 0).
+
+
 -17. **[방명록(Guestbook) 섹션 전 시안(시안 1~5) 피그마 1:1 실측 신규 레이아웃 일괄 전파 (2026-11-14)]**:
    - **사용자 요청**: 시안 4에 적용한 1:1 피그마 실측 방명록 디자인(3개 직사각형 카드 세로 스택, 4px 슬림 도트 인디케이터, 글 남기기 알약 버튼, 배경 그라디언트)을 나머지 전체 시안(시안 1, 2, 3, 5)에도 동일하게 적용하고, 폰트는 각 시안의 고유 폰트 시스템을 준수할 것.
    - **시안별 적용 내역**:

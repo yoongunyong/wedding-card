@@ -15,7 +15,10 @@ export default function BasicRsvpModal({ invitation, invitationId, onClose }) {
 
   const config = invitation?.template_config || {};
   const extra = invitation?.extra_data || {};
-  const isSample = Boolean(invitation?.is_sample_preview || invitation?.slug === 'basic');
+  const isSample = Boolean(
+    invitation?.is_sample_preview || 
+    ['basic', 'editorial', 'playlist', 'cinematic', 'scene'].includes(invitation?.slug)
+  );
 
   // 전세버스 탑승 조사 노출 여부 (제작/수정 시 체크박스 on/off 연동)
   const showBusOption = Boolean(

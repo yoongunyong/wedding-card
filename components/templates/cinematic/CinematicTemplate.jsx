@@ -1677,75 +1677,114 @@ export default function CinematicTemplate({ invitation }) {
         </section>
       )}
 
-      {/* 08-2. 하객 현장 사진 선물 섹션 */}
-      <GuestPhotoSnapSection invitation={invitation} isNightMode={isNightMode} />
-
       {/* ========================================================
-          09. RSVP & 푸터
+          09. RSVP (참석 의사 전달 - Figma 11589px~12584px: 780x995 -> 1x 390x497.5 1:1 정밀 매칭)
           ======================================================== */}
       {showRsvpSection && (
-        <section className="py-18 sm:py-20 px-5 text-center border-t border-stone-200/60 dark:border-white/10">
+        <section 
+          id="rsvp-section"
+          className={`w-full pt-[116.5px] pb-[96.5px] px-6 text-center select-none transition-colors duration-300 ${
+            isNightMode ? 'bg-[#1E1E1E]' : 'bg-[#FEFEFE]'
+          }`}
+        >
           <ScrollReveal>
+            {/* R·S·V·P (Figma: Cormorant Garamond 500 50px -> 1x 25px, #292929, leading-[18px], top: 11822px) */}
             <h2 
-              style={serifItalic}
-              className={`text-xl tracking-[0.25em] uppercase mb-3 ${
-                isNightMode ? 'text-white' : 'text-stone-900'
+              style={{ fontFamily: "'Cormorant Garamond', serif" }}
+              className={`text-[25px] font-medium leading-[18px] text-center select-none tracking-normal ${
+                isNightMode ? 'text-white' : 'text-[#292929]'
               }`}
             >
-              RSVP
+              R·S·V·P
             </h2>
-            <p className="text-xs text-stone-500 font-light mb-8 max-w-xs mx-auto">
-              기쁜 날, 함께해주시면 더없이 행복할 것 같아요
+
+            {/* 참석 의사 전달 (Figma: NanumSquare Neo OTF 400 36px -> 1x 18px, leading-[13px], mt-[36.5px], top: 11931px, #292929) */}
+            <p className={`font-nanumsquare font-normal text-[18px] leading-[13px] text-center mt-[36.5px] tracking-tight ${
+              isNightMode ? 'text-[#E5E5E5]' : 'text-[#292929]'
+            }`}>
+              참석 의사 전달
             </p>
 
-            {/* 참석 여부 응답하기 버튼 (영상 1:1) */}
+            {/* 본문 문구 (Figma: NanumSquare Neo OTF 400 28px -> 1x 14px, leading-[24.5px] (174%), mt-[45px], w-[239.5px], top: 12047px, #333333) */}
+            <p className={`w-[239.5px] max-w-full mx-auto font-nanumsquare font-normal text-[14px] leading-[24.5px] text-center mt-[45px] whitespace-pre-line break-keep ${
+              isNightMode ? 'text-[#D4D4D4]' : 'text-[#333333]'
+            }`}>
+              소중한 분들과 함께하는 뜻깊은 날,{"\n"}
+              정성껏 모실 수 있도록{"\n"}
+              참석 여부를 알려주시면 감사하겠습니다.
+            </p>
+
+            {/* 참석 정보 전달하기 버튼 (Figma: w 329px -> 1x 164.5px, h 78px -> 1x 39px, rounded-[24.5px], mt-[59.5px], top: 12313px, bg #393939) */}
             <button
               type="button"
               onClick={() => setShowRsvpModal(true)}
-              className={`w-full max-w-[280px] py-3.5 px-6 rounded-full text-xs font-serif tracking-widest uppercase transition-all cursor-pointer active:scale-95 mx-auto block mb-10 ${
+              style={{
+                boxShadow: '0px 2px 7.1px rgba(0, 0, 0, 0.09)',
+              }}
+              className={`w-[164.5px] h-[39px] rounded-[24.5px] mx-auto mt-[59.5px] flex items-center justify-center transition-all cursor-pointer active:scale-95 ${
                 isNightMode
-                  ? 'bg-white hover:bg-stone-100 text-black shadow-md'
-                  : 'bg-stone-900 hover:bg-black text-white shadow-sm'
+                  ? 'bg-white hover:bg-stone-100 text-[#292929]'
+                  : 'bg-[#393939] hover:bg-[#252525] text-[#F3F3F3]'
               }`}
             >
-              ✉ 참석 여부 응답하기
+              <span className="font-nanumsquare font-bold text-[14px] leading-none text-center">
+                참석 정보 전달하기
+              </span>
             </button>
-
-            {/* 공유 2종 링크 */}
-            <div id="share-section" className="flex flex-col items-center gap-3 text-xs font-sans text-stone-500 mb-14">
-              <button
-                type="button"
-                onClick={handleKakaoShare}
-                className="hover:text-stone-900 transition-colors flex items-center gap-1.5 cursor-pointer"
-              >
-                <span>💬</span>
-                <span>Share KakaoTalk</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleCopy(window.location.href, '청첩장 주소가')}
-                className="hover:text-stone-900 transition-colors flex items-center gap-1.5 cursor-pointer"
-              >
-                <span>🔗</span>
-                <span>Copy Link</span>
-              </button>
-            </div>
-
-            {/* 푸터 (Ways to send your love / 브랜드) */}
-            <div className="pt-8 text-center select-none">
-              <p 
-                style={serifItalic}
-                className="text-xs text-stone-400 mb-1"
-              >
-                Ways to send your love
-              </p>
-              <p className="font-mono text-[10px] text-stone-400 tracking-widest uppercase mb-6">
-                Designed by ATELIER DE MUKIRU
-              </p>
-            </div>
           </ScrollReveal>
         </section>
       )}
+
+      {/* 10. 하객 현장 사진 선물 (포토쉐어링) 섹션 */}
+      <GuestPhotoSnapSection invitation={invitation} isNightMode={isNightMode} />
+
+      {/* ========================================================
+          11. 공유 2종 링크 & 브랜드 푸터
+          ======================================================== */}
+      <section className={`py-12 px-5 text-center transition-colors duration-300 ${
+        isNightMode ? 'bg-[#1E1E1E]' : 'bg-[#FEFEFE]'
+      }`}>
+        <ScrollReveal>
+          {/* 공유 2종 링크 */}
+          <div id="share-section" className={`flex flex-col items-center gap-3 text-xs font-sans mb-12 ${
+            isNightMode ? 'text-stone-400' : 'text-stone-500'
+          }`}>
+            <button
+              type="button"
+              onClick={handleKakaoShare}
+              className={`transition-colors flex items-center gap-1.5 cursor-pointer ${
+                isNightMode ? 'hover:text-white' : 'hover:text-stone-900'
+              }`}
+            >
+              <span>💬</span>
+              <span>Share KakaoTalk</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleCopy(window.location.href, '청첩장 주소가')}
+              className={`transition-colors flex items-center gap-1.5 cursor-pointer ${
+                isNightMode ? 'hover:text-white' : 'hover:text-stone-900'
+              }`}
+            >
+              <span>🔗</span>
+              <span>Copy Link</span>
+            </button>
+          </div>
+
+          {/* 푸터 (Ways to send your love / 브랜드) */}
+          <div className="pt-4 text-center select-none">
+            <p 
+              style={serifItalic}
+              className="text-xs text-stone-400 mb-1"
+            >
+              Ways to send your love
+            </p>
+            <p className="font-mono text-[10px] text-stone-400 tracking-widest uppercase mb-6">
+              Designed by ATELIER DE MUKIRU
+            </p>
+          </div>
+        </ScrollReveal>
+      </section>
       </div>
 
       {/* 모달 연동 레이어 */}

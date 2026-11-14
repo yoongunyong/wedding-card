@@ -15,7 +15,10 @@ export default function EditorialRsvpModal({ invitation, invitationId, onClose }
 
   const config = invitation?.template_config || {};
   const extra = invitation?.extra_data || {};
-  const isSample = Boolean(invitation?.is_sample_preview || invitation?.slug === 'editorial');
+  const isSample = Boolean(
+    invitation?.is_sample_preview || 
+    ['basic', 'editorial', 'playlist', 'cinematic', 'scene'].includes(invitation?.slug)
+  );
 
   // 모달 마운트 시 배경 스크롤 잠금 (브라우저 퀵스크롤 및 배경 밀림 완전 차단)
   useEffect(() => {

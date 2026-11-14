@@ -53,7 +53,60 @@
 
 ---
 
-## 0. 최근 핫픽스 & 서비스 안정화 내역 (2026-11-11 오너 관점 결함 전수 조치 & 시안 개편)
+## 0. 최근 핫픽스 & 서비스 안정화 내역 (2026-11-14 오너 관점 결함 전수 조치 & 시안 개편)
+
+
+-14. **[RSVP 모달 전세버스 탑승 조사 전 시안 일관성 보완 및 샘플 프리뷰 동기화 (2026-11-14)]**:
+   - **사용자 질문/발견 결함**:
+     - "근데 지금 모든 시안에서 참석의사 전달받을때 (모달) 전세버스까지 다 받고 있는거 맞아? 지금 시안4에서는 시안2와 달리 전세버스 탑승 여부는 조사 안받고 있는 것 같은데."
+   - **원인 분석**:
+     1. **실제 서비스(고객 제작 청첩장) 운영 체계**:
+        - 제작/수정 페이지(`app/create`, `app/manage/[slug]/edit`)에서 '전세버스 탑승 조사 (RSVP)' 체크박스를 제공하며, 전세버스를 운영하지 않는 예비부부의 하객에게 불필요한 탑승 질문이 나가지 않도록 기본값은 OFF(`show_rsvp_bus: false`)로 설계됨.
+        - 고객이 체크박스를 켜면 `template_config.show_rsvp_bus = true`가 저장되어 시안 1~5 모든 템플릿의 RSVP 모달에서 식사 여부 다음 항목으로 '전세버스 탑승 여부 (탑승/미탑승)'가 정상 노출되고 관리자 페이지/엑셀로 실시간 집계됨.
+     2. **시안 4 샘플 프리뷰에서만 전세버스가 미노출된 원인 (결함)**:
+        - 공용 RSVP 모달(`EditorialRsvpModal.jsx:18`)에서 `const isSample = Boolean(invitation?.is_sample_preview || invitation?.slug === 'editorial');`와 같이 **시안 2(`editorial`) 슬러그만 하드코딩**되어 있었음.
+        - 그로 인해 `/editorial`(시안 2)에서는 `isSample === true`로 평가되어 샘플 강제 ON 규칙으로 전세버스가 노출되었으나, `/cinematic`(시안 4) 및 `/basic`, `/playlist`에서는 `isSample`이 `false`로 빠져 샘플 화면에서 전세버스 질문이 숨겨지는 불일치 발생.
+   - **조치 내역**:
+     - `components/templates/editorial/EditorialRsvpModal.jsx` 및 `BasicRsvpModal.jsx`:
+       - `isSample` 판별 로직을 `['basic', 'editorial', 'playlist', 'cinematic', 'scene'].includes(invitation?.slug)`로 확장.
+       - 이제 5대 공식 시안 샘플 프리뷰 전체에서 시안 2와 100% 동일하게 '전세버스 탑승 여부' 질문이 안정적으로 노출됨.
+   - **검증 결과**:
+     - `npx eslint components/templates/editorial/EditorialRsvpModal.jsx components/templates/basic/BasicRsvpModal.jsx`: 0 errors
+     - `npm run build`: Exit Code 0 (전체 성공)
+
+
+-13. **[시안 4 (시네마틱) 참석 의사 전달(RSVP) 피그마 1:1 정밀 구현 및 섹션 순서 재배치 (2026-11-14)]**:
+   - **사용자 요청**:
+     - 시안 4 섹션 순서 재배치: 안내사항 바로 다음에 참석 의사 전달(RSVP)이 위치하고, 그 다음에 포토 쉐어링(`GuestPhotoSnapSection`), 공유 및 브랜드 푸터 순서로 노출.
+     - 피그마 2x 좌표 및 실측 CSS 1:1 반영.
+     - "참석 정보 전달하기" 클릭 시 시안 2와 동일한 모달(`EditorialRsvpModal`) 연동.
+   - **피그마 실측 CSS ➔ 1x 모바일 스펙 1:1 정밀 매핑**:
+     1. **섹션 컨테이너 (RSVP Section)**:
+        - 2x: `width: 780px; height: 995px; top: 11589px; background: #FEFEFE;`
+        - 내부 박스: `top: 11822px; height: 569px;`
+        - 1x 변환: `w-full pt-[116.5px] pb-[96.5px] px-6 text-center` (상단 여백 233px/2 = 116.5px, 하단 여백 193px/2 = 96.5px, 높이 합계 116.5 + 284.5 + 96.5 = 497.5px = 995px/2 완벽 일치).
+        - 테마: Day(`bg-[#FEFEFE]`), Night(`bg-[#1E1E1E]`).
+     2. **영문 타이틀 (`R·S·V·P`)**:
+        - 2x: `top: 11822px; width: 145px; height: 36px; font-family: 'Cormorant Garamond'; font-weight: 500; font-size: 50px; line-height: 72% (36px); color: #292929;`
+        - 1x 변환: `font-serif ('Cormorant Garamond') font-medium text-[25px] leading-[18px] text-center select-none tracking-normal`, Day(`text-[#292929]`), Night(`text-white`).
+     3. **한글 서브 타이틀 (`참석 의사 전달`)**:
+        - 2x: `top: 11931px; width: 223px; height: 26px; font-family: 'NanumSquare Neo OTF'; font-weight: 400; font-size: 36px; line-height: 72% (26px); color: #292929;`
+        - 1x 변환: `mt-[36.5px]` (73px/2), `font-nanumsquare font-normal text-[18px] leading-[13px] text-center tracking-tight`, Day(`text-[#292929]`), Night(`text-[#E5E5E5]`).
+     4. **본문 안내 문구**:
+        - 2x: `top: 12047px; width: 479px; height: 147px; font-family: 'NanumSquare Neo OTF'; font-weight: 400; font-size: 28px; line-height: 174% (49px); color: #333333;`
+        - 문구: *"소중한 분들과 함께하는 뜻깊은 날,\n정성껏 모실 수 있도록\n참석 여부를 알려주시면 감사하겠습니다."*
+        - 1x 변환: `mt-[45px]` (90px/2), `w-[239.5px] max-w-full mx-auto font-nanumsquare font-normal text-[14px] leading-[24.5px] text-center whitespace-pre-line break-keep`, Day(`text-[#333333]`), Night(`text-[#D4D4D4]`).
+     5. **참석 정보 전달하기 버튼**:
+        - 2x: `top: 12313px; width: 329px; height: 78px; background: #393939; box-shadow: 0px 4px 14.2px rgba(0, 0, 0, 0.09); border-radius: 49px;`
+        - 텍스트 2x: `top: 12342px; width: 227px; height: 20px; font-family: 'NanumSquare Neo OTF'; font-weight: 700; font-size: 28px; line-height: 72% (20px); color: #F3F3F3;`
+        - 1x 변환: `mt-[59.5px]` (119px/2), `w-[164.5px] h-[39px] rounded-[24.5px] mx-auto flex items-center justify-center transition-all cursor-pointer active:scale-95`, Day(`bg-[#393939] text-[#F3F3F3]`), Night(`bg-white text-[#292929]`), `boxShadow: '0px 2px 7.1px rgba(0, 0, 0, 0.09)'`.
+        - 버튼 텍스트: `font-nanumsquare font-bold text-[14px] leading-none text-center`.
+     6. **모달 연동 및 섹션 순서 재배치**:
+        - 버튼 `onClick={() => setShowRsvpModal(true)}` 이벤트로 기존 시안 2와 동일한 `EditorialRsvpModal` 컴포넌트 호출.
+        - 섹션 순서: `08. 안내사항(Notice)` ➔ `09. 참석의사전달(RSVP)` ➔ `10. 하객현장사진선물(GuestPhotoSnapSection)` ➔ `11. 공유링크 및 브랜드 푸터`로 정갈하게 재배치 완료.
+   - **검증 결과**:
+     - `npx eslint components/templates/cinematic/CinematicTemplate.jsx`: 0 errors
+     - `npm run build`: Exit Code 0 (전체 성공)
 
 
 -12. **[전체 5대 시안 안내사항(Notice) 캐러셀 카드 피그마 CSS 스펙 1:1 일괄 동기화 (2026-11-14)]**:

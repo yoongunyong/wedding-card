@@ -161,14 +161,14 @@ export default function PlaylistTemplate({ invitation }) {
   }, [invitation?.gallery_images, isSample]);
 
   // 성함 데이터
-  const groomName = invitation?.groom_name || (isSample ? '강민우' : '');
-  const brideName = invitation?.bride_name || (isSample ? '서유진' : '');
+  const groomName = invitation?.groom_name || (isSample ? '장민기' : '');
+  const brideName = invitation?.bride_name || (isSample ? '권기득' : '');
   const coupleKo = [groomName, brideName].filter(Boolean).join(' · ');
 
   // 날짜 계산 & 카운트다운
   const weddingDateStr = invitation?.wedding_date 
     ? invitation.wedding_date.replace(' ', 'T') 
-    : (isSample ? '2027-05-23T14:00:00' : '');
+    : (isSample ? '2027-05-15T14:00:00' : '');
   const hasWeddingDate = Boolean(weddingDateStr);
   const targetDate = useMemo(() => {
     if (!weddingDateStr) return null;
@@ -312,18 +312,48 @@ export default function PlaylistTemplate({ invitation }) {
 
   const displayGroomParents = groomParentsNode || (allowSampleParents ? '강대현 · 문영희' : null);
   const displayGroomRelation = groomRelation || (allowSampleParents ? '장남' : (groomParentsNode ? '장남' : ''));
-  const displayGroomName = groomName || (allowSampleParents ? '강민우' : '');
+  const displayGroomName = groomName || (allowSampleParents ? '장민기' : '');
   const hasGroomFamily = Boolean(displayGroomParents && displayGroomName);
 
   const displayBrideParents = brideParentsNode || (allowSampleParents ? '서병철 · 한정숙' : null);
   const displayBrideRelation = brideRelation || (allowSampleParents ? '차녀' : (brideParentsNode ? '장녀' : ''));
-  const displayBrideName = brideName || (allowSampleParents ? '서유진' : '');
+  const displayBrideName = brideName || (allowSampleParents ? '권기득' : '');
   const hasBrideFamily = Boolean(displayBrideParents && displayBrideName);
 
   const groomShort = invitation?.groom_name && invitation.groom_name.length === 3 ? invitation.groom_name.slice(1) : (invitation?.groom_name || '');
   const brideShort = invitation?.bride_name && invitation.bride_name.length === 3 ? invitation.bride_name.slice(1) : (invitation?.bride_name || '');
 
   const venueFullName = [invitation?.venue_name, invitation?.venue_hall || config?.venue_hall].filter(Boolean).join(' ');
+
+  // 예식장 장소 (피그마 1:1, 예: 서울 크리스탈 볼룸 1층)
+  const venueText = useMemo(() => {
+    if (isSample) return '서울 크리스탈 볼룸 1층';
+    const hall = config.venue_hall || invitation?.venue_hall;
+    const parts = [invitation?.venue_name, hall].filter(Boolean);
+    if (parts.length > 0) return parts.join(' ');
+    return '서울 크리스탈 볼룸 1층';
+  }, [invitation?.venue_name, config.venue_hall, invitation?.venue_hall, isSample]);
+
+  // 날짜 포맷 (피그마 1:1, 예: 2027.May 15. 14:00 pm)
+  const formattedDate = useMemo(() => {
+    if (!weddingDateStr) return isSample ? '2027.May 15. 14:00 pm' : '';
+    const normalized = typeof weddingDateStr === 'string'
+      ? weddingDateStr.replace(' ', 'T')
+      : weddingDateStr;
+    const d = new Date(normalized);
+    if (isNaN(d.getTime())) return isSample ? '2027.May 15. 14:00 pm' : '';
+
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const y = d.getFullYear();
+    const m = months[d.getMonth()];
+    const day = d.getDate();
+    const hours = d.getHours();
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const period = hours < 12 ? 'am' : 'pm';
+    const hourStr = String(hours).padStart(2, '0');
+
+    return `${y}.${m} ${day}. ${hourStr}:${minutes} ${period}`;
+  }, [weddingDateStr, isSample]);
 
   // 전역 오디오 상태 동기화 및 제어 (시안 3 상단 플레이어)
   useEffect(() => {
@@ -399,6 +429,33 @@ export default function PlaylistTemplate({ invitation }) {
     setIsLiked(!isLiked);
     setHeartAnim(true);
     setTimeout(() => setHeartAnim(false), 400);
+  };
+
+  const handleRestartAudio = () => {
+    const audioEl = document.querySelector('audio');
+    if (audioEl) {
+      audioEl.currentTime = 0;
+      if (audioEl.paused) {
+        audioEl.play().catch(() => {});
+      }
+    }
+  };
+
+  const handleSeek = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const ratio = Math.max(0, Math.min(1, clickX / rect.width));
+    const audioEl = document.querySelector('audio');
+    if (audioEl && audioEl.duration) {
+      audioEl.currentTime = ratio * audioEl.duration;
+    }
+  };
+
+  const handleScrollToOpen = () => {
+    const target = document.getElementById('editorial-story-section');
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   // 방명록 로드
@@ -605,183 +662,272 @@ export default function PlaylistTemplate({ invitation }) {
       <TodayConciergeCard invitation={invitation} />
       
       {/* ========================================================
-          01. HERO SECTION: PREMIUM WEDDING PLAYLIST CARD (시안 3 상단 고유 UI 온전히 유지)
+          01. HERO SECTION: 감성 플레이리스트 1:1 피그마 실측 규격 (780x1407 -> 1x 390x703.5)
           ======================================================== */}
-      <section className="relative px-4 pt-7 pb-10 bg-linear-to-b from-[#F7F5EE] via-[#FAF8F5] to-[#FAF8F5]">
-        
-        {/* 감성 뮤직 플레이어 카드 */}
-        <div className="w-full max-w-[370px] sm:max-w-[390px] mx-auto bg-[#FAF8F5] rounded-[40px] p-3.5 sm:p-4.5 pb-6 sm:pb-7 shadow-[0_20px_50px_rgba(0,0,0,0.06)] border border-stone-200/70 select-none">
-          
-          {/* 1. 상단 둥근 웨딩 화보 사진 */}
-          <div className="relative w-full aspect-[537/525] rounded-[32px] overflow-hidden bg-stone-200 shadow-xs">
-            {mainImage ? (
-              <img
-                src={mainImage}
-                alt="Wedding Album Cover"
-                className="w-full h-full object-cover grayscale contrast-105"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-stone-100 text-stone-400 font-serif text-sm">
-                ATELIER DE MUKIRU
-              </div>
-            )}
-          </div>
-
-          {/* 2. 트랙 정보: 날짜, 이름(정통 Noto Serif KR 명조체), 1줄 고정 카피, 라인 하트 */}
-          <div className="mt-5 px-1.5 text-left">
-            {/* 영문 대문자 날짜 */}
-            <span className="text-[11px] font-sans tracking-[0.24em] text-[#8E8E93] font-normal uppercase block mb-1.5">
-              {monthEn.toUpperCase()} {date}, {year}
-            </span>
-
-            {/* 신랑 💗 신부 (정통 본명조 Noto Serif KR 24px) & 우측 라인 하트 */}
-            <div className="flex items-center justify-between">
-              <h1 
-                style={{ fontFamily: "'Noto Serif KR', 'Nanum Myeongjo', serif" }}
-                className="text-[23.5px] sm:text-[25.5px] font-normal text-[#1C1C1E] tracking-tight flex items-center gap-1.5"
-              >
-                <span>{groomName}</span>
-                <span className="text-[17px] inline-block align-middle mx-0.5">💗</span>
-                <span>{brideName}</span>
-              </h1>
-
-              {/* 좋아요 하트 버튼 */}
-              <button
-                type="button"
-                onClick={handleHeartClick}
-                className={`p-1 transition-transform duration-300 cursor-pointer ${heartAnim ? 'scale-125' : 'scale-100 hover:scale-110'}`}
-                aria-label="좋아요"
-              >
-                <svg
-                  className={`w-[21px] h-[21px] transition-colors ${isLiked ? 'text-rose-500 fill-rose-500' : 'text-[#1C1C1E]'}`}
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="1.3"
-                  fill="none"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-                </svg>
-              </button>
-            </div>
-
-            {/* 1줄 고정 하드코딩 서브카피 */}
-            <p 
-              style={{ fontFamily: "'Noto Serif KR', 'Nanum Myeongjo', serif" }}
-              className="text-[12.5px] text-[#8E8E93] tracking-[0.18em] font-normal mt-1.5"
-            >
-              저희  결혼합니다.
-            </p>
-          </div>
-
-          {/* 3. 프로그레스 바 */}
-          <div className="mt-5 px-1.5">
-            <div 
-              onClick={togglePlayAudio}
-              className="relative w-full h-[3px] bg-[#E5E5EA] rounded-full cursor-pointer flex items-center"
-            >
-              <div 
-                className="h-full bg-[#1C1C1E] rounded-full transition-all duration-300 relative flex items-center justify-end"
-                style={{ width: `${isPlaying ? trackProgress : 38}%` }}
-              >
-                <div className="w-2.5 h-2.5 rounded-full bg-[#1C1C1E] shadow-sm shrink-0 -mr-1" />
-              </div>
-            </div>
-
-            {/* 시간 표시 */}
-            <div className="mt-2 flex items-center justify-between text-[11px] font-mono text-[#8E8E93]">
-              <span>{isPlaying ? audioCurrentTime : '3:19'}</span>
-              <span>- {isPlaying ? audioTotalDuration : '4:26'}</span>
-            </div>
-          </div>
-
-          {/* 4. 하단 미디어 컨트롤러 */}
-          <div className="mt-6 mb-2 px-1 w-full flex items-center justify-between">
-            {/* 셔플 */}
-            <button
-              type="button"
-              onClick={togglePlayAudio}
-              className="w-10 h-10 flex items-center justify-center text-[#1C1C1E] hover:text-black transition-colors cursor-pointer"
-              aria-label="셔플"
-            >
-              <svg className="w-[19px] h-[19px] fill-none stroke-current" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                <path d="M16 3h5v5" />
-                <path d="M4 20L21 3" />
-                <path d="M21 16v5h-5" />
-                <path d="M15 15l6 6" />
-                <path d="M4 4l5 5" />
-              </svg>
-            </button>
-
-            {/* 이전 곡 */}
-            <button
-              type="button"
-              onClick={togglePlayAudio}
-              className="w-10 h-10 flex items-center justify-center text-[#1C1C1E] hover:scale-105 transition-transform cursor-pointer"
-              aria-label="이전 곡"
-            >
-              <svg className="w-[20px] h-[20px] fill-current" viewBox="0 0 24 24">
-                <rect x="4" y="4" width="3" height="16" rx="1.2" />
-                <path d="M20 5.2v13.6a1 1 0 0 1-1.6.8L9.2 12.8a1 1 0 0 1 0-1.6L18.4 4.4a1 1 0 0 1 1.6.8z" />
-              </svg>
-            </button>
-
-            {/* 중앙 대형 재생/일시정지 원형 버튼 */}
-            <button
-              type="button"
-              onClick={togglePlayAudio}
-              className="w-[52px] h-[52px] rounded-full bg-[#1C1C1E] hover:bg-black text-white flex items-center justify-center shadow-md active:scale-95 transition-all cursor-pointer shrink-0"
-              aria-label={isPlaying ? '일시정지' : '재생'}
-            >
-              {isPlaying ? (
-                <svg className="w-[17px] h-[19px] fill-white" viewBox="0 0 20 24">
-                  <rect x="2.5" y="3" width="5" height="18" rx="1.5" />
-                  <rect x="12.5" y="3" width="5" height="18" rx="1.5" />
-                </svg>
-              ) : (
-                <svg className="w-[18px] h-[19px] fill-white translate-x-0.5" viewBox="0 0 20 24">
-                  <path d="M4 3.5v17a1 1 0 0 0 1.54.85l13-8.5a1 1 0 0 0 0-1.7l-13-8.5A1 1 0 0 0 4 3.5z" />
-                </svg>
-              )}
-            </button>
-
-            {/* 다음 곡 */}
-            <button
-              type="button"
-              onClick={togglePlayAudio}
-              className="w-10 h-10 flex items-center justify-center text-[#1C1C1E] hover:scale-105 transition-transform cursor-pointer"
-              aria-label="다음 곡"
-            >
-              <svg className="w-[20px] h-[20px] fill-current" viewBox="0 0 24 24">
-                <path d="M4 5.2v13.6a1 1 0 0 0 1.6.8L14.8 12.8a1 1 0 0 0 0-1.6L5.6 4.4a1 1 0 0 0-1.6.8z" />
-                <rect x="17" y="4" width="3" height="16" rx="1.2" />
-              </svg>
-            </button>
-
-            {/* 반복 */}
-            <button
-              type="button"
-              onClick={togglePlayAudio}
-              className="w-10 h-10 flex items-center justify-center text-[#1C1C1E] hover:text-black transition-colors cursor-pointer"
-              aria-label="반복 재생"
-            >
-              <svg className="w-[19px] h-[19px] fill-none stroke-current" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                <path d="M17 2l4 4-4 4" />
-                <path d="M3 11v-1a4 4 0 0 1 4-4h14" />
-                <path d="M7 22l-4-4 4-4" />
-                <path d="M21 13v1a4 4 0 0 1-4 4H3" />
-              </svg>
-            </button>
-          </div>
-
-        </div>
-
-        {/* 하단 스크롤 인디케이터 */}
-        <div className="mt-8 flex flex-col items-center gap-1.5 opacity-60">
-          <span className="text-[10px] font-mono tracking-widest text-stone-500 uppercase font-medium">
-            SCROLL FOR STORY
+      <section className="relative w-full max-w-[390px] h-[703.5px] mx-auto overflow-hidden bg-[#FEFEFE] text-stone-900 select-none">
+        {/* Getting married 타이틀 (Figma: top 94px -> 47px, Ownglyph corncorn 70px -> 35px, #454545) */}
+        <div 
+          className="absolute inset-x-0 flex items-center justify-center pointer-events-none select-none z-10"
+          style={{
+            top: '47px',
+            height: '22px',
+          }}
+        >
+          <span
+            className="font-ownglyph text-[35px] text-[#454545] leading-none text-center tracking-normal"
+            style={{
+              fontFamily: "'Ownglyph corncorn', 'OngleipKonkon', 'Caveat', cursive",
+            }}
+          >
+            Getting married
           </span>
-          <div className="w-px h-5 bg-stone-400 animate-pulse" />
         </div>
+
+        {/* 섹션 1 메인 화보 (image 770: Figma 618x863 -> 1x 309x431.5, top 171px -> 85.5px) */}
+        <div 
+          className="absolute"
+          style={{
+            top: '85.5px',
+            left: 'calc(50% - 154.5px)',
+            width: '309px',
+            height: '431.5px',
+          }}
+        >
+          {/* 사진 래퍼 (overflow-hidden) */}
+          <div className="relative w-full h-full bg-stone-100 shadow-[0_4px_20px_rgba(0,0,0,0.08)] overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={mainImage}
+              alt="Wedding Main Photo"
+              className="w-full h-full object-cover object-center select-none"
+            />
+          </div>
+
+          {/* 좌측 세로 텍스트: 예식장 (사진 왼쪽 바깥 여백, 사진 하단 라인 맞춤, rotate -90deg) */}
+          {venueText && (
+            <div 
+              className="absolute pointer-events-none select-none z-20 whitespace-nowrap"
+              style={{
+                left: '-6px',
+                bottom: '0px',
+                transformOrigin: '0 100%',
+                transform: 'rotate(-90deg)',
+              }}
+            >
+              <span
+                className="font-nanummyeongjo text-[11px] leading-none text-[#333333] tracking-normal"
+                style={{ fontFamily: "'NanumMyeongjo', 'Noto Serif KR', serif" }}
+              >
+                {venueText}
+              </span>
+            </div>
+          )}
+
+          {/* 우측 세로 텍스트: 예식 일시 (사진 오른쪽 바깥 여백, 사진 상단 라인 맞춤, rotate 90deg) */}
+          {formattedDate && (
+            <div 
+              className="absolute pointer-events-none select-none z-20 whitespace-nowrap"
+              style={{
+                left: 'calc(100% + 6px)',
+                top: '0px',
+                transformOrigin: '0 0',
+                transform: 'rotate(90deg) translateY(-100%)',
+              }}
+            >
+              <span
+                className="font-nanummyeongjo text-[11px] leading-none text-[#666666] tracking-[0.04em]"
+                style={{ fontFamily: "'NanumMyeongjo', 'Noto Serif KR', serif" }}
+              >
+                {formattedDate}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* 로딩 / 프로그레스 바 (Figma: top 1087px -> 543.5px, width 619px -> 309px, border 2.5px solid #292929) */}
+        <div 
+          onClick={handleSeek}
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={isPlaying ? Math.round(trackProgress) : 7}
+          tabIndex={0}
+          className="absolute bg-[#292929] rounded-full cursor-pointer"
+          style={{
+            top: '543.5px',
+            left: 'calc(50% - 154.5px)',
+            width: '309px',
+            height: '2px',
+          }}
+        >
+          {/* 재생 점 (Figma: top 1078px -> 539px, size 18px -> 9px) */}
+          <div
+            className="absolute rounded-full bg-[#292929] shadow-xs transition-all duration-150"
+            style={{
+              top: '-3.5px',
+              left: isPlaying ? `calc(${Math.max(0, Math.min(100, trackProgress))}% - 4.5px)` : '7%',
+              width: '9px',
+              height: '9px',
+            }}
+          />
+        </div>
+
+        {/* 시간 표시 (0:16 / 3:37 - Figma: top 1101px -> 550.5px, width 309px) */}
+        <div 
+          className="absolute flex items-center justify-between text-[10px] text-[#292929] font-sans tracking-[0.04em]"
+          style={{
+            top: '550.5px',
+            left: 'calc(50% - 154.5px)',
+            width: '309px',
+          }}
+        >
+          <span>{isPlaying ? audioCurrentTime : '0:16'}</span>
+          <span>{isPlaying ? audioTotalDuration : '3:37'}</span>
+        </div>
+
+        {/* 5대 플레이어 컨트롤러 (Figma: top 1122px -> 561px, width 309px) */}
+        <div 
+          className="absolute flex items-center justify-between"
+          style={{
+            top: '561px',
+            left: 'calc(50% - 154.5px)',
+            width: '309px',
+          }}
+        >
+          {/* 하트 아이콘 (Figma bi:suit-heart 1:1, 좋아요 토글 인터랙션) */}
+          <button
+            type="button"
+            onClick={handleHeartClick}
+            aria-label="좋아요"
+            className={`w-[32px] h-[32px] flex items-center justify-center cursor-pointer transition-transform duration-300 ${
+              heartAnim ? 'scale-125' : 'scale-100 hover:scale-110 active:scale-95'
+            }`}
+          >
+            {isLiked ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16" className="text-rose-500 fill-rose-500">
+                <path fillRule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/>
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16" className="text-[#292929]">
+                <path d="m8 6.236-.894-1.789c-.222-.443-.607-1.08-1.152-1.595C5.418 2.345 4.776 2 4 2 2.324 2 1 3.326 1 4.92c0 1.211.554 2.066 1.868 3.37.337.334.721.695 1.146 1.093C5.122 10.423 6.5 11.717 8 13.447c1.5-1.73 2.878-3.024 3.986-4.064.425-.398.81-.76 1.146-1.093C14.446 6.986 15 6.131 15 4.92 15 3.326 13.676 2 12 2c-.777 0-1.418.345-1.954.852-.545.515-.93 1.152-1.152 1.595zm.392 8.292a.513.513 0 0 1-.784 0c-1.601-1.902-3.05-3.262-4.243-4.381C1.3 8.208 0 6.989 0 4.92 0 2.755 1.79 1 4 1c1.6 0 2.719 1.05 3.404 2.008.26.365.458.716.596.992a7.6 7.6 0 0 1 .596-.992C9.281 2.049 10.4 1 12 1c2.21 0 4 1.755 4 3.92 0 2.069-1.3 3.288-3.365 5.227-1.193 1.12-2.642 2.48-4.243 4.38z"/>
+              </svg>
+            )}
+          </button>
+
+          {/* 이전 곡 아이콘 (Figma bi:skip-start-fill 1:1, 처음부터 다시 재생) */}
+          <button
+            type="button"
+            onClick={handleRestartAudio}
+            aria-label="이전 곡 (처음부터 재생)"
+            className="w-[32px] h-[32px] flex items-center justify-center text-[#292929] cursor-pointer hover:scale-110 active:scale-95 transition-transform"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M4.5 3.5A.5.5 0 0 0 4 4v8a.5.5 0 0 0 1 0V4a.5.5 0 0 0-.5-.5z"/>
+              <path d="M4.903 8.697l6.364 3.692c.54.313 1.232-.066 1.232-.697V4.308c0-.63-.692-1.01-1.232-.696L4.903 7.304a.802.802 0 0 0 0 1.393z"/>
+            </svg>
+          </button>
+
+          {/* 재생/일시정지 큰 원형 버튼 (Figma: 112px x 112px -> 1x 56px x 56px, bg #292929) */}
+          <button
+            type="button"
+            onClick={togglePlayAudio}
+            aria-label={isPlaying ? '음악 일시정지' : '음악 재생'}
+            className="w-[56px] h-[56px] rounded-full bg-[#292929] shadow-md flex items-center justify-center transition-transform hover:scale-105 active:scale-95 shrink-0 cursor-pointer"
+          >
+            {isPlaying ? (
+              /* 일시정지 바 2개 (#FAFAFA) */
+              <div className="flex items-center gap-[5.5px]">
+                <div className="w-[3.4px] h-[18.5px] bg-[#FAFAFA] rounded-xs" />
+                <div className="w-[3.4px] h-[18.5px] bg-[#FAFAFA] rounded-xs" />
+              </div>
+            ) : (
+              /* 재생 트라이앵글 (#FAFAFA) */
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#FAFAFA" viewBox="0 0 16 16" className="translate-x-0.5">
+                <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+              </svg>
+            )}
+          </button>
+
+          {/* 다음 곡 아이콘 (Figma bi:skip-end-fill 1:1) */}
+          <button
+            type="button"
+            onClick={handleRestartAudio}
+            aria-label="다음 곡"
+            className="w-[32px] h-[32px] flex items-center justify-center text-[#292929] cursor-pointer hover:scale-110 active:scale-95 transition-transform"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M12.5 4a.5.5 0 0 0-1 0v3.248L5.233 3.612C4.693 3.3 4 3.678 4 4.308v7.384c0 .63.692 1.01 1.233.697L11.5 8.753V12a.5.5 0 0 0 1 0z"/>
+            </svg>
+          </button>
+
+          {/* 더보기 버튼 (...) (Figma bi:three-dots 1:1) */}
+          <button
+            type="button"
+            aria-label="더보기"
+            className="w-[32px] h-[32px] flex items-center justify-center text-[#292929] cursor-pointer hover:opacity-75 transition-opacity"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* 셔플 & 반복재생 (Figma: top 1249px -> 624.5px, width 309px) */}
+        <div 
+          className="absolute flex items-center justify-between text-[#292929]"
+          style={{
+            top: '624.5px',
+            left: 'calc(50% - 154.5px)',
+            width: '309px',
+          }}
+        >
+          {/* 셔플 (하트 바로 밑에 정렬 - Figma bi:shuffle 1:1) */}
+          <button
+            type="button"
+            aria-label="셔플"
+            className="w-[32px] h-[28px] flex items-center justify-center cursor-pointer hover:opacity-75 transition-opacity"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path fillRule="evenodd" d="M0 3.5A.5.5 0 0 1 .5 3H1c2.202 0 3.827 1.24 4.874 2.418.49.552.865 1.102 1.126 1.532.26-.43.636-.98 1.126-1.532C9.173 4.24 10.798 3 13 3v1c-1.798 0-3.173 1.01-4.126 2.082A9.624 9.624 0 0 0 7.556 8a9.624 9.624 0 0 0 1.317 1.918C9.828 10.99 11.204 12 13 12v1c-2.202 0-3.827-1.24-4.874-2.418A10.595 10.595 0 0 1 7 9.05c-.26.43-.636.98-1.126 1.532C4.827 11.76 3.202 13 1 13H.5a.5.5 0 0 1 0-1H1c1.798 0 3.173-1.01 4.126-2.082A9.624 9.624 0 0 0 6.444 8a9.624 9.624 0 0 0-1.317-1.918C4.172 5.01 2.796 4 1 4H.5a.5.5 0 0 1-.5-.5z"/>
+              <path d="M13 5.466V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192zm0 9v-3.932a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192z"/>
+            </svg>
+          </button>
+
+          {/* 반복재생 (더보기 바로 밑에 정렬 - Figma bi:repeat 1:1) */}
+          <button
+            type="button"
+            aria-label="반복재생"
+            className="w-[32px] h-[28px] flex items-center justify-center cursor-pointer hover:opacity-75 transition-opacity"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M11 5.466V4H5a4 4 0 0 0-3.584 5.777.5.5 0 1 1-.896.446A5 5 0 0 1 5 3h6V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192m3.81.086a.5.5 0 0 1 .67.225A5 5 0 0 1 11 13H5v1.466a.25.25 0 0 1-.41.192l-2.36-1.966a.25.25 0 0 1 0-.384l2.36-1.966a.25.25 0 0 1 .41-.192V12h6a4 4 0 0 0 3.585-5.777.5.5 0 0 1 .225-.67Z"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* SCROLL TO OPEN 버튼 (Figma: top 1298px -> 649px, 232.4px x 55.3px -> 116.2px x 27.65px) */}
+        <button
+          type="button"
+          onClick={handleScrollToOpen}
+          aria-label="본문으로 스크롤"
+          className="absolute rounded-full border border-[#8E8E93] flex items-center justify-center cursor-pointer transition-all duration-300 hover:border-[#333333] hover:bg-stone-50 active:scale-95"
+          style={{
+            top: '649px',
+            left: 'calc(50% - 58.1px + 1.1px)',
+            width: '116.2px',
+            height: '27.65px',
+          }}
+        >
+          <span
+            className="text-[#333333] tracking-[0.09em] font-bold text-[8px] leading-none text-center select-none whitespace-nowrap"
+            style={{
+              fontFamily: "'Cormorant Garamond', 'Bodoni Moda', serif",
+              fontWeight: 700,
+            }}
+          >
+            SCROLL TO OPEN ↓
+          </span>
+        </button>
       </section>
 
       {/* ========================================================

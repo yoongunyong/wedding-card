@@ -52,6 +52,37 @@
 
 ## 0. 최근 핫픽스 & 서비스 안정화 내역 (2026-11-14 오너 관점 결함 전수 조치 & 시안 개편)
 
+-23. **[시안 3 (플레이리스트) 본문 첫 화면 (섹션 1) 피그마 1:1 실측 CSS 및 SCROLL TO OPEN 연동 (2026-11-14)]**:
+   - **사용자 요청/기획 의도**:
+     - "커버화면은 이대로 넘어가면 될 것 같아. 그럼 이제 화면을 터치해서 청첩장 본문으로 넘어가서 가장 첫 화면에 나오는 부분을 수정해야해. 메인 사진이 쓰이는 곳이지"
+     - 전달 피그마 2x 좌표 & CSS:
+       - 섹션1 캔버스: `780px × 1407px` (left: 0px, top: 0px) -> 1x `390px × 703.5px` (`#FEFEFE`)
+       - 'Getting married': `486px × 44px` (top: 94px, Ownglyph corncorn 70px -> 35px, #454545, center) -> 1x `top: 47px`
+       - 메인 이미지 (image 770): `618px × 863px` (top: 171px) -> 1x `309px × 431.5px`, `top: 85.5px`
+       - 좌우 회전 세로 텍스트: 커버 화면과 동일 형태 (좌측 하단 장소 `rotate(-90deg)`, 우측 상단 일시 `rotate(90deg)`)
+       - 로딩 바: `top: 1087px` -> 1x `543.5px`, width `309px`, 점 `9px`, 오디오 프로그레스 동기화 및 클릭 탐색(seek) 지원
+       - 시간 표시: `top: 1101px` -> 1x `550.5px`, `0:16` / `3:37` (오디오 재생 시 실시간 시간 연동)
+       - 5대 플레이어 컨트롤러: `top: 1122px` -> 1x `561px`, 하트(좋아요 토글 및 바운스), 이전곡(처음부터 다시 재생), 재생 56px 원형(일시정지/재생 아이콘 토글), 다음곡, 더보기
+       - 보조 컨트롤: `top: 1249px` -> 1x `624.5px`, 셔플, 반복재생
+       - 하단 'SCROLL TO OPEN ↓' 타원 버튼: `232.4px × 55.3px` (top: 1298px) -> 1x `116.2px × 27.65px`, `top: 649px`, Cormorant Garamond 700 8px, `#333333`, 클릭 시 `#editorial-story-section`으로 부드러운 스크롤 이동
+   - **구현 및 정밀 수정 내역**:
+     1. **섹션 1 캔버스 & Getting married 헤더 (`PlaylistTemplate.jsx`)**:
+        - 기존 카드형 레이아웃(`p-4 rounded-[40px]`)을 전면 피그마 실측 규격(`w-full max-w-[390px] h-[703.5px] bg-[#FEFEFE]`)으로 교체.
+        - 사진 상단 여백에 `Getting married` 타이틀(`top: 47px`, 온글잎 콘콘체 35px, `#454545`)을 정확히 배치.
+     2. **메인 화보 사진 (image 770) & 좌우 회전 세로 텍스트**:
+        - 피그마 1:1 규격(`309px × 431.5px`, `top: 85.5px`)으로 중앙 정렬.
+        - 사진 좌측 하단 장소명(`서울 크리스탈 볼룸 1층`, rotate -90deg) 및 우측 상단 일시(`2027.May 15. 14:00 pm`, rotate 90deg)를 앵커링하여 사진 외곽선에 완벽 일치.
+     3. **실시간 오디오 연동 플레이어 UI**:
+        - 프로그레스 바 클릭 시 원하는 구간으로 탐색하는 `handleSeek` 구현 및 `trackProgress` 연동.
+        - 이전 곡 버튼 클릭 시 오디오 0초로 되돌려 재생하는 `handleRestartAudio` 구현.
+        - 중앙 56px 재생 버튼으로 BGM 재생/일시정지 완벽 토글.
+     4. **피그마 1:1 타원형 'SCROLL TO OPEN ↓' 버튼**:
+        - `width: 116.2px, height: 27.65px, top: 649px, border: 1px solid #8E8E93, rounded-full`.
+        - Cormorant Garamond 700 폰트로 `SCROLL TO OPEN ↓` (다운 화살표 포함) 렌더링.
+        - 클릭 시 본문 2번째 섹션(`editorial-story-section`)으로 부드럽게 스크롤 이동.
+   - **검증 결과**:
+     - `npx eslint components/templates/playlist/PlaylistTemplate.jsx`: 0 errors
+     - `npm run build`: Exit Code 0 (전체 8개 라우트 빌드 100% 무결성 검증 완료)
 
 -22. **[시안 3 (플레이리스트) 커버(오프닝 인트로) 화면 신설 및 피그마 1:1 실측 CSS 구현 (2026-11-14)]**:
    - **사용자 요청/기획 의도**:

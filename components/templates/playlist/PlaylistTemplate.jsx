@@ -662,9 +662,9 @@ export default function PlaylistTemplate({ invitation }) {
       <TodayConciergeCard invitation={invitation} />
       
       {/* ========================================================
-          01. HERO SECTION: 감성 플레이리스트 1:1 피그마 실측 규격 (780x1407 -> 1x 390x703.5)
+          01. HERO SECTION: 감성 플레이리스트 1:1 피그마 실측 규격 (780x1407 -> 1x 390x703.5 + Line 138 at 706.5px)
           ======================================================== */}
-      <section className="relative w-full max-w-[390px] h-[703.5px] mx-auto overflow-hidden bg-[#FEFEFE] text-stone-900 select-none">
+      <section className="relative w-full max-w-[390px] h-[715px] mx-auto overflow-hidden bg-[#FEFEFE] text-stone-900 select-none">
         {/* Getting married 타이틀 (Figma: top 94px -> 47px, Ownglyph corncorn 70px -> 35px, #454545) */}
         <div 
           className="absolute inset-x-0 flex items-center justify-center pointer-events-none select-none z-10"
@@ -928,21 +928,37 @@ export default function PlaylistTemplate({ invitation }) {
             SCROLL TO OPEN ↓
           </span>
         </button>
+
+        {/* 섹션 1 하단 구분선 (Line 138: Figma 561px -> 1x 280.5px, top: 1413px -> 706.5px, border: 0.5px solid #999999) */}
+        <div 
+          className="absolute"
+          style={{
+            top: '706.5px',
+            left: 'calc(50% - 140.25px + 0.25px)',
+            width: '280.5px',
+            borderTop: '0.5px solid #999999',
+          }}
+        />
       </section>
 
       {/* ========================================================
-          02. 에디토리얼 프로필 스프레드: 신부 & 신랑 단독 프로필 카드 & 혼주 정보 (시안 2 에디토리얼 UI)
+          02. 에디토리얼 프로필 스프레드: 신부 & 신랑 단독 프로필 카드 & 혼주 정보 (시안 4 타이포그래피 적용)
           ======================================================== */}
       <section id="editorial-story-section" className="pt-[99.5px] pb-0 px-6 bg-[#FEFEFE] relative flex flex-col items-center select-none overflow-hidden">
         <ScrollReveal>
-          {/* 상단 영문 필기체 헤더 */}
-          <div className="text-center mb-[28px] select-none flex flex-col items-center justify-center min-h-[64px]">
-            <p className="font-weddingday text-[27.5px] text-[#292929] tracking-normal leading-[1.14] select-none">
-              Welcome to
-            </p>
-            <p className="font-weddingday text-[27.5px] text-[#292929] tracking-normal leading-[1.14] select-none mt-1 whitespace-nowrap">
-              {fullNamesEn || coupleKo || (isSample ? 'Minwoo & Yujin' : '')}
-            </p>
+          {/* 상단 2단 타이틀: Welcome to / Minwoo & Yujin (Figma 시안 4: Cormorant Garamond 400, 48px -> 1x 24px) */}
+          <div className="w-full max-w-[340px] mx-auto text-center mb-[28px] select-none flex flex-col items-center justify-center min-h-[64px]">
+            <h2
+              className="font-normal text-[23px] sm:text-[25px] leading-[1.2] text-[#292929] select-none"
+              style={{
+                fontFamily: "'Cormorant Garamond', 'Playfair Display', serif",
+              }}
+            >
+              <div>Welcome to</div>
+              <div className="mt-1 whitespace-nowrap">
+                {fullNamesEn || coupleKo || (isSample ? 'Minwoo & Yujin' : '')}
+              </div>
+            </h2>
           </div>
 
           {/* 신부 & 신랑 2단 액자 카드 그리드 */}
@@ -1151,10 +1167,10 @@ export default function PlaylistTemplate({ invitation }) {
         <section className="w-full bg-[#FEFEFE] pt-16 sm:pt-20 pb-0 px-6 text-center select-none overflow-hidden">
           <ScrollReveal>
             <div className="flex flex-col items-center">
-              {/* Wedding Day 필기체 (Playlist 서체: Weddingday Personal Use 70px -> 1x 35px, #292929, leading-[72%]) */}
+              {/* 상단 1: Wedding Day (Figma 시안 4: Cormorant Garamond 500, 50px -> 1x 25px, font-weight: 500, #292929, leading-[72%]) */}
               <h2
-                className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal"
-                style={{ fontFamily: "'Weddingday Personal Use', 'Bickham Script Pro', cursive" }}
+                className="text-[25px] font-medium leading-[72%] text-center select-none tracking-normal text-[#292929]"
+                style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', serif" }}
               >
                 Wedding Day
               </h2>
@@ -1229,7 +1245,11 @@ export default function PlaylistTemplate({ invitation }) {
       {showGallerySection && galleryImages.length > 0 && (
         <section className="w-full bg-[#FEFEFE] pt-[71px] pb-0 px-6 text-center select-none overflow-hidden">
           <ScrollReveal>
-            <h2 className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal mb-[34.5px]">
+            {/* 상단 1: gallery (Figma 시안 4: Cormorant Garamond 500, 50px -> 1x 25px, #292929, leading-[72%]) */}
+            <h2
+              className="text-[25px] font-medium leading-[72%] text-center select-none tracking-normal text-[#292929] mb-[34.5px]"
+              style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', serif" }}
+            >
               gallery
             </h2>
             <p className="font-nanumsquare font-normal text-[18px] text-[#292929] leading-none text-center mb-[53px] tracking-tight">
@@ -1320,7 +1340,11 @@ export default function PlaylistTemplate({ invitation }) {
       {(invitation?.venue_name || invitation?.venue_address || isSample) && (
         <section id="location-section" className="w-full bg-[#FEFEFE] pt-[64.5px] pb-0 px-6 text-center select-none overflow-hidden">
           <ScrollReveal>
-            <h2 className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal">
+            {/* 상단 1: location (Figma 시안 4: Cormorant Garamond 500, 50px -> 1x 25px, #292929, leading-[72%]) */}
+            <h2
+              className="text-[25px] font-medium leading-[72%] text-center select-none tracking-normal text-[#292929]"
+              style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', serif" }}
+            >
               location
             </h2>
 
@@ -1472,7 +1496,11 @@ export default function PlaylistTemplate({ invitation }) {
         return (
           <section id="accounts-section" className="w-full bg-[#FEFEFE] pt-[89px] pb-0 px-6 text-center select-none overflow-hidden">
             <ScrollReveal>
-              <h2 className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal">
+              {/* 상단 1: Account (Figma 시안 4: Cormorant Garamond 500, 50px -> 1x 25px, #292929, leading-[72%]) */}
+              <h2
+                className="text-[25px] font-medium leading-[72%] text-center select-none tracking-normal text-[#292929]"
+                style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', serif" }}
+              >
                 Account
               </h2>
 
@@ -1598,8 +1626,11 @@ export default function PlaylistTemplate({ invitation }) {
           className="w-full bg-[#FEFEFE] pt-[69.5px] pb-0 text-center select-none overflow-hidden"
         >
           <ScrollReveal>
-            {/* 상단 1: Notice 필기체 (시안 3 기존 폰트: Weddingday Personal Use) */}
-            <h2 className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal">
+            {/* 상단 1: Notice (Figma 시안 4: Cormorant Garamond 500, 50px -> 1x 25px, #292929, leading-[72%]) */}
+            <h2
+              className="text-[25px] font-medium leading-[72%] text-center select-none tracking-normal text-[#292929]"
+              style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', serif" }}
+            >
               Notice
             </h2>
 
@@ -1718,7 +1749,11 @@ export default function PlaylistTemplate({ invitation }) {
       {showRsvpSection && (
         <section className="w-full bg-[#FEFEFE] pt-[96.5px] pb-0 text-center select-none overflow-hidden">
           <ScrollReveal>
-            <h2 className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal">
+            {/* R·S·V·P (Figma 시안 4: Cormorant Garamond 500, 50px -> 1x 25px, #292929, leading-[18px]) */}
+            <h2
+              className="text-[25px] font-medium leading-[18px] text-center select-none tracking-normal text-[#292929]"
+              style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', serif" }}
+            >
               R·S·V·P
             </h2>
 
@@ -1810,8 +1845,11 @@ export default function PlaylistTemplate({ invitation }) {
             className="w-full max-w-[430px] mx-auto pt-[96px] pb-[64.5px] px-[21px] text-center select-none bg-gradient-to-b from-[#FEFEFE] to-[#EAEAEA]"
           >
             <ScrollReveal>
-              {/* 상단 1: Guestbook (시안 3: Weddingday Personal Use 35px, #292929, leading-[72%]) */}
-              <h2 className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal">
+              {/* 상단 1: Guestbook (Figma 시안 4: Cormorant Garamond 500, 50px -> 1x 25px, #292929, leading-[18px]) */}
+              <h2
+                className="text-[25px] font-medium leading-[18px] text-center select-none tracking-normal text-[#292929]"
+                style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', serif" }}
+              >
                 Guestbook
               </h2>
 
@@ -1964,7 +2002,11 @@ export default function PlaylistTemplate({ invitation }) {
             />
           </div>
 
-          <h2 className="font-weddingday text-[37.5px] text-[#292929] leading-[72%] text-center select-none tracking-normal mt-[37.5px]">
+          {/* Thank you (Figma 시안 4: Cormorant Garamond 500, 50px -> 1x 25px, #292929, leading-[18px], mt-[37.5px]) */}
+          <h2
+            className="font-medium text-[25px] leading-[18px] text-center select-none tracking-normal mt-[37.5px] text-[#292929]"
+            style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', serif" }}
+          >
             Thank you
           </h2>
 

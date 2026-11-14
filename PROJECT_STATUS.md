@@ -52,6 +52,32 @@
 
 ## 0. 최근 핫픽스 & 서비스 안정화 내역 (2026-11-14 오너 관점 결함 전수 조치 & 시안 개편)
 
+-24. **[시안 3 (플레이리스트) 섹션 1 하단 피그마 구분선(Line 138) 추가 및 본문 타이포그래피 시안 4 폰트 전면 동기화 (2026-11-14)]**:
+   - **사용자 요청/기획 의도**:
+     - "시안1의 본문 청첩장의 섹션 끝나는 부분에 구분선이 누락되어있어. 구분선 css야: width 561px, top 1413px, border 0.5px solid #999999"
+     - "시안3에 본문에 쓰인 글씨체는 아마 시안1,2에서 쓰인 글씨체일거야. 시안4에 쓰이는 글씨체로 시안3 본문들도 폰트 수정해줘."
+   - **구현 및 정밀 수정 내역**:
+     1. **섹션 1 하단 구분선 (Line 138) 피그마 1:1 실측 반영 (`PlaylistTemplate.jsx`)**:
+        - 피그마 CSS: `width: 561px, top: 1413px, left: calc(50% - 561px/2 + 0.5px), border: 0.5px solid #999999`.
+        - 1x 모바일 스펙: `width: 280.5px, top: 706.5px, left: calc(50% - 140px), border-top: 0.5px solid #999999`.
+        - 섹션 1 컨테이너 높이를 `715px`로 확장하여 'SCROLL TO OPEN ↓' 버튼 하단 29.85px 간격을 두고 섹션 1과 2 사이에 깔끔하게 라인이 노출되도록 배치.
+     2. **시안 3 본문 영문 섹션 타이틀 시안 4(`Cormorant Garamond`) 전면 교체**:
+        - 기존 시안 2 기반 필기체(`Weddingday Personal Use` / `font-weddingday`)가 적용되어 있던 모든 섹션 헤더를 시안 4(시네마틱) 공식 서체인 **`Cormorant Garamond`**(`font-medium text-[25px]`, `#292929`)로 전면 교체:
+          - 섹션 2: `Welcome to` / `Minwoo & Yujin`
+          - 섹션 4: `Wedding Day` (달력)
+          - 섹션 5: `gallery` (사진 갤러리)
+          - 섹션 6: `location` (식장 위치)
+          - 섹션 7: `Account` (마음 전하실 곳)
+          - 섹션 8: `Notice` (안내 사항)
+          - 섹션 9: `R·S·V·P` (참석 의사 전달)
+          - 섹션 10: `Guestbook` (방명록)
+          - 섹션 11: `Thank you` (엔딩 감사 인사)
+     3. **한글 본문 폰트 정합성 확인**:
+        - 한글 서브타이틀 및 본문 텍스트는 시안 4와 100% 동일한 **`NanumSquare Neo`**(`font-nanumsquare`)로 완벽 통일 유지.
+   - **검증 결과**:
+     - `npx eslint components/templates/playlist/PlaylistTemplate.jsx`: 0 errors
+     - `npm run build`: Exit Code 0 (전체 8개 라우트 빌드 성공)
+
 -23. **[시안 3 (플레이리스트) 본문 첫 화면 (섹션 1) 피그마 1:1 실측 CSS 및 SCROLL TO OPEN 연동 (2026-11-14)]**:
    - **사용자 요청/기획 의도**:
      - "커버화면은 이대로 넘어가면 될 것 같아. 그럼 이제 화면을 터치해서 청첩장 본문으로 넘어가서 가장 첫 화면에 나오는 부분을 수정해야해. 메인 사진이 쓰이는 곳이지"

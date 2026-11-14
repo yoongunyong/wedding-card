@@ -26,7 +26,7 @@ export default function PlaylistIntro({
   onOpen,
   isInModal: propIsInModal,
 }) {
-  const [isOpening, setIsOpening] = useState(false);
+  const [transitionStep, setTransitionStep] = useState('idle'); // 'idle' | 'darkening' | 'revealing'
   const isInModal = Boolean(propIsInModal ?? invitation?.is_modal_preview);
   const isSample = Boolean(invitation?.is_sample_preview || invitation?.slug === 'playlist');
 
@@ -131,42 +131,76 @@ export default function PlaylistIntro({
     return () => window.removeEventListener('resize', updateScale);
   }, [isInModal]);
 
-  // 8. 화면 터치 시 본문 진입 & BGM 재생 시작
+  // 8. 화면 터치 시 시네마틱 암전(Blink) 본문 진입 & BGM 자동 재생 시작 (시안 1, 2와 100% 동일한 3단계 트랜지션)
   const handleOpen = () => {
-    if (isOpening) return;
-    setIsOpening(true);
+    if (transitionStep !== 'idle') return;
+
+    if (typeof document !== 'undefined' && document.activeElement) {
+      document.activeElement.blur();
+    }
 
     // BGM 재생 이벤트 발생 (하객의 첫 인터랙션 시 자동 재생 정책 충족)
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('play-wedding-bgm'));
     }
 
+    // 1단계: 화면이 서서히 어두워짐 (800ms)
+    setTransitionStep('darkening');
+
+    // 2단계: 화면이 완전히 어두워진 시점(850ms) 후 본문 드러내기 시작
     setTimeout(() => {
-      onOpen?.();
-    }, 450);
+      if (typeof window !== 'undefined') {
+        window.scrollTo(0, 0);
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+        window.focus();
+      }
+      setTransitionStep('revealing');
+
+      // 3단계: 어둠이 안개처럼 걷힌 후 인트로 언마운트
+      setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          document.body.style.overflow = '';
+          document.documentElement.style.overflow = '';
+          window.scrollTo(0, 0);
+        }
+        if (typeof document !== 'undefined') {
+          const previewContainer = document.getElementById('preview-scroll-container');
+          if (previewContainer) {
+            previewContainer.scrollTop = 0;
+          }
+        }
+        if (onOpen) onOpen();
+      }, 1250);
+    }, 850);
   };
 
   return (
-    <div
-      onClick={handleOpen}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          handleOpen();
-        }
-      }}
-      className={`${
-        isInModal
-          ? 'absolute inset-0 z-30'
-          : 'fixed inset-0 z-50'
-      } w-full h-full overflow-hidden flex items-center justify-center cursor-pointer select-none transition-all duration-500 ease-out bg-[#1C1C1C] ${
-        isOpening ? 'opacity-0 scale-[0.98] pointer-events-none' : 'opacity-100 scale-100'
-      }`}
-      style={{
-        WebkitTapHighlightColor: 'transparent',
-      }}
-    >
+    <>
+      <div
+        onClick={handleOpen}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            handleOpen();
+          }
+        }}
+        className={`${
+          isInModal
+            ? 'absolute inset-0 z-20'
+            : 'fixed inset-0 z-50'
+        } w-full h-full overflow-hidden flex items-center justify-center cursor-pointer select-none bg-[#1C1C1C] ${
+          transitionStep === 'revealing'
+            ? 'hidden pointer-events-none'
+            : transitionStep === 'darkening'
+            ? 'opacity-100 pointer-events-none'
+            : 'opacity-100'
+        }`}
+        style={{
+          WebkitTapHighlightColor: 'transparent',
+        }}
+      >
       {/* 1. 데스크톱/와이드 화면 배경 (커버 화보 10% 줌인 + #1C1C1C 어두운 틴트) */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none select-none opacity-40">
         {coverBgImage && (
@@ -409,5 +443,17 @@ export default function PlaylistIntro({
         </div>
       </div>
     </div>
+
+    {/* 2. 시네마틱 껌뻑(Blink / Fade to black) 암전 오버레이 */}
+    <div
+      className={`${isInModal ? 'absolute inset-0 z-30' : 'fixed inset-0 z-[60]'} bg-black pointer-events-none transition-opacity ${
+        transitionStep === 'darkening'
+          ? 'opacity-100 duration-[800ms] ease-in-out'
+          : transitionStep === 'revealing'
+          ? 'opacity-0 duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)]'
+          : 'opacity-0 duration-0'
+      }`}
+    />
+  </>
   );
 }

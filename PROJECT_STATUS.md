@@ -52,6 +52,26 @@
 
 ## 0. 최근 핫픽스 & 서비스 안정화 내역 (2026-11-14 오너 관점 결함 전수 조치 & 시안 개편)
 
+-25. **[시안 3(플레이리스트) & 시안 4(시네마틱) 커버 터치 시 암전 페이드 및 음악 자동 재생 동기화 (2026-11-14)]**:
+   - **사용자 요청/기획 의도**:
+     - "지금 시안3,4 화면 터치하면 본문으로 들어가잖아. 그 구간을 시안1,2 처럼 화면 어두워졌다가 다시 나타나면서 음악 자동 재생되는 것처럼 그렇게 해줘. 현재 시안1,2가 그렇게 되어있지?"
+   - **분석 및 구현 내용**:
+     1. **시안 1(`EnvelopeIntro`) & 시안 2(`EditorialIntro`) 시네마틱 트랜지션 구조 분석**:
+        - `transitionStep`: `'idle' | 'darkening' | 'revealing'` 3단계 상태 머신.
+        - 화면 터치 시 브라우저 오디오 자동 재생 제약(User-Activation Policy)을 충족하며 `window.dispatchEvent(new CustomEvent('play-wedding-bgm'))` 디스패치.
+        - **1단계 (darkening, 800ms)**: 화면 전체가 순수 블랙(`#000000`)으로 서서히 어두워짐 (`ease-in-out`).
+        - **2단계 (revealing, 850ms 전환 후 1200ms)**: 최상단 스크롤 리셋(`window.scrollTo(0,0)`, `previewContainer.scrollTop = 0`), 인트로 카드 숨김 처리 후 블랙 오버레이가 안개처럼 걷히며 본문이 부드럽게 등장 (`cubic-bezier(0.22, 1, 0.36, 1)`).
+        - **3단계 (unmount, 1250ms 후)**: `onOpen()` 콜백을 호출하여 인트로 컴포넌트 완전 언마운트 및 바디 스크롤 락 해제.
+     2. **시안 3 (`PlaylistIntro.jsx`) 반영**:
+        - 기존 단순 `isOpening` 단일 타이머 제거 ➔ 3단계 `transitionStep` 및 고유 암전 오버레이(`<div className="fixed inset-0 z-[60] bg-black ..."/>`) 신설.
+        - 터치 시 `play-wedding-bgm` 이벤트 발송 및 스크롤 위치 초기화 연동.
+     3. **시안 4 (`CinematicIntro.jsx`) 반영**:
+        - 기존 450ms 단순 축소/페이드아웃 제거 ➔ 3단계 `transitionStep` 및 암전 오버레이 신설.
+        - 터치 시 `play-wedding-bgm` 이벤트 발송 및 모달/전체화면 환경 모두에서 완벽한 페이드 투 블랙 연출 보장.
+   - **검증 결과**:
+     - `npx eslint components/templates/playlist/PlaylistIntro.jsx components/templates/cinematic/CinematicIntro.jsx`: 0 errors
+     - `npm run build`: Exit Code 0 (전체 8개 라우트 빌드 성공)
+
 -24. **[시안 3 (플레이리스트) 섹션 1 하단 피그마 구분선(Line 138) 추가 및 본문 타이포그래피 시안 4 폰트 전면 동기화 (2026-11-14)]**:
    - **사용자 요청/기획 의도**:
      - "시안1의 본문 청첩장의 섹션 끝나는 부분에 구분선이 누락되어있어. 구분선 css야: width 561px, top 1413px, border 0.5px solid #999999"

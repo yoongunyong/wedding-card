@@ -431,11 +431,11 @@ export default function PlaylistIntro({
         <div 
           className="absolute inset-x-0 flex items-center justify-center pointer-events-none select-none"
           style={{
-            top: '666px',
+            top: '662px',
           }}
         >
           <p
-            className="font-nanummyeongjo text-[10px] leading-none text-[#666666] tracking-[0.09em] text-center animate-pulse"
+            className="font-nanummyeongjo text-[11px] leading-none text-[#292929] tracking-[0.09em] text-center animate-pulse"
             style={{ fontFamily: "'NanumMyeongjo', 'Noto Serif KR', serif" }}
           >
             화면을 터치해주세요

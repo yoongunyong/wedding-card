@@ -441,7 +441,7 @@ export default function SceneIntro({
               11. 화면을 터치해주세요 (Figma: top 1335px -> 1x 667.5px, NanumMyeongjo 20px -> 1x 10px)
               ========================================================= */}
           <p
-            className="absolute w-full text-center font-nanummyeongjo text-[10px] leading-[7px] tracking-[0.09em] text-[#FEFEFE] animate-pulse"
+            className="absolute w-full text-center font-nanummyeongjo text-[11px] leading-none tracking-[0.09em] text-[#FEFEFE] animate-pulse"
             style={{
               top: '667.5px',
               fontFamily: "'NanumMyeongjo', 'Noto Serif KR', serif",

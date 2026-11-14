@@ -345,14 +345,15 @@ export default function CinematicIntro({
               Welcome to our Wedding Day
             </p>
 
-            {/* 터치 안내 힌트 (은은한 펄스) */}
-            <div
-              className={`mt-2 flex items-center gap-1 text-[10px] tracking-widest uppercase transition-opacity duration-500 animate-pulse ${
-                isNightMode ? 'text-stone-500' : 'text-stone-400'
+            {/* 터치 안내 힌트 (한글 '화면을 터치해주세요' 은은한 펄스) */}
+            <p
+              className={`mt-3 font-nanummyeongjo text-[11px] sm:text-[12px] leading-none tracking-[0.09em] transition-opacity duration-500 animate-pulse select-none ${
+                isNightMode ? 'text-[#FEFEFE]' : 'text-[#292929]'
               }`}
+              style={{ fontFamily: "'NanumMyeongjo', 'Noto Serif KR', serif" }}
             >
-              <span>Tap anywhere to open</span>
-            </div>
+              화면을 터치해주세요
+            </p>
           </div>
         </div>
 

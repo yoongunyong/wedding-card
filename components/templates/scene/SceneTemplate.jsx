@@ -8,6 +8,7 @@ import TodayConciergeCard from '@/components/TodayConciergeCard';
 import GuestPhotoSnapSection from '@/components/GuestPhotoSnapSection';
 import SceneInterviewModal from './SceneInterviewModal';
 import EditorialGalleryModal from '../editorial/EditorialGalleryModal';
+import EditorialGuestbookModal from '../editorial/EditorialGuestbookModal';
 import SceneGuestbookDeleteModal from './SceneGuestbookDeleteModal';
 import { supabase } from '@/lib/supabase';
 import { getSafeKakaoShareImageUrl } from '@/lib/kakaoShare';
@@ -65,11 +66,9 @@ export default function SceneTemplate({ invitation }) {
 
   // 5. 방명록 상태 & 페이징 & 삭제 모달
   const [guestbookList, setGuestbookList] = useState([]);
-  const [guestbookPage, setGuestbookPage] = useState(1);
-  const [guestbookName, setGuestbookName] = useState('');
-  const [guestbookPassword, setGuestbookPassword] = useState('');
-  const [guestbookMessage, setGuestbookMessage] = useState('');
-  const [submittingGuestbook, setSubmittingGuestbook] = useState(false);
+  const [guestbookPageIndex, setGuestbookPageIndex] = useState(0);
+  const guestbookTouchStartX = useRef(null);
+  const [showGuestbookModal, setShowGuestbookModal] = useState(false);
   const [deleteTargetMsg, setDeleteTargetMsg] = useState(null);
 
   // 6. 인페이지 RSVP 폼 상태 (영상 1:1 일치)
@@ -405,42 +404,6 @@ export default function SceneTemplate({ invitation }) {
     loadGuestbook();
   }, [invitation?.id]);
 
-  // 방명록 등록
-  const handleGuestbookSubmit = async (e) => {
-    e.preventDefault();
-    if (!invitation?.id) {
-      return alert('미리보기 모드에서는 작성이 제한됩니다.');
-    }
-    if (!guestbookName.trim()) return alert('이름 또는 닉네임을 입력해 주세요.');
-    if (!guestbookPassword.trim()) return alert('삭제 시 사용할 비밀번호를 입력해 주세요.');
-    if (!guestbookMessage.trim()) return alert('축하 메시지를 입력해 주세요.');
-
-    setSubmittingGuestbook(true);
-    const { data, error } = await supabase
-      .from('guestbook')
-      .insert([
-        {
-          invitation_id: invitation.id,
-          author: guestbookName.trim(),
-          content: guestbookMessage.trim(),
-          password: guestbookPassword.trim(),
-        },
-      ])
-      .select()
-      .single();
-
-    setSubmittingGuestbook(false);
-    if (error) {
-      console.error('방명록 등록 오류:', error);
-      alert('방명록 등록 중 오류가 발생했습니다.');
-    } else if (data) {
-      setGuestbookList((prev) => [data, ...prev]);
-      setGuestbookName('');
-      setGuestbookPassword('');
-      setGuestbookMessage('');
-      alert('따뜻한 축하 말씀이 등록되었습니다. 감사합니다!');
-    }
-  };
 
   // 인페이지 RSVP 제출
   const handleRsvpSubmit = async (e) => {
@@ -1653,134 +1616,188 @@ export default function SceneTemplate({ invitation }) {
       {/* 07-2. 하객 현장 사진 선물 섹션 */}
       <GuestPhotoSnapSection invitation={invitation} />
 
-      {config.show_guestbook !== false && (
-        <section className="py-20 px-6 bg-white border-t border-stone-100">
-          <ScrollReveal>
-            <div className="text-center mb-8">
-              <span className="font-cormorant italic text-3xl sm:text-4xl text-[#222222] block mb-2 font-light tracking-wide">
+      {config.show_guestbook !== false && (() => {
+        const sampleGuestbooks = [
+          {
+            id: 'sample-1',
+            author: '장성경',
+            content: '두 사람 꽃길 결혼 생활 예약🌷\n행복과 축복으로 가득하길 바래🤍',
+            created_at: '2027. 10.21',
+          },
+          {
+            id: 'sample-2',
+            author: '민경훈',
+            content: '형, 드디어 장가갔네! 항상 좋은 일만 가득하길 바란다.\n형이 결혼할 줄 몰랐어. 나도 곧 따라갈게. 늘 행복해라~~~',
+            created_at: '2027. 10.21',
+          },
+          {
+            id: 'sample-3',
+            author: '강형욱',
+            content: '선남선녀끼리 잘만나 오래오래\n행복하길 기원해~~',
+            created_at: '2027. 10.21',
+          },
+        ];
+
+        const displayList = guestbookList.length > 0 ? guestbookList : (isSample ? sampleGuestbooks : []);
+        const totalPages = Math.max(isSample ? 3 : 1, Math.ceil(displayList.length / 3));
+        const safePageIndex = Math.min(guestbookPageIndex, Math.max(0, totalPages - 1));
+        const currentThree = displayList.slice(safePageIndex * 3, safePageIndex * 3 + 3);
+
+        const formatGuestbookDate = (dateStr) => {
+          if (!dateStr) return '2027. 10.21';
+          if (typeof dateStr === 'string' && dateStr.includes('.')) return dateStr;
+          try {
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return '2027. 10.21';
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}. ${month}.${day}`;
+          } catch {
+            return '2027. 10.21';
+          }
+        };
+
+        return (
+          <section
+            id="guestbook-section"
+            className="w-full max-w-[430px] mx-auto pt-[96px] pb-[64.5px] px-[21px] text-center select-none bg-gradient-to-b from-[#FEFEFE] to-[#EAEAEA]"
+          >
+            <ScrollReveal>
+              {/* 상단 1: Guestbook (시안 5: Cormorant Garamond 이탤릭) */}
+              <h2 className="font-cormorant italic text-3xl sm:text-4xl text-[#222222] font-light tracking-wide text-center select-none">
                 Guestbook
-              </span>
-              <h2 className="font-serif text-base sm:text-lg text-stone-900 font-medium mb-1">
-                방명록
               </h2>
-              <p className="text-xs text-stone-500 font-light leading-relaxed">
-                남겨주신 축하의 글은 감사히 읽어보겠습니다.<br />
-                축하해주셔서 감사합니다.
+
+              {/* 상단 2: 방명록 (시안 5: Serif 18px, leading-[13px], mt-[36.5px], text-stone-900) */}
+              <p className="font-serif font-medium text-[18px] leading-[13px] text-center mt-[36.5px] tracking-tight text-stone-900">
+                방명록
               </p>
-            </div>
 
-            {/* 방명록 입력 폼 */}
-            <form onSubmit={handleGuestbookSubmit} className="max-w-[370px] mx-auto space-y-2 mb-10">
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="text"
-                  required
-                  value={guestbookName}
-                  onChange={(e) => setGuestbookName(e.target.value)}
-                  maxLength={30}
-                  placeholder="이름 또는 닉네임"
-                  className="w-full px-3.5 py-3 bg-[#FAFAFA] border border-stone-200 rounded-xl text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-400"
-                />
-                <input
-                  type="password"
-                  required
-                  value={guestbookPassword}
-                  onChange={(e) => setGuestbookPassword(e.target.value)}
-                  maxLength={20}
-                  placeholder="비밀번호(삭제용)"
-                  className="w-full px-3.5 py-3 bg-[#FAFAFA] border border-stone-200 rounded-xl text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-400"
-                />
-              </div>
-              <div className="relative">
-                <textarea
-                  rows={3}
-                  required
-                  maxLength={150}
-                  value={guestbookMessage}
-                  onChange={(e) => setGuestbookMessage(e.target.value)}
-                  placeholder="축하 메시지를 남겨주세요."
-                  className="w-full p-3.5 pb-6 bg-[#FAFAFA] border border-stone-200 rounded-xl text-xs text-stone-900 placeholder:text-stone-400 leading-relaxed focus:outline-none focus:border-stone-400"
-                />
-                <span className="absolute bottom-2.5 right-3 text-[10px] text-stone-400 font-mono">
-                  {guestbookMessage.length}/150
-                </span>
-              </div>
-              <button
-                type="submit"
-                disabled={submittingGuestbook}
-                className="w-full py-3 bg-white border border-stone-300 hover:border-black text-stone-800 hover:text-black font-medium text-xs rounded-xl transition-all cursor-pointer shadow-2xs disabled:opacity-50 active:scale-98"
+              {/* 상단 3: 두 사람의 새로운 시작에 따뜻한 축복을 남겨주세요. (시안 5: Serif 14px, leading-[24px], mt-[43px]) */}
+              <p className="w-[156.5px] max-w-full mx-auto font-serif font-normal text-[14px] leading-[24px] text-center mt-[43px] tracking-tight whitespace-pre-line text-stone-700">
+                두 사람의 새로운 시작에{'\n'}
+                따뜻한 축복을 남겨주세요.
+              </p>
+
+              {/* 중앙: 방명록 카드 3개 리스트 영역 (1개당 1x 348x123.5px, mt-[26.5px]) */}
+              <div
+                onTouchStart={(e) => {
+                  guestbookTouchStartX.current = e.touches[0].clientX;
+                }}
+                onTouchEnd={(e) => {
+                  if (guestbookTouchStartX.current === null) return;
+                  const deltaX = e.changedTouches[0].clientX - guestbookTouchStartX.current;
+                  guestbookTouchStartX.current = null;
+                  if (deltaX < -40 && safePageIndex < totalPages - 1) {
+                    setGuestbookPageIndex(safePageIndex + 1);
+                  } else if (deltaX > 40 && safePageIndex > 0) {
+                    setGuestbookPageIndex(safePageIndex - 1);
+                  }
+                }}
+                className="w-full max-w-[348px] mx-auto mt-[26.5px] flex flex-col gap-[11px] select-none touch-pan-y"
               >
-                {submittingGuestbook ? '등록 중...' : '메시지 남기기'}
-              </button>
-            </form>
-
-            {/* 방명록 목록 (영상 frame_038, frame_040 1:1 일치: 흰색 바탕에 메시지 + 이름 + 삭제 버튼 + 구분선) */}
-            <div className="max-w-[370px] mx-auto">
-              {guestbookList.length === 0 ? (
-                <div className="py-8 text-center text-xs text-stone-400">
-                  첫 번째 축하 메시지를 남겨주세요 ✨
-                </div>
-              ) : (
-                (() => {
-                  const itemsPerPage = 3;
-                  const totalPages = Math.ceil(guestbookList.length / itemsPerPage);
-                  const startIndex = (guestbookPage - 1) * itemsPerPage;
-                  const currentItems = guestbookList.slice(startIndex, startIndex + itemsPerPage);
-
-                  return (
-                    <div className="space-y-4">
-                      {currentItems.map((item) => (
-                        <div key={item.id} className="text-left pb-4 border-b border-stone-100 last:border-b-0 space-y-1.5">
-                          <p className="text-xs sm:text-[13px] text-stone-800 leading-relaxed font-light whitespace-pre-line break-keep">
-                            {item.content || item.message}
-                          </p>
-                          <div className="flex items-center justify-between text-[11px] text-stone-400 font-light">
-                            <span>{item.author || item.name}</span>
-                            {item.id && (
-                              <button
-                                type="button"
-                                onClick={() => setDeleteTargetMsg(item)}
-                                className="text-stone-400 hover:text-stone-700 underline underline-offset-2 transition-colors cursor-pointer select-none"
-                              >
-                                삭제
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-
-                      {/* 페이징 버튼 (영상 frame_040과 1:1 일치: 이전   1 / 2   다음) */}
-                      {totalPages > 1 && (
-                        <div className="flex items-center justify-center gap-6 pt-4 text-xs text-stone-400 font-light select-none">
-                          <button
-                            type="button"
-                            onClick={() => setGuestbookPage((p) => Math.max(1, p - 1))}
-                            disabled={guestbookPage === 1}
-                            className="hover:text-stone-800 disabled:opacity-30 cursor-pointer"
-                          >
-                            이전
-                          </button>
-                          <span className="font-mono text-[11px] text-stone-500">
-                            {guestbookPage} / {totalPages}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => setGuestbookPage((p) => Math.min(totalPages, p + 1))}
-                            disabled={guestbookPage === totalPages}
-                            className="hover:text-stone-800 disabled:opacity-30 cursor-pointer"
-                          >
-                            다음
-                          </button>
-                        </div>
-                      )}
+                {currentThree.map((item, idx) => (
+                  <div
+                    key={item.id || idx}
+                    className="w-full min-h-[123.5px] rounded-[14px] p-[18px] pb-[16px] flex flex-col justify-between text-left transition-colors duration-300 shadow-[0_2px_8px_rgba(0,0,0,0.04)] bg-white border border-[#DCDCDC] text-stone-900"
+                  >
+                    {/* 상단: 작성자 & 삭제 (X) 버튼 */}
+                    <div className="w-full flex items-center justify-between">
+                      <span className="font-serif font-normal text-[10px] leading-none tracking-tight text-[#666666]">
+                        From : {item.author || item.name || '하객'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (isSample && String(item.id).startsWith('sample')) {
+                            alert('샘플 메시지입니다.');
+                            return;
+                          }
+                          setDeleteTargetMsg(item);
+                        }}
+                        className="p-0.5 cursor-pointer transition-colors text-[#999999] hover:text-[#292929]"
+                        title="메시지 삭제"
+                        aria-label="방명록 삭제"
+                      >
+                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                          <path
+                            d="M1 1L9 9M9 1L1 9"
+                            stroke="currentColor"
+                            strokeWidth="1.2"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      </button>
                     </div>
-                  );
-                })()
+
+                    {/* 본문 메시지 */}
+                    <p className="font-serif font-normal text-[11.5px] leading-[1.6] my-[10px] whitespace-pre-line break-keep line-clamp-3 text-left text-stone-800">
+                      {item.content || item.message}
+                    </p>
+
+                    {/* 하단: 등록 날짜 */}
+                    <span className="font-mono font-normal text-[10px] leading-none text-[#999999]">
+                      {formatGuestbookDate(item.created_at)}
+                    </span>
+                  </div>
+                ))}
+
+                {/* 메시지가 없을 때 (Empty State) */}
+                {currentThree.length === 0 && (
+                  <div
+                    onClick={() => setShowGuestbookModal(true)}
+                    className="w-full min-h-[123.5px] rounded-[14px] p-[18px] flex flex-col justify-center items-center text-center cursor-pointer transition-all active:scale-[0.99] select-none border border-dashed bg-white/80 border-[#DCDCDC] hover:border-[#999999] text-stone-500"
+                  >
+                    <p className="font-serif text-[12px] tracking-tight">
+                      따뜻한 축하 메시지를 남겨주세요 ✍️
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* 페이지네이션 도트 (간격 4px 슬림화 및 터치 스와이프 연동) */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-[4px] mt-[18px] select-none">
+                  {[...Array(totalPages)].map((_, pIdx) => (
+                    <button
+                      key={pIdx}
+                      type="button"
+                      onClick={() => setGuestbookPageIndex(pIdx)}
+                      className="px-[2px] py-1 flex items-center justify-center cursor-pointer bg-transparent border-none"
+                      aria-label={`방명록 페이지 ${pIdx + 1}`}
+                    >
+                      <span
+                        className={`w-[5px] h-[5px] rounded-full transition-all ${
+                          pIdx === (safePageIndex % totalPages)
+                            ? 'bg-[#292929] scale-125'
+                            : 'bg-[#CCCCCC] hover:bg-[#999999]'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
               )}
-            </div>
-          </ScrollReveal>
-        </section>
-      )}
+
+              {/* 하단: 글 남기기 버튼 (134x39px, rounded-[24.5px], mt-[24px], bg #393939) */}
+              <div className="mt-[24px] flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={() => setShowGuestbookModal(true)}
+                  style={{
+                    boxShadow: '0px 4px 14.2px rgba(0, 0, 0, 0.09)',
+                  }}
+                  className="w-[134px] h-[39px] rounded-[24.5px] flex items-center justify-center transition-all cursor-pointer select-none active:scale-95 bg-[#393939] hover:bg-[#252525] text-[#F3F3F3]"
+                >
+                  <span className="font-serif font-medium text-[14px] leading-none text-center">
+                    글 남기기
+                  </span>
+                </button>
+              </div>
+            </ScrollReveal>
+          </section>
+        );
+      })()}
 
       {/* ========================================================
           11. FOOTER & 공유 버튼 (영상 frame_040, frame_042 1:1 일치)
@@ -1842,6 +1859,15 @@ export default function SceneTemplate({ invitation }) {
           onDeleteSuccess={(deletedId) => {
             setGuestbookList((prev) => prev.filter((msg) => msg.id !== deletedId));
           }}
+        />
+      )}
+
+      {/* 방명록 작성 모달 */}
+      {showGuestbookModal && (
+        <EditorialGuestbookModal
+          invitationId={invitation?.id}
+          onClose={() => setShowGuestbookModal(false)}
+          onSuccess={(newMsg) => setGuestbookList((prev) => [newMsg, ...prev])}
         />
       )}
 

@@ -53,6 +53,29 @@
 ## 0. 최근 핫픽스 & 서비스 안정화 내역 (2026-11-14 오너 관점 결함 전수 조치 & 시안 개편)
 
 
+-17. **[방명록(Guestbook) 섹션 전 시안(시안 1~5) 피그마 1:1 실측 신규 레이아웃 일괄 전파 (2026-11-14)]**:
+   - **사용자 요청**: 시안 4에 적용한 1:1 피그마 실측 방명록 디자인(3개 직사각형 카드 세로 스택, 4px 슬림 도트 인디케이터, 글 남기기 알약 버튼, 배경 그라디언트)을 나머지 전체 시안(시안 1, 2, 3, 5)에도 동일하게 적용하고, 폰트는 각 시안의 고유 폰트 시스템을 준수할 것.
+   - **시안별 적용 내역**:
+     1. **시안 1 (`BasicTemplate.jsx`)**:
+        - 기존 4컷 2x2 매거진 프레임 ➔ 시안 4의 3개 카드 세로 스택 레이아웃으로 변경.
+        - 폰트: 영문 타이틀 `font-weddingday`, 한글 타이틀/본문/작성자 `font-nanumsquare`.
+        - 그라디언트 배경(`from-[#FEFEFE] to-[#EAEAEA]`), 슬림 도트 인디케이터(`gap-[4px]`), '글 남기기' 알약 버튼.
+     2. **시안 2 (`EditorialTemplate.jsx`)**:
+        - 기존 4컷 2x2 프레임 ➔ 3개 카드 세로 스택 레이아웃으로 개편.
+        - 폰트: 영문 타이틀 `font-weddingday`, 한글 타이틀/본문/작성자 `font-nanumsquare`.
+        - `EditorialGuestbookModal` 및 `EditorialGuestbookDeleteModal` 정상 유지.
+     3. **시안 3 (`PlaylistTemplate.jsx`)**:
+        - 기존 4컷 2x2 프레임 ➔ 3개 카드 세로 스택 레이아웃으로 개편.
+        - 폰트: 영문 타이틀 `font-weddingday`, 한글 타이틀/본문/작성자 `font-nanumsquare`.
+     4. **시안 5 (`SceneTemplate.jsx`)**:
+        - 기존 인라인 입력 폼 + 텍스트 리스트 ➔ 3개 카드 세로 스택 + '글 남기기' 알약 버튼(모달 팝업 오픈)으로 통일.
+        - 폰트: 영문 타이틀 `font-cormorant italic`, 한글 타이틀/본문/작성자 `font-serif`, 날짜 `font-mono`.
+        - `EditorialGuestbookModal` 신규 임포트 및 마운트 연동.
+   - **검증 결과**:
+     - `npx eslint components/templates/**/*.jsx`: 0 errors.
+     - `npm run build`: 성공 (Exit Code 0).
+
+
 -16. **[시안 4 (시네마틱) 방명록(Guestbook) 섹션 피그마 1:1 실측 CSS 신설 및 모달 연동 (2026-11-14)]**:
    - **사용자 요청/제공 피그마 좌표 & 시안 이미지**:
      - 방명록 영역: `780px × 1659px` (top: 13787px, bg: `linear-gradient(180deg, #FEFEFE 0%, #EAEAEA 100%)`)

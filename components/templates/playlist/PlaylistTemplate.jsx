@@ -1583,48 +1583,67 @@ export default function PlaylistTemplate({ invitation }) {
           {
             id: 'sample-1',
             author: '장성경',
-            content: '두 사람 너무\n잘어울려요\n행복하게 잘 살아요.',
+            content: '두 사람 꽃길 결혼 생활 예약🌷\n행복과 축복으로 가득하길 바래🤍',
+            created_at: '2027. 10.21',
           },
           {
             id: 'sample-2',
-            author: '이수빈',
-            content: '언니 너무 예뻐요!\n남편이랑 항상\n행복하세요.',
+            author: '민경훈',
+            content: '형, 드디어 장가갔네! 항상 좋은 일만 가득하길 바란다.\n형이 결혼할 줄 몰랐어. 나도 곧 따라갈게. 늘 행복해라~~~',
+            created_at: '2027. 10.21',
           },
           {
             id: 'sample-3',
-            author: '김형욱',
-            content: '형, 드디어 장가\n갔네! 항상 좋은 일만\n가득하길 바란다.',
-          },
-          {
-            id: 'sample-4',
-            author: '최미자',
-            content: '선남선녀끼리\n잘만나 오래오래\n행복하길 기원해~~',
+            author: '강형욱',
+            content: '선남선녀끼리 잘만나 오래오래\n행복하길 기원해~~',
+            created_at: '2027. 10.21',
           },
         ];
 
         const displayList = guestbookList.length > 0 ? guestbookList : (isSample ? sampleGuestbooks : []);
-        const totalPages = Math.max(isSample ? 3 : 1, Math.ceil(displayList.length / 4));
+        const totalPages = Math.max(isSample ? 3 : 1, Math.ceil(displayList.length / 3));
         const safePageIndex = Math.min(guestbookPageIndex, Math.max(0, totalPages - 1));
-        const currentFour = displayList.slice(safePageIndex * 4, safePageIndex * 4 + 4);
+        const currentThree = displayList.slice(safePageIndex * 3, safePageIndex * 3 + 3);
+
+        const formatGuestbookDate = (dateStr) => {
+          if (!dateStr) return '2027. 10.21';
+          if (typeof dateStr === 'string' && dateStr.includes('.')) return dateStr;
+          try {
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return '2027. 10.21';
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}. ${month}.${day}`;
+          } catch {
+            return '2027. 10.21';
+          }
+        };
 
         return (
-          <section className="w-full bg-[#FEFEFE] pt-[91px] pb-0 text-center select-none overflow-hidden">
+          <section
+            id="guestbook-section"
+            className="w-full max-w-[430px] mx-auto pt-[96px] pb-[64.5px] px-[21px] text-center select-none bg-gradient-to-b from-[#FEFEFE] to-[#EAEAEA]"
+          >
             <ScrollReveal>
+              {/* 상단 1: Guestbook (시안 3: Weddingday Personal Use 35px, #292929, leading-[72%]) */}
               <h2 className="font-weddingday text-[35px] text-[#292929] leading-[72%] text-center select-none tracking-normal">
                 Guestbook
               </h2>
 
-              <p className="font-nanumsquare font-normal text-[18px] text-[#292929] leading-none text-center mt-[34.5px] tracking-tight">
+              {/* 상단 2: 방명록 (NanumSquare Neo OTF 400 18px, leading-[13px], mt-[36.5px], #292929) */}
+              <p className="font-nanumsquare font-normal text-[18px] leading-[13px] text-center mt-[36.5px] tracking-tight text-[#292929]">
                 방명록
               </p>
 
-              <p className="font-nanumsquare font-normal text-[14px] text-[#333333] leading-[1.72] text-center mt-[43px] tracking-tight whitespace-pre-line max-w-[280px] mx-auto">
-                두 사람의 새로운 시작에{`\n`}
+              {/* 상단 3: 두 사람의 새로운 시작에 따뜻한 축복을 남겨주세요. (NanumSquare Neo 400 14px, leading-[24px], mt-[43px]) */}
+              <p className="w-[156.5px] max-w-full mx-auto font-nanumsquare font-normal text-[14px] leading-[24px] text-center mt-[43px] tracking-tight whitespace-pre-line text-[#333333]">
+                두 사람의 새로운 시작에{'\n'}
                 따뜻한 축복을 남겨주세요.
               </p>
 
-              {/* 방명록 4컷 프레임 영역 */}
-              <div 
+              {/* 중앙: 방명록 카드 3개 리스트 영역 (1개당 1x 348x123.5px, mt-[26.5px]) */}
+              <div
                 onTouchStart={(e) => {
                   guestbookTouchStartX.current = e.touches[0].clientX;
                 }}
@@ -1638,139 +1657,105 @@ export default function PlaylistTemplate({ invitation }) {
                     setGuestbookPageIndex(safePageIndex - 1);
                   }
                 }}
-                className="w-[350px] max-w-[92%] mx-auto bg-[#E6EDF5] rounded-[14px] pt-[9px] pb-[9px] px-[10px] mt-[29px] flex flex-col justify-between select-none touch-pan-y"
+                className="w-full max-w-[348px] mx-auto mt-[26.5px] flex flex-col gap-[11px] select-none touch-pan-y"
               >
-                <div className="w-full px-2 flex items-center justify-between text-[#999999] text-[8.5px] font-nanumsquare leading-none mb-[8px] select-none">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[7px]">▶</span>
-                    <span className="font-mono text-[9px]">32</span>
-                  </div>
-                  <span className="tracking-[0.14em] font-normal uppercase text-[8px]">
-                    DESIGNED BY ATELIER DE MUKIRU
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-mono text-[9px]">32</span>
-                    <span className="text-[7px]">◀</span>
-                  </div>
-                </div>
-
-                {/* 4컷 2x2 그리드 */}
-                <div className="grid grid-cols-2 gap-[8px] w-full">
-                  {currentFour.map((item, idx) => (
-                    <div
-                      key={item.id || idx}
-                      className="w-full min-h-[155px] bg-[#FEFEFE] rounded-[10px] py-[16px] px-[12px] flex flex-col justify-between items-center text-center shadow-2xs"
-                    >
-                      <div className="flex-1 flex items-center justify-center w-full">
-                        <p className="font-nanumsquare font-normal text-[11.5px] text-[#333333] leading-[1.78] whitespace-pre-line tracking-tight text-center line-clamp-4">
-                          {item.content}
-                        </p>
-                      </div>
-
-                      <div 
-                        style={{ borderTop: '0.5px solid #999999' }} 
-                        className="w-[99.5px] max-w-[80%] my-[9px] shrink-0" 
-                      />
-
-                      <div className="w-full flex items-center justify-center gap-1.5 shrink-0">
-                        <span className="font-nanumsquare font-normal text-[12px] text-[#999999] leading-none tracking-tight">
-                          {item.author || item.name || '하객'}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (isSample && String(item.id).startsWith('sample')) {
-                              alert('샘플 메시지입니다.');
-                              return;
-                            }
-                            setDeleteTargetMsg(item);
-                          }}
-                          className="text-[#999999] hover:text-[#333333] transition-colors p-0.5 cursor-pointer shrink-0"
-                          title="메시지 삭제"
-                          aria-label="방명록 삭제"
-                        >
-                          <svg width="10" height="11" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M1 2.5H9M3.5 2.5V1.5C3.5 1.22386 3.72386 1 4 1H6C6.27614 1 6.5 1.22386 6.5 1.5V2.5M8 2.5V9.5C8 9.77614 7.77614 10 7.5 10H2.5C2.22386 10 2 9.77614 2 9.5V2.5" stroke="currentColor" strokeWidth="0.85" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-
-                  {currentFour.length < 4 && [...Array(4 - currentFour.length)].map((_, i) => (
-                    <div
-                      key={`empty-${i}`}
-                      onClick={() => setShowGuestbookModal(true)}
-                      className="w-full min-h-[155px] bg-[#FEFEFE]/80 hover:bg-[#FEFEFE] border border-dashed border-[#D5DCE5] hover:border-[#999999] rounded-[10px] p-[16px] flex flex-col justify-center items-center text-center cursor-pointer transition-all active:scale-[0.99] select-none group"
-                      title="클릭하여 축하 메시지 남기기"
-                    >
-                      <span className="font-weddingday text-[18px] text-[#B0B8C2] group-hover:text-[#393939] block mb-1 transition-colors">
-                        Best Wishes
-                      </span>
-                      <p className="font-nanumsquare text-[10.5px] text-[#A0A8B2] group-hover:text-[#666666] tracking-tight transition-colors">
-                        따뜻한 축하를 남겨주세요 ✍️
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="w-full px-2 flex items-center justify-between text-[#999999] text-[8.5px] font-nanumsquare leading-none mt-[8px] select-none">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[7px]">▶</span>
-                    <span className="font-mono text-[9px]">32</span>
-                  </div>
-                  <span className="tracking-[0.14em] font-normal uppercase text-[8px]">
-                    DESIGNED BY ATELIER DE MUKIRU
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-mono text-[9px]">32</span>
-                    <span className="text-[7px]">◀</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* 페이지네이션 도트 */}
-              <div className="flex items-center justify-center gap-0.5 mt-[10px] select-none">
-                {[...Array(totalPages)].map((_, pIdx) => (
-                  <button
-                    key={pIdx}
-                    type="button"
-                    onClick={() => setGuestbookPageIndex(pIdx)}
-                    className="w-6 h-6 flex items-center justify-center cursor-pointer p-0 bg-transparent border-none"
-                    aria-label={`방명록 페이지 ${pIdx + 1}`}
+                {currentThree.map((item, idx) => (
+                  <div
+                    key={item.id || idx}
+                    className="w-full min-h-[123.5px] rounded-[14px] p-[18px] pb-[16px] flex flex-col justify-between text-left transition-colors duration-300 shadow-[0_2px_8px_rgba(0,0,0,0.04)] bg-white border border-[#DCDCDC] text-stone-900"
                   >
-                    <span
-                      className={`w-[6px] h-[6px] rounded-full transition-all ${
-                        pIdx === (safePageIndex % totalPages)
-                          ? 'bg-[#999999] scale-125'
-                          : 'bg-[#D9D9D9] hover:bg-[#B0B0B0]'
-                      }`}
-                    />
-                  </button>
+                    {/* 상단: 작성자 & 삭제 (X) 버튼 */}
+                    <div className="w-full flex items-center justify-between">
+                      <span className="font-nanumsquare font-normal text-[10px] leading-none tracking-tight text-[#666666]">
+                        From : {item.author || item.name || '하객'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (isSample && String(item.id).startsWith('sample')) {
+                            alert('샘플 메시지입니다.');
+                            return;
+                          }
+                          setDeleteTargetMsg(item);
+                        }}
+                        className="p-0.5 cursor-pointer transition-colors text-[#999999] hover:text-[#292929]"
+                        title="메시지 삭제"
+                        aria-label="방명록 삭제"
+                      >
+                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                          <path
+                            d="M1 1L9 9M9 1L1 9"
+                            stroke="currentColor"
+                            strokeWidth="1.2"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+
+                    {/* 본문 메시지 */}
+                    <p className="font-nanumsquare font-normal text-[11.5px] leading-[1.6] my-[10px] whitespace-pre-line break-keep line-clamp-3 text-left text-[#333333]">
+                      {item.content}
+                    </p>
+
+                    {/* 하단: 등록 날짜 */}
+                    <span className="font-nanumsquare font-normal text-[10px] leading-none text-[#999999]">
+                      {formatGuestbookDate(item.created_at)}
+                    </span>
+                  </div>
                 ))}
+
+                {/* 메시지가 없을 때 (Empty State) */}
+                {currentThree.length === 0 && (
+                  <div
+                    onClick={() => setShowGuestbookModal(true)}
+                    className="w-full min-h-[123.5px] rounded-[14px] p-[18px] flex flex-col justify-center items-center text-center cursor-pointer transition-all active:scale-[0.99] select-none border border-dashed bg-white/80 border-[#DCDCDC] hover:border-[#999999] text-stone-500"
+                  >
+                    <p className="font-nanumsquare text-[12px] tracking-tight">
+                      따뜻한 축하 메시지를 남겨주세요 ✍️
+                    </p>
+                  </div>
+                )}
               </div>
 
-              {/* 글 남기기 버튼 */}
-              <div className="mt-[26px] flex items-center justify-center">
+              {/* 페이지네이션 도트 (간격 4px 슬림화 및 터치 스와이프 연동) */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-[4px] mt-[18px] select-none">
+                  {[...Array(totalPages)].map((_, pIdx) => (
+                    <button
+                      key={pIdx}
+                      type="button"
+                      onClick={() => setGuestbookPageIndex(pIdx)}
+                      className="px-[2px] py-1 flex items-center justify-center cursor-pointer bg-transparent border-none"
+                      aria-label={`방명록 페이지 ${pIdx + 1}`}
+                    >
+                      <span
+                        className={`w-[5px] h-[5px] rounded-full transition-all ${
+                          pIdx === (safePageIndex % totalPages)
+                            ? 'bg-[#292929] scale-125'
+                            : 'bg-[#CCCCCC] hover:bg-[#999999]'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* 하단: 글 남기기 버튼 (134x39px, rounded-[24.5px], mt-[24px], bg #393939) */}
+              <div className="mt-[24px] flex items-center justify-center">
                 <button
                   type="button"
                   onClick={() => setShowGuestbookModal(true)}
                   style={{
                     boxShadow: '0px 4px 14.2px rgba(0, 0, 0, 0.09)',
                   }}
-                  className="w-[134px] h-[39px] bg-[#393939] hover:bg-[#2c2c2c] active:scale-[0.98] rounded-full flex items-center justify-center transition-all cursor-pointer select-none"
+                  className="w-[134px] h-[39px] rounded-[24.5px] flex items-center justify-center transition-all cursor-pointer select-none active:scale-95 bg-[#393939] hover:bg-[#252525] text-[#F3F3F3]"
                 >
-                  <span className="font-nanumsquare font-bold text-[14px] text-[#F3F3F3] leading-none tracking-tight">
+                  <span className="font-nanumsquare font-bold text-[14px] leading-none text-center">
                     글 남기기
                   </span>
                 </button>
               </div>
-
-              {/* 구분선 */}
-              <div 
-                style={{ borderTop: '0.5px solid #999999' }}
-                className="w-[280.5px] max-w-[75%] mt-[65px] mb-[50px] mx-auto shrink-0" 
-              />
             </ScrollReveal>
           </section>
         );

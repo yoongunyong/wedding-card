@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600;6..96,700;6..96,800;6..96,900&family=Noto+Serif+KR:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600;6..96,700;6..96,800;6..96,900&family=Noto+Serif+KR:wght@300;400;500;600;700&family=Nanum+Myeongjo:wght@400;700;800&display=swap');
 @import "tailwindcss";
 
 @font-face {
@@ -29,6 +29,22 @@
   font-family: 'NanumSquare Neo';
   src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_11-01@1.0/NanumSquareNeo-Variable.woff2') format('woff2');
   font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Ownglyph corncorn';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2412-1@1.0/Ownglyph_corncorn-Rg.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'OngleipKonkon';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2412-1@1.0/Ownglyph_corncorn-Rg.woff2') format('woff2');
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
@@ -109,6 +125,14 @@ body {
 
 .font-handwriting {
   font-family: 'Caveat', cursive !important;
+}
+
+.font-nanummyeongjo {
+  font-family: 'NanumMyeongjo', 'Nanum Myeongjo', 'Noto Serif KR', serif !important;
+}
+
+.font-ownglyph {
+  font-family: 'Ownglyph corncorn', 'OngleipKonkon', 'Caveat', cursive !important;
 }
 
 /* 스크롤바 숨기기 유틸리티 */

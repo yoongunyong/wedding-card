@@ -26,8 +26,8 @@ const OPENING_PREVIEWS = [
     name: '플레이리스트',
     fullName: '시안 03 · 감성 플레이리스트',
     badge: '뮤직 앨범 & BGM',
-    tag: '미니멀 뮤직 플레이어 카드',
-    desc: '은은한 크림톤 카드에 둥근 흑백 화보와 본명조 한글 성함, 감성 플레이어 컨트롤러가 결합된 시그니처 룩입니다.',
+    tag: '뮤직 플레이어 시그니처 커버',
+    desc: '화이트 카드 위 본명조 성함과 커버 화보, 손글씨 Getting married 및 감성 뮤직 플레이어 컨트롤러가 결합된 시그니처 룩입니다.',
   },
   {
     id: 'cinematic',
@@ -341,58 +341,132 @@ export default function SignatureShowcase() {
                       [시안 03: 감성 플레이리스트 실제 실물 1:1 일치]
                       (PlaylistTemplate.jsx 실제 화면: 크림톤 카드 + 둥근 흑백사진 + 강민우💗서유진)
                      ===================================================== */}
+                  {/* =====================================================
+                      [시안 03: 감성 플레이리스트 실제 실물 1:1 일치]
+                      (PlaylistIntro.jsx 실제 화면: 장민기---권기득 + Getting married + 뮤직 플레이어 컨트롤)
+                     ===================================================== */}
                   {activeOpeningId === 'playlist' && (
                     <div 
-                      className="w-full h-full p-3 bg-[#FAF8F5] flex flex-col justify-between"
+                      className="relative w-full h-full p-2.5 bg-[#1C1C1C] flex flex-col items-center justify-center select-none overflow-hidden"
                       style={{ animation: 'fadeInScale 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}
                     >
-                      <div className="w-full bg-[#FAF8F5] rounded-[26px] p-2.5 shadow-[0_10px_30px_rgba(0,0,0,0.05)] border border-stone-200/80 flex flex-col justify-between h-full">
-                        {/* 1. 상단 둥근 웨딩 흑백 화보 (aspect-[537/525]) */}
-                        <div className="relative w-full aspect-[537/460] rounded-[20px] overflow-hidden bg-stone-200 shadow-xs shrink-0">
-                          <img
-                            src="/playlist-couple.png"
-                            alt="강민우 & 서유진"
-                            className="w-full h-full object-cover grayscale contrast-105"
-                          />
+                      {/* 배경 이미지 (커버 화보 10% 줌인 + #1C1C1C 틴트) */}
+                      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-40">
+                        <img
+                          src="/samples/main-03-playlist.jpg"
+                          alt="Playlist Background"
+                          className="w-full h-full object-cover scale-[1.10] blur-xs"
+                        />
+                        <div className="absolute inset-0 bg-[#1C1C1C]/75" />
+                      </div>
+
+                      {/* 중앙 화이트 카드 */}
+                      <div className="relative z-10 w-full max-w-[260px] h-full max-h-[96%] bg-[#FEFEFE] rounded-2xl shadow-2xl p-2.5 flex flex-col justify-between items-center text-[#292929]">
+                        {/* 상단 성함 & 구분선 */}
+                        <div className="w-full flex items-center justify-between px-2 pt-1">
+                          <span className="font-nanummyeongjo text-[11px] text-[#292929]">장민기</span>
+                          <div className="flex-1 mx-2 border-t border-[#999999]" />
+                          <span className="font-nanummyeongjo text-[11px] text-[#292929]">권기득</span>
                         </div>
 
-                        {/* 2. 트랙 정보: 날짜, 이름(본명조), 1줄 감성 카피, 라인 하트 */}
-                        <div className="px-1 pt-2.5 pb-0.5">
-                          <span className="text-[8.5px] font-sans tracking-[0.2em] text-[#8E8E93] font-normal uppercase block mb-0.5">
-                            APRIL 26, 2026
-                          </span>
-                          <div className="flex items-center justify-between">
-                            <h4 
-                              style={{ fontFamily: "'Noto Serif KR', serif" }}
-                              className="text-[17px] font-normal text-[#1C1C1E] tracking-tight flex items-center gap-1"
-                            >
-                              <span>강민우</span>
-                              <span className="text-[13px] mx-0.5">💗</span>
-                              <span>서유진</span>
-                            </h4>
-                            <span className="text-rose-500 text-sm">♥</span>
-                          </div>
-                          <p className="font-serif text-[9.5px] text-stone-500 mt-0.5">
-                            우리가 함께 걷는 계절의 멜로디
-                          </p>
-                        </div>
-
-                        {/* 3. 프로그레스 바 & 컨트롤러 */}
-                        <div className="px-1 pt-0.5 space-y-1.5">
-                          <div className="w-full h-1 bg-stone-200 rounded-full overflow-hidden">
-                            <div className="w-2/5 h-full bg-[#1C1C1E] rounded-full" />
-                          </div>
-                          <div className="flex justify-between text-[7.5px] font-mono text-stone-400">
-                            <span>01:18</span>
-                            <span>03:19</span>
-                          </div>
-                          <div className="flex items-center justify-center gap-4 text-[#1C1C1E]">
-                            <span className="text-[10px] text-stone-400">⏮</span>
-                            <span className="w-7 h-7 rounded-full bg-[#1C1C1E] text-white flex items-center justify-center text-[10px] shadow-xs">
-                              ▶
+                        {/* 중앙 화보 + Getting married + 양옆 세로 텍스트 */}
+                        <div className="relative mx-auto my-auto flex items-center justify-center">
+                          {/* 좌측 세로 텍스트 (사진 왼쪽 밖, 하단 맞춤) */}
+                          <div 
+                            className="absolute right-full mr-[6px] bottom-0 pointer-events-none select-none whitespace-nowrap"
+                            style={{
+                              transform: 'translateY(-100%) rotate(-90deg)',
+                              transformOrigin: 'top left',
+                            }}
+                          >
+                            <span className="font-nanummyeongjo text-[7.5px] text-[#333333]">
+                              서울 크리스탈 볼룸 1층
                             </span>
-                            <span className="text-[10px] text-stone-400">⏭</span>
                           </div>
+
+                          {/* 화보 사진 */}
+                          <div className="relative w-[180px] aspect-[618/863] rounded-xs overflow-hidden bg-stone-100 shadow-sm">
+                            <img
+                              src="/samples/main-03-playlist.jpg"
+                              alt="Playlist Cover"
+                              className="w-full h-full object-cover"
+                            />
+                            {/* Getting married */}
+                            <div className="absolute inset-x-0 bottom-2 flex items-center justify-center pointer-events-none select-none">
+                              <span className="font-ownglyph text-[20px] text-[#FEFEFE] leading-none text-center drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)]">
+                                Getting married
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* 우측 세로 텍스트 (사진 오른쪽 밖, 상단 맞춤) */}
+                          <div 
+                            className="absolute left-full ml-[6px] top-0 pointer-events-none select-none whitespace-nowrap"
+                            style={{
+                              transform: 'translateY(-100%) rotate(90deg)',
+                              transformOrigin: 'top left',
+                            }}
+                          >
+                            <span className="font-nanummyeongjo text-[7.5px] text-[#666666] tracking-[0.04em]">
+                              2027.May 15. 14:00 pm
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* 하단 플레이어 UI */}
+                        <div className="w-full max-w-[180px] pb-1">
+                          {/* 로딩 바 */}
+                          <div className="relative w-full h-[1.5px] bg-[#292929] rounded-full my-1">
+                            <div className="absolute -top-[2px] left-[7%] w-[5px] h-[5px] rounded-full bg-[#292929]" />
+                          </div>
+                          {/* 시간 */}
+                          <div className="flex justify-between text-[7px] text-[#292929] font-sans">
+                            <span>0:16</span>
+                            <span>3:37</span>
+                          </div>
+                          {/* 5대 컨트롤러 */}
+                          <div className="flex items-center justify-between px-0.5 pt-1">
+                            {/* 하트 */}
+                            <svg width="12" height="11" viewBox="0 0 24 22" fill="none" stroke="#292929" strokeWidth="2">
+                              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                            </svg>
+                            {/* 이전곡 */}
+                            <svg width="12" height="11" viewBox="0 0 24 24" fill="#292929">
+                              <rect x="3" y="4" width="2.5" height="16" rx="0.5" />
+                              <polygon points="21,4 8,12 21,20" />
+                            </svg>
+                            {/* 재생원형 */}
+                            <div className="w-6 h-6 rounded-full bg-[#292929] flex items-center justify-center">
+                              <div className="flex items-center gap-[2px]">
+                                <div className="w-[1.6px] h-2.5 bg-[#FAFAFA] rounded-xs" />
+                                <div className="w-[1.6px] h-2.5 bg-[#FAFAFA] rounded-xs" />
+                              </div>
+                            </div>
+                            {/* 다음곡 */}
+                            <svg width="12" height="11" viewBox="0 0 24 24" fill="#292929">
+                              <polygon points="3,4 16,12 3,20" />
+                              <rect x="18.5" y="4" width="2.5" height="16" rx="0.5" />
+                            </svg>
+                            {/* 더보기 */}
+                            <svg width="12" height="4" viewBox="0 0 24 6" fill="#292929">
+                              <circle cx="4" cy="3" r="2.2" />
+                              <circle cx="12" cy="3" r="2.2" />
+                              <circle cx="20" cy="3" r="2.2" />
+                            </svg>
+                          </div>
+                          {/* 보조 컨트롤: 셔플 & 반복재생 */}
+                          <div className="flex items-center justify-between px-0.5 pt-1 text-[#292929]">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#292929" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="16 3 21 3 21 8" /><line x1="4" y1="20" x2="21" y2="3" /><polyline points="21 16 21 21 16 21" /><line x1="15" y1="15" x2="21" y2="21" /><line x1="4" y1="4" x2="9" y2="9" />
+                            </svg>
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#292929" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14" /><polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 0 1-4 4H3" />
+                            </svg>
+                          </div>
+                          {/* 하단 터치 안내 */}
+                          <p className="text-[7px] text-[#666666] text-center font-nanummyeongjo pt-1 tracking-wider animate-pulse">
+                            화면을 터치해주세요
+                          </p>
                         </div>
                       </div>
                     </div>

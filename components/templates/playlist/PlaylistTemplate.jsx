@@ -10,6 +10,7 @@ import EditorialRsvpModal from '../editorial/EditorialRsvpModal';
 import EditorialGuestbookModal from '../editorial/EditorialGuestbookModal';
 import EditorialGuestbookDeleteModal from '../editorial/EditorialGuestbookDeleteModal';
 import EditorialGalleryModal from '../editorial/EditorialGalleryModal';
+import PlaylistIntro from './PlaylistIntro';
 import KakaoMap from '@/components/KakaoMap';
 import { supabase } from '@/lib/supabase';
 import { getSafeKakaoShareImageUrl } from '@/lib/kakaoShare';
@@ -98,11 +99,39 @@ export default function PlaylistTemplate({ invitation }) {
   const images = useMemo(() => invitation?.images || {}, [invitation?.images]);
   const extra = useMemo(() => invitation?.extra_data || {}, [invitation?.extra_data]);
 
+  const showIntroSection = isSample ? true : config.show_intro !== false;
   const showCountdownSection = config.show_countdown !== false;
   const showGallerySection = config.show_gallery !== false;
   const showAccountsSection = config.show_accounts !== false;
   const showRsvpSection = config.show_rsvp !== false;
   const showGuestbookSection = config.show_guestbook !== false;
+
+  // 1-1. 커버 인트로 화면 상태 (기본값 true)
+  const [showIntro, setShowIntro] = useState(true);
+  const isModalPreview = Boolean(invitation?.is_modal_preview);
+
+  // 모달 미리보기 중 인트로 활성화 시 모달 스크롤 컨테이너를 잠그고, 수락 시 스크롤 복원
+  useEffect(() => {
+    if (isModalPreview && typeof document !== 'undefined') {
+      const container = document.getElementById('preview-scroll-container');
+      if (container) {
+        if (showIntro && showIntroSection) {
+          container.style.overflowY = 'hidden';
+          container.scrollTop = 0;
+        } else {
+          container.style.overflowY = 'auto';
+        }
+      }
+    }
+    return () => {
+      if (isModalPreview && typeof document !== 'undefined') {
+        const container = document.getElementById('preview-scroll-container');
+        if (container) {
+          container.style.overflowY = 'auto';
+        }
+      }
+    };
+  }, [isModalPreview, showIntro, showIntroSection]);
 
   // 대표 이미지 매핑
   const mainImage = images.main || images.cover || invitation?.main_image || (isSample ? '/samples/main-03-playlist.jpg' : '');
@@ -551,6 +580,15 @@ export default function PlaylistTemplate({ invitation }) {
 
   return (
     <div className="w-full max-w-[440px] min-h-screen bg-[#FEFEFE] text-[#222E26] font-sans mx-auto shadow-2xl relative overflow-hidden select-none">
+      {/* 0. 커버 인트로 화면 (시안 3 플레이리스트 시그니처 커버 - Figma 1:1 실측 규격) */}
+      {showIntro && showIntroSection && (
+        <PlaylistIntro
+          invitation={invitation}
+          onOpen={() => setShowIntro(false)}
+          isInModal={isModalPreview}
+        />
+      )}
+
       {/* 카카오 SDK */}
       <Script
         src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"

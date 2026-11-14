@@ -3320,7 +3320,18 @@ function EditInvitationContent({ params }) {
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
               {[
-                { name: 'show_intro', label: '오프닝 인트로' },
+                { 
+                  name: 'show_intro', 
+                  label: formData.template_type === 'basic'
+                    ? '봉투 인트로'
+                    : formData.template_type === 'editorial'
+                    ? '매거진 커버'
+                    : formData.template_type === 'playlist'
+                    ? '뮤직 커버'
+                    : formData.template_type === 'cinematic'
+                    ? '모노리스 커버'
+                    : '오프닝 인트로' 
+                },
                 { name: 'show_countdown', label: '웨딩 디데이 달력' },
                 { name: 'show_gallery', label: '사진 갤러리' },
                 { name: 'show_accounts', label: '축의금 계좌 안내' },
@@ -3609,7 +3620,7 @@ function EditInvitationContent({ params }) {
               >
                 <BgmPlayer
                   bgmUrl={previewInvitation.bgm_url}
-                  hasIntro={['basic', 'editorial'].includes(previewInvitation?.template_type) && previewInvitation?.template_config?.show_intro !== false}
+                  hasIntro={['basic', 'editorial', 'playlist', 'cinematic'].includes(previewInvitation?.template_type) && previewInvitation?.template_config?.show_intro !== false}
                   template={previewInvitation?.template_type}
                 />
                 {previewInvitation?.template_type === 'scene' ? (

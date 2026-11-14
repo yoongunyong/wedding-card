@@ -3899,7 +3899,17 @@ function CreateInvitationContent() {
                       onChange={handleChange}
                       className="rounded border-[#CBD5E1] text-[#0F172A] accent-stone-900"
                     />
-                    <span>봉투 인트로 커버</span>
+                    <span>
+                      {formData.template_type === 'basic'
+                        ? '봉투 인트로 커버'
+                        : formData.template_type === 'editorial'
+                        ? '에디토리얼 매거진 커버'
+                        : formData.template_type === 'playlist'
+                        ? '플레이리스트 뮤직 커버'
+                        : formData.template_type === 'cinematic'
+                        ? '시네마틱 모노리스 커버'
+                        : '첫 화면 인트로 커버'}
+                    </span>
                   </label>
                   <label className="flex items-center gap-2.5 cursor-pointer p-3 bg-white hover:bg-[#F1F5F9]/70 border border-[#F1F5F9] rounded-xl transition-colors select-none">
                     <input
@@ -4680,7 +4690,7 @@ function CreateInvitationContent() {
                 >
                   <BgmPlayer
                     bgmUrl={previewInvitation.bgm_url}
-                    hasIntro={['basic', 'editorial'].includes(previewInvitation?.template_type) && previewInvitation?.template_config?.show_intro !== false}
+                    hasIntro={['basic', 'editorial', 'playlist', 'cinematic'].includes(previewInvitation?.template_type) && previewInvitation?.template_config?.show_intro !== false}
                     template={previewInvitation?.template_type}
                   />
                   {previewInvitation?.template_type === 'scene' ? (

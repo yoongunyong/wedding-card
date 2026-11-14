@@ -1565,7 +1565,9 @@ export default function CinematicTemplate({ invitation }) {
                     setActiveInfoIdx(idx);
                   }
                 }}
-                className="flex gap-[13px] overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-[calc(50%-93.25px)] py-2"
+                className={`flex gap-[13px] overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory py-2 ${
+                  infoCards.length === 1 ? 'justify-center px-4' : 'pl-6 pr-[calc(100%-210.5px)]'
+                }`}
               >
                 {infoCards.map((card, idx) => {
                   const numStr = String(idx + 1).padStart(2, '0');
@@ -1574,7 +1576,7 @@ export default function CinematicTemplate({ invitation }) {
                   return (
                     <div
                       key={idx}
-                      className={`snap-center shrink-0 w-[186.5px] h-[236.5px] border box-border flex flex-col justify-start items-center text-center pt-[39.5px] pb-[39.5px] px-2 transition-colors duration-300 ${
+                      className={`snap-start shrink-0 w-[186.5px] h-[236.5px] border box-border flex flex-col justify-start items-center text-center pt-[39.5px] pb-[39.5px] px-2 transition-colors duration-300 ${
                         isNightMode
                           ? 'bg-[#252525] border-[#3D3D3D]'
                           : 'bg-[#F3F3F3] border-[#DCDCDC]'
@@ -1630,7 +1632,7 @@ export default function CinematicTemplate({ invitation }) {
 
               {/* 페이지 점선 인디케이터 도트 (Figma 1:1: 9x9 -> 1x 4.5x4.5, 선택: #585858, 미선택: #D9D9D9, 간격: gap-[6px], top: 11363px, mt-[36px]) */}
               {infoCards.length > 1 && (
-                <div className="flex items-center justify-center gap-[6px] mt-[36px]">
+                <div className="flex items-center justify-center gap-[4px] mt-[36px]">
                   {infoCards.map((_, idx) => {
                     const isSelected = idx === activeInfoIdx;
                     return (
@@ -1648,7 +1650,7 @@ export default function CinematicTemplate({ invitation }) {
                             setActiveInfoIdx(idx);
                           }
                         }}
-                        className="p-1 cursor-pointer flex items-center justify-center transition-all select-none"
+                        className="px-[2px] py-1 cursor-pointer flex items-center justify-center transition-all select-none"
                       >
                         <span
                           className={`w-[4.5px] h-[4.5px] rounded-full block transition-colors duration-200 ${

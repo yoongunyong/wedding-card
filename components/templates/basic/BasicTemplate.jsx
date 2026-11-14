@@ -459,9 +459,9 @@ export default function BasicTemplate({ invitation }) {
           content: '식사는 12시부터 가능합니다.\n맛있게 식사해주세요!',
         },
         {
-          title: '주차장 안내',
-          time: '',
-          content: '주차는 14시부터 가능합니다.\n편하게 오셔서 주차하세요!',
+          title: '화환 안내',
+          time: 'PM 12:00~16:00',
+          content: '예식장 공간이 좁아\n화환은 정중히 사양하오니\n너른 양해 부탁드립니다.',
         },
         {
           title: '사진부스 안내',
@@ -1452,7 +1452,9 @@ export default function BasicTemplate({ invitation }) {
                     setActiveNoticeIndex(idx);
                   }
                 }}
-                className="flex gap-[13px] overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-[calc(50%-93.25px)] py-2"
+                className={`flex gap-[13px] overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory py-2 ${
+                  infoCards.length === 1 ? 'justify-center px-4' : 'pl-6 pr-[calc(100%-210.5px)]'
+                }`}
               >
                 {infoCards.map((card, idx) => {
                   const numStr = String(idx + 1).padStart(2, '0');
@@ -1461,35 +1463,37 @@ export default function BasicTemplate({ invitation }) {
                   return (
                     <div
                       key={idx}
-                      className="snap-center shrink-0 w-[186.5px] h-[236.5px] border box-border flex flex-col justify-start items-center text-center pt-[28px] pb-[20px] px-3.5 bg-[#F3F3F3] border-[#DCDCDC]"
+                      className="snap-start shrink-0 w-[186.5px] h-[236.5px] border box-border flex flex-col justify-start items-center text-center pt-[39.5px] pb-[39.5px] px-2 bg-[#F3F3F3] border-[#DCDCDC]"
                     >
                       {/* 번호 (시안 1 폰트: NanumSquare Neo) */}
-                      <p className="font-nanumsquare font-normal text-[13px] leading-[72%] text-[#292929]">
+                      <p className="font-nanumsquare font-normal text-[13px] leading-[9.5px] text-[#292929]">
                         {numStr}
                       </p>
 
                       {/* 제목 (시안 1 폰트: NanumSquare Neo) */}
-                      <h3 className="font-nanumsquare font-normal text-[13px] leading-[72%] mt-[16px] tracking-tight text-[#292929]">
+                      <h3 className="font-nanumsquare font-normal text-[13px] leading-[9.5px] mt-[23px] tracking-tight text-[#292929]">
                         {card.title}
                       </h3>
 
-                      {/* 중간 구분선 */}
+                      {/* 제목과 소제목/시간 사이 구분선 */}
                       <div 
                         style={{ borderTop: '0.5px solid #999999' }}
-                        className="w-[127.5px] max-w-full my-[13px] shrink-0" 
+                        className="w-[127.5px] max-w-full mt-[11px] shrink-0" 
                       />
 
-                      {/* 시간 알약 태그 (옵션) */}
+                      {/* 소제목/시간 원형 영역 */}
                       {timeText ? (
-                        <div className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full border border-[#C4C4C4] bg-white/70 text-[#666666] mb-[10px] shrink-0">
-                          <span className="font-nanumsquare font-normal text-[9.5px] leading-none tracking-tight">
+                        <div className="w-[103.5px] h-[19px] rounded-[13.25px] border border-[#999999] box-border flex items-center justify-center shrink-0 mt-[23px] bg-transparent text-[#575757]">
+                          <span className="font-nanumsquare font-normal text-[9px] leading-none tracking-tight text-center">
                             {timeText}
                           </span>
                         </div>
                       ) : null}
 
-                      {/* 본문 (시안 1 폰트: NanumSquare Neo) */}
-                      <p className="font-nanumsquare font-normal text-[10px] leading-[145%] text-[#333333] text-center whitespace-pre-line break-keep px-1">
+                      {/* 안내사항 본문 (시안 1 폰트: NanumSquare Neo) */}
+                      <p className={`w-[164px] max-w-full font-nanumsquare font-normal text-[10px] leading-[14.5px] text-[#333333] text-center whitespace-pre-line break-keep px-0.5 ${
+                        timeText ? 'mt-[19px]' : 'mt-[23px]'
+                      }`}>
                         {card.content}
                       </p>
                     </div>
@@ -1499,7 +1503,7 @@ export default function BasicTemplate({ invitation }) {
 
               {/* 페이지 점선 인디케이터 도트 (1개일 때 숨김, 4.5x4.5, 선택 #585858, 미선택 #D9D9D9) */}
               {infoCards.length > 1 && (
-                <div className="flex items-center justify-center gap-[6px] mt-[36px]">
+                <div className="flex items-center justify-center gap-[4px] mt-[36px]">
                   {infoCards.map((_, idx) => {
                     const isSelected = idx === activeNoticeIndex;
                     return (
@@ -1517,7 +1521,7 @@ export default function BasicTemplate({ invitation }) {
                             setActiveNoticeIndex(idx);
                           }
                         }}
-                        className="p-1 cursor-pointer flex items-center justify-center select-none"
+                        className="px-[2px] py-1 cursor-pointer flex items-center justify-center select-none"
                       >
                         <span
                           className={`w-[4.5px] h-[4.5px] rounded-full block transition-colors duration-200 ${

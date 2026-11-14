@@ -56,35 +56,56 @@
 ## 0. 최근 핫픽스 & 서비스 안정화 내역 (2026-11-11 오너 관점 결함 전수 조치 & 시안 개편)
 
 
--12. **[시안 4 (시네마틱) 안내사항(Notice) 캐러셀 카드 피그마 CSS 스펙 1:1 정밀 반영 (2026-11-14)]**:
+-12. **[전체 5대 시안 안내사항(Notice) 캐러셀 카드 피그마 CSS 스펙 1:1 일괄 동기화 (2026-11-14)]**:
    - **사용자 요청**:
-     - "css가 조금 수정되어서 다시 반영부탁해." (개별 안내카드 373x473, 번호 02, 제목 화환 안내, 구분선, 다이너스티홀 원형 영역 207x38, 글자 211x18 #575757 18px 350, 본문 328x87 20px 145% #333333 실측 좌표 제공)
-   - **피그마 실측 CSS ➔ 1x 모바일 스펙 정밀 매핑**:
+     - "안내사항 섹션 있잖아 시안4 방금 수정한 것 처럼 다른 시안들도 모두 방금 수정한 형태로 수정해줘. 다만 폰트는 그 시안에서 사용하고 있는 폰트로 사용해줘."
+   - **피그마 실측 CSS ➔ 1x 모바일 스펙 5대 시안 공통 매핑**:
      1. **개별 안내카드 컨테이너 (Card Box)**:
         - 2x: `width: 373px; height: 473px; top: 10807px; background: #F3F3F3; border: 1px solid #DCDCDC;`
         - 1x 변환: `w-[186.5px] h-[236.5px]`
         - 상하 대칭 패딩: 상단 번호 시작(10886px - 10807px = 79px ➔ `pt-[39.5px]`), 하단 본문 여백(11280px - 11201px = 79px ➔ `pb-[39.5px]`). 완벽한 수직 대칭 황금비율 적용.
      2. **번호 (01, 02 등)**:
         - 2x: `top: 10886px; font-size: 26px; line-height: 72% (19px); color: #292929;`
-        - 1x 변환: `text-[13px] leading-[9.5px]` (`#292929` / 다크모드 `#D4D4D4`).
+        - 1x 변환: `text-[13px] leading-[9.5px]`
+        - 폰트: 시안 1~4 (`font-nanumsquare`), 시안 5 (`font-serif font-normal text-stone-800`).
      3. **제목 (화환 안내 등)**:
         - 2x: `top: 10951px; font-size: 26px; line-height: 72% (19px); color: #292929;`
-        - 1x 변환: `mt-[23px]` (46px/2), `text-[13px] leading-[9.5px]` (`#292929` / 다크모드 `text-white`).
+        - 1x 변환: `mt-[23px]` (46px/2), `text-[13px] leading-[9.5px]`
+        - 폰트: 시안 1~4 (`font-nanumsquare`), 시안 5 (`font-serif font-medium text-stone-900`).
      4. **제목 ↔ 소제목/시간 구분선 (Divider)**:
         - 2x: `top: 10992px; width: 255px; border: 0.5px solid #999999;`
-        - 1x 변환: `mt-[11px]` (22px/2), `w-[127.5px]`, `borderTop: 0.5px solid #999999` (다크모드 `0.5px solid rgba(255, 255, 255, 0.2)`).
+        - 1x 변환: `mt-[11px]` (22px/2), `w-[127.5px]`, `borderTop: 0.5px solid #999999`.
      5. **소제목/시간 원형 영역 (Subtitle/Time Pill)**:
         - 2x: `top: 11038px; width: 207px; height: 38px; border: 1px solid #999999; border-radius: 26.5px;`
         - 2x 폰트: `top: 11048px; font-weight: 350; font-size: 18px; line-height: 100%; color: #575757;`
-        - 1x 변환: `mt-[23px]` (46px/2), `w-[103.5px] h-[19px] rounded-[13.25px] border border-[#999999]`, 텍스트 `text-[9px] leading-none text-[#575757]` (다크모드 `border-stone-600 bg-stone-800/40 text-stone-300`).
+        - 1x 변환: `mt-[23px]` (46px/2), `w-[103.5px] h-[19px] rounded-[13.25px] border border-[#999999]`, 텍스트 `text-[9px] leading-none text-[#575757]`.
+        - 폰트: 시안 1~4 (`font-nanumsquare`), 시안 5 (`font-sans font-normal`).
      6. **안내사항 본문 (Content Text)**:
         - 2x: `top: 11114px; width: 328px; height: 87px; font-size: 20px; line-height: 145%; color: #333333;`
-        - 1x 변환: `mt-[19px]` (38px/2), `w-[164px] max-w-full text-[10px] leading-[14.5px] text-[#333333] text-center` (다크모드 `text-[#C7C7C7]`).
+        - 1x 변환: `mt-[19px]` (38px/2), `w-[164px] max-w-full text-[10px] leading-[14.5px] text-[#333333] text-center`.
+        - 폰트: 시안 1~4 (`font-nanumsquare`), 시안 5 (`font-sans font-light text-stone-700`).
      7. **하단 구분선**:
-        - 오너 지시에 따라 본문 하단 구분선 완전 제거 유지 (카드 내 개방감 및 깔끔한 여백 확보).
-   - **조치 대상 파일**: `components/templates/cinematic/CinematicTemplate.jsx`
+        - 전 시안 본문 하단 구분선 완전 제거 유지 (카드 내 개방감 및 깔끔한 여백 확보).
+     8. **피그마 1:1 샘플 카드 02 데이터 동기화**:
+        - 전 시안 2번 샘플 카드를 피그마 원본과 동일하게 '화환 안내'(`PM 12:00~16:00`, `예식장 공간이 좁아\n화환은 정중히 사양하오니\n너른 양해 부탁드립니다.`)로 통일.
+     9. **페이지 인디케이터 도트 간격 1/3 정밀 축소**:
+        - 사용자 피드백("점끼리 간격이 좀 넓은 것 같아 1/3 줄여줘")을 반영하여 컨테이너 `gap-[6px]` ➔ `gap-[4px]`, 버튼 패딩 `p-1` ➔ `px-[2px] py-1`로 축소.
+        - 도트 간 실제 시각적 간격을 14px ➔ 8px로 약 1/3 이상 슬림하게 정돈하여 프리미엄 인디케이터 룩 완성 (5대 시안 전체 반영).
+     10. **캐러셀 좌측 24px 시작 정렬 및 우측 프리뷰 적용 (좌측 100px 공백 비대칭 완벽 해소)**:
+        - 사용자 발견 결함: 2개 이상일 때 처음에 01번 카드가 화면 정중앙에 위치하며 좌측에 거대한 100px 빈 공백이 생기고 우측에 02번 카드가 반쯤 걸치는 어색한 비대칭 발생.
+        - 오너 결정 방안: **[방안 1] 모바일 표준 캐러셀: 좌측 여백(24px) 시작 정렬 + 우측 카드 프리뷰 (1개일 땐 중앙 정렬)** 채택.
+        - 조치:
+          - 카드가 1개일 때: `justify-center px-4`로 화면 중앙에 1개 카드 단독 배치 (도트 숨김).
+          - 카드가 2개 이상일 때: `pl-6 pr-[calc(100%-210.5px)]` 및 `snap-start` 적용. 01번 카드가 본문 시작선(24px)에 정갈하게 정렬되고, 우측에 02번 카드가 자연스럽게 걸쳐 보여 스와이프를 직관적으로 유도.
+          - 모든 카드가 24px 좌측 정렬 스냅 위치로 부드럽게 안착되도록 정밀 스크롤 수식 동기화 (5대 시안 전체 적용).
+   - **조치 대상 파일**:
+     - `components/templates/basic/BasicTemplate.jsx` (시안 1: 베이직)
+     - `components/templates/editorial/EditorialTemplate.jsx` (시안 2: 에디토리얼)
+     - `components/templates/playlist/PlaylistTemplate.jsx` (시안 3: 플레이리스트)
+     - `components/templates/cinematic/CinematicTemplate.jsx` (시안 4: 시네마틱)
+     - `components/templates/scene/SceneTemplate.jsx` (시안 5: 모던 씬)
    - **검증 결과**:
-     - `npx eslint components/templates/cinematic/CinematicTemplate.jsx`: 0 errors
+     - `npx eslint components/templates/**/*.jsx`: 0 errors 통과
      - `npm run build`: Exit Code 0 (컴파일 및 최적화 전 라우트 100% 무결성 통과).
 
 -11. **[시안 2 에디토리얼 인트로 손글씨 획순 드로잉 시험 적용 ➔ 원복 및 미사용 파일 정리 완료 (2026-11-13)]**:

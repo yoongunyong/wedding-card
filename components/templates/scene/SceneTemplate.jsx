@@ -506,8 +506,19 @@ export default function SceneTemplate({ invitation }) {
             />
           )}
 
-          {/* 텍스트 가독성을 위한 얇은 시네마틱 비네팅 그라디언트 */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/55 pointer-events-none" />
+          {/* 레트로 캠코더 뷰파인더 4귀퉁이(모서리) 음영 & 시네마틱 오버레이 */}
+          <div 
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: `
+                radial-gradient(circle 220px at 0% 0%, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.5) 35%, transparent 75%),
+                radial-gradient(circle 220px at 100% 0%, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.5) 35%, transparent 75%),
+                radial-gradient(circle 220px at 0% 100%, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.5) 35%, transparent 75%),
+                radial-gradient(circle 220px at 100% 100%, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.5) 35%, transparent 75%),
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, transparent 18%, transparent 82%, rgba(0, 0, 0, 0.4) 100%)
+              `,
+            }}
+          />
 
           {/* 1. 뷰파인더 4개 코너 브래킷 */}
           {/* Top-Left ┌ */}
